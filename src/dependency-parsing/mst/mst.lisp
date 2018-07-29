@@ -57,14 +57,16 @@
                     indexer)))
               (let ((score (exp (cl-lr:feature-vector-innner
                                  feature-vector weight-vector))))
-                (setf (hachee.algorithm.mst:get-score score-hash
-                                                      j i)
+                (setf (hachee.algorithm.chu-liu-edmonds:get-score
+                       score-hash j i)
                       score)
                 (incf sum score))))
         (loop for j from begin below N
           when (/= j i) do
-            (setf (hachee.algorithm.mst:get-score score-hash j i)
-                  (/ (hachee.algorithm.mst::get-score score-hash j i)
+            (setf (hachee.algorithm.chu-liu-edmonds:get-score
+                   score-hash j i)
+                  (/ (hachee.algorithm.chu-liu-edmonds:get-score
+                      score-hash j i)
                      sum)))))
     score-hash))
 
@@ -72,7 +74,7 @@
   (let* ((N (sentence-length sentence))
          (vertices (loop for i from 0 below N collect i))
          (score-hash (generate-score-hash model sentence)))
-    (let ((edges (hachee.algorithm.mst::chu-liu-edmonds
+    (let ((edges (hachee.algorithm.chu-liu-edmonds:solve
                   N
                   score-hash
                   vertices)))

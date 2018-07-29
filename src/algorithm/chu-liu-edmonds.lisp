@@ -1,8 +1,8 @@
-(defpackage :hachee.algorithm.mst
+(defpackage :hachee.algorithm.chu-liu-edmonds
   (:use :cl)
-  (:export :get-score :chu-liu-edmonds)
+  (:export :get-score :solve)
   (:import-from :alexandria :when-let))
-(in-package :hachee.algorithm.mst)
+(in-package :hachee.algorithm.chu-liu-edmonds)
 
 (defun get-score (score-hash i j)
   (gethash (list i j) score-hash))
@@ -22,7 +22,7 @@
                      (pr front rear score))))
              score-hash)))
 
-(defun chu-liu-edmonds (num-vertices score-hash current-vertices)
+(defun solve (num-vertices score-hash current-vertices)
   (let ((front (make-array num-vertices :initial-element -1)))
     ;;; best pathを探す
     (dolist (i current-vertices)
@@ -183,8 +183,7 @@
     (setf (get-score s 2 3) 30)
     (setf (get-score s 3 1) 11)
     (setf (get-score s 3 2)  0)
-    (chu-liu-edmonds N s
-                     (loop for i from 0 below N collect i))))
+    (solve N s (loop for i from 0 below N collect i))))
 
 ;; ((6 5) (7 6) (0 1) (0 3) (3 7) (5 4) (4 2))
 (defun test2 ()
@@ -203,8 +202,7 @@
     (setf (get-score s 5 7) 20)
     (setf (get-score s 6 5) 20)
     (setf (get-score s 7 6) 20)
-    (chu-liu-edmonds N s
-                     (loop for i from 0 below N collect i))))
+    (solve N s (loop for i from 0 below N collect i))))
 
 ;; ((0 1) (1 2) (2 3))
 (defun test3 ()
@@ -215,5 +213,4 @@
     (setf (get-score s 0 3) 1.8)
     (setf (get-score s 1 2) 4.3)
     (setf (get-score s 2 3) 2.2)
-    (chu-liu-edmonds N s
-                     (loop for i from 0 below N collect i))))
+    (solve N s (loop for i from 0 below N collect i))))
