@@ -1,0 +1,38 @@
+#!/bin/bash
+
+SCRIPT_DIR=$(cd $(dirname $0); pwd)
+
+## Notice: Vertex 0 is treated as the root of the input graph.
+$SCRIPT_DIR/../../bin/chu-liu-edmonds \
+'[
+  {
+    "source": 0,
+    "target": 1,
+    "score": 3
+  },
+  {
+    "source": 0,
+    "target": 2,
+    "score": 1.5
+  },
+  {
+    "source": 0,
+    "target": 3,
+    "score": 1.8
+  },
+  {
+    "source": 1,
+    "target": 2,
+    "score": 4.3
+  },
+  {
+    "source": 2,
+    "target": 3,
+    "score": 2.2
+  }
+]'
+
+# if [[ $RESULT == '[{"source":0,"target":1},{"source":1,"target":2},{"source":2,"target":3}]' ]]
+# then
+#     echo "Ok"
+# fi

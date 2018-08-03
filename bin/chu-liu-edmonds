@@ -1,0 +1,51 @@
+#!/bin/sh
+#|-*- mode:lisp -*-|#
+#|
+exec ros -Q -- $0 "$@"
+|#
+(progn ;;init forms
+  (ros:ensure-asdf)
+  ;;#+quicklisp (ql:quickload '() :silent t)
+  )
+
+(defpackage :ros.script.chu-liu-edmonds.3742262774
+  (:use :cl))
+(in-package :ros.script.chu-liu-edmonds.3742262774)
+(ql:quickload :jsown)
+(ql:quickload :alexandria)
+(ql:quickload :hachee)
+
+(defun json->score-hash-and-vertices (string)
+  (let ((source-target-score-list (jsown:parse string))
+        (vertices nil)
+        (score-hash (make-hash-table :test #'equal)))
+    (dolist (source-target-score source-target-score-list)
+      (let ((source (jsown:val source-target-score "source"))
+            (target (jsown:val source-target-score "target"))
+            (score (jsown:val source-target-score "score")))
+        (setf (hachee.algorithm.chu-liu-edmonds:get-score
+               score-hash source target)
+              score)
+        (pushnew source vertices :test #'=)
+        (pushnew target vertices :test #'=)))
+    (setq vertices (sort vertices #'<))
+    (assert (equal vertices
+                   (alexandria:iota (length vertices))))
+    (list score-hash vertices)))
+
+(defun edges->json (edges)
+  (jsown:to-json (mapcar (lambda (edge)
+                           (jsown:new-js
+                             ("source" (first edge))
+                             ("target" (second edge))))
+                         edges)))
+
+(defun main (json &rest argv)
+  (declare (ignorable argv))
+  (destructuring-bind (score-hash vertices)
+      (json->score-hash-and-vertices json)
+    (let ((edges (hachee.algorithm.chu-liu-edmonds:solve
+                  (length vertices) score-hash vertices)))
+      (format *standard-output* "~A" (edges->json edges)))))
+
+;;; vim: set ft=lisp lisp:

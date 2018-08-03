@@ -1,6 +1,6 @@
 (asdf:defsystem :hachee-test
   :serial t
-  :pathname "t"
+  :pathname "t/unit"
   :components
   ((:module :scenario
     :pathname "scenario"

@@ -22,6 +22,7 @@
                      (pr front rear score))))
              score-hash)))
 
+;; Notice: Vertex 0 is treated as the root of the input graph.
 (defun solve (num-vertices score-hash current-vertices)
   (let ((front (make-array num-vertices :initial-element -1)))
     ;;; best pathを探す
