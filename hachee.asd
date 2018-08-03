@@ -2,12 +2,15 @@
   :serial t
   :pathname "src"
   :components
-  ((:file "kkc")
+  ((:module :kkc
+    :pathname "kkc/cl"
+   :components
+   ((:file "kkc")))
 
    (:module :algorithm
     :pathname "algorithm"
     :components
-    ((:file "mst"))))
+    ((:file "chu-liu-edmonds"))))
   :depends-on (:alexandria
                :anaphora
                :cl-fad
