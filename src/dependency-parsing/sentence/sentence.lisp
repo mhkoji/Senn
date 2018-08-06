@@ -1,6 +1,6 @@
-(defpackage :hachee.dependency-parsing
+(defpackage :hachee.dependency-parsing.sentence
   (:use :cl))
-(in-package :hachee.dependency-parsing)
+(in-package :hachee.dependency-parsing.sentence)
 
 (defstruct row form lemma cpostag postag feats head deprel cluster)
 (export '(make-row

@@ -5,7 +5,9 @@
   ((:module :scenario
     :pathname "scenario"
    :components
-   ((:file "chu-liu-edmonds")))
+   ((:file "chu-liu-edmonds")
+    (:file "dependency-parsing/easy-first")
+    (:file "dependency-parsing/shift-reduce")))
 
    (:file "fiveam"))
 

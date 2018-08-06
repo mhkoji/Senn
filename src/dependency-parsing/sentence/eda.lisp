@@ -1,7 +1,7 @@
-(defpackage :hachee.dependency-parsing.eda
-  (:use :cl :hachee.dependency-parsing)
+(defpackage :hachee.dependency-parsing.sentence.eda
+  (:use :cl :hachee.dependency-parsing.sentence)
   (:export :read-from-stream))
-(in-package :hachee.dependency-parsing.eda)
+(in-package :hachee.dependency-parsing.sentence.eda)
 
 (defun read-from-stream (stream)
   (let ((first-line (loop for line = (read-line stream nil nil)
