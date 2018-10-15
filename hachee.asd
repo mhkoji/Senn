@@ -2,10 +2,20 @@
   :serial t
   :pathname "src"
   :components
-  ((:module :kkc
+  ((:module :language-model
+    :pathname "language-model"
+    :components
+    ((:file "n-gram")
+     (:file "language-model")))
+
+   (:module :kkc
     :pathname "kkc/cl"
-   :components
-   ((:file "kkc")))
+    :components
+    ((:file "vocabulary")
+     (:file "file")
+     (:file "kkc")
+     (:file "word-kkc")
+     (:file "word-pron-kkc")))
 
    (:module :algorithm
     :pathname "algorithm"
