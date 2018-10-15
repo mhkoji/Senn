@@ -17,12 +17,17 @@
                                        (word-pron string)
                                        (history-word-pron-list list))
   (let ((vocab (kkc-vocabulary kkc)))
-    (let ((p (hachee.language-model:transition-probability
-              (word-pron-kkc-language-model kkc)
-              (to-int-or-unk vocab word-pron)
-              (mapcar (curry #'to-int-or-unk vocab)
-                      history-word-pron-list))))
-      (if (= p 0) -100000 (log p)))))
+    (let ((token (to-int vocab word-pron)))
+      (let ((p (hachee.language-model:transition-probability
+                (word-pron-kkc-language-model kkc)
+                (or token (to-int vocab hachee.kkc.vocabulary:+UNK+))
+                (mapcar (curry #'to-int-or-unk vocab)
+                        history-word-pron-list))))
+        (if token
+            (log p)
+            (+ (if (= p 0) -10000 (log p))
+               (log (hachee.kkc.unknown-word-model:probability
+                     nil word-pron))))))))
 
 (defun build-word-pron-language-model (pathnames &key vocabulary)
   (let ((model (make-instance 'hachee.language-model:model

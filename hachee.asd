@@ -14,6 +14,7 @@
     ((:file "vocabulary")
      (:file "file")
      (:file "kkc")
+     (:file "unknown-word-model")
      (:file "word-kkc")
      (:file "word-pron-kkc")))
 

@@ -101,8 +101,8 @@
          (gethash class-token class-token-freq)))))
 
 (defmethod transition-probability ((model class-model)
-                                       (token t)
-                                       (history-tokens list))
+                                   (token t)
+                                   (history-tokens list))
   (* (class-interpolated-probability model token history-tokens)
      (class-token->token-probability model token)))
 
