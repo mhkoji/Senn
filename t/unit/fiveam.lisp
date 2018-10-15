@@ -1,6 +1,14 @@
 (defpackage :hachee.t.fiveam
-  (:use :cl :fiveam))
+  (:use :cl :fiveam)
+  (:export :set-system-pathname))
 (in-package :hachee.t.fiveam)
+
+(defvar *system-pathname* nil)
+
+(defun set-system-pathname (pathname)
+  (setq *system-pathname* pathname))
+
+
 (def-suite :hachee)
 (in-suite* :hachee)
 
@@ -22,3 +30,7 @@
   (hachee.t.scenario.dependency-parsing.shift-reduce:parse-text :test is)
   (hachee.t.scenario.dependency-parsing.shift-reduce:parse-on-parsed-text :test is)
   (hachee.t.scenario.dependency-parsing.shift-reduce:parse-on-parsed-text-removing-arc-manually :test is))
+
+(test hachee.t.scenario.kkc
+  (hachee.t.scenario.kkc.word-pron-kkc:build-and-convert-pronunciations
+   *system-pathname* :test is))
