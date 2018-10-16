@@ -1,7 +1,7 @@
-(defpackage :hachee.kkc.unknown-word-model
+(defpackage :hachee.kkc.models.unknown-word
   (:use :cl)
   (:export :probability))
-(in-package :hachee.kkc.unknown-word-model)
+(in-package :hachee.kkc.models.unknown-word)
 
 (defgeneric probability (model word-string))
 

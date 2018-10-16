@@ -31,8 +31,9 @@
                :initarg :vocabulary
                :reader kkc-vocabulary)))
 
-(defgeneric transition-log-probability (kkc str history-strs))
-
+(defgeneric transition-log-probability (kkc
+                                        word-pron-string
+                                        history-word-pron-string-list))
 (defun lookup-dictionary (kkc pron)
   (gethash pron (kkc-dictionary kkc)))
 

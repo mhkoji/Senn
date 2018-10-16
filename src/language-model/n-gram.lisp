@@ -3,34 +3,24 @@
   (:import-from :alexandria
                 :curry
                 :when-let)
-  (:export :make-n-gram
-           :n-gram-n
-           :add-counts
-           :interpolated-probability))
+  (:import-from :hachee.language-model
+                :sentence-tokens)
+  (:import-from :hachee.language-model.freq
+                :inc-count
+                :get-count
+                :make-freq)
+  (:export :model
+           :class-model
+           :train
+           :transition-probability))
 (in-package :hachee.language-model.n-gram)
 
-(defstruct freq
-  (hash (make-hash-table :test #'equal)))
+(defun conditional-probability (freq token history-tokens)
+  (when-let ((numer (get-count freq (append history-tokens (list token))))
+             (denom (get-count freq history-tokens)))
+    (/ numer denom)))
 
-(defmacro inchash (key hash)
-  `(incf (gethash ,key ,hash 0)))
-
-(defun inc-count (freq tokens)
-  (inchash tokens (freq-hash freq)))
-
-(defun get-count (freq tokens)
-  (gethash tokens (freq-hash freq)))
-
-
-;;; N-gram in the context of language modeling provides the functions of:
-;;; - counting the n-gram tokens in a sentence
-;;; - computing the probability of an event w_1, ..., w_{n-1} to w_n
-;;; N-gram is implemented as a little application of freq.
-(defstruct n-gram
-  (freq (make-freq))
-  (weights '(0.2d0 0.8d0)))
-
-(defun call-with-n-gram-subseq (BOS tokens EOS n callback)
+(defun each-n-gram-subseq (BOS tokens EOS n callback)
   (let ((bos-tokens (make-list (1- n) :initial-element BOS))
         (eos-tokens (list EOS)))
     (let ((extended-tokens (append bos-tokens tokens eos-tokens)))
@@ -45,9 +35,8 @@
 
 (labels ((list-subseqs (BOS tokens EOS n)
            (let ((result nil))
-             (call-with-n-gram-subseq BOS tokens EOS n
-                                      (lambda (subseq)
-                                        (push subseq result)))
+             (each-n-gram-subseq BOS tokens EOS n
+                                 (lambda (subseq) (push subseq result)))
              (nreverse result))))
   (assert (equal (list-subseqs 'BOS '(1 2 3 4) 'EOS 1)
                  '((  1) NIL
@@ -71,23 +60,30 @@
                                  (  4 EOS) (  4) NIL
                                            (EOS) NIL))))
 
-(defun n-gram-n (n-gram)
-  (length (n-gram-weights n-gram)))
+;; N-gram model is implemented as a little application of freq.
+;; An n-gram language model provides the functions of:
+;; - counting the n-gram tokens in a sentence
+;; - computing the probability of an event w_1, ..., w_{n-1} to w_n
+(defclass model ()
+  ((freq
+    :initform (make-freq)
+    :reader model-freq)
+   (weights
+    :initarg :weights
+    :initform (list 0.2d0 0.8d0)
+    :reader model-weights)))
 
-(defun add-counts (n-gram tokens &key BOS EOS)
-  (call-with-n-gram-subseq BOS tokens EOS (n-gram-n n-gram)
-                           (curry #'inc-count (n-gram-freq n-gram))))
+(defun model-n (model)
+  (length (model-weights model)))
 
+(defun count-n-grams (model tokens &key BOS EOS)
+  (let ((inc-count (curry #'inc-count (model-freq model))))
+    (each-n-gram-subseq BOS tokens EOS (model-n model) inc-count)))
 
-(defun conditional-probability (freq token history-tokens)
-  (when-let ((numer (get-count freq (append history-tokens (list token))))
-             (denom (get-count freq history-tokens)))
-    (/ numer denom)))
-
-(defun interpolated-probability (n-gram token history-tokens)
-  (assert (= (length history-tokens) (1- (n-gram-n n-gram))))
+(defun interpolated-probability (model token history-tokens)
+  (assert (= (length history-tokens) (1- (model-n model))))
   (let ((sub-history-tokens-list
-         (loop repeat (n-gram-n n-gram)
+         (loop repeat (model-n model)
 
                for sub-history-begin
                    from (length history-tokens) downto 0
@@ -99,29 +95,125 @@
     (reduce #'+
             (mapcar (lambda (weight sub-history-tokens)
                       (* weight
-                         (or (conditional-probability (n-gram-freq n-gram)
+                         (or (conditional-probability (model-freq model)
                                                       token
                                                       sub-history-tokens)
                              0)))
-                    (n-gram-weights n-gram) sub-history-tokens-list))))
+                    (model-weights model) sub-history-tokens-list))))
 
 (assert
- (let ((n-gram (make-n-gram)))
-   (add-counts n-gram '(a b b a c) :BOS 'BOS :EOS 'EOS)
-   (and (= (interpolated-probability n-gram 'b '(a))
+ (let ((model (make-instance 'model)))
+   (count-n-grams model '(a b b a c) :BOS 'BOS :EOS 'EOS)
+   (and (= (interpolated-probability model 'b '(a))
            (+ (* 0.2d0 2/6) ;; b
               (* 0.8d0 1/2) ;; b | a
               ))
-        (= (interpolated-probability n-gram 'a '(BOS))
+        (= (interpolated-probability model 'a '(BOS))
            (+ (* 0.2d0 2/6) ;; a
               (* 0.8d0 1)   ;; a | EOS
               )))))
 
 (assert
- (let ((n-gram (make-n-gram :weights '(0.1d0 0.2d0 0.7d0))))
-   (add-counts n-gram '(a b b a b) :BOS 'BOS :EOS 'EOS)
-   (= (interpolated-probability n-gram 'b '(a b))
+ (let ((model (make-instance 'model :weights '(0.1d0 0.2d0 0.7d0))))
+   (count-n-grams model '(a b b a b) :BOS 'BOS :EOS 'EOS)
+   (= (interpolated-probability model 'b '(a b))
       (+ (* 0.1d0 3/6)   ;; b
          (* 0.2d0 1/3)   ;; b | b
          (* 0.7d0 1/2)   ;; b | a b
          ))))
+
+
+(defclass class-model (model)
+  ((classifier
+    :initarg :classifier
+    :reader class-model-classifier)
+   (token-freq
+    :initform (make-hash-table :test #'equal)
+    :reader class-model-token-freq)
+   (class-token-freq
+    :initform (make-hash-table :test #'equal)
+    :reader class-model-class-token-freq)))
+
+(defstruct classifier to-class-map)
+
+
+(defgeneric train (model sentences &key BOS EOS))
+
+(defgeneric transition-probability (model token history-tokens))
+
+(defmethod train ((model model) (sentences list) &key BOS EOS)
+  (dolist (sentence sentences)
+    (let ((sentence-tokens (sentence-tokens sentence)))
+      (count-n-grams model sentence-tokens :BOS BOS :EOS EOS)))
+  model)
+
+(defmethod transition-probability ((model model)
+                                   (token t)
+                                   (history-tokens list))
+  (interpolated-probability model token history-tokens))
+
+
+(defun class-token (classifier x)
+  (gethash x (classifier-to-class-map classifier)))
+
+(defmacro inchash (key hash)
+  `(incf (gethash ,key ,hash 0)))
+
+(defmethod train ((model class-model) (sentences list) &key BOS EOS)
+  (let ((classifier (class-model-classifier model))
+        (token-freq (class-model-token-freq model))
+        (class-token-freq (class-model-class-token-freq model)))
+    (let ((bos-class-token (class-token classifier BOS))
+          (eos-class-token (class-token classifier EOS)))
+      (dolist (sentence sentences)
+        (let* ((sentence-tokens (sentence-tokens sentence))
+               (sentence-class-tokens (mapcar
+                                       (curry #'class-token classifier)
+                                       sentence-tokens)))
+          (dolist (token sentence-tokens)
+            (inchash token token-freq))
+          (dolist (class-token sentence-class-tokens)
+            (inchash class-token class-token-freq))
+          (count-n-grams model sentence-class-tokens
+           :BOS bos-class-token :EOS eos-class-token)))))
+  model)
+
+(defun class-interpolated-probability (class-model
+                                       token
+                                       history-tokens)
+  (let ((classifier (class-model-classifier class-model)))
+    (let ((class-token
+           (class-token classifier token))
+          (history-class-tokens
+           (mapcar (curry #'class-token classifier) history-tokens)))
+      (interpolated-probability class-model
+                                class-token
+                                history-class-tokens))))
+
+(defun class-token->token-probability (class-model token)
+  (let ((classifier (class-model-classifier class-model))
+        (token-freq (class-model-token-freq class-model))
+        (class-token-freq (class-model-class-token-freq class-model)))
+    (let ((class-token (class-token classifier token)))
+      (/ (gethash token token-freq)
+         (gethash class-token class-token-freq)))))
+
+(defmethod transition-probability ((model class-model)
+                                   (token t)
+                                   (history-tokens list))
+  (* (class-interpolated-probability model token history-tokens)
+     (class-token->token-probability model token)))
+
+
+(defun sentence-log-probability (model sentence &key BOS EOS)
+  (let ((n (model-n model)))
+    (let ((bos-tokens (make-list (1- n) :initial-element BOS))
+          (eos-tokens (list EOS)))
+      (let ((tokens (append bos-tokens
+                            (sentence-tokens sentence)
+                            eos-tokens)))
+        (loop for curr-index from n to (1- (length tokens))
+              sum (log (transition-probability
+                        model
+                        (nth curr-index tokens)
+                        (subseq tokens (- curr-index n) n))))))))

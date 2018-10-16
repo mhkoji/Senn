@@ -20,9 +20,10 @@
 (defmethod transition-log-probability ((kkc word-kkc)
                                        (word-pron string)
                                        (history-word-pron-list list))
-  (let ((vocab (kkc-vocabulary kkc)))
-    (let ((p (hachee.language-model:transition-probability
-              (word-kkc-language-model kkc)
+  (let ((vocab (kkc-vocabulary kkc))
+        (model (word-kkc-language-model kkc)))
+    (let ((p (hachee.language-model.n-gram:transition-probability
+              model
               (to-int-or-unk vocab word-pron)
               (mapcar (curry #'to-int-or-unk vocab)
                       history-word-pron-list))))
