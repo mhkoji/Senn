@@ -1,12 +1,14 @@
 (defpackage :hachee.kkc
   (:use :cl)
-  (:export :kkc
-           :convert
-           :transition-log-probability
-           :kkc-dictionary
-           :kkc-vocabulary
-           :build-word-pron-vocabulary
-           :build-word-pron-dictionary))
+  (:import-from :alexandria
+                :curry)
+  (:import-from :hachee.kkc.vocabulary
+                :to-int :to-int-or-unk)
+  (:export :convert
+           :make-kkc
+           :build-vocabulary
+           :build-dictionary
+           :build-language-model))
 (in-package :hachee.kkc)
 
 (let ((table (make-hash-table :test #'equal))
@@ -23,29 +25,52 @@
                (format nil "~A" (gethash hiragana table)))))
       (cl-ppcre:regex-replace-all regex hiragana-sequence #'convert))))
 
-(defclass kkc ()
-  ((dictionary :initform nil
-               :initarg :dictionary
-               :reader kkc-dictionary)
-   (vocabulary :initform nil
-               :initarg :vocabulary
-               :reader kkc-vocabulary)))
+(defun build-dictionary (pathnames)
+  (let ((dict (hachee.kkc.dictionary:make-dictionary)))
+    (dolist (pathname pathnames dict)
+      (dolist (sentence (hachee.kkc.file:file->string-sentences pathname))
+        (dolist (word-pron-str (hachee.kkc.file:sentence-units sentence))
+          (let ((pron (cadr (cl-ppcre:split "/" word-pron-str))))
+            (when pron
+              (hachee.kkc.dictionary:add dict
+                                         (remove #\- pron)
+                                         word-pron-str))))))))
 
-(defgeneric transition-log-probability (kkc
-                                        word-pron-string
-                                        history-word-pron-string-list))
-(defun lookup-dictionary (kkc pron)
-  (gethash pron (kkc-dictionary kkc)))
+(defun build-vocabulary (pathnames)
+  (let ((vocab (hachee.kkc.vocabulary:make-vocabulary)))
+    (dolist (pathname pathnames)
+      (dolist (sentence (hachee.kkc.file:file->string-sentences pathname))
+        (dolist (word-pron-str (hachee.kkc.file:sentence-units sentence))
+          (hachee.kkc.vocabulary:add-str vocab word-pron-str))))
+    vocab))
 
-(defun find-optimal-result (kkc prev-results curr-str)
+(defun build-language-model (pathnames &key vocabulary)
+  (let ((model (make-instance 'hachee.language-model.n-gram:model)))
+    (let ((sentences nil))
+      (dolist (pathname pathnames)
+        (dolist (sentence (hachee.kkc.file:file->string-sentences pathname))
+          (let ((word-pron-list (hachee.kkc.file:sentence-units sentence)))
+            (push (hachee.language-model:make-sentence
+                   :tokens (mapcar (curry #'to-int-or-unk vocabulary)
+                                   word-pron-list))
+                  sentences))))
+      (hachee.language-model.n-gram:train model sentences
+       :BOS (to-int vocabulary hachee.kkc.vocabulary:+BOS+)
+       :EOS (to-int vocabulary hachee.kkc.vocabulary:+EOS+)))
+    model))
+
+
+(defstruct kkc converter dictionary)
+
+(defun find-optimal-result (converter prev-results curr-str)
   (let ((optimal-result nil)
         (optimal-cost (- #xffffffff)))
     (dolist (prev-result prev-results optimal-result)
       (destructuring-bind (prev-str cost-so-far strs-so-far) prev-result
-        (let ((new-cost (+ cost-so-far (transition-log-probability
-                                        kkc
-                                        curr-str
-                                        (list prev-str)))))
+        (let ((new-cost (+ cost-so-far
+                           (hachee.kkc.converters.converter:probability
+                            converter
+                            curr-str (list prev-str)))))
           (when (< optimal-cost new-cost)
             (setq optimal-cost new-cost)
             (setq optimal-result (list curr-str
@@ -53,7 +78,9 @@
                                        (cons curr-str strs-so-far)))))))))
 
 (defun convert (kkc pronunciation)
-  (let ((BOS hachee.kkc.vocabulary:+BOS+)
+  (let ((converter (kkc-converter kkc))
+        (dictionary (kkc-dictionary kkc))
+        (BOS hachee.kkc.vocabulary:+BOS+)
         (EOS hachee.kkc.vocabulary:+EOS+)
         (length (length pronunciation))
         (results (make-hash-table)))
@@ -64,36 +91,17 @@
       (loop for start from 0 below end do
         (let ((sub-pron (subseq pronunciation start end)))
           (let ((curr-strs
-                 (or (lookup-dictionary kkc sub-pron)
+                 (or (hachee.kkc.dictionary:lookup dictionary sub-pron)
                      (list (format nil "~A/~A"
                                    (hiragana->katakana sub-pron)
                                    sub-pron))))
                 (prev-results (gethash start results)))
             (dolist (curr-str curr-strs)
-              (push (find-optimal-result kkc prev-results curr-str)
+              (push (find-optimal-result converter prev-results curr-str)
                     (gethash end results)))))))
-    (let ((result (find-optimal-result kkc (gethash length results) EOS)))
+    (let ((result (find-optimal-result converter
+                                       (gethash length results)
+                                       EOS)))
       (push result (gethash (1+ length) results))
       (let ((strs (cdr (butlast (reverse (third result))))))
         (values (format nil "~{~A~^ ~}" strs) results)))))
-
-
-(defun build-word-pron-dictionary (pathnames)
-  (let ((dict (make-hash-table :test #'equal)))
-    (dolist (pathname pathnames dict)
-      (dolist (sentence (hachee.kkc.file:file->string-sentences pathname))
-        (dolist (word-pron-str (hachee.kkc.file:sentence-units sentence))
-          (let ((pron (cadr (cl-ppcre:split "/" word-pron-str))))
-            (when pron
-              (setq pron (remove #\- pron))
-              (pushnew word-pron-str (gethash pron dict)
-                       :test #'equal))))))))
-
-
-(defun build-word-pron-vocabulary (pathnames)
-  (let ((vocab (hachee.kkc.vocabulary:make-vocabulary)))
-    (dolist (pathname pathnames)
-      (dolist (sentence (hachee.kkc.file:file->string-sentences pathname))
-        (dolist (word-pron-str (hachee.kkc.file:sentence-units sentence))
-          (hachee.kkc.vocabulary:add-str vocab word-pron-str))))
-    vocab))

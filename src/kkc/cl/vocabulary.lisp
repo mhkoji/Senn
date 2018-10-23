@@ -43,7 +43,7 @@
 (defun to-int-or-unk (vocab str)
   (or (to-int vocab str) (to-int vocab +UNK+)))
 
-  (defun to-str (vocab token)
+(defun to-str (vocab token)
   (or (gethash token (vocabulary-to-str-map vocab))
       (error "stringize: unknown token ~A" token)))
 

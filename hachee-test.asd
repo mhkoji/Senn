@@ -8,7 +8,7 @@
    ((:file "chu-liu-edmonds")
     (:file "dependency-parsing/easy-first")
     (:file "dependency-parsing/shift-reduce")
-    (:file "kkc/word-pron-kkc")))
+    (:file "kkc/word-pron")))
 
    (:file "fiveam"))
 

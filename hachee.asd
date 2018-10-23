@@ -13,11 +13,13 @@
     :pathname "kkc/cl"
     :components
     ((:file "vocabulary")
-     (:file "file")
-     (:file "kkc")
+     (:file "dictionary")
      (:file "models/unknown-word")
-     (:file "word-kkc")
-     (:file "word-pron-kkc")))
+     (:file "converters/converter")
+     (:file "converters/word")
+     (:file "converters/word-pron")
+     (:file "file")
+     (:file "kkc")))
 
    (:module :algorithm
     :pathname "algorithm"

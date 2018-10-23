@@ -32,5 +32,5 @@
   (hachee.t.scenario.dependency-parsing.shift-reduce:parse-on-parsed-text-removing-arc-manually :test is))
 
 (test hachee.t.scenario.kkc
-  (hachee.t.scenario.kkc.word-pron-kkc:build-and-convert-pronunciations
+  (hachee.t.scenario.kkc.word-pron:build-and-convert-pronunciations
    *system-pathname* :test is))
