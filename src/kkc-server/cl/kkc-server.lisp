@@ -7,6 +7,13 @@
   (loop for line = (read-line *standard-input* nil nil)
         while line do (funcall callback *standard-output* line)))
 
+(defun kkc-eval (kkc expr)
+  (destructuring-bind (op &rest args) expr
+    (ecase op
+      (:convert
+       ;; (:convert "あおぞらぶんこ")
+       (hachee.kkc:convert kkc (car args))))))
+
 (defun main (pathnames)
   (let* ((dictionary (hachee.kkc:build-dictionary pathnames))
          (vocabulary (hachee.kkc:build-vocabulary pathnames))
@@ -20,4 +27,4 @@
                :dictionary dictionary)))
     (call-with-read-input
      (lambda (stream line)
-       (format stream "~A~%" (hachee.kkc:convert kkc line))))))
+       (format stream "~A~%" (kkc-eval kkc (read-from-string line)))))))
