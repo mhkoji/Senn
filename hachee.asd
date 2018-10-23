@@ -21,6 +21,11 @@
      (:file "file")
      (:file "kkc")))
 
+   (:module :kkc-server
+    :pathname "kkc-server/cl"
+    :components
+    ((:file "kkc-server")))
+
    (:module :algorithm
     :pathname "algorithm"
     :components

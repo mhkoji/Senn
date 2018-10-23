@@ -4,7 +4,7 @@
 (in-package :hachee.t.scenario.kkc.word-pron)
 
 (defun pathnames (system-pathname)
-  (list (merge-pathnames "src/kkc/data/aozora/kokoro.word-pron.utf8.txt"
+  (list (merge-pathnames "src/kkc/data/aozora/word-pron-utf8/kokoro.txt"
                          system-pathname)))
 
 (defmacro build-and-convert-pronunciations (system-pathname &key test)

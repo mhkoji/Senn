@@ -1,0 +1,25 @@
+#!/bin/sh
+#|-*- mode:lisp -*-|#
+#| <Put a one-line description here>
+exec ros -Q -- $0 "$@" $PWD
+|#
+(progn ;;init forms
+  (ros:ensure-asdf)
+  ;;#+quicklisp (ql:quickload '() :silent t)
+  )
+
+(defpackage :ros.script.run.3749247322
+  (:use :cl))
+(in-package :ros.script.run.3749247322)
+(ql:quickload :hachee)
+(ql:quickload :cl-fad)
+
+(defun main (&rest argv)
+  (let ((script-dir (car argv)))
+    (let ((pathnames
+           (cl-fad:list-directory
+            (merge-pathnames "../../kkc/data/aozora/word-pron-utf8/"
+                             (cl-fad:pathname-as-directory script-dir)))))
+      (hachee.kkc-server:main pathnames))))
+
+;;; vim: set ft=lisp lisp:
