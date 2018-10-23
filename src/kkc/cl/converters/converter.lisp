@@ -1,8 +1,6 @@
 (defpackage :hachee.kkc.converters.converter
   (:use :cl)
-  (:export :probability))
+  (:export :cost))
 (in-package :hachee.kkc.converters.converter)
 
-(defgeneric probability (converter
-                         word-pron-string
-                         history-word-pron-string-list))
+(defgeneric cost (converter word-pron-string history-word-pron-string-list))

@@ -68,7 +68,7 @@
     (dolist (prev-result prev-results optimal-result)
       (destructuring-bind (prev-str cost-so-far strs-so-far) prev-result
         (let ((new-cost (+ cost-so-far
-                           (hachee.kkc.converters.converter:probability
+                           (hachee.kkc.converters.converter:cost
                             converter
                             curr-str (list prev-str)))))
           (when (< optimal-cost new-cost)

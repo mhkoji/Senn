@@ -9,9 +9,9 @@
 
 (defstruct converter vocabulary language-model)
 
-(defmethod probability ((converter converter)
-                        (word-pron string)
-                        (history-word-pron-list list))
+(defmethod cost ((converter converter)
+                 (word-pron string)
+                 (history-word-pron-list list))
   (let ((vocab (converter-vocabulary converter))
         (model (converter-language-model converter)))
     (let ((token-or-nil (to-int vocab word-pron))

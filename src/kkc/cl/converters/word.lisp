@@ -9,9 +9,9 @@
   (hachee.kkc.vocabulary:to-int-or-unk
    vocab (car (cl-ppcre:split "/" word-pron))))
 
-(defmethod probability ((converter converter)
-                        (word-pron string)
-                        (history-word-pron-list list))
+(defmethod cost ((converter converter)
+                 (word-pron string)
+                 (history-word-pron-list list))
   (let ((vocab (converter-vocabulary converter)))
     (let ((p (hachee.language-model.n-gram:transition-probability
               (converter-language-model converter)
