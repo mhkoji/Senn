@@ -1,5 +1,6 @@
 (defpackage :hachee.kkc-server
   (:use :cl)
+  (:import-from :cl-arrows :->)
   (:export :main))
 (in-package :hachee.kkc-server)
 
@@ -7,12 +8,23 @@
   (loop for line = (read-line *standard-input* nil nil)
         while line do (funcall callback *standard-output* line)))
 
+
+(defun as-expr (string)
+  (jsown:parse string))
+
+(defun expr-op (expr)
+  (jsown:val expr "op"))
+
+(defun expr-arg (expr name)
+  (-> expr (jsown:val "args") (jsown:val name)))
+
 (defun kkc-eval (kkc expr)
-  (destructuring-bind (op &rest args) expr
-    (ecase op
+  (let ((op (expr-op expr)))
+    (ecase (alexandria:make-keyword (string-upcase op))
       (:convert
-       ;; (:convert "あおぞらぶんこ")
-       (hachee.kkc:convert kkc (car args))))))
+       ;; {"op": "convert", "args": {"text": "あおぞらぶんこ"}}
+       (hachee.kkc:convert kkc (expr-arg expr "text"))))))
+
 
 (defun main (pathnames)
   (let* ((dictionary (hachee.kkc:build-dictionary pathnames))
@@ -21,10 +33,9 @@
                           pathnames
                           :vocabulary vocabulary))
          (kkc (hachee.kkc:make-kkc
-               :converter (hachee.kkc.converters.word-pron:make-converter
-                           :vocabulary vocabulary
-                           :language-model language-model)
+               :cost-fn (hachee.kkc.convert.cost-fns:of-word-pron
+                         :vocabulary vocabulary
+                         :language-model language-model)
                :dictionary dictionary)))
-    (call-with-read-input
-     (lambda (stream line)
-       (format stream "~A~%" (kkc-eval kkc (read-from-string line)))))))
+    (call-with-read-input (lambda (stream line)
+      (format stream "~A~%" (kkc-eval kkc (as-expr line)))))))

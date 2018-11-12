@@ -15,9 +15,9 @@
                            pathnames
                            :vocabulary vocabulary))
           (kkc (hachee.kkc:make-kkc
-                :converter (hachee.kkc.converters.word-pron:make-converter
-                            :vocabulary vocabulary
-                            :language-model language-model)
+                :cost-fn (hachee.kkc.convert.cost-fns:of-word-pron
+                          :vocabulary vocabulary
+                          :language-model language-model)
                 :dictionary dictionary)))
      (,test
       (equal (hachee.kkc:convert kkc "わたくしのせんせい")

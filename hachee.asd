@@ -15,9 +15,8 @@
     ((:file "vocabulary")
      (:file "dictionary")
      (:file "models/unknown-word")
-     (:file "converters/converter")
-     (:file "converters/word")
-     (:file "converters/word-pron")
+     (:file "convert/convert")
+     (:file "convert/cost-fns")
      (:file "file")
      (:file "kkc")))
 
@@ -42,7 +41,9 @@
   :depends-on (:alexandria
                :anaphora
                :clazy
+               :cl-arrows
                :cl-annot
                :cl-fad
                :cl-ppcre
+               :jsown
                :metabang-bind))
