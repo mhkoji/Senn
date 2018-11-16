@@ -1,13 +1,8 @@
-(defpackage :hachee.kkc-server
+(defpackage :hachee.kkc.server
   (:use :cl)
   (:import-from :cl-arrows :->)
-  (:export :main))
-(in-package :hachee.kkc-server)
-
-(defun call-with-read-input (callback)
-  (loop for line = (read-line *standard-input* nil nil)
-        while line do (funcall callback *standard-output* line)))
-
+  (:export :enter-loop))
+(in-package :hachee.kkc.server)
 
 (defun as-expr (string)
   (jsown:parse string))
@@ -26,7 +21,12 @@
        (hachee.kkc:convert kkc (expr-arg expr "text"))))))
 
 
-(defun main (pathnames)
+(defun call-with-read-input (callback)
+  (loop for line = (read-line *standard-input* nil nil)
+        while line do (funcall callback *standard-output* line)))
+
+(defun enter-loop (pathnames)
+  (log:info "Loading: ~A" pathnames)
   (let* ((dictionary (hachee.kkc:build-dictionary pathnames))
          (vocabulary (hachee.kkc:build-vocabulary pathnames))
          (language-model (hachee.kkc:build-language-model

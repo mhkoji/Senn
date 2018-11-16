@@ -18,12 +18,8 @@
      (:file "convert/convert")
      (:file "convert/cost-fns")
      (:file "file")
-     (:file "kkc")))
-
-   (:module :kkc-server
-    :pathname "kkc-server/cl"
-    :components
-    ((:file "kkc-server")))
+     (:file "kkc")
+     (:file "server")))
 
    (:module :algorithm
     :pathname "algorithm"
@@ -46,4 +42,5 @@
                :cl-fad
                :cl-ppcre
                :jsown
+               :log4cl
                :metabang-bind))

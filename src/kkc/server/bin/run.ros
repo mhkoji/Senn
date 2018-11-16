@@ -18,8 +18,8 @@ exec ros -Q -- $0 "$@" $PWD
   (let ((script-dir (car argv)))
     (let ((pathnames
            (cl-fad:list-directory
-            (merge-pathnames "../../kkc/data/aozora/word-pron-utf8/"
+            (merge-pathnames "../../data/aozora/word-pron-utf8/"
                              (cl-fad:pathname-as-directory script-dir)))))
-      (hachee.kkc-server:main pathnames))))
+      (hachee.kkc.server:enter-loop pathnames))))
 
 ;;; vim: set ft=lisp lisp:
