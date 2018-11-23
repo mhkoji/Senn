@@ -5,6 +5,7 @@
   (:import-from :hachee.kkc.vocabulary
                 :to-int :to-int-or-unk)
   (:export :convert
+           :lookup
            :make-kkc
            :build-vocabulary
            :build-dictionary
@@ -51,4 +52,8 @@
 (defun convert (kkc pronunciation)
   (hachee.kkc.convert:execute pronunciation
    :cost-fn (kkc-cost-fn kkc)
+   :dictionary (kkc-dictionary kkc)))
+
+(defun lookup (kkc pronunciation)
+  (hachee.kkc.lookup:execute pronunciation
    :dictionary (kkc-dictionary kkc)))

@@ -15,10 +15,14 @@
     ((:file "vocabulary")
      (:file "dictionary")
      (:file "models/unknown-word")
-     (:file "convert/convert")
-     (:file "convert/cost-fns")
      (:file "file")
-     (:file "kkc")
+     (:module :kkc
+      :pathname "kkc"
+      :components
+      ((:file "convert/convert")
+       (:file "convert/cost-fns")
+       (:file "lookup")
+       (:file "kkc")))
      (:file "server")))
 
    (:module :algorithm
