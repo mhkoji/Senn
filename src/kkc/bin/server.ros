@@ -1,7 +1,7 @@
 #!/bin/sh
 #|-*- mode:lisp -*-|#
 #| <Put a one-line description here>
-exec ros -Q -- $0 "$@" $PWD
+exec ros -Q -- $0 "$@"
 |#
 (progn ;;init forms
   (ros:ensure-asdf)
@@ -15,11 +15,12 @@ exec ros -Q -- $0 "$@" $PWD
 (ql:quickload :cl-fad)
 
 (defun main (&rest argv)
-  (let ((script-dir (car argv)))
-    (let ((pathnames
-           (cl-fad:list-directory
-            (merge-pathnames "../data/aozora/word-pron-utf8/"
-                             (cl-fad:pathname-as-directory script-dir)))))
-      (hachee.kkc.server:enter-loop pathnames))))
+  (declare (ignore argv))
+  (let ((corpus-pathnames
+         (cl-fad:list-directory
+          (merge-pathnames
+           "src/kkc/data/aozora/word-pron-utf8/"
+           (asdf:system-source-directory :hachee)))))
+    (hachee.kkc.server:enter-loop corpus-pathnames)))
 
 ;;; vim: set ft=lisp lisp:
