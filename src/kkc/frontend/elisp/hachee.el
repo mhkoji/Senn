@@ -144,32 +144,32 @@
 (defun hachee-assoc-get (key alist)
   (cdr (assoc key alist)))
 
+(defun hachee-word->option (word-alist)
+  (make-hachee-option :form (hachee-assoc-get 'form word-alist)
+                      :origin 'IV
+                      :logP 0))
+
 (defun hachee-convert (pron)
-  (labels ((word->select (word)
-             (let ((option (make-hachee-option
-                            :form (hachee-assoc-get 'form word)
-                            :origin 'IV
-                            :logP 0)))
-               (make-hachee-select :pron (hachee-assoc-get 'pron word)
-                                   :options (vector option)
-                                   :option-count 1
-                                   :curr-option-idx 0
-                                   :more-options-p t))))
-    (let ((words (hachee-api-convert pron)))
-      (make-hachee-conversion :pron pron
-                              :logP 0
-                              :selects (apply #'vector
-                                              (mapcar #'word->select words))
-                              :select-count (length words)
-                              :curr-select-idx 0))))
+  (let ((words (hachee-api-convert pron)))
+    (let ((selects (mapcar (lambda (word)
+                             (make-hachee-select
+                              :pron (hachee-assoc-get 'pron word)
+                              :options (vector (hachee-word->option word))
+                              :option-count 1
+                              :curr-option-idx 0
+                              :more-options-p t
+                              :selectors nil
+                              :np-count 0))
+                           words)))
+      (make-hachee-conversion
+       :pron pron
+       :logP 0
+       :selects (apply #'vector selects)
+       :select-count (length selects)
+       :curr-select-idx 0))))
 
 (defun hachee-lookup-options (pron)
-  (mapcar #'(lambda (word)
-              (make-hachee-option
-               :form (hachee-assoc-get 'form word)
-               :origin 'IV
-               :logP 0))
-          (hachee-api-lookup-words pron)))
+  (mapcar #'hachee-word->option (hachee-api-lookup-words pron)))
 
 ;;; オーバーレイに関する関数。
 (defun hachee-delete-all-overlays ()
@@ -198,10 +198,10 @@
         (origin (hachee-origin->string (hachee-option-origin option))))
     (if focusedp
         (let ((msg (format " %s: [%s]%s " selector-char form origin)))
-        (put-text-property (position ?\[ msg) (1+ (position ?\] msg))
-                           'face 'highlight msg)
-        msg)
-    (format " %s: %s%s " selector-char form origin))))
+          (put-text-property (position ?\[ msg) (1+ (position ?\] msg))
+                             'face 'highlight msg)
+          msg)
+      (format " %s: %s%s " selector-char form origin))))
 
 (defun hachee-collect-option-messages (curr-option-idx selector)
   (let ((region (hachee-selector-region selector))
@@ -212,7 +212,7 @@
             for focusedp      = (= i index-from-region-begin)
             for selector-char = (hachee-get-option-selector-char i)
             collect (hachee-option->message
-                      option selector-char focusedp)))))
+                     option selector-char focusedp)))))
 
 
 ;; フレーズに従って、エコーエリアに表示させる候補文字列を構成する関数。
@@ -220,10 +220,9 @@
   (let ((selectors (hachee-select-selectors select)))
     (when selectors
       (let ((curr-option-idx (hachee-select-curr-option-idx select)))
-        (apply 'concat (hachee-collect-option-messages
-                        curr-option-idx
-                        (hachee-find-selector curr-option-idx
-                                              selectors)))))))
+        (let ((selector (hachee-find-selector curr-option-idx selectors)))
+          (apply 'concat (hachee-collect-option-messages
+                          curr-option-idx selector)))))))
 
 ;; エコーエリアに現在の変換候補を表示。
 (defun hachee-message-select (select)
