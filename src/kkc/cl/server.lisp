@@ -8,18 +8,16 @@
   (jsown:parse string))
 
 (defun expr-op (expr)
-  (jsown:val expr "op"))
+  (alexandria:make-keyword (string-upcase (jsown:val expr "op"))))
 
 (defun expr-arg (expr name)
   (-> expr (jsown:val "args") (jsown:val name)))
 
 (defun kkc-eval (kkc expr)
-  (let ((op (expr-op expr)))
-    (ecase (alexandria:make-keyword (string-upcase op))
-      (:convert
-       ;; {"op": "convert", "args": {"text": "あおぞらぶんこ"}}
-       (hachee.kkc:convert kkc (expr-arg expr "text"))))))
-
+  (ecase (expr-op expr)
+    (:convert
+     ;; {"op": "convert", "args": {"text": "あおぞらぶんこ"}}
+     (hachee.kkc:convert kkc (expr-arg expr "text")))))
 
 (defun call-with-read-input (callback)
   (loop for line = (read-line *standard-input* nil nil)
@@ -38,4 +36,7 @@
                          :language-model language-model)
                :dictionary dictionary)))
     (call-with-read-input (lambda (stream line)
-      (format stream "~A~%" (kkc-eval kkc (as-expr line)))))))
+      (let ((expr (as-expr line)))
+        (if (eql (expr-op expr) :quit)
+            (return-from enter-loop nil)
+            (format stream "~A~%" (kkc-eval kkc expr))))))))
