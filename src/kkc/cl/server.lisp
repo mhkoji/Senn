@@ -17,7 +17,21 @@
   (ecase (expr-op expr)
     (:convert
      ;; {"op": "convert", "args": {"text": "あおぞらぶんこ"}}
-     (hachee.kkc:convert kkc (expr-arg expr "text")))))
+     (let ((words (hachee.kkc:convert kkc (expr-arg expr "text"))))
+       (jsown:to-json
+        (mapcar (lambda (word)
+                  (jsown:new-js
+                    ("form" (hachee.kkc.word:word-form word))
+                    ("pron" (hachee.kkc.word:word-pron word))))
+                words))))
+    (:lookup
+     ;; {"op": "lookup", "args": {"text": "あお"}}
+     (let ((words (hachee.kkc:lookup kkc (expr-arg expr "text"))))
+       (jsown:to-json
+        (mapcar (lambda (word)
+                  (jsown:new-js
+                    ("form" (hachee.kkc.word:word-form word))))
+                words))))))
 
 (defun call-with-read-input (callback)
   (loop for line = (read-line *standard-input* nil nil)
@@ -26,7 +40,7 @@
                         (force-output *standard-output*))))
 
 (defun enter-loop (pathnames)
-  (log:info "Loading: ~A" pathnames)
+  (log:debug "Loading: ~A" pathnames)
   (let ((kkc (hachee.kkc:create-kkc pathnames)))
     (call-with-read-input (lambda (stream line)
       (let ((expr (as-expr line)))
