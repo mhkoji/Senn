@@ -14,13 +14,19 @@ exec ros -Q -- $0 "$@"
 (ql:quickload :hachee :silent t)
 (ql:quickload :cl-fad :silent t)
 
-(defun main (&rest argv)
-  (declare (ignore argv))
+
+(defvar *kkc*
   (let ((corpus-pathnames
          (cl-fad:list-directory
           (merge-pathnames
            "src/kkc/data/aozora/word-pron-utf8/"
            (asdf:system-source-directory :hachee)))))
-    (hachee.input-method.kkc-server:enter-loop corpus-pathnames)))
+    (log:debug "Loading: ~A" corpus-pathnames)
+    (hachee.kkc:create-kkc corpus-pathnames)))
+
+
+(defun main (&rest argv)
+  (declare (ignore argv))
+  (hachee.input-method.kkc-server:enter-loop *kkc*))
 
 ;;; vim: set ft=lisp lisp:
