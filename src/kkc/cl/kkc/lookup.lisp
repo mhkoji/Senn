@@ -4,4 +4,4 @@
 (in-package :hachee.kkc.lookup)
 
 (defun execute (pronunciation &key dictionary)
-  (hachee.kkc.dictionary:lookup dictionary pronunciation))
+  (hachee.kkc.word.dictionary:lookup dictionary pronunciation))

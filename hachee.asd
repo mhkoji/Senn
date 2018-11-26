@@ -12,8 +12,12 @@
    (:module :kkc
     :pathname "kkc/cl"
     :components
-    ((:file "vocabulary")
-     (:file "dictionary")
+    ((:module :word
+      :pathname "word"
+      :components
+      ((:file "word")
+       (:file "vocabulary")
+       (:file "dictionary")))
      (:file "models/unknown-word")
      (:file "file")
      (:module :kkc

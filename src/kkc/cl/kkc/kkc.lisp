@@ -1,53 +1,69 @@
 (defpackage :hachee.kkc
-  (:use :cl)
+  (:use :cl :hachee.kkc.word)
   (:import-from :alexandria
                 :curry)
-  (:import-from :hachee.kkc.vocabulary
-                :to-int :to-int-or-unk)
   (:export :convert
            :lookup
            :make-kkc
-           :build-vocabulary
-           :build-dictionary
-           :build-language-model))
+           :create-kkc))
 (in-package :hachee.kkc)
 
+(defun sentence-words (sentence)
+  (mapcar (lambda (word-pron-str)
+            (let ((split (cl-ppcre:split "/" word-pron-str)))
+              (let ((form (or (first split) ""))
+                    (pron (or (second split) "")))
+                (make-word :form form :pron pron))))
+          (hachee.kkc.file:sentence-units sentence)))
+
 (defun build-dictionary (pathnames)
-  (let ((dict (hachee.kkc.dictionary:make-dictionary)))
+  (let ((dict (hachee.kkc.word.dictionary:make-dictionary)))
     (dolist (pathname pathnames dict)
       (dolist (sentence (hachee.kkc.file:file->string-sentences pathname))
-        (dolist (word-pron-str (hachee.kkc.file:sentence-units sentence))
-          (let ((pron (cadr (cl-ppcre:split "/" word-pron-str))))
-            (when pron
-              (hachee.kkc.dictionary:add dict
-                                         (remove #\- pron)
-                                         word-pron-str))))))))
+        (dolist (word (sentence-words sentence))
+          (hachee.kkc.word.dictionary:add dict word))))
+    dict))
 
 (defun build-vocabulary (pathnames)
-  (let ((vocab (hachee.kkc.vocabulary:make-vocabulary)))
+  (let ((vocab (hachee.kkc.word.vocabulary:make-vocabulary)))
     (dolist (pathname pathnames)
       (dolist (sentence (hachee.kkc.file:file->string-sentences pathname))
-        (dolist (word-pron-str (hachee.kkc.file:sentence-units sentence))
-          (hachee.kkc.vocabulary:add-str vocab word-pron-str))))
+        (dolist (word (sentence-words sentence))
+          (hachee.kkc.word.vocabulary:add vocab word))))
     vocab))
 
 (defun build-language-model (pathnames &key vocabulary)
-  (let ((model (make-instance 'hachee.language-model.n-gram:model)))
-    (let ((sentences nil))
-      (dolist (pathname pathnames)
-        (dolist (sentence (hachee.kkc.file:file->string-sentences pathname))
-          (let ((word-pron-list (hachee.kkc.file:sentence-units sentence)))
-            (push (hachee.language-model:make-sentence
-                   :tokens (mapcar (curry #'to-int-or-unk vocabulary)
-                                   word-pron-list))
-                  sentences))))
-      (hachee.language-model.n-gram:train model sentences
-       :BOS (to-int vocabulary hachee.kkc.vocabulary:+BOS+)
-       :EOS (to-int vocabulary hachee.kkc.vocabulary:+EOS+)))
+  (let ((to-int-or-unk (curry #'hachee.kkc.word.vocabulary:to-int-or-unk
+                              vocabulary))
+        (BOS (hachee.kkc.word.vocabulary:to-int
+              vocabulary hachee.kkc.word.vocabulary:+BOS+))
+        (EOS (hachee.kkc.word.vocabulary:to-int
+              vocabulary hachee.kkc.word.vocabulary:+EOS+))
+        (model (make-instance 'hachee.language-model.n-gram:model)))
+    (dolist (pathname pathnames)
+      (let ((sentences
+             (mapcar (lambda (sentence)
+                       (hachee.language-model:make-sentence
+                        :tokens (mapcar to-int-or-unk
+                                        (sentence-words sentence))))
+                     (hachee.kkc.file:file->string-sentences pathname))))
+        (hachee.language-model.n-gram:train model sentences
+                                            :BOS BOS
+                                            :EOS EOS)))
     model))
 
-
 (defstruct kkc cost-fn dictionary)
+
+(defun create-kkc (pathnames)
+  (let* ((dictionary (build-dictionary pathnames))
+         (vocabulary (build-vocabulary pathnames))
+         (language-model (build-language-model
+                          pathnames :vocabulary vocabulary)))
+    (hachee.kkc:make-kkc
+     :cost-fn (hachee.kkc.convert.cost-fns:of-word-pron
+               :vocabulary vocabulary
+               :language-model language-model)
+     :dictionary dictionary)))
 
 (defun convert (kkc pronunciation)
   (hachee.kkc.convert:execute pronunciation

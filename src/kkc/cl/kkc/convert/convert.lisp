@@ -1,5 +1,5 @@
 (defpackage :hachee.kkc.convert
-  (:use :cl)
+  (:use :cl :hachee.kkc.word)
   (:export :execute))
 (in-package :hachee.kkc.convert)
 
@@ -18,43 +18,57 @@
       (cl-ppcre:regex-replace-all regex hiragana-sequence #'convert))))
 
 
-(defun find-optimal-result (cost-fn prev-results curr-str)
-  (let ((optimal-result nil)
-        (optimal-cost (- #xffffffff)))
-    (dolist (prev-result prev-results optimal-result)
-      (destructuring-bind (prev-str cost-so-far strs-so-far) prev-result
-        (let ((new-cost (+ cost-so-far
-                           (funcall cost-fn curr-str (list prev-str)))))
-          (when (< optimal-cost new-cost)
-            (setq optimal-cost new-cost)
-            (setq optimal-result (list curr-str
-                                       new-cost
-                                       (cons curr-str strs-so-far)))))))))
+(defstruct node word cost-so-far prev-node)
 
+(defun find-optimal-result (cost-fn prev-nodes curr-word)
+  (let ((optimal-node nil)
+        (optimal-cost (- #xffffffff)))
+    (dolist (prev-node prev-nodes)
+      (let ((new-cost-so-far
+             (+ (node-cost-so-far prev-node)
+                (funcall cost-fn
+                         curr-word
+                         (list (node-word prev-node))))))
+        (when (< optimal-cost new-cost-so-far)
+          (setq optimal-cost new-cost-so-far)
+          (setq optimal-node (make-node :word curr-word
+                                        :prev-node prev-node
+                                        :cost-so-far new-cost-so-far)))))
+    optimal-node))
+
+(defun backtrack (node acc)
+  (if (null (node-prev-node node))
+      acc
+      (backtrack (node-prev-node node) (cons (node-word node) acc))))
+
+
+(defvar *BOS-node*
+  (make-node :word hachee.kkc.word.vocabulary:+BOS+
+             :prev-node nil
+             :cost-so-far 0))
 
 (defun execute (pronunciation &key cost-fn dictionary)
-  (let ((BOS hachee.kkc.vocabulary:+BOS+)
-        (EOS hachee.kkc.vocabulary:+EOS+)
-        (length (length pronunciation))
+  (let ((length (length pronunciation))
         (results (make-hash-table)))
     ;; 初期化
-    (push (list BOS 0 (list BOS)) (gethash 0 results))
+    (push *BOS-node* (gethash 0 results))
     ;; DP
     (loop for end from 1 to length do
       (loop for start from 0 below end do
         (let ((sub-pron (subseq pronunciation start end)))
-          (let ((curr-strs
-                 (or (hachee.kkc.dictionary:lookup dictionary sub-pron)
-                     (list (format nil "~A/~A"
-                                   (hiragana->katakana sub-pron)
-                                   sub-pron))))
-                (prev-results (gethash start results)))
-            (dolist (curr-str curr-strs)
-              (push (find-optimal-result cost-fn prev-results curr-str)
+          (let ((prev-nodes
+                 (gethash start results))
+                (curr-words
+                 (or (hachee.kkc.word.dictionary:lookup dictionary sub-pron)
+                     (list (make-word
+                            :pron sub-pron
+                            :form (hiragana->katakana sub-pron))))))
+            (dolist (curr-word curr-words)
+              (push (find-optimal-result cost-fn prev-nodes curr-word)
                     (gethash end results)))))))
-    (let ((result (find-optimal-result cost-fn
-                                       (gethash length results)
-                                       EOS)))
-      (push result (gethash (1+ length) results))
-      (let ((strs (cdr (butlast (reverse (third result))))))
-        (values (format nil "~{~A~^ ~}" strs) results)))))
+    (let ((last-node (find-optimal-result
+                      cost-fn
+                      (gethash length results)
+                      hachee.kkc.word.vocabulary:+EOS+)))
+      ;; skip EOS
+      (backtrack (node-prev-node last-node) nil))))
