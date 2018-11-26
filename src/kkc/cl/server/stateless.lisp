@@ -1,8 +1,8 @@
-(defpackage :hachee.kkc.server
+(defpackage :hachee.kkc.server.stateless
   (:use :cl)
   (:import-from :cl-arrows :->)
   (:export :enter-loop))
-(in-package :hachee.kkc.server)
+(in-package :hachee.kkc.server.stateless)
 
 (defun as-expr (string)
   (jsown:parse string))

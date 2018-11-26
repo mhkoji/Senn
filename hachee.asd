@@ -27,7 +27,10 @@
        (:file "convert/cost-fns")
        (:file "lookup")
        (:file "kkc")))
-     (:file "server")))
+     (:module :server
+      :pathname "server"
+      :components
+      ((:file "stateless")))))
 
    (:module :algorithm
     :pathname "algorithm"
