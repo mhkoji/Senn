@@ -21,6 +21,6 @@ exec ros -Q -- $0 "$@"
           (merge-pathnames
            "src/kkc/data/aozora/word-pron-utf8/"
            (asdf:system-source-directory :hachee)))))
-    (hachee.kkc.server.stateless:enter-loop corpus-pathnames)))
+    (hachee.im.kkc-server:enter-loop corpus-pathnames)))
 
 ;;; vim: set ft=lisp lisp:

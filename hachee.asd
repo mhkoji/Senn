@@ -26,11 +26,12 @@
       ((:file "convert/convert")
        (:file "convert/cost-fns")
        (:file "lookup")
-       (:file "kkc")))
-     (:module :server
-      :pathname "server"
-      :components
-      ((:file "stateless")))))
+       (:file "kkc")))))
+
+   (:module :im
+    :pathname "im/cl"
+    :components
+    ((:file "kkc-server")))
 
    (:module :algorithm
     :pathname "algorithm"
