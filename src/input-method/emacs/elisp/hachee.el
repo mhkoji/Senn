@@ -13,7 +13,8 @@
   "String denoting HACHEE input method is working, which is shown on mode line.")
 
 (defvar hachee-server-command-list
-  (list (expand-file-name "../bin/server.ros" hachee-elisp-dir))
+  (list (expand-file-name "../bin/server" hachee-elisp-dir)
+        (expand-file-name "../bin/server.ros" hachee-elisp-dir))
   "hachee-server の PATH")
 
 (defvar hachee-server-data-dir "~/.hachee/slm"

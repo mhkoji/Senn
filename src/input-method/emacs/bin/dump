@@ -1,0 +1,6 @@
+#!/bin/bash
+
+BASE_DIR=$(cd $(dirname $0); pwd)
+
+ros dump executable $BASE_DIR/server.ros -o $BASE_DIR/server
+

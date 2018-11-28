@@ -11,6 +11,12 @@ Add the code below to your .emacs file.
 (load (expand-file-name "./leim-list.el" hachee-elisp-dir))
 ```
 
+### Dump the Server (optional)
+
+```
+% <path/to/Hachee>/src/input-method/emacs/bin/dump
+```
+
 ## Fcitx (WIP)
 
 ```
