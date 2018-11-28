@@ -1,0 +1,7 @@
+[InputMethod]
+UniqueName=hachee
+Name=Hachee
+IconName=hachee
+Priority=1
+LangCode=ja
+Parent=fcitx-hachee

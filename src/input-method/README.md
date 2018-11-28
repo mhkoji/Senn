@@ -10,3 +10,12 @@ Add the code below to your .emacs file.
 (push hachee-elisp-dir load-path)
 (load (expand-file-name "./leim-list.el" hachee-elisp-dir))
 ```
+
+## Fcitx (WIP)
+
+```
+% mkdir <path/to/Hachee>/src/input-method/fcitx/build
+% cd build
+% cmake ..
+% make && sudo make install
+```

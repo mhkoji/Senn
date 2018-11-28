@@ -1,0 +1,11 @@
+[Addon]
+Name=fcitx-hachee
+GeneralName=Hachee
+Comment=Hachee support for Fcitx
+Category=InputMethod
+Enabled=True
+Library=fcitx-hachee.so
+Type=SharedLibrary
+SubConfig=
+IMRegisterMethod=ConfigFile
+LoadLocal=True
