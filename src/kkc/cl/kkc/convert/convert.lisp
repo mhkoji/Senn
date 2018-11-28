@@ -3,6 +3,9 @@
   (:export :execute))
 (in-package :hachee.kkc.convert)
 
+(defun calculate-cost (cost-fn curr-word prev-word)
+  (funcall cost-fn curr-word prev-word))
+
 (let ((table (make-hash-table :test #'equal))
       (regex (cl-ppcre:create-scanner
               "あ|い|う|え|お|か|き|く|け|こ|さ|し|す|せ|そ|た|ち|つ|て|と|な|に|ぬ|ね|の|は|ひ|ふ|へ|ほ|ま|み|む|め|も|や|ゆ|よ|ら|り|る|れ|ろ|わ|お|ん|ぁ|ぃ|ぅ|ぇ|ぉ|っ|ゃ|ゅ|ょ")))
@@ -26,9 +29,7 @@
     (dolist (prev-node prev-nodes)
       (let ((new-cost-so-far
              (+ (node-cost-so-far prev-node)
-                (funcall cost-fn
-                         curr-word
-                         (list (node-word prev-node))))))
+                (calculate-cost cost-fn curr-word (node-word prev-node)))))
         (when (< optimal-cost new-cost-so-far)
           (setq optimal-cost new-cost-so-far)
           (setq optimal-node (make-node :word curr-word
