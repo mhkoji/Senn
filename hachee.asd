@@ -28,8 +28,8 @@
        (:file "lookup")
        (:file "kkc")))))
 
-   (:module :im
-    :pathname "im/cl"
+   (:module :input-method
+    :pathname "input-method/cl"
     :components
     ((:file "kkc-server")))
 

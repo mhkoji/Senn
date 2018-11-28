@@ -1,8 +1,8 @@
-(defpackage :hachee.im.kkc-server
+(defpackage :hachee.input-method.kkc-server
   (:use :cl)
   (:import-from :cl-arrows :->)
   (:export :enter-loop))
-(in-package :hachee.im.kkc-server)
+(in-package :hachee.input-method.kkc-server)
 
 (defun as-expr (string)
   (jsown:parse string))
