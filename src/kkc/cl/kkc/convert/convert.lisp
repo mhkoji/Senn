@@ -39,7 +39,8 @@
 (defun backtrack (node acc)
   (if (null (node-prev-node node))
       acc
-      (backtrack (node-prev-node node) (cons (node-word node) acc))))
+      (backtrack (node-prev-node node)
+                 (cons (node-word node) acc))))
 
 
 (defvar *BOS-node*
