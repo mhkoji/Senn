@@ -9,11 +9,21 @@
 (in-package :hachee.kkc)
 
 (defun sentence-words (sentence)
-  (mapcar (lambda (word-pron-str)
-            (let ((split (cl-ppcre:split "/" word-pron-str)))
-              (let ((form (or (first split) ""))
-                    (pron (or (second split) "")))
-                (make-word :form form :pron pron))))
+  (mapcar (lambda (form-pron-str)
+            ;; A/a-/B/b => form: A-B/ab
+            (let ((form-pron-list
+                   (mapcar (lambda (form-pron-part-str)
+                             (let ((split (cl-ppcre:split
+                                           "/"
+                                           form-pron-part-str)))
+                               (list (or (first split) "")
+                                     (or (second split) ""))))
+                           (cl-ppcre:split "-" form-pron-str))))
+              (make-word
+               :form (format nil "~{~A~}" (mapcar #'first
+                                                  form-pron-list))
+               :pron (format nil "~{~A~}" (mapcar #'second
+                                                  form-pron-list)))))
           (hachee.kkc.file:sentence-units sentence)))
 
 (defun build-dictionary (pathnames)

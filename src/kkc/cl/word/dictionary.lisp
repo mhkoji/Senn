@@ -11,8 +11,7 @@
 (defun add (dictionary word)
   (let ((pron (hachee.kkc.word:word-pron word)))
     (when (string/= pron "")
-      (pushnew word (gethash (remove #\- pron)
-                             (dictionary-hash dictionary))
+      (pushnew word (gethash pron (dictionary-hash dictionary))
                :test #'equal))))
 
 (defun lookup (dictionary pron)
