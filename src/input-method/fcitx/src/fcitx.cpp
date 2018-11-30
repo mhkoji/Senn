@@ -54,16 +54,23 @@ INPUT_RETURN_VALUE FcitxHacheeDoInput(void *arg,
   uint32_t keycode = FcitxInputStateGetKeyCode(input);
   uint32_t state = FcitxInputStateGetKeyState(input);
 
-  std::string result_string;
-  hachee->client->ProcessKey(sym, keycode, state, &result_string);
+  std::string *result;
+  hachee->client->ProcessKey(sym, keycode, state, &result);
 
-  FcitxInstanceCommitString(
-      hachee->fcitx,
-      FcitxInstanceGetCurrentIC(hachee->fcitx),
-      result_string.c_str()
-  );
+  FcitxMessages *client_preedit = FcitxInputStateGetClientPreedit(input);
+  // 表示している文字列を削除
+  FcitxMessagesSetMessageCount(
+      client_preedit, 0);
+  // 下線付きの文字列を表示
+  FcitxMessagesAddMessageAtLast(
+      client_preedit, MSG_INPUT, "%s", result->c_str());
 
-  return IRV_DISPLAY_CANDWORDS;
+  FcitxInputStateSetCursorPos(input, result->size());
+  FcitxInputStateSetClientCursorPos(input, result->size());
+
+  FcitxUIUpdateInputWindow(hachee->fcitx);
+
+  return IRV_TO_PROCESS;
 }
 
 void FcitxHacheeReloadConfig(void *arg) {

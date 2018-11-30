@@ -7,7 +7,12 @@ namespace fcitx {
 
 class Client {
 public:
-  void ProcessKey(FcitxKeySym, uint32_t, uint32_t, std::string*);
+  Client();
+
+  void ProcessKey(FcitxKeySym, uint32_t, uint32_t, std::string**);
+
+private:
+  std::string buffer_;
 };
 
 } // fcitx
