@@ -24,7 +24,7 @@
       :pathname "kkc"
       :components
       ((:file "convert/convert")
-       (:file "convert/cost-fns")
+       (:file "convert/score-fns")
        (:file "lookup")
        (:file "kkc")))))
 

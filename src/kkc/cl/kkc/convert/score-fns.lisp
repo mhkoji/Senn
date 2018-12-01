@@ -1,11 +1,11 @@
-(defpackage :hachee.kkc.convert.cost-fns
+(defpackage :hachee.kkc.convert.score-fns
   (:use :cl)
   (:import-from :alexandria
                 :if-let :curry)
   (:import-from :hachee.kkc.word.vocabulary
                 :to-int-or-unk :to-int :+UNK+)
   (:export :of-word-pron :of-kana-kanji))
-(in-package :hachee.kkc.convert.cost-fns)
+(in-package :hachee.kkc.convert.score-fns)
 
 (defun of-word-pron (&key vocabulary language-model)
   (lambda (curr-word prev-word)

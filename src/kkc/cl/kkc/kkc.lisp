@@ -62,7 +62,7 @@
                                             :EOS EOS)))
     model))
 
-(defstruct kkc cost-fn dictionary)
+(defstruct kkc score-fn dictionary)
 
 (defun create-kkc (pathnames)
   (let* ((dictionary (build-dictionary pathnames))
@@ -70,14 +70,14 @@
          (language-model (build-language-model
                           pathnames :vocabulary vocabulary)))
     (hachee.kkc:make-kkc
-     :cost-fn (hachee.kkc.convert.cost-fns:of-word-pron
-               :vocabulary vocabulary
-               :language-model language-model)
+     :score-fn (hachee.kkc.convert.score-fns:of-word-pron
+                :vocabulary vocabulary
+                :language-model language-model)
      :dictionary dictionary)))
 
 (defun convert (kkc pronunciation)
   (hachee.kkc.convert:execute pronunciation
-   :cost-fn (kkc-cost-fn kkc)
+   :score-fn (kkc-score-fn kkc)
    :dictionary (kkc-dictionary kkc)))
 
 (defun lookup (kkc pronunciation)

@@ -3,8 +3,8 @@
   (:export :execute))
 (in-package :hachee.kkc.convert)
 
-(defun calculate-cost (cost-fn curr-word prev-word)
-  (funcall cost-fn curr-word prev-word))
+(defun calculate-score (score-fn curr-word prev-word)
+  (funcall score-fn curr-word prev-word))
 
 (let ((table (make-hash-table :test #'equal))
       (regex (cl-ppcre:create-scanner
@@ -21,20 +21,20 @@
       (cl-ppcre:regex-replace-all regex hiragana-sequence #'convert))))
 
 
-(defstruct node word cost-so-far prev-node)
+(defstruct node word score-so-far prev-node)
 
-(defun find-optimal-result (cost-fn prev-nodes curr-word)
+(defun find-optimal-result (score-fn prev-nodes curr-word)
   (let ((optimal-node nil)
-        (optimal-cost (- #xffffffff)))
+        (optimal-score (- #xffffffff)))
     (dolist (prev-node prev-nodes)
-      (let ((new-cost-so-far
-             (+ (node-cost-so-far prev-node)
-                (calculate-cost cost-fn curr-word (node-word prev-node)))))
-        (when (< optimal-cost new-cost-so-far)
-          (setq optimal-cost new-cost-so-far)
+      (let ((new-score-so-far
+             (+ (node-score-so-far prev-node)
+                (calculate-score score-fn curr-word (node-word prev-node)))))
+        (when (< optimal-score new-score-so-far)
+          (setq optimal-score new-score-so-far)
           (setq optimal-node (make-node :word curr-word
                                         :prev-node prev-node
-                                        :cost-so-far new-cost-so-far)))))
+                                        :score-so-far new-score-so-far)))))
     optimal-node))
 
 (defun backtrack (node acc)
@@ -47,9 +47,9 @@
 (defvar *BOS-node*
   (make-node :word hachee.kkc.word.vocabulary:+BOS+
              :prev-node nil
-             :cost-so-far 0))
+             :score-so-far 0))
 
-(defun execute (pronunciation &key cost-fn dictionary)
+(defun execute (pronunciation &key score-fn dictionary)
   (let ((length (length pronunciation))
         (results (make-hash-table)))
     ;; 初期化
@@ -66,10 +66,10 @@
                             :pron sub-pron
                             :form (hiragana->katakana sub-pron))))))
             (dolist (curr-word curr-words)
-              (push (find-optimal-result cost-fn prev-nodes curr-word)
+              (push (find-optimal-result score-fn prev-nodes curr-word)
                     (gethash end results)))))))
     (let ((last-node (find-optimal-result
-                      cost-fn
+                      score-fn
                       (gethash length results)
                       hachee.kkc.word.vocabulary:+EOS+)))
       ;; skip EOS
