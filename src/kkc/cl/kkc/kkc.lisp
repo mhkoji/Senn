@@ -75,10 +75,11 @@
                 :language-model language-model)
      :dictionary dictionary)))
 
-(defun convert (kkc pronunciation)
+(defun convert (kkc pronunciation &key 1st-boundary-index)
   (hachee.kkc.convert:execute pronunciation
    :score-fn (kkc-score-fn kkc)
-   :dictionary (kkc-dictionary kkc)))
+   :dictionary (kkc-dictionary kkc)
+   :1st-boundary-index 1st-boundary-index))
 
 (defun lookup (kkc pronunciation)
   (hachee.kkc.lookup:execute pronunciation

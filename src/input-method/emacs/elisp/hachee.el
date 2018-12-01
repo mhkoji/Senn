@@ -69,8 +69,8 @@
     (define-key map "\C-p" 'hachee-prev-option)
     (define-key map "\C-f" 'hachee-next-select)
     (define-key map "\C-b" 'hachee-prev-select)
-    (define-key map "\C-i" 'hachee-shorter)
-    (define-key map "\C-o" 'hachee-longer)
+    (define-key map "\C-i" 'hachee-make-word-shorter)
+    (define-key map "\C-o" 'hachee-make-word-longer)
     (define-key map "\C-a" 'hachee-move-beginning-of-selects)
     (define-key map "\C-e" 'hachee-move-end-of-selects)
     (define-key map "H"    'hachee-to-hiragana)
@@ -133,11 +133,14 @@
     (json-read-from-string
      (hachee-send-recv-command (concat json "\n")))))
 
-(defun hachee-api-convert (string)
-  (hachee-api-call "convert" `(("text" . ,string))))
+(defun hachee-api-convert (string 1st-boundary-index)
+  (hachee-api-call "convert"
+                   `(("text" . ,string)
+                     ("1st-boundary-index" . ,1st-boundary-index))))
 
 (defun hachee-api-lookup-words (string)
-  (hachee-api-call "lookup" `(("text" . ,string))))
+  (hachee-api-call "lookup"
+                   `(("text" . ,string))))
 
 (defun hachee-api-quit ()
   (hachee-api-call "quit" nil))
@@ -150,27 +153,50 @@
                       :origin 'IV
                       :logP 0))
 
+
+(defun hachee-word->select (word-alist)
+  (make-hachee-select :pron (hachee-assoc-get 'pron word-alist)
+                      :options (vector (hachee-word->option word-alist))
+                      :option-count 1
+                      :curr-option-idx 0
+                      :more-options-p t
+                      :selectors nil
+                      :np-count 0))
+
 (defun hachee-convert (pron)
-  (let ((words (hachee-api-convert pron)))
-    (let ((selects (mapcar (lambda (word)
-                             (make-hachee-select
-                              :pron (hachee-assoc-get 'pron word)
-                              :options (vector (hachee-word->option word))
-                              :option-count 1
-                              :curr-option-idx 0
-                              :more-options-p t
-                              :selectors nil
-                              :np-count 0))
-                           words)))
-      (make-hachee-conversion
-       :pron pron
-       :logP 0
-       :selects (apply #'vector selects)
-       :select-count (length selects)
-       :curr-select-idx 0))))
+  (let ((words (hachee-api-convert pron nil)))
+    (let ((selects (mapcar #'hachee-word->select words)))
+      (make-hachee-conversion :pron pron
+                              :logP 0
+                              :selects (apply #'vector selects)
+                              :select-count (length selects)
+                              :curr-select-idx 0))))
+
+(defun hachee-reconvert-with-boundary (conversion diff)
+  (let ((selects (hachee-conv-selects conversion))
+        (curr-select-idx (hachee-conv-curr-select-idx conversion)))
+    (let ((selects1
+           (subseq selects 0 curr-select-idx))
+          (selects2
+           (mapcar #'hachee-word->select
+                   (hachee-api-convert
+                    ;; 現在のselectから残りの読み全部
+                    (loop for select across (subseq selects curr-select-idx)
+                          concat (hachee-select-pron select))
+                    (funcall diff (length
+                                   (hachee-select-pron
+                                    (aref selects curr-select-idx))))))))
+      (let ((new-selects (vconcat selects1 selects2)))
+        (make-hachee-conversion
+         :pron (hachee-conv-pron conversion)
+         :logP 0
+         :selects new-selects
+         :select-count (length new-selects)
+         :curr-select-idx curr-select-idx)))))
 
 (defun hachee-lookup-options (pron)
   (mapcar #'hachee-word->option (hachee-api-lookup-words pron)))
+
 
 ;;; オーバーレイに関する関数。
 (defun hachee-delete-all-overlays ()
@@ -313,34 +339,32 @@
   (setf (hachee-conv-curr-select-idx hachee-conversion-data)
         (1- (hachee-conv-select-count hachee-conversion-data))))
 
-;; フレーズを短くできるか？
+;; wordを短くできるか？
 (defun hachee-can-be-shorter-p (conversion)
   (hachee-with-current-select curr-select conversion
     (< 1 (length (hachee-select-pron curr-select)))))
 
-;; フレーズを短くする。
-(defun hachee-make-select-shorter ()
+;; wordを短くする。
+(defun hachee-make-word-shorter ()
   (interactive)
   (when (hachee-can-be-shorter-p hachee-conversion-data)
-    (setq hachee-conversion-data
-          (hachee-reconvert-conversion hachee-conversion-data 'shorter))))
+    (setq hachee-conversion-data (hachee-reconvert-with-boundary
+                                  hachee-conversion-data #'1-))))
 
-
-;; フレーズを長くできるか？
+;; wordを長くできるか？
 (defun hachee-can-be-longer-p (conversion)
   (let ((select-count (hachee-conv-select-count conversion))
-        (curr-select-idx  (hachee-conv-curr-select-idx  conversion)))
+        (curr-select-idx  (hachee-conv-curr-select-idx conversion)))
     (< (1+ curr-select-idx) select-count)))
 
-;; フレーズを長くする。
-(defun hachee-make-select-longer ()
+;; wordを長くする。
+(defun hachee-make-word-longer ()
   (interactive)
   (when (hachee-can-be-longer-p hachee-conversion-data)
-    (setq hachee-conversion-data
-          (hachee-reconvert-conversion hachee-conversion-data 'longer))))
+    (setq hachee-conversion-data (hachee-reconvert-with-boundary
+                                  hachee-conversion-data #'1+))))
 
-
-;; a,s,dなどが押されたときに呼ばれる。
+    ;; a,s,dなどが押されたときに呼ばれる。
 ;; 現在のフレーズの候補のインデックスを選ばれたものにする。
 ;; まちがって範囲外のものが押された可能性もあるので、そこら辺も考慮する。
 (defun hachee-select-from-chars ()

@@ -11,13 +11,17 @@
   (alexandria:make-keyword (string-upcase (jsown:val expr "op"))))
 
 (defun expr-arg (expr name)
-  (-> expr (jsown:val "args") (jsown:val name)))
+  (handler-case
+      (-> expr (jsown:val "args") (jsown:val name))
+    (error () nil)))
 
 (defun kkc-eval (kkc expr)
   (ecase (expr-op expr)
     (:convert
      ;; {"op": "convert", "args": {"text": "あおぞらぶんこ"}}
-     (let ((words (hachee.kkc:convert kkc (expr-arg expr "text"))))
+     (let ((words (hachee.kkc:convert kkc (expr-arg expr "text")
+                   :1st-boundary-index
+                   (expr-arg expr "1st-boundary-index"))))
        (jsown:to-json
         (mapcar (lambda (word)
                   (jsown:new-js

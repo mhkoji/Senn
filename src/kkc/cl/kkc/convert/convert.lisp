@@ -49,7 +49,7 @@
              :prev-node nil
              :score-so-far 0))
 
-(defun execute (pronunciation &key score-fn dictionary)
+(defun execute (pronunciation &key score-fn dictionary 1st-boundary-index)
   (let ((length (length pronunciation))
         (results (make-hash-table)))
     ;; 初期化
@@ -57,17 +57,22 @@
     ;; DP
     (loop for end from 1 to length do
       (loop for start from 0 below end do
-        (let ((sub-pron (subseq pronunciation start end)))
-          (let ((prev-nodes
-                 (gethash start results))
-                (curr-words
-                 (or (hachee.kkc.word.dictionary:lookup dictionary sub-pron)
-                     (list (make-word
-                            :pron sub-pron
-                            :form (hiragana->katakana sub-pron))))))
-            (dolist (curr-word curr-words)
-              (push (find-optimal-result score-fn prev-nodes curr-word)
-                    (gethash end results)))))))
+        (when (or (not 1st-boundary-index)
+                  (and (= start 0)
+                       (= end 1st-boundary-index))
+                  (<= 1st-boundary-index start))
+          (let ((sub-pron (subseq pronunciation start end)))
+            (let ((prev-nodes
+                   (gethash start results))
+                  (curr-words
+                   (or (hachee.kkc.word.dictionary:lookup dictionary
+                                                          sub-pron)
+                       (list (make-word
+                              :pron sub-pron
+                              :form (hiragana->katakana sub-pron))))))
+              (dolist (curr-word curr-words)
+                (push (find-optimal-result score-fn prev-nodes curr-word)
+                      (gethash end results))))))))
     (let ((last-node (find-optimal-result
                       score-fn
                       (gethash length results)
