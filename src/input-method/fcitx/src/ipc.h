@@ -4,16 +4,16 @@
 namespace hachee {
 namespace ipc {
 
-class Client {
+class Connection {
 public:
-  static Client* ConnectTo(const std::string&);
+  static Connection* ConnectTo(const std::string&);
 
   void Send(const std::string&);
 
   void Close();
 
 private:
-  Client(const int);
+  Connection(const int);
 
   const int socket_fd_;
 };

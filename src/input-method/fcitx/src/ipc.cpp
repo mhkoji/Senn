@@ -9,7 +9,7 @@
 namespace hachee {
 namespace ipc {
 
-Client* Client::ConnectTo(const std::string &socket_name) {
+Connection* Connection::ConnectTo(const std::string &socket_name) {
   sockaddr_un addr;
   addr.sun_family = AF_LOCAL;
   strcpy(addr.sun_path, socket_name.c_str());
@@ -27,21 +27,21 @@ Client* Client::ConnectTo(const std::string &socket_name) {
     std::exit(1);
   }
 
-  return new Client(socket_fd);
+  return new Connection(socket_fd);
 }
 
 
-Client::Client(const int socket_fd)
+Connection::Connection(const int socket_fd)
   : socket_fd_(socket_fd) {
 }
 
 
-void Client::Send(const std::string &content) {
+void Connection::Send(const std::string &content) {
   write(socket_fd_, content.c_str(), content.size());
 }
 
 
-void Client::Close() {
+void Connection::Close() {
   close(socket_fd_);
 }
 

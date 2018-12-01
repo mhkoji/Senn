@@ -12,12 +12,12 @@ public:
 
   void ProcessKey(FcitxKeySym, uint32_t, uint32_t, std::string**);
 
-  void InvokeServerAndConnect();
+  void SetConnection(hachee::ipc::Connection*);
 
 private:
   std::string buffer_;
 
-  hachee::ipc::Client *ipc_client_;
+  hachee::ipc::Connection *connection_;
 };
 
 } // fcitx

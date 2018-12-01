@@ -3,7 +3,11 @@
 #include <fcitx/context.h>
 #include <string>
 
+#include "hachee.h"
 #include "client.h"
+
+const std::string SOCKET_NAME = "/tmp/hachee.sock";
+
 
 typedef struct _FcitxHachee {
   FcitxInstance *fcitx;
@@ -20,7 +24,11 @@ static void FcitxHacheeDestroy(void *arg) {
 static boolean FcitxHacheeInit(void *arg) {
   FcitxHachee *hachee = (FcitxHachee *)arg;
 
-  hachee->client->InvokeServerAndConnect();
+  hachee::InvokeIMServer(SOCKET_NAME);
+
+  hachee->client->SetConnection(
+      hachee::ipc::Connection::ConnectTo(SOCKET_NAME)
+  );
 
   boolean flag = true;
   FcitxInstanceSetContext(hachee->fcitx,
