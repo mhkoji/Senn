@@ -9,27 +9,30 @@
 namespace hachee {
 namespace ipc {
 
-Client::Client(const std::string& socket_name)
-  : socket_name_(socket_name) {
-}
-
-
-void Client::Connect() {
+Client* Client::ConnectTo(const std::string &socket_name) {
   sockaddr_un addr;
   addr.sun_family = AF_LOCAL;
-  strcpy(addr.sun_path, socket_name_.c_str());
+  strcpy(addr.sun_path, socket_name.c_str());
 
-  if ((socket_fd_ = socket(PF_LOCAL, SOCK_STREAM, 0)) < 0) {
+  int socket_fd = socket(PF_LOCAL, SOCK_STREAM, 0);
+  if (socket_fd < 0) {
     std::cerr << "Failed to create socket" << std::endl;
     std::exit(1);
   }
 
-  if ((connect(socket_fd_,
+  if ((connect(socket_fd,
                reinterpret_cast<sockaddr*>(&addr),
                SUN_LEN(&addr))) < 0) {
     std::cerr << "Failed to connect" << std::endl;
     std::exit(1);
   }
+
+  return new Client(socket_fd);
+}
+
+
+Client::Client(const int socket_fd)
+  : socket_fd_(socket_fd) {
 }
 
 

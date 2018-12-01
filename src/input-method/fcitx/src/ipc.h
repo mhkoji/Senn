@@ -6,18 +6,16 @@ namespace ipc {
 
 class Client {
 public:
-  Client(const std::string&);
-
-  void Connect();
+  static Client* ConnectTo(const std::string&);
 
   void Send(const std::string&);
 
   void Close();
 
 private:
-  int socket_fd_;
+  Client(const int);
 
-  const std::string socket_name_;
+  const int socket_fd_;
 };
 
 } // ipc

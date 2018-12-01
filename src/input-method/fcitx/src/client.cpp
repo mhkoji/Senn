@@ -26,8 +26,7 @@ void Client::InvokeServerAndConnect() {
 
   hachee::InvokeIMServer(socket_name);
 
-  ipc_client_ = new hachee::ipc::Client(socket_name);
-  ipc_client_->Connect();
+  ipc_client_ = hachee::ipc::Client::ConnectTo(socket_name);
 }
 
 } // fcitx
