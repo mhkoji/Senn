@@ -19,6 +19,9 @@ static void FcitxHacheeDestroy(void *arg) {
 
 static boolean FcitxHacheeInit(void *arg) {
   FcitxHachee *hachee = (FcitxHachee *)arg;
+
+  hachee->client->InvokeServerAndConnect();
+
   boolean flag = true;
   FcitxInstanceSetContext(hachee->fcitx,
                           CONTEXT_IM_KEYBOARD_LAYOUT,
@@ -116,4 +119,4 @@ FcitxIMClass ime = {
 FCITX_EXPORT_API
 int ABI_VERSION = FCITX_ABI_VERSION;
 
-}
+} // extern "C"
