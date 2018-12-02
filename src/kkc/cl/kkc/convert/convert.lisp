@@ -3,8 +3,8 @@
   (:export :execute))
 (in-package :hachee.kkc.convert)
 
-(defun calculate-score (score-fn curr-word prev-word)
-  (funcall score-fn curr-word prev-word))
+(defun calculate-score (score-fn curr-word prev-words)
+  (funcall score-fn curr-word prev-words))
 
 (let ((table (make-hash-table :test #'equal))
       (regex (cl-ppcre:create-scanner
@@ -29,7 +29,9 @@
     (dolist (prev-node prev-nodes)
       (let ((new-score-so-far
              (+ (node-score-so-far prev-node)
-                (calculate-score score-fn curr-word (node-word prev-node)))))
+                (calculate-score score-fn
+                                 curr-word
+                                 (list (node-word prev-node))))))
         (when (< optimal-score new-score-so-far)
           (setq optimal-score new-score-so-far)
           (setq optimal-node (make-node :word curr-word

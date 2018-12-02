@@ -8,9 +8,11 @@
 (in-package :hachee.kkc.convert.score-fns)
 
 (defun of-word-pron (&key vocabulary language-model)
-  (lambda (curr-word prev-word)
+  (lambda (curr-word prev-words)
     (let ((curr-token-or-nil (to-int vocabulary curr-word))
-          (prev-tokens (list (to-int-or-unk vocabulary prev-word))))
+          (prev-tokens (mapcar (lambda (w)
+                                 (to-int-or-unk vocabulary w))
+                               prev-words)))
       (let ((p (hachee.language-model.n-gram:transition-probability
                 language-model
                 (or curr-token-or-nil
@@ -26,9 +28,11 @@
               (t -10000))))))
 
 (defun of-kana-kanji (&key vocabulary language-model kana-kanji-model)
-  (lambda (curr-word prev-word)
+  (lambda (curr-word prev-words)
     (let ((curr-token (to-int-or-unk vocabulary curr-word))
-          (prev-tokens (list (to-int-or-unk vocabulary prev-word))))
+          (prev-tokens (mapcar (lambda (w)
+                                 (to-int-or-unk vocabulary w))
+                               prev-words)))
       (let ((p (hachee.language-model.n-gram:transition-probability
                 language-model curr-token prev-tokens)))
         (if (= p 0)
