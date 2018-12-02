@@ -12,7 +12,8 @@
    (:module :ja
     :pathname "ja"
     :components
-    ((:file "ja")))
+    ((:file "packages")
+     (:file "hiragana")))
 
    (:module :kkc
     :pathname "kkc/cl"

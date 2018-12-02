@@ -10,7 +10,7 @@
 
 (defun sentence-words (sentence)
   (mapcar (lambda (form-pron-str)
-            ;; A/a-/B/b => form: A-B/ab
+            ;; A/a-/B/b => AB/ab
             (let ((form-pron-list
                    (mapcar (lambda (form-pron-part-str)
                              (let ((split (cl-ppcre:split

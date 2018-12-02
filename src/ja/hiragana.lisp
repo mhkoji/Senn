@@ -1,6 +1,3 @@
-(defpackage :hachee.ja
-  (:use :cl)
-  (:export :hiragana->katakana))
 (in-package :hachee.ja)
 
 (let ((table (make-hash-table :test #'equal))
