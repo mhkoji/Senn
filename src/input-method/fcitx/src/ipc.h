@@ -8,7 +8,9 @@ class Connection {
 public:
   static Connection* ConnectTo(const std::string&);
 
-  void Send(const std::string&);
+  void Write(const std::string&);
+
+  void ReadLine(std::string*);
 
   void Close();
 

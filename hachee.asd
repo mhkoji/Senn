@@ -38,7 +38,11 @@
    (:module :input-method
     :pathname "input-method/cl"
     :components
-    ((:file "kkc-server")))
+    ((:file "op")
+     (:file "kkc-server")
+     (:file "ipc")
+     (:file "input-method")
+     (:file "state")))
 
    (:module :algorithm
     :pathname "algorithm"
@@ -55,6 +59,7 @@
    )
   :depends-on (:alexandria
                :anaphora
+               :bordeaux-threads
                :clazy
                :cl-arrows
                :cl-annot

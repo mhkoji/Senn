@@ -4,6 +4,6 @@
 
 namespace hachee {
 
-bool InvokeIMServer(const std::string);
+bool InvokeIMServer(const std::string&);
 
 } // hachee

@@ -1,19 +1,7 @@
 (defpackage :hachee.input-method.kkc-server
-  (:use :cl)
-  (:import-from :cl-arrows :->)
+  (:use :cl :hachee.input-method.op)
   (:export :enter-loop))
 (in-package :hachee.input-method.kkc-server)
-
-(defun as-expr (string)
-  (jsown:parse string))
-
-(defun expr-op (expr)
-  (alexandria:make-keyword (string-upcase (jsown:val expr "op"))))
-
-(defun expr-arg (expr name)
-  (handler-case
-      (-> expr (jsown:val "args") (jsown:val name))
-    (error () nil)))
 
 (defun kkc-eval (kkc expr)
   (ecase (expr-op expr)
