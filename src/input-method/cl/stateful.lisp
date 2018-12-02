@@ -1,9 +1,9 @@
-(defpackage :hachee.input-method
+(defpackage :hachee.input-method.stateful
   (:use :cl)
-  (:export :romaji->hiragana)
+  (:export :transit)
   (:import-from :alexandria
                 :if-let))
-(in-package :hachee.input-method)
+(in-package :hachee.input-method.stateful)
 
 (defun romaji->hiragana (buffer code)
   (let ((buffer-len (length buffer))
@@ -19,6 +19,11 @@
             do (return-from romaji->hiragana
                  (concatenate 'string (subseq buffer 0 i) romaji)))
     (concatenate 'string buffer string-char)))
+
+
+(defun transit (buffer code)
+  (let ((new-buffer (romaji->hiragana buffer code)))
+    (list new-buffer new-buffer)))
 
 
 (assert (string= (romaji->hiragana "あk" (char-code #\a))

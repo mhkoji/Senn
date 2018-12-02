@@ -41,8 +41,12 @@
     ((:file "op")
      (:file "kkc-server")
      (:file "ipc")
-     (:file "input-method")
-     (:file "state")))
+     (:file "stateful")
+     (:module :fcitx
+      :pathname "fcitx"
+      :components
+      ((:file "controller")
+       (:file "ipc-server")))))
 
    (:module :algorithm
     :pathname "algorithm"

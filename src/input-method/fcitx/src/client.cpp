@@ -10,26 +10,21 @@ namespace hachee {
 namespace fcitx {
 
 Client::Client()
-  : buffer_(""),
-    connection_(nullptr) {}
+  : connection_(nullptr) {}
 
 
-void Client::ProcessKey(FcitxKeySym sym,
-                        uint32_t keycode,
-                        uint32_t state,
-                        std::string **result) {
+void Client::DoInput(FcitxKeySym sym,
+                     uint32_t keycode,
+                     uint32_t state,
+                     std::string *result) {
   // std::cout << sym << " " << keycode << " " << state << std::endl;
   std::stringstream ss;
   ss << "{"
-       << "\"op\": \"process-key\","
-       << "\"args\": {" << "\"code\": " << sym << ","
-                        << "\"state\": " << "\"" << buffer_ << "\"" << "}"
+       << "\"op\": \"do-input\","
+       << "\"args\": {" << "\"code\": " << sym << "}"
      << "}\n";
   connection_->Write(ss.str());
-
-  buffer_ = "";
-  connection_->ReadLine(&buffer_);
-  *result = &buffer_;
+  connection_->ReadLine(result);
 }
 
 

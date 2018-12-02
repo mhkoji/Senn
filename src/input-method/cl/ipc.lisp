@@ -4,7 +4,8 @@
            :server-accept
            :server-close
            :client-read-line
-           :client-write-line))
+           :client-write-line
+           :client-close))
 (in-package :hachee.input-method.ipc)
 
 (defun server-listen (socket-name)
@@ -33,3 +34,6 @@
   (let ((stream (client-socket-stream client-socket)))
     (write-line string stream)
     (force-output stream)))
+
+(defun client-close (client-socket)
+  (sb-bsd-sockets:socket-close (client-socket-soc client-socket)))
