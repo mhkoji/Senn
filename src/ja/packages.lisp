@@ -1,3 +1,4 @@
 (defpackage :hachee.ja
   (:use :cl)
-  (:export :hiragana->katakana))
+  (:export :hiragana->katakana
+           :romaji->hiragana))

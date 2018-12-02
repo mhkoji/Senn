@@ -13,7 +13,8 @@
     :pathname "ja"
     :components
     ((:file "packages")
-     (:file "hiragana")))
+     (:file "hiragana")
+     (:file "romaji")))
 
    (:module :kkc
     :pathname "kkc/cl"
