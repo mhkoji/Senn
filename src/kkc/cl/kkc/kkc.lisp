@@ -70,7 +70,7 @@
          (language-model (build-language-model
                           pathnames :vocabulary vocabulary)))
     (hachee.kkc:make-kkc
-     :score-fn (hachee.kkc.convert.score-fns:of-word-pron
+     :score-fn (hachee.kkc.convert.score-fns:of-form-pron
                 :vocabulary vocabulary
                 :language-model language-model)
      :dictionary dictionary)))

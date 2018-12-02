@@ -4,10 +4,10 @@
                 :if-let :curry)
   (:import-from :hachee.kkc.word.vocabulary
                 :to-int-or-unk :to-int :+UNK+)
-  (:export :of-word-pron :of-kana-kanji))
+  (:export :of-form-pron :of-kana-kanji))
 (in-package :hachee.kkc.convert.score-fns)
 
-(defun of-word-pron (&key vocabulary language-model)
+(defun of-form-pron (&key vocabulary language-model)
   (lambda (curr-word prev-words)
     (let ((curr-token-or-nil (to-int vocabulary curr-word))
           (prev-tokens (mapcar (lambda (w)
