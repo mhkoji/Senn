@@ -27,6 +27,6 @@ exec ros -Q -- $0 "$@"
 
 (defun main (&rest argv)
   (declare (ignore argv))
-  (hachee.input-method.kkc-server:enter-loop *kkc*))
+  (hachee.input-method.emacs.stdio-server:enter-loop *kkc*))
 
 ;;; vim: set ft=lisp lisp:
