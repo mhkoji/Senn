@@ -9,6 +9,11 @@
      (:file "freq")
      (:file "n-gram")))
 
+   (:module :ja
+    :pathname "ja"
+    :components
+    ((:file "ja")))
+
    (:module :kkc
     :pathname "kkc/cl"
     :components
