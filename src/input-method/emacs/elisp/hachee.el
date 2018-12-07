@@ -13,8 +13,7 @@
   "String denoting HACHEE input method is working, which is shown on mode line.")
 
 (defvar hachee-server-command-list
-  (list (expand-file-name "../bin/server" hachee-elisp-dir)
-        (expand-file-name "../bin/server.ros" hachee-elisp-dir))
+  (list (expand-file-name "../bin/server.ros" hachee-elisp-dir))
   "hachee-server の PATH")
 
 (defvar hachee-server-data-dir "~/.hachee/slm"
@@ -382,7 +381,8 @@
             (let ((new-option-idx
                    (+ from (position selector-char
                                      hachee-option-selector-chars))))
-              (when (<= from new-option-idx to) ;; はみ出してないか
+              ;; はみ出してないか
+              (when (and (<= from new-option-idx) (<= new-option-idx to))
                 (setf (hachee-select-curr-option-idx curr-select)
                       new-option-idx)))))
         (hachee-message-select curr-select)))))

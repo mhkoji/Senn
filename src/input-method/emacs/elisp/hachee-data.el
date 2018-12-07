@@ -127,7 +127,8 @@
                (let ((region (hachee-selector-region selector)))
                  (let ((from (car region))
                        (to   (cdr region)))
-                   (<= from index to))))
+                   (and (<= from index)
+                        (<= index to)))))
            selectors))
 
 (provide 'hachee-data)
