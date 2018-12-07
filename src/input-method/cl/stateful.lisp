@@ -1,6 +1,6 @@
 (defpackage :hachee.input-method.stateful
   (:use :cl)
-  (:export :transit)
+  (:export :transit-by-input)
   (:import-from :alexandria
                 :if-let))
 (in-package :hachee.input-method.stateful)
@@ -21,7 +21,7 @@
     (concatenate 'string buffer string-char)))
 
 
-(defun transit (buffer code)
+(defun transit-by-input (buffer code)
   (let ((new-buffer (romaji->hiragana buffer code)))
     (list new-buffer new-buffer)))
 

@@ -16,7 +16,7 @@
       (ecase (expr-op expr)
         (:do-input
          (destructuring-bind (new-state view)
-             (hachee.input-method.stateful:transit
+             (hachee.input-method.stateful:transit-by-input
               (controller-state controller)
               (expr-arg expr "code"))
            (log:info "~A" view)
