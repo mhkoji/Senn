@@ -1,6 +1,9 @@
 (defpackage :hachee.input-method.fcitx.ipc-server
   (:use :cl :hachee.input-method.ipc)
-  (:export :enter-loop))
+  (:export :enter-loop)
+  (:import-from :hachee.input-method.fcitx.controller
+                :make-controller
+                :process-client))
 (in-package :hachee.input-method.fcitx.ipc-server)
 
 (defun spawn-client-thread (client-socket)
@@ -8,15 +11,13 @@
     (log:info "[~A] New client" id)
     (bordeaux-threads:make-thread
      (lambda ()
-       (hachee.input-method.fcitx.controller:process-client
-        (hachee.input-method.fcitx.controller:make-controller
-         :id id
-         :state "")
-        :reader (lambda ()
-                  (client-read-line client-socket))
-        :writer (lambda (line)
-                  (client-write-line client-socket line)))
-       (client-close client-socket)))))
+       (let ((controller (make-controller :id id :state "")))
+         (process-client controller
+                         :reader (lambda ()
+                                   (client-read-line client-socket))
+                         :writer (lambda (line)
+                                   (client-write-line client-socket line)))
+         (client-close client-socket))))))
 
 (defun enter-loop (&key (socket-name "/tmp/hachee.sock"))
   (let ((threads nil)
