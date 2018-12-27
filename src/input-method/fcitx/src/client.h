@@ -1,4 +1,5 @@
 #pragma once
+#include <fcitx/instance.h>
 #include <string>
 
 #include "ipc.h"
@@ -10,7 +11,7 @@ class Client {
 public:
   Client();
 
-  void DoInput(FcitxKeySym, uint32_t, uint32_t, std::string*);
+  void DoInput(FcitxInstance*);
 
   void SetConnection(hachee::ipc::Connection*);
 

@@ -7,11 +7,12 @@
 (in-package :hachee.input-method.fcitx.ipc-server)
 
 (defun spawn-client-thread (client-socket)
-  (let ((id (get-universal-time)))
+  (let ((id (get-universal-time))
+        (state (hachee.input-method.stateful:make-state)))
     (log:info "[~A] New client" id)
     (bordeaux-threads:make-thread
      (lambda ()
-       (let ((controller (make-controller :id id :state "")))
+       (let ((controller (make-controller :id id :state state)))
          (process-client controller
                          :reader (lambda ()
                                    (client-read-line client-socket))
