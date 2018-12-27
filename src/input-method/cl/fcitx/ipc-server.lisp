@@ -20,6 +20,8 @@
          (client-close client-socket))))))
 
 (defun enter-loop (&key (socket-name "/tmp/hachee.sock"))
+  (when (cl-fad:file-exists-p socket-name)
+    (delete-file socket-name))
   (let ((threads nil)
         (server-socket (server-listen socket-name)))
     (unwind-protect
