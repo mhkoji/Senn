@@ -76,8 +76,7 @@ INPUT_RETURN_VALUE FcitxHacheeDoInput(void *arg,
   FcitxMessagesAddMessageAtLast(
       client_preedit, MSG_INPUT, "%s", result.c_str());
 
-  FcitxInputStateSetCursorPos(input, result.size());
-  FcitxInputStateSetClientCursorPos(input, result.size());
+  FcitxInputStateSetClientCursorPos(input, 1);
 
   FcitxUIUpdateInputWindow(hachee->fcitx);
 
