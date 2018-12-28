@@ -1,4 +1,4 @@
-(defpackage :hachee.input-method.stateful
+(defpackage :hachee.input-method.fcitx.state
   (:use :cl)
   (:export :make-state
            :state-buffer
@@ -6,7 +6,7 @@
            :transit-by-input)
   (:import-from :alexandria
                 :if-let))
-(in-package :hachee.input-method.stateful)
+(in-package :hachee.input-method.fcitx.state)
 
 (defun romaji->hiragana (buffer code)
   (let ((buffer-len (length buffer))

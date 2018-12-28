@@ -8,7 +8,7 @@
 
 (defun spawn-client-thread (client-socket)
   (let ((id (get-universal-time))
-        (state (hachee.input-method.stateful:make-state)))
+        (state (hachee.input-method.fcitx.state:make-state)))
     (log:info "[~A] New client" id)
     (bordeaux-threads:make-thread
      (lambda ()

@@ -1,7 +1,7 @@
-(defpackage :hachee.input-method.stateless
+(defpackage :hachee.input-method.emacs.kkc
   (:use :cl :hachee.input-method.op)
   (:export :kkc-eval))
-(in-package :hachee.input-method.stateless)
+(in-package :hachee.input-method.emacs.kkc)
 
 (defun kkc-eval (kkc expr)
   (ecase (expr-op expr)

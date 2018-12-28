@@ -3,7 +3,8 @@
         :hachee.input-method.op)
   (:import-from :alexandria
                 :when-let)
-  (:import-from :hachee.input-method.stateful
+  (:import-from :hachee.input-method.fcitx.state
+                :transit-by-input
                 :state-buffer
                 :state-cursor-pos)
   (:export :process-client
@@ -18,10 +19,8 @@
       (log:info "[~A] expr: ~A" (controller-id controller) expr)
       (ecase (expr-op expr)
         (:do-input
-          (let ((new-state
-                 (hachee.input-method.stateful:transit-by-input
-                  (controller-state controller)
-                  (expr-arg expr "code"))))
+          (let ((new-state (transit-by-input (controller-state controller)
+                                             (expr-arg expr "code"))))
             (log:info "~A" new-state)
             (funcall writer (format nil "~A ~A~%"
                                     (state-buffer new-state)

@@ -1,7 +1,7 @@
 (defpackage :hachee.input-method.emacs.stdio-server
   (:use :cl
         :hachee.input-method.op
-        :hachee.input-method.stateless)
+        :hachee.input-method.emacs.kkc)
   (:export :enter-loop)
   (:import-from :alexandria
                 :when-let))

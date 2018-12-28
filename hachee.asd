@@ -39,17 +39,17 @@
     :pathname "input-method/cl"
     :components
     ((:file "op")
-     (:file "stateless")
      (:module :emacs
       :pathname "emacs"
       :components
-      ((:file "stdio-server")))
+      ((:file "kkc")
+       (:file "stdio-server")))
      (:file "ipc")
-     (:file "stateful")
      (:module :fcitx
       :pathname "fcitx"
       :components
-      ((:file "controller")
+      ((:file "state")
+       (:file "controller")
        (:file "ipc-server")))))
 
    (:module :algorithm
