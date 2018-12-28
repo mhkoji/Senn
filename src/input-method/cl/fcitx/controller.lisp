@@ -5,6 +5,7 @@
                 :when-let)
   (:import-from :hachee.input-method.fcitx.state
                 :transit-by-input
+                :state-type
                 :state-buffer
                 :state-cursor-pos)
   (:export :process-client
@@ -22,7 +23,8 @@
           (let ((new-state (transit-by-input (controller-state controller)
                                              (expr-arg expr "code"))))
             (log:info "~A" new-state)
-            (funcall writer (format nil "~A ~A~%"
+            (funcall writer (format nil "~A ~A ~A~%"
+                                    (state-type new-state)
                                     (state-buffer new-state)
                                     (state-cursor-pos new-state)))
             (setf (controller-state controller) new-state))))

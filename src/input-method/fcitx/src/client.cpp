@@ -1,7 +1,6 @@
 #include <fcitx/instance.h>
 
 #include <sstream>
-#include <iostream>
 
 #include "client.h"
 #include "ipc.h"
@@ -14,6 +13,7 @@ Client::Client()
 
 
 void Client::DoInput(FcitxKeySym code,
+                     std::string *type,
                      std::string *msg,
                      int *cursor_pos) {
   {
@@ -30,6 +30,7 @@ void Client::DoInput(FcitxKeySym code,
     connection_->ReadLine(&result);
 
     std::istringstream iss(result);
+    iss >> *type;
     iss >> *msg;
     iss >> *cursor_pos;
   }

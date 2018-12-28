@@ -1,7 +1,9 @@
 #include <fcitx/instance.h>
 #include <fcitx/ime.h>
 #include <fcitx/context.h>
+
 #include <string>
+#include <iostream>
 
 #include "hachee.h"
 #include "client.h"
@@ -64,25 +66,36 @@ INPUT_RETURN_VALUE FcitxHacheeDoInput(void *arg,
   FcitxInputState *input = FcitxInstanceGetInputState(instance);
 
   FcitxKeySym sym = (FcitxKeySym) FcitxInputStateGetKeySym(input);
-  std::string msg;
+  std::string type, msg;
   int cursor_pos;
   // uint32_t keycode = FcitxInputStateGetKeyCode(input);
   // uint32_t state = FcitxInputStateGetKeyState(input);
   // std::cout << sym << " " << keycode << " " << state << std::endl;
-  hachee->client->DoInput(sym, &msg, &cursor_pos);
+  hachee->client->DoInput(sym, &type, &msg, &cursor_pos);
 
-  FcitxMessages *client_preedit = FcitxInputStateGetClientPreedit(input);
+  if (type == "COMMITTED") {
+    // 入力を確定
+    FcitxInstanceCommitString(
+        instance, FcitxInstanceGetCurrentIC(instance), msg.c_str());
 
-  // 表示している文字列を削除
-  FcitxMessagesSetMessageCount(
-      client_preedit, 0);
+    // 表示している文字列を削除
+    FcitxMessages *client_preedit = FcitxInputStateGetClientPreedit(input);
+    FcitxMessagesSetMessageCount(
+        client_preedit, 0);
+  } else {
+    FcitxMessages *client_preedit = FcitxInputStateGetClientPreedit(input);
 
-  // 下線付きの文字列を表示
-  FcitxMessagesAddMessageAtLast(
-      client_preedit, MSG_INPUT, "%s", msg.c_str());
+    // 表示している文字列を削除
+    FcitxMessagesSetMessageCount(
+        client_preedit, 0);
 
-  // カーソルの表示
-  FcitxInputStateSetClientCursorPos(input, cursor_pos);
+    // 下線付きの文字列を表示
+    FcitxMessagesAddMessageAtLast(
+        client_preedit, MSG_INPUT, "%s", msg.c_str());
+
+    // カーソルの表示
+    FcitxInputStateSetClientCursorPos(input, cursor_pos);
+  }
 
   FcitxUIUpdateInputWindow(instance);
 

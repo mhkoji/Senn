@@ -1,6 +1,7 @@
 (defpackage :hachee.input-method.fcitx.state
   (:use :cl)
   (:export :make-state
+           :state-type
            :state-buffer
            :state-cursor-pos
            :transit-by-input)
@@ -25,25 +26,33 @@
 
 
 (defstruct state
+  type
   (buffer "")
   (cursor-pos 0))
 
 (defun transit-by-input (state code)
+  (when (= code 65293) ;; Enter key
+    (setf (state-type state) :committed)
+    (return-from transit-by-input state))
+
+  (when (eql (state-type state) :committed)
+    (setq state (make-state)))
+
   (case code
     (65361 ;; Left key
      (when (< 0 (state-cursor-pos state))
-       (decf (state-cursor-pos state))))
+       (decf (state-cursor-pos state)))
+     state)
     (65363 ;; Right key
      (when (< (state-cursor-pos state)
               (1- (length (state-buffer state))))
-       (incf (state-cursor-pos state))))
-    (65293) ;; Enter key
+       (incf (state-cursor-pos state)))
+     state)
     (t
      (let ((new-buffer (romaji->hiragana (state-buffer state) code)))
        (setf (state-buffer state) new-buffer)
-       (setf (state-cursor-pos state) (length new-buffer)))))
-  state)
-
+       (setf (state-cursor-pos state) (length new-buffer))
+       state))))
 
 
 (assert (string= (romaji->hiragana "あk" (char-code #\a))

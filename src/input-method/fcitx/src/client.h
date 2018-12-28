@@ -11,7 +11,7 @@ class Client {
 public:
   Client();
 
-  void DoInput(FcitxKeySym, std::string*, int*);
+  void DoInput(FcitxKeySym, std::string*, std::string*, int*);
 
   void SetConnection(hachee::ipc::Connection*);
 
