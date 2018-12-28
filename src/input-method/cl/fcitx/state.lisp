@@ -3,7 +3,7 @@
   (:export :make-state
            :state-type
            :state-buffer
-           :state-cursor-pos
+           :state-cursor-pos-in-utf-8
            :transit-by-input)
   (:import-from :alexandria
                 :if-let))
@@ -30,6 +30,13 @@
   (buffer "")
   (cursor-pos 0))
 
+(defun state-cursor-pos-in-utf-8 (state)
+  (length (sb-ext:string-to-octets (subseq (state-buffer state)
+                                           0
+                                           (state-cursor-pos state))
+                                   :external-format :utf-8)))
+
+
 (defun transit-by-input (state code)
   (when (= code 65293) ;; Enter key
     (setf (state-type state) :committed)
@@ -45,7 +52,7 @@
      state)
     (65363 ;; Right key
      (when (< (state-cursor-pos state)
-              (1- (length (state-buffer state))))
+              (length (state-buffer state)))
        (incf (state-cursor-pos state)))
      state)
     (t

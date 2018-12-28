@@ -7,7 +7,7 @@
                 :transit-by-input
                 :state-type
                 :state-buffer
-                :state-cursor-pos)
+                :state-cursor-pos-in-utf-8)
   (:export :process-client
            :make-controller))
 (in-package :hachee.input-method.fcitx.controller)
@@ -22,10 +22,11 @@
         (:do-input
           (let ((new-state (transit-by-input (controller-state controller)
                                              (expr-arg expr "code"))))
-            (log:info "~A" new-state)
-            (funcall writer (format nil "~A ~A ~A~%"
+            (let ((responce (format nil "~A ~A ~A~%"
                                     (state-type new-state)
                                     (state-buffer new-state)
-                                    (state-cursor-pos new-state)))
+                                    (state-cursor-pos-in-utf-8 new-state))))
+              (log:info "~A" responce)
+              (funcall writer responce))
             (setf (controller-state controller) new-state))))
       (process-client controller :reader reader :writer writer))))
