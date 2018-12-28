@@ -60,7 +60,32 @@ INPUT_RETURN_VALUE FcitxHacheeDoInput(void *arg,
                                       FcitxKeySym _sym,
                                       uint32_t _state) {
   FcitxHachee *hachee = (FcitxHachee *)arg;
-  hachee->client->DoInput(hachee->fcitx);
+  FcitxInstance *instance = hachee->fcitx;
+  FcitxInputState *input = FcitxInstanceGetInputState(instance);
+
+  FcitxKeySym sym = (FcitxKeySym) FcitxInputStateGetKeySym(input);
+  std::string msg;
+  int cursor_pos;
+  // uint32_t keycode = FcitxInputStateGetKeyCode(input);
+  // uint32_t state = FcitxInputStateGetKeyState(input);
+  // std::cout << sym << " " << keycode << " " << state << std::endl;
+  hachee->client->DoInput(sym, &msg, &cursor_pos);
+
+  FcitxMessages *client_preedit = FcitxInputStateGetClientPreedit(input);
+
+  // 表示している文字列を削除
+  FcitxMessagesSetMessageCount(
+      client_preedit, 0);
+
+  // 下線付きの文字列を表示
+  FcitxMessagesAddMessageAtLast(
+      client_preedit, MSG_INPUT, "%s", msg.c_str());
+
+  // カーソルの表示
+  FcitxInputStateSetClientCursorPos(input, cursor_pos);
+
+  FcitxUIUpdateInputWindow(instance);
+
   return IRV_TO_PROCESS;
 }
 

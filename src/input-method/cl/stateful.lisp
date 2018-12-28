@@ -30,13 +30,14 @@
 
 (defun transit-by-input (state code)
   (case code
-    (65361 ;; left key
+    (65361 ;; Left key
      (when (< 0 (state-cursor-pos state))
        (decf (state-cursor-pos state))))
-    (65363 ;; right key
+    (65363 ;; Right key
      (when (< (state-cursor-pos state)
               (1- (length (state-buffer state))))
        (incf (state-cursor-pos state))))
+    (65293) ;; Enter key
     (t
      (let ((new-buffer (romaji->hiragana (state-buffer state) code)))
        (setf (state-buffer state) new-buffer)
