@@ -5,6 +5,7 @@
 #include <string>
 #include <iostream>
 
+#include "ui.h"
 #include "hachee.h"
 #include "client.h"
 
@@ -74,30 +75,10 @@ INPUT_RETURN_VALUE FcitxHacheeDoInput(void *arg,
   hachee->client->DoInput(sym, &type, &msg, &cursor_pos);
 
   if (type == "COMMITTED") {
-    // 入力を確定
-    FcitxInstanceCommitString(
-        instance, FcitxInstanceGetCurrentIC(instance), msg.c_str());
-
-    // 表示している文字列を削除
-    FcitxMessages *client_preedit = FcitxInputStateGetClientPreedit(input);
-    FcitxMessagesSetMessageCount(
-        client_preedit, 0);
+    hachee::fcitx::ui::CommitInput(instance, msg);
   } else {
-    FcitxMessages *client_preedit = FcitxInputStateGetClientPreedit(input);
-
-    // 表示している文字列を削除
-    FcitxMessagesSetMessageCount(
-        client_preedit, 0);
-
-    // 下線付きの文字列を表示
-    FcitxMessagesAddMessageAtLast(
-        client_preedit, MSG_INPUT, "%s", msg.c_str());
-
-    // カーソルの表示
-    FcitxInputStateSetClientCursorPos(input, cursor_pos);
+    hachee::fcitx::ui::UpdateInput(instance, msg, cursor_pos);
   }
-
-  FcitxUIUpdateInputWindow(instance);
 
   return IRV_TO_PROCESS;
 }
