@@ -20,6 +20,7 @@ Add the code below to your .emacs file.
 ## Fcitx (WIP)
 
 ```
+% sudo apt install fcitx-libs-dev
 % mkdir <path/to/Hachee>/src/input-method/fcitx/build
 % cd build
 % cmake ..
