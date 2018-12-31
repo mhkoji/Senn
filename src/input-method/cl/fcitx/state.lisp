@@ -9,20 +9,30 @@
                 :if-let))
 (in-package :hachee.input-method.fcitx.state)
 
-(defun romaji->hiragana (buffer code)
-  (let ((buffer-len (length buffer))
-        (string-char (string (code-char code))))
-    (loop for i from (max 0 (- buffer-len 4)) to buffer-len
-          for str-from-right
-              = (concatenate 'string
-                             (subseq buffer i buffer-len)
-                             string-char)
-          for romaji
-              = (hachee.ja:romaji->hiragana str-from-right)
-          when romaji
-            do (return-from romaji->hiragana
-                 (concatenate 'string (subseq buffer 0 i) romaji)))
-    (concatenate 'string buffer string-char)))
+(defun buffer-insert-char (buffer pos char)
+  (labels ((try-insertion (diff-from-pos)
+             (if (< diff-from-pos 0)
+                 (list (concatenate 'string
+                                    (subseq buffer 0 pos)
+                                    (string char)
+                                    (subseq buffer pos))
+                       (1+ pos))
+                 (let ((substr-ending-at-pos
+                        (concatenate 'string
+                                     (subseq buffer
+                                             (- pos diff-from-pos) pos)
+                                     (string char))))
+                   (if-let ((hiragana (hachee.ja:romaji->hiragana
+                                       substr-ending-at-pos)))
+                     (list (concatenate 'string
+                                        (subseq buffer
+                                                0 (- pos diff-from-pos))
+                                        hiragana
+                                        (subseq buffer pos))
+                           (+ (- pos diff-from-pos)
+                              (length hiragana)))
+                     (try-insertion (1- diff-from-pos)))))))
+    (try-insertion (min pos 4))))
 
 
 (defstruct state
@@ -56,11 +66,19 @@
        (incf (state-cursor-pos state)))
      state)
     (t
-     (let ((new-buffer (romaji->hiragana (state-buffer state) code)))
+     (destructuring-bind (new-buffer new-pos)
+         (buffer-insert-char (state-buffer state)
+                             (state-cursor-pos state)
+                             (code-char code))
        (setf (state-buffer state) new-buffer)
-       (setf (state-cursor-pos state) (length new-buffer))
-       state))))
+       (setf (state-cursor-pos state) new-pos))
+     state)))
 
 
-(assert (string= (romaji->hiragana "あk" (char-code #\a))
-                 "あか"))
+(destructuring-bind (buf pos) (buffer-insert-char "あk" 2 #\a)
+  (assert (string= buf "あか"))
+  (assert (= pos 2)))
+
+(destructuring-bind (buf pos) (buffer-insert-char "kk" 1 #\a)
+  (assert (string= buf "かk"))
+  (assert (= pos 1)))
