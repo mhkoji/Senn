@@ -3,7 +3,7 @@
 (defmethod transit-by-input ((c controller)
                              (s committed)
                              code)
-  (transit-by-input (make-editing) code))
+  (transit-by-input c (make-editing) code))
 
 
 (defmethod transit-by-input ((c controller)
