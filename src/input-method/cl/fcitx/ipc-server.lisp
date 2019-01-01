@@ -9,7 +9,7 @@
 (defun spawn-client-thread (client-socket)
   (let ((id (get-universal-time))
         (state (hachee.input-method.fcitx.state:make-state)))
-    (log:info "[~A] New client" id)
+    (log:info "[~A]: New client" id)
     (bordeaux-threads:make-thread
      (lambda ()
        (let ((controller (make-controller :id id :state state)))
@@ -18,7 +18,8 @@
                                    (client-read-line client-socket))
                          :writer (lambda (line)
                                    (client-write-line client-socket line)))
-         (client-close client-socket))))))
+         (client-close client-socket)
+         (log:info "[~A]: Disconnected" id))))))
 
 (defun enter-loop (&key (socket-name "/tmp/hachee.sock"))
   (when (cl-fad:file-exists-p socket-name)
