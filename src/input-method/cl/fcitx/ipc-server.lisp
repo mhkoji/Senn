@@ -3,31 +3,48 @@
   (:export :enter-loop)
   (:import-from :hachee.input-method.fcitx.controller
                 :make-controller
+                :controller-id
                 :process-client))
 (in-package :hachee.input-method.fcitx.ipc-server)
 
-(defun spawn-client-thread (client-socket)
-  (let ((id (get-universal-time))
-        (state (hachee.input-method.fcitx.state:make-state)))
-    (log:info "[~A]: New client" id)
-    (bordeaux-threads:make-thread
-     (lambda ()
-       (let ((controller (make-controller :id id :state state)))
-         (process-client controller
-                         :reader (lambda ()
-                                   (client-read-line client-socket))
-                         :writer (lambda (line)
-                                   (client-write-line client-socket line)))
-         (client-close client-socket)
-         (log:info "[~A]: Disconnected" id))))))
+(defmacro log/info (controller format-str &rest args)
+  `(log:info ,(concatenate 'string "[~A]: " format-str)
+             (controller-id ,controller)
+             ,@args))
+
+(defun spawn-client-thread (controller client-socket)
+  (log/info controller "New client")
+  (bordeaux-threads:make-thread
+   (lambda ()
+     (process-client controller
+      :reader (lambda ()
+                (let ((expr (client-read-line client-socket)))
+                  (log/info controller "Read: ~A" expr)
+                  expr))
+      :writer (lambda (line)
+                (client-write-line client-socket line)
+                (log/info controller "Written: ~A" line)))
+     (client-close client-socket)
+     (log/info controller "Disconnected"))))
+
 
 (defun enter-loop (&key (socket-name "/tmp/hachee.sock"))
   (when (cl-fad:file-exists-p socket-name)
     (delete-file socket-name))
   (let ((threads nil)
-        (server-socket (server-listen socket-name)))
+        (server-socket (server-listen socket-name))
+        (kkc (hachee.kkc:create-kkc
+              (cl-fad:list-directory
+               (merge-pathnames
+                "src/kkc/data/aozora/word-pron-utf8/"
+                (asdf:system-source-directory :hachee))))))
+    (log:info "Wait for client...")
     (unwind-protect
-         (loop for client-socket = (server-accept server-socket)
-               do (push (spawn-client-thread client-socket) threads))
+         (loop for id from 1
+               for client-socket = (server-accept server-socket)
+               do (let ((controller (make-controller :id id :kkc kkc)))
+                    (push (spawn-client-thread controller
+                                               client-socket)
+                          threads)))
       (mapc #'bordeaux-threads:destroy-thread threads)
       (server-close server-socket))))

@@ -48,7 +48,8 @@
      (:module :fcitx
       :pathname "fcitx"
       :components
-      ((:file "state")
+      ((:file "states/states")
+       (:file "states/editing")
        (:file "controller")
        (:file "ipc-server")))))
 
