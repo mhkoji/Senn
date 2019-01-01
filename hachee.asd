@@ -50,7 +50,9 @@
       :components
       ((:file "states/states")
        (:file "states/editing")
-       (:file "controller")
+       (:file "controller/controller")
+       (:file "controller/transit")
+       (:file "controller/response")
        (:file "ipc-server")))))
 
    (:module :algorithm
