@@ -5,7 +5,9 @@
   (:export :convert
            :lookup
            :make-kkc
-           :create-kkc))
+           :create-kkc
+           :word-form
+           :word-pron))
 (in-package :hachee.kkc)
 
 (defun sentence-words (sentence)
