@@ -12,6 +12,7 @@
            :make-converting
            :converting-segments
            :converting-current-segment
+           :converting-current-input
            :make-segment
            :segment-pron
            :segment-has-more-forms-p
@@ -68,6 +69,10 @@
 (defun converting-current-segment (c)
   (elt (converting-segments c)
        (converting-current-segment-index c)))
+
+(defun converting-current-input (c)
+  (format nil "~{~A~}"
+          (mapcar #'segment-current-form (converting-segments c))))
 
 
 (defstruct committed input)
