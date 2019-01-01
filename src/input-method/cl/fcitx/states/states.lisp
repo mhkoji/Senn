@@ -6,6 +6,7 @@
            :editing-cursor-pos
            :editing-try-move-cursor-pos
            :editing-insert-char
+           :editing-delete-char
 
            :converting
            :make-converting

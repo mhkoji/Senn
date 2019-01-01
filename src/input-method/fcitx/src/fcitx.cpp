@@ -65,23 +65,23 @@ INPUT_RETURN_VALUE FcitxHacheeDoInput(void *arg,
   // uint32_t state = FcitxInputStateGetKeyState(input);
   // std::cout << sym << " " << keycode << " " << state << std::endl;
 
-  if (sym == FcitxKey_BackSpace) {
-    // IMEの処理は無視して、OSの処理に任せる
-    return IRV_TO_PROCESS;
-  }
-
   std::string type, in;
   int cursor_pos;
   hachee->client->DoInput(sym, &type, &in, &cursor_pos);
 
   if (type == "COMMITTED") {
     hachee::fcitx::ui::CommitInput(instance, in, cursor_pos);
-    // エンターキーによる改行を無効化させ、
-    // 日本語の入力を確定させるのみとする
-    return IRV_DO_NOTHING;
+    // 何らかの文字が確定された場合、エンターキーによる改行は無効化させる
+    return in == "" ? IRV_TO_PROCESS : IRV_DO_NOTHING;
   }
 
   hachee::fcitx::ui::UpdateInput(instance, in, cursor_pos);
+
+  if (sym == FcitxKey_BackSpace) {
+    // TODO: 入力中ではない場合、OSの処理に任せないといけない
+    return IRV_DO_NOTHING;
+
+  }
   return IRV_TO_PROCESS;
 }
 

@@ -44,6 +44,8 @@
                                :current-index 0))
                             words)
           :pronunciation pronunciation))))
+    (65288 ;; Backspace key
+     (editing-delete-char s))
     (65293 ;; Enter key
      (make-committed :input (editing-buffer s)))
     (65361 ;; Left key

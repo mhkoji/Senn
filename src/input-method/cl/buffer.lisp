@@ -1,6 +1,7 @@
 (defpackage :hachee.input-method.buffer
   (:use :cl)
   (:export :insert-char
+           :delete-char
            :try-move-cursor-pos)
   (:import-from :alexandria
                 :if-let))
@@ -31,6 +32,15 @@
                      (try-insertion (1- diff-from-pos)))))))
     (try-insertion (min pos 4))))
 
+
+(defun delete-char (buffer pos)
+  (if (< 0 pos)
+      (list (concatenate 'string
+                         (subseq buffer 0 (1- pos))
+                         (subseq buffer pos))
+            (1- pos))
+      (list buffer
+            pos)))
 
 (defun try-move-cursor-pos (buffer pos diff)
   (let ((new-pos (+ diff pos)))
