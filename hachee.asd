@@ -48,8 +48,8 @@
      (:module :fcitx
       :pathname "fcitx"
       :components
-      ((:file "states/states")
-       (:file "states/editing")
+      ((:file "states/editing")
+       (:file "states/states")
        (:file "controller/controller")
        (:file "controller/transit")
        (:file "controller/response")

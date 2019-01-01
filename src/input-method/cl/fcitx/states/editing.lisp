@@ -1,6 +1,7 @@
 (defpackage :hachee.input-method.fcitx.states.editing
   (:use :cl)
-  (:export :buffer-insert-char)
+  (:export :buffer-insert-char
+           :buffer-try-move-cursor-pos)
   (:import-from :alexandria
                 :if-let))
 (in-package :hachee.input-method.fcitx.states.editing)
@@ -29,6 +30,13 @@
                               (length hiragana)))
                      (try-insertion (1- diff-from-pos)))))))
     (try-insertion (min pos 4))))
+
+
+(defun buffer-try-move-cursor-pos (buffer pos diff)
+  (let ((new-pos (+ diff pos)))
+    (when (<= 0 new-pos (length buffer))
+      new-pos)))
+
 
 (destructuring-bind (buf pos) (buffer-insert-char "あk" 2 #\a)
   (assert (string= buf "あか"))
