@@ -53,12 +53,6 @@ static boolean FcitxHacheeInit(void *arg) {
 static void FcitxHacheeReset(void *arg) {
 }
 
-INPUT_RETURN_VALUE FcitxHacheeDoReleaseInput(void *arg,
-                                             FcitxKeySym sym,
-                                             uint32_t state) {
-  return IRV_TO_PROCESS;
-}
-
 INPUT_RETURN_VALUE FcitxHacheeDoInput(void *arg,
                                       FcitxKeySym _sym,
                                       uint32_t _state) {
@@ -67,19 +61,27 @@ INPUT_RETURN_VALUE FcitxHacheeDoInput(void *arg,
   FcitxInputState *input = FcitxInstanceGetInputState(instance);
 
   FcitxKeySym sym = (FcitxKeySym) FcitxInputStateGetKeySym(input);
-  std::string type, msg;
+  std::string type, in;
   int cursor_pos;
   // uint32_t keycode = FcitxInputStateGetKeyCode(input);
   // uint32_t state = FcitxInputStateGetKeyState(input);
   // std::cout << sym << " " << keycode << " " << state << std::endl;
-  hachee->client->DoInput(sym, &type, &msg, &cursor_pos);
+  hachee->client->DoInput(sym, &type, &in, &cursor_pos);
 
   if (type == "COMMITTED") {
-    hachee::fcitx::ui::CommitInput(instance, msg);
-  } else {
-    hachee::fcitx::ui::UpdateInput(instance, msg, cursor_pos);
+    hachee::fcitx::ui::CommitInput(instance, in, cursor_pos);
+    // エンターキーによる改行を無効化させ、
+    // 日本語の入力を確定させるのみとする
+    return IRV_DO_NOTHING;
   }
 
+  hachee::fcitx::ui::UpdateInput(instance, in, cursor_pos);
+  return IRV_TO_PROCESS;
+}
+
+INPUT_RETURN_VALUE FcitxHacheeDoReleaseInput(void *arg,
+                                             FcitxKeySym sym,
+                                             uint32_t state) {
   return IRV_TO_PROCESS;
 }
 

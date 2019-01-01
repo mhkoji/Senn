@@ -6,11 +6,9 @@ namespace hachee {
 namespace fcitx {
 namespace ui {
 
-void CommitInput(FcitxInstance *instance,
-                 const std::string &msg);
+void CommitInput(FcitxInstance *, const std::string &, const int);
 
-void UpdateInput(FcitxInstance *instance,
-                 const std::string &msg, const int cursor_pos);
+void UpdateInput(FcitxInstance *, const std::string &, const int);
 
 } // ui
 } // fcitx

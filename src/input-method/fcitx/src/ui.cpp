@@ -9,30 +9,34 @@ namespace fcitx {
 namespace ui {
 
 void CommitInput(FcitxInstance *instance,
-                 const std::string &msg) {
+                 const std::string &in,
+                 const int cursor_pos) {
   // 入力を確定
   FcitxInstanceCommitString(
-      instance, FcitxInstanceGetCurrentIC(instance), msg.c_str());
+      instance, FcitxInstanceGetCurrentIC(instance), in.c_str());
 
   // 表示している文字列を削除
+  FcitxInstanceCleanInputWindow(instance);
+
   FcitxInputState *input = FcitxInstanceGetInputState(instance);
   FcitxMessages *client_preedit = FcitxInputStateGetClientPreedit(input);
   FcitxMessagesSetMessageCount(client_preedit, 0);
+
+  FcitxInputStateSetClientCursorPos(input, cursor_pos);
 
   FcitxUIUpdateInputWindow(instance);
 };
 
 void UpdateInput(FcitxInstance *instance,
-                 const std::string &msg, const int cursor_pos) {
-  FcitxInputState *input = FcitxInstanceGetInputState(instance);
-  FcitxMessages *client_preedit = FcitxInputStateGetClientPreedit(input);
+                 const std::string &in,
+                 const int cursor_pos) {
   // 表示している文字列を削除
-  FcitxMessagesSetMessageCount(
-     client_preedit, 0);
+  FcitxInstanceCleanInputWindow(instance);
 
   // 下線付きの文字列を表示
-  FcitxMessagesAddMessageAtLast(
-      client_preedit, MSG_INPUT, "%s", msg.c_str());
+  FcitxInputState *input = FcitxInstanceGetInputState(instance);
+  FcitxMessages *client_preedit = FcitxInputStateGetClientPreedit(input);
+  FcitxMessagesAddMessageAtLast(client_preedit, MSG_INPUT, "%s", in.c_str());
 
   // カーソルの表示
   FcitxInputStateSetClientCursorPos(input, cursor_pos);
