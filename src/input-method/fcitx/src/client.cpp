@@ -14,7 +14,7 @@ Client::Client()
 
 void Client::DoInput(FcitxKeySym code,
                      std::string *type,
-                     std::string *msg,
+                     std::string *input,
                      int *cursor_pos) {
   {
     std::stringstream ss;
@@ -31,7 +31,7 @@ void Client::DoInput(FcitxKeySym code,
 
     std::istringstream iss(result);
     iss >> *type;
-    iss >> *msg;
+    iss >> *input;
     iss >> *cursor_pos;
   }
 }
@@ -42,6 +42,13 @@ void Client::SetConnection(hachee::ipc::Connection *conn) {
     connection_->Close();
   }
   connection_ = conn;
+}
+
+
+Client::~Client() {
+  if (connection_) {
+    connection_->Close();
+  }
 }
 
 } // fcitx

@@ -10,6 +10,7 @@ namespace fcitx {
 class Client {
 public:
   Client();
+  ~Client();
 
   void DoInput(FcitxKeySym, std::string*, std::string*, int*);
 
