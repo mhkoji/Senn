@@ -30,26 +30,6 @@
   (buffer "")
   (cursor-pos 0))
 
-(defun editing-try-move-cursor-pos (editing diff)
-  (let ((new-pos
-          (hachee.input-method.fcitx.states.editing:buffer-try-move-cursor-pos
-           (editing-buffer editing)
-           (editing-cursor-pos editing)
-           diff)))
-    (when new-pos
-      (setf (editing-cursor-pos editing) new-pos)))
-  editing)
-
-(defun editing-insert-char (editing char)
-  (destructuring-bind (new-buffer new-pos)
-      (hachee.input-method.fcitx.states.editing:buffer-insert-char
-       (editing-buffer editing)
-       (editing-cursor-pos editing)
-       char)
-    (setf (editing-buffer editing) new-buffer)
-    (setf (editing-cursor-pos editing) new-pos))
-  editing)
-
 
 (defstruct segment
   pron
@@ -62,8 +42,8 @@
                                  :test #'string=))
          (new-forms (set-difference forms in-forms
                                     :test #'string=)))
-    (setf (segment-forms segment)
-          (append (segment-forms segment) new-forms))
+    (setf (segment-forms segment) (append (segment-forms segment)
+                                          new-forms))
     (setf (segment-has-more-forms-p segment) nil))
   segment)
 
