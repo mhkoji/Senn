@@ -31,8 +31,8 @@ void Client::DoInput(FcitxKeySym code,
 
     std::istringstream iss(result);
     iss >> *type;
-    iss >> *input;
     iss >> *cursor_pos;
+    iss >> *input;
   }
 }
 

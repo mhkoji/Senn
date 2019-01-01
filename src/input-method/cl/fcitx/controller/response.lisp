@@ -10,8 +10,8 @@
 (defmethod make-response ((s editing))
   (format nil "~A ~A ~A~%"
           :editing
-          (editing-buffer s)
-          (editing-cursor-pos-in-utf-8 s)))
+          (editing-cursor-pos-in-utf-8 s)
+          (editing-buffer s)))
 
 
 (defmethod make-response ((s converting))
@@ -20,14 +20,16 @@
                                (converting-segments s)))))
     (format nil "~A ~A ~A~%"
             :converting
-            input
-            (length (sb-ext:string-to-octets input
-                     :external-format :utf-8)))))
+            (length (sb-ext:string-to-octets
+                     input
+                     :external-format :utf-8))
+            input)))
 
 (defmethod make-response ((s committed))
   (let ((input (committed-input s)))
     (format nil "~A ~A ~A~%"
             :committed
-            input
-            (length (sb-ext:string-to-octets input
-                                             :external-format :utf-8)))))
+            (length (sb-ext:string-to-octets
+                     input
+                     :external-format :utf-8))
+            input)))
