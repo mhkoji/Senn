@@ -61,11 +61,17 @@ INPUT_RETURN_VALUE FcitxHacheeDoInput(void *arg,
   FcitxInputState *input = FcitxInstanceGetInputState(instance);
 
   FcitxKeySym sym = (FcitxKeySym) FcitxInputStateGetKeySym(input);
-  std::string type, in;
-  int cursor_pos;
   // uint32_t keycode = FcitxInputStateGetKeyCode(input);
   // uint32_t state = FcitxInputStateGetKeyState(input);
   // std::cout << sym << " " << keycode << " " << state << std::endl;
+
+  if (sym == FcitxKey_BackSpace) {
+    // IMEの処理は無視して、OSの処理に任せる
+    return IRV_TO_PROCESS;
+  }
+
+  std::string type, in;
+  int cursor_pos;
   hachee->client->DoInput(sym, &type, &in, &cursor_pos);
 
   if (type == "COMMITTED") {
