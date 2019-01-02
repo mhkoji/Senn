@@ -12,10 +12,14 @@ Client::Client()
   : connection_(nullptr) {}
 
 
-void Client::DoInput(FcitxKeySym code,
-                     std::string *type,
-                     std::string *input,
-                     int *cursor_pos) {
+INPUT_RETURN_VALUE
+Client::DoInput(FcitxKeySym code,
+                std::function<
+                    INPUT_RETURN_VALUE(const std::string&, const int)
+                > on_committed,
+                std::function<
+                    INPUT_RETURN_VALUE(const std::string&, const int)
+                > on_updated) {
   {
     std::stringstream ss;
     ss << "{"
@@ -25,15 +29,20 @@ void Client::DoInput(FcitxKeySym code,
     connection_->Write(ss.str());
   }
 
-  {
-    std::string result;
-    connection_->ReadLine(&result);
+  std::string result;
+  connection_->ReadLine(&result);
 
-    std::istringstream iss(result);
-    iss >> *type;
-    iss >> *cursor_pos;
-    iss >> *input;
+  std::string type, input;
+  int cursor_pos;
+  std::istringstream iss(result);
+  iss >> type;
+  iss >> cursor_pos;
+  iss >> input;
+
+  if (type == "COMMITTED") {
+    return on_committed(input, cursor_pos);
   }
+  return on_updated(input, cursor_pos);
 }
 
 
