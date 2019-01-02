@@ -68,16 +68,25 @@ INPUT_RETURN_VALUE FcitxHacheeDoInput(void *arg,
   return hachee->client->DoInput(
     sym,
 
-    // committed
-    [&](const std::string &in, const int cursor_pos) {
-      hachee::fcitx::ui::CommitInput(instance, in, cursor_pos);
+    // Committed
+    [&](const std::string &in,
+        const int cursor_pos) {
+      hachee::fcitx::ui::Committed(instance, in, cursor_pos);
       // 何らかの文字が確定された場合、エンターキーによる改行は無効化させる
       return in == "" ? IRV_TO_PROCESS : IRV_DO_NOTHING;
     },
 
-    // updated
-    [&](const std::string &in, const int cursor_pos) {
-      hachee::fcitx::ui::UpdateInput(instance, in, cursor_pos);
+    // Converting
+    [&](const std::vector<std::string> &forms,
+        const int cursor_pos) {
+      hachee::fcitx::ui::Converting(instance, forms, cursor_pos);
+      return IRV_TO_PROCESS;
+    },
+
+    // Editing
+    [&](const std::string &in,
+        const int cursor_pos) {
+      hachee::fcitx::ui::Editing(instance, in, cursor_pos);
       if (sym == FcitxKey_BackSpace) {
         // TODO: 入力中ではない場合、OSの処理に任せないといけない
         return IRV_DO_NOTHING;

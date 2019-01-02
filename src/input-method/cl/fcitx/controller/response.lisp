@@ -17,13 +17,14 @@
 
 
 (defmethod make-response ((s converting))
-  (let ((input (converting-current-input s)))
+  (let ((forms (format nil "~{~A~,^ ~}"
+                       (mapcar
+                        #'hachee.input-method.segment:segment-current-form
+                        (converting-segments s)))))
     (format nil "~A ~A ~A~%"
             :converting
-            (length (sb-ext:string-to-octets
-                     input
-                     :external-format :utf-8))
-            input)))
+            (converting-current-segment-index s)
+            forms)))
 
 
 (defmethod make-response ((s committed))

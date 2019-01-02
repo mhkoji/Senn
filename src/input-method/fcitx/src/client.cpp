@@ -1,5 +1,4 @@
 #include <fcitx/instance.h>
-
 #include <sstream>
 
 #include "client.h"
@@ -18,8 +17,12 @@ Client::DoInput(FcitxKeySym code,
                     INPUT_RETURN_VALUE(const std::string&, const int)
                 > on_committed,
                 std::function<
+                    INPUT_RETURN_VALUE(const std::vector<std::string>&,
+                                       const int)
+                > on_converting,
+                std::function<
                     INPUT_RETURN_VALUE(const std::string&, const int)
-                > on_updated) {
+                > on_editing) {
   {
     std::stringstream ss;
     ss << "{"
@@ -32,17 +35,35 @@ Client::DoInput(FcitxKeySym code,
   std::string result;
   connection_->ReadLine(&result);
 
-  std::string type, input;
-  int cursor_pos;
+  std::string type;
   std::istringstream iss(result);
   iss >> type;
-  iss >> cursor_pos;
-  iss >> input;
 
   if (type == "COMMITTED") {
+    int cursor_pos;
+    std::string input;
+    iss >> cursor_pos;
+    iss >> input;
     return on_committed(input, cursor_pos);
   }
-  return on_updated(input, cursor_pos);
+
+  if (type == "CONVERTING") {
+    int cursor_pos;
+    iss >> cursor_pos;
+
+    std::vector<std::string> forms;
+    std::string form;
+    while (iss >> form) {
+      forms.push_back(form);
+    }
+    return on_converting(forms, cursor_pos);
+  }
+
+  int cursor_pos;
+  std::string input;
+  iss >> cursor_pos;
+  iss >> input;
+  return on_editing(input, cursor_pos);
 }
 
 

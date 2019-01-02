@@ -8,9 +8,9 @@ namespace hachee {
 namespace fcitx {
 namespace ui {
 
-void CommitInput(FcitxInstance *instance,
-                 const std::string &in,
-                 const int cursor_pos) {
+void Committed(FcitxInstance *instance,
+               const std::string &in,
+               const int cursor_pos) {
   // 入力を確定
   FcitxInstanceCommitString(
       instance, FcitxInstanceGetCurrentIC(instance), in.c_str());
@@ -27,9 +27,32 @@ void CommitInput(FcitxInstance *instance,
   FcitxUIUpdateInputWindow(instance);
 };
 
-void UpdateInput(FcitxInstance *instance,
-                 const std::string &in,
-                 const int cursor_pos) {
+void Converting(FcitxInstance *instance,
+                const std::vector<std::string> &forms,
+                const int cursor_pos) {
+  // 表示している文字列を削除
+  FcitxInstanceCleanInputWindow(instance);
+
+  FcitxInputState *input = FcitxInstanceGetInputState(instance);
+  FcitxMessages *client_preedit = FcitxInputStateGetClientPreedit(input);
+  int i = 0;
+  std::vector<std::string>::const_iterator it = forms.begin();
+  for (; it != forms.end(); ++it, ++i) {
+    FcitxMessageType type;
+    if (i == cursor_pos) {
+      type = (FcitxMessageType) (MSG_HIGHLIGHT | MSG_CANDIATE_CURSOR);
+    } else {
+      type = (FcitxMessageType) MSG_INPUT;
+    }
+    FcitxMessagesAddMessageAtLast(client_preedit, type, "%s", it->c_str());
+  }
+
+  FcitxUIUpdateInputWindow(instance);
+}
+
+void Editing(FcitxInstance *instance,
+             const std::string &in,
+             const int cursor_pos) {
   // 表示している文字列を削除
   FcitxInstanceCleanInputWindow(instance);
 

@@ -9,6 +9,7 @@
            :converting-segments
            :converting-current-segment
            :converting-current-input
+           :converting-current-segment-index
 
            :segment-current-form
 

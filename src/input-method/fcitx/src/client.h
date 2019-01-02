@@ -1,6 +1,7 @@
 #pragma once
 #include <fcitx/instance.h>
 #include <string>
+#include <vector>
 #include <functional>
 
 #include "ipc.h"
@@ -18,6 +19,9 @@ public:
       FcitxKeySym,
       std::function<
           INPUT_RETURN_VALUE(const std::string&, const int)
+      >,
+      std::function<
+          INPUT_RETURN_VALUE(const std::vector<std::string>&, const int)
       >,
       std::function<
           INPUT_RETURN_VALUE(const std::string&, const int)
