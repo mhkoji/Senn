@@ -18,12 +18,6 @@ void Committed(FcitxInstance *instance,
   // 表示している文字列を削除
   FcitxInstanceCleanInputWindow(instance);
 
-  FcitxInputState *input = FcitxInstanceGetInputState(instance);
-  FcitxMessages *client_preedit = FcitxInputStateGetClientPreedit(input);
-  FcitxMessagesSetMessageCount(client_preedit, 0);
-
-  FcitxInputStateSetClientCursorPos(input, cursor_pos);
-
   FcitxUIUpdateInputWindow(instance);
 };
 
