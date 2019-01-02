@@ -7,7 +7,6 @@
 (defvar +right-key+ 65363)
 
 
-
 (defmethod transit-by-input ((c controller)
                              (s committed)
                              code)
@@ -18,22 +17,25 @@
                              (s converting)
                              code)
   (cond ((= code +space-key+)
-         (let ((segment (converting-current-segment s)))
-           (when (segment-has-more-forms-p segment)
-             (let ((words (hachee.kkc:lookup (controller-kkc c)
-                                             (segment-pron segment))))
-               (segment-append-forms!
-                segment
-                (mapcar #'hachee.kkc:word-form words))))
-           (segment-try-move-cursor-pos! segment +1))
+         (hachee.input-method.segment:append-forms!
+          (converting-current-segment s)
+          (lambda (pron)
+            (let ((words (hachee.kkc:lookup (controller-kkc c)
+                                            pron)))
+              (mapcar #'hachee.kkc:word-form words))))
+         (hachee.input-method.segment:try-move-cursor-pos!
+          (converting-current-segment s)
+          +1)
          s)
         ((= code +left-key+)
-         (let ((segment (converting-current-segment s)))
-           (segment-try-move-cursor-pos! segment -1))
+         (hachee.input-method.segment:try-move-cursor-pos!
+          (converting-current-segment s)
+          -1)
          s)
         ((= code +right-key+)
-         (let ((segment (converting-current-segment s)))
-           (segment-try-move-cursor-pos! segment +1))
+         (hachee.input-method.segment:try-move-cursor-pos!
+          (converting-current-segment s)
+          +1)
          s)
         (t
          (make-committed :input (converting-current-input s)))))
@@ -43,25 +45,43 @@
                              (s editing)
                              code)
   (cond ((= code +space-key+)
-         (let ((pronunciation (editing-buffer s)))
+         (let ((pronunciation (hachee.input-method.buffer:buffer-string
+                               (editing-buffer s))))
            (let ((words (hachee.kkc:convert (controller-kkc c)
                                             pronunciation)))
-             (make-converting
-              :segments (mapcar (lambda (w)
-                                  (make-segment
-                                   :pron (hachee.kkc:word-pron w)
-                                   :forms (list (hachee.kkc:word-form w))
-                                   :has-more-forms-p t
-                                   :current-index 0))
-                                words)
-              :pronunciation pronunciation))))
+             (let ((segments
+                     (mapcar (lambda (w)
+                               (hachee.input-method.segment:make-segment
+                                :pron (hachee.kkc:word-pron w)
+                                :forms (list (hachee.kkc:word-form w))
+                                :has-more-forms-p t
+                                :current-index 0))
+                             words)))
+               (make-converting :segments segments
+                                :pronunciation pronunciation)))))
         ((= code +backspace-key+)
-         (editing-delete-char s))
+         (setf (editing-buffer s)
+               (hachee.input-method.buffer:delete-char
+                (editing-buffer s)))
+         s)
         ((= code +enter-key+)
-         (make-committed :input (editing-buffer s)))
+         (make-committed :input (hachee.input-method.buffer:buffer-string
+                                 (editing-buffer s))))
         ((= code +left-key+)
-         (editing-try-move-cursor-pos s -1))
+         (setf (editing-buffer s)
+               (hachee.input-method.buffer:try-move-cursor-pos
+                (editing-buffer s)
+                -1))
+         s)
         ((= code +right-key+)
-         (editing-try-move-cursor-pos s +1))
+         (setf (editing-buffer s)
+               (hachee.input-method.buffer:try-move-cursor-pos
+                (editing-buffer s)
+                +1))
+         s)
         (t
-         (editing-insert-char s (code-char code)))))
+         (setf (editing-buffer s)
+               (hachee.input-method.buffer:insert-char
+                (editing-buffer s)
+                (code-char code)))
+         s)))

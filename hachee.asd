@@ -46,11 +46,11 @@
        (:file "stdio-server")))
      (:file "ipc")
      (:file "buffer")
+     (:file "segment")
      (:module :fcitx
       :pathname "fcitx"
       :components
-      ((:file "states/states")
-       (:file "states/editing")
+      ((:file "states")
        (:file "controller/controller")
        (:file "controller/transit")
        (:file "controller/response")
