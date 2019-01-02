@@ -28,15 +28,9 @@
           +1)
          s)
         ((= code +left-key+)
-         (hachee.input-method.segment:try-move-cursor-pos!
-          (converting-current-segment s)
-          -1)
-         s)
+         (converting-move-curret-segment s -1))
         ((= code +right-key+)
-         (hachee.input-method.segment:try-move-cursor-pos!
-          (converting-current-segment s)
-          +1)
-         s)
+         (converting-move-curret-segment s +1))
         (t
          (make-committed :input (converting-current-input s)))))
 

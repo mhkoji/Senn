@@ -31,7 +31,8 @@
 
 
 (defun try-move-cursor-pos! (segment diff)
-  (let ((new-index (+ (segment-current-index segment) diff)))
-    (when (<= 0 new-index (1- (length (segment-forms segment))))
-      (setf (segment-current-index segment) new-index)))
+  (with-accessors ((forms segment-forms)
+                   (current-index segment-current-index)) segment
+    (setf current-index (mod (+ current-index diff)
+                             (length forms))))
   segment)
