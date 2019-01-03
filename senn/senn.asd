@@ -3,6 +3,7 @@
   :pathname "senn"
   :components
   ((:file "op")
+   (:file "kkc")
 
    (:module :emacs
     :pathname "emacs"

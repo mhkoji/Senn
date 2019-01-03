@@ -20,9 +20,8 @@
          (senn.segment:append-forms!
           (converting-current-segment s)
           (lambda (pron)
-            (let ((words (hachee.kkc:lookup (controller-kkc c)
-                                            pron)))
-              (mapcar #'hachee.kkc:word-form words))))
+            (let ((words (senn.kkc:lookup (controller-kkc c) pron)))
+              (mapcar #'senn.kkc:word-form words))))
          (senn.segment:try-move-cursor-pos!
           (converting-current-segment s)
           +1)
@@ -41,13 +40,13 @@
   (cond ((= code +space-key+)
          (let ((pronunciation (senn.buffer:buffer-string
                                (editing-buffer s))))
-           (let ((words (hachee.kkc:convert (controller-kkc c)
+           (let ((words (senn.kkc:convert (controller-kkc c)
                                             pronunciation)))
              (let ((segments
                     (mapcar (lambda (w)
                               (senn.segment:make-segment
-                               :pron (hachee.kkc:word-pron w)
-                               :forms (list (hachee.kkc:word-form w))
+                               :pron (senn.kkc:word-pron w)
+                               :forms (list (senn.kkc:word-form w))
                                :has-more-forms-p t
                                :current-index 0))
                             words)))
