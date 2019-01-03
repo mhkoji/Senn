@@ -1,12 +1,12 @@
-(defpackage :hachee.input-method.fcitx.controller
+(defpackage :senn.fcitx.controller
   (:use :cl
-        :hachee.input-method.op
-        :hachee.input-method.fcitx.states)
+        :senn.op
+        :senn.fcitx.states)
   (:export :process-client
            :make-controller)
   (:import-from :alexandria
                 :when-let))
-(in-package :hachee.input-method.fcitx.controller)
+(in-package :senn.fcitx.controller)
 
 (defstruct controller id kkc)
 

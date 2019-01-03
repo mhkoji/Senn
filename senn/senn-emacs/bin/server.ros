@@ -11,7 +11,7 @@ exec ros -Q -- $0 "$@"
 (defpackage :ros.script.run.3749247322
   (:use :cl))
 (in-package :ros.script.run.3749247322)
-(ql:quickload :hachee :silent t)
+(ql:quickload :senn :silent t)
 (ql:quickload :cl-fad :silent t)
 
 
@@ -27,6 +27,6 @@ exec ros -Q -- $0 "$@"
 
 (defun main (&rest argv)
   (declare (ignore argv))
-  (hachee.input-method.emacs.stdio-server:enter-loop *kkc*))
+  (senn.emacs.stdio-server:enter-loop *kkc*))
 
 ;;; vim: set ft=lisp lisp:

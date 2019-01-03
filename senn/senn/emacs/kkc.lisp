@@ -1,7 +1,7 @@
-(defpackage :hachee.input-method.emacs.kkc
-  (:use :cl :hachee.input-method.op)
+(defpackage :senn.emacs.kkc
+  (:use :cl :senn.op)
   (:export :kkc-eval))
-(in-package :hachee.input-method.emacs.kkc)
+(in-package :senn.emacs.kkc)
 
 (defun kkc-eval (kkc expr)
   (ecase (expr-op expr)

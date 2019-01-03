@@ -1,11 +1,11 @@
-(defpackage :hachee.input-method.fcitx.ipc-server
-  (:use :cl :hachee.input-method.ipc)
+(defpackage :senn.fcitx.ipc-server
+  (:use :cl :senn.ipc)
   (:export :enter-loop)
-  (:import-from :hachee.input-method.fcitx.controller
+  (:import-from :senn.fcitx.controller
                 :make-controller
                 :controller-id
                 :process-client))
-(in-package :hachee.input-method.fcitx.ipc-server)
+(in-package :senn.fcitx.ipc-server)
 
 (defmacro log/info (controller format-str &rest args)
   `(log:info ,(concatenate 'string "[~A]: " format-str)

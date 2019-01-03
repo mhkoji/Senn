@@ -1,11 +1,11 @@
-(defpackage :hachee.input-method.emacs.stdio-server
+(defpackage :senn.emacs.stdio-server
   (:use :cl
-        :hachee.input-method.op
-        :hachee.input-method.emacs.kkc)
+        :senn.op
+        :senn.emacs.kkc)
   (:export :enter-loop)
   (:import-from :alexandria
                 :when-let))
-(in-package :hachee.input-method.emacs.stdio-server)
+(in-package :senn.emacs.stdio-server)
 
 (defun process-client (kkc &key reader writer)
   (when-let ((line (funcall reader)))

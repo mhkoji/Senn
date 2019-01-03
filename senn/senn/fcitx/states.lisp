@@ -1,4 +1,4 @@
-(defpackage :hachee.input-method.fcitx.states
+(defpackage :senn.fcitx.states
   (:use :cl)
   (:export :editing
            :make-editing
@@ -19,10 +19,10 @@
            :committed-input)
   (:import-from :alexandria
                 :if-let))
-(in-package :hachee.input-method.fcitx.states)
+(in-package :senn.fcitx.states)
 
 (defstruct editing
-  (buffer (hachee.input-method.buffer:make-buffer)))
+  (buffer (senn.buffer:make-buffer)))
 
 
 (defstruct converting
@@ -42,7 +42,7 @@
 
 (defun converting-current-input (c)
   (format nil "~{~A~}"
-          (mapcar #'hachee.input-method.segment:segment-current-form
+          (mapcar #'senn.segment:segment-current-form
                   (converting-segments c))))
 
 

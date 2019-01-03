@@ -1,10 +1,10 @@
-(defpackage :hachee.input-method.segment
+(defpackage :senn.segment
   (:use :cl)
   (:export :make-segment
            :segment-current-form
            :append-forms!
            :try-move-cursor-pos!))
-(in-package :hachee.input-method.segment)
+(in-package :senn.segment)
 
 (defstruct segment
   pron

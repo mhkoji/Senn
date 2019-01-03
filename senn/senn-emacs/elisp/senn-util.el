@@ -44,4 +44,4 @@
 (defun string-zenkaku-capitalize (string)
   (string->zenkaku (string-capitalize string)))
 
-(provide 'hachee-util)
+(provide 'senn-util)

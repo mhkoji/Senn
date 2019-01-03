@@ -1,4 +1,4 @@
-(defpackage :hachee.input-method.buffer
+(defpackage :senn.buffer
   (:use :cl)
   (:export :make-buffer
            :buffer-cursor-pos
@@ -8,7 +8,7 @@
            :try-move-cursor-pos)
   (:import-from :alexandria
                 :if-let))
-(in-package :hachee.input-method.buffer)
+(in-package :senn.buffer)
 
 (defstruct buffer
   (string "")

@@ -1,4 +1,4 @@
-(defpackage :hachee.input-method.ipc
+(defpackage :senn.ipc
   (:use :cl)
   (:export :server-listen
            :server-accept
@@ -6,7 +6,7 @@
            :client-read-line
            :client-write-line
            :client-close))
-(in-package :hachee.input-method.ipc)
+(in-package :senn.ipc)
 
 (defun server-listen (socket-name)
   (let ((sbcl-socket (make-instance 'sb-bsd-sockets:local-socket

@@ -1,10 +1,10 @@
-(defpackage :hachee.input-method.op
+(defpackage :senn.op
   (:use :cl)
   (:import-from :cl-arrows :->)
   (:export :as-expr
            :expr-op
            :expr-arg))
-(in-package :hachee.input-method.op)
+(in-package :senn.op)
 
 (defun as-expr (string)
   (jsown:parse string))
