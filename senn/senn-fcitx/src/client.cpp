@@ -21,7 +21,9 @@ Client::DoInput(FcitxKeySym code,
                                        const int)
                 > on_converting,
                 std::function<
-                    INPUT_RETURN_VALUE(const std::string&, const int)
+                    INPUT_RETURN_VALUE(const boolean consumed,
+                                       const std::string&,
+                                       const int)
                 > on_editing) {
   {
     std::stringstream ss;
@@ -59,11 +61,12 @@ Client::DoInput(FcitxKeySym code,
     return on_converting(forms, cursor_pos);
   }
 
-  int cursor_pos;
+  int consumed, cursor_pos;
   std::string input;
+  iss >> consumed;
   iss >> cursor_pos;
   iss >> input;
-  return on_editing(input, cursor_pos);
+  return on_editing(consumed == 1, input, cursor_pos);
 }
 
 

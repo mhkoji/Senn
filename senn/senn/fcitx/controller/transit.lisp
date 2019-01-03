@@ -53,24 +53,26 @@
                (make-converting :segments segments
                                 :pronunciation pronunciation)))))
         ((= code +backspace-key+)
-         (setf (editing-buffer s) (senn.buffer:delete-char
-                                   (editing-buffer s)))
-         s)
+         (if (string= (senn.buffer:buffer-string (editing-buffer s))
+                      "")
+             (list s nil)
+             (progn
+               (setf (editing-buffer s)
+                     (senn.buffer:delete-char (editing-buffer s)))
+               s)))
         ((= code +enter-key+)
          (make-committed :input (senn.buffer:buffer-string
                                  (editing-buffer s))))
         ((= code +left-key+)
-         (setf (editing-buffer s) (senn.buffer:move-cursor-pos
-                                   (editing-buffer s)
-                                   -1))
+         (setf (editing-buffer s)
+               (senn.buffer:move-cursor-pos (editing-buffer s) -1))
          s)
         ((= code +right-key+)
-         (setf (editing-buffer s) (senn.buffer:move-cursor-pos
-                                   (editing-buffer s)
-                                   +1))
+         (setf (editing-buffer s)
+               (senn.buffer:move-cursor-pos (editing-buffer s) +1))
          s)
         (t
-         (setf (editing-buffer s) (senn.buffer:insert-char
-                                   (editing-buffer s)
-                                   (code-char code)))
+         (setf (editing-buffer s)
+               (senn.buffer:insert-char (editing-buffer s)
+                                        (code-char code)))
          s)))

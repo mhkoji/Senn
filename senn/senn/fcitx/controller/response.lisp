@@ -7,14 +7,16 @@
                    (senn.buffer:buffer-cursor-pos buffer))
            :external-format :utf-8)))
 
-(defmethod make-response ((s editing))
-  (format nil "~A ~A ~A~%"
+(defmethod make-response ((s editing) consumed)
+  (format nil "~A ~A ~A ~A~%"
           :editing
+          (if consumed 1 0)
           (buffer-cursor-pos-in-utf-8 (editing-buffer s))
           (senn.buffer:buffer-string (editing-buffer s))))
 
 
-(defmethod make-response ((s converting))
+(defmethod make-response ((s converting) consumed)
+  (declare  (ignore consumed))
   (let ((forms (format nil "~{~A~,^ ~}"
                        (mapcar #'senn.segment:segment-current-form
                                (converting-segments s)))))
@@ -24,7 +26,8 @@
             forms)))
 
 
-(defmethod make-response ((s committed))
+(defmethod make-response ((s committed) consumed)
+  (declare  (ignore consumed))
   (let ((input (committed-input s)))
     (format nil "~A ~A ~A~%"
             :committed

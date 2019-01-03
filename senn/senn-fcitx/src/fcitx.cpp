@@ -84,12 +84,16 @@ INPUT_RETURN_VALUE FcitxSennDoInput(void *arg,
     },
 
     // Editing
-    [&](const std::string &in,
+    [&](const boolean consumed,
+        const std::string &in,
         const int cursor_pos) {
       senn::fcitx::ui::Editing(instance, in, cursor_pos);
       if (sym == FcitxKey_BackSpace) {
-        // TODO: 入力中ではない場合、OSの処理に任せないといけない
-        return IRV_DO_NOTHING;
+        // IMEが文字を削除した
+        //     -> OSが文字が削除するのを抑制
+        // IMEが文字を削除していない
+        //     -> OSに文字を削除してもらう
+        return consumed ? IRV_DO_NOTHING : IRV_TO_PROCESS;
       }
       return IRV_TO_PROCESS;
     });

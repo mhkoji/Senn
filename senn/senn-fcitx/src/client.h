@@ -24,7 +24,9 @@ public:
           INPUT_RETURN_VALUE(const std::vector<std::string>&, const int)
       >,
       std::function<
-          INPUT_RETURN_VALUE(const std::string&, const int)
+          INPUT_RETURN_VALUE(const boolean consumed,
+                             const std::string&,
+                             const int)
       >);
 
   void SetConnection(senn::ipc::Connection*);

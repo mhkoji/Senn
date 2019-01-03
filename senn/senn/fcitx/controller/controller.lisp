@@ -12,7 +12,7 @@
 
 (defgeneric transit-by-input (controller state code))
 
-(defgeneric make-response (s))
+(defgeneric make-response (s consumed))
 
 
 (defun process-client (controller &key reader writer)
@@ -21,10 +21,11 @@
                (let ((expr (as-expr line)))
                  (ecase (expr-op expr)
                    (:do-input
-                    (let ((new-state (transit-by-input
-                                      controller
-                                      state
-                                      (expr-arg expr "code"))))
-                      (funcall writer (make-response new-state))
+                    (destructuring-bind (new-state &optional (consumed t))
+                        (alexandria:ensure-list
+                         (transit-by-input controller
+                                           state
+                                           (expr-arg expr "code")))
+                      (funcall writer (make-response new-state consumed))
                       (process-loop new-state))))))))
     (process-loop (make-editing))))
