@@ -5,7 +5,7 @@
            :buffer-string
            :insert-char
            :delete-char
-           :try-move-cursor-pos)
+           :move-cursor-pos)
   (:import-from :alexandria
                 :if-let))
 (in-package :senn.buffer)
@@ -47,16 +47,16 @@
 (defun delete-char (buffer)
   (let ((string (buffer-string buffer))
         (pos (buffer-cursor-pos buffer)))
-  (if (< 0 pos)
-      (make-buffer :string (concatenate
-                            'string
-                            (subseq string 0 (1- pos))
-                            (subseq string pos))
-                   :cursor-pos (1- pos))
-      buffer)))
+    (if (< 0 pos)
+        (make-buffer :string (concatenate
+                              'string
+                              (subseq string 0 (1- pos))
+                              (subseq string pos))
+                     :cursor-pos (1- pos))
+        buffer)))
 
 
-(defun try-move-cursor-pos (buffer diff)
+(defun move-cursor-pos (buffer diff)
   (let ((string (buffer-string buffer))
         (pos (buffer-cursor-pos buffer)))
     (let ((new-pos (+ diff pos)))

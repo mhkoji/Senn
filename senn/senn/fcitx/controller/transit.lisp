@@ -41,7 +41,7 @@
          (let ((pronunciation (senn.buffer:buffer-string
                                (editing-buffer s))))
            (let ((words (senn.kkc:convert (controller-kkc c)
-                                            pronunciation)))
+                                          pronunciation)))
              (let ((segments
                     (mapcar (lambda (w)
                               (senn.segment:make-segment
@@ -60,12 +60,12 @@
          (make-committed :input (senn.buffer:buffer-string
                                  (editing-buffer s))))
         ((= code +left-key+)
-         (setf (editing-buffer s) (senn.buffer:try-move-cursor-pos
+         (setf (editing-buffer s) (senn.buffer:move-cursor-pos
                                    (editing-buffer s)
                                    -1))
          s)
         ((= code +right-key+)
-         (setf (editing-buffer s) (senn.buffer:try-move-cursor-pos
+         (setf (editing-buffer s) (senn.buffer:move-cursor-pos
                                    (editing-buffer s)
                                    +1))
          s)
