@@ -4,7 +4,7 @@
 #include "client.h"
 #include "ipc.h"
 
-namespace hachee {
+namespace senn {
 namespace fcitx {
 
 Client::Client()
@@ -67,7 +67,7 @@ Client::DoInput(FcitxKeySym code,
 }
 
 
-void Client::SetConnection(hachee::ipc::Connection *conn) {
+void Client::SetConnection(senn::ipc::Connection *conn) {
   if (connection_) {
     connection_->Close();
   }
@@ -82,4 +82,4 @@ Client::~Client() {
 }
 
 } // fcitx
-} // hachee
+} // senn

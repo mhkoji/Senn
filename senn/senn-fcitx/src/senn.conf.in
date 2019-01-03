@@ -1,0 +1,7 @@
+[InputMethod]
+UniqueName=senn
+Name=Senn
+IconName=senn
+Priority=1
+LangCode=ja
+Parent=fcitx-senn

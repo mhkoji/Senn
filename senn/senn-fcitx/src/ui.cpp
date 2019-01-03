@@ -4,7 +4,7 @@
 
 #include "ui.h"
 
-namespace hachee {
+namespace senn {
 namespace fcitx {
 namespace ui {
 
@@ -63,4 +63,4 @@ void Editing(FcitxInstance *instance,
 
 } // ui
 } // fcitx
-} // hachee
+} // senn

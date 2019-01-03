@@ -1,10 +1,10 @@
-#include "hachee.h"
+#include "senn.h"
 
 
-namespace hachee {
+namespace senn {
 
 bool InvokeIMServer(const std::string &socket_name) {
   return true;
 }
 
-} // hachee
+} // senn

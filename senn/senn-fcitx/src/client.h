@@ -6,7 +6,7 @@
 
 #include "ipc.h"
 
-namespace hachee {
+namespace senn {
 namespace fcitx {
 
 class Client {
@@ -27,11 +27,11 @@ public:
           INPUT_RETURN_VALUE(const std::string&, const int)
       >);
 
-  void SetConnection(hachee::ipc::Connection*);
+  void SetConnection(senn::ipc::Connection*);
 
 private:
-  hachee::ipc::Connection *connection_;
+  senn::ipc::Connection *connection_;
 };
 
 } // fcitx
-} // hachee
+} // senn

@@ -28,7 +28,7 @@
      (log/info controller "Disconnected"))))
 
 
-(defun enter-loop (&key (socket-name "/tmp/hachee.sock"))
+(defun enter-loop (&key (socket-name "/tmp/senn.sock"))
   (when (cl-fad:file-exists-p socket-name)
     (delete-file socket-name))
   (let ((threads nil)

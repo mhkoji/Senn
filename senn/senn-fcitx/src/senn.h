@@ -2,8 +2,8 @@
 #include <string>
 
 
-namespace hachee {
+namespace senn {
 
 bool InvokeIMServer(const std::string&);
 
-} // hachee
+} // senn

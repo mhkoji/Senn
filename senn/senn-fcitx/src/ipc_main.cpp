@@ -2,11 +2,11 @@
 
 #include "ipc.h"
 
-using namespace hachee::ipc;
+using namespace senn::ipc;
 
 // g++ -std=c++11 ipc.cpp ipc_main.cpp
 int main() {
-  Connection *conn = Connection::ConnectTo("/tmp/hachee.sock");
+  Connection *conn = Connection::ConnectTo("/tmp/senn.sock");
   conn->Write("{\"op\": \"do-input\", \"args\": {\"code\": 97}}\n");
 
   std::string output;

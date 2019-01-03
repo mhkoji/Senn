@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
 
-namespace hachee {
+namespace senn {
 namespace ipc {
 
 class Connection {
@@ -21,4 +21,4 @@ private:
 };
 
 } // ipc
-} // hachee
+} // senn

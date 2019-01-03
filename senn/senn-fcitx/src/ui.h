@@ -3,7 +3,7 @@
 #include <vector>
 #include <string>
 
-namespace hachee {
+namespace senn {
 namespace fcitx {
 namespace ui {
 
@@ -18,4 +18,4 @@ void Editing(FcitxInstance *,
 
 } // ui
 } // fcitx
-} // hachee
+} // senn

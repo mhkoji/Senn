@@ -8,7 +8,7 @@
 
 #include "ipc.h"
 
-namespace hachee {
+namespace senn {
 namespace ipc {
 
 Connection* Connection::ConnectTo(const std::string &socket_name) {
@@ -81,4 +81,4 @@ void Connection::Close() {
 }
 
 } // ipc
-} // hachee
+} // senn

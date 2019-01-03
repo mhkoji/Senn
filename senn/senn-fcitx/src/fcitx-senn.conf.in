@@ -1,10 +1,10 @@
 [Addon]
-Name=fcitx-hachee
-GeneralName=Hachee
-Comment=Hachee support for Fcitx
+Name=fcitx-senn
+GeneralName=Senn
+Comment=Senn support for Fcitx
 Category=InputMethod
 Enabled=True
-Library=fcitx-hachee.so
+Library=fcitx-senn.so
 Type=SharedLibrary
 SubConfig=
 IMRegisterMethod=ConfigFile
