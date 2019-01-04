@@ -3,6 +3,8 @@ include_directories(${FCITX4_FCITX_INCLUDE_DIRS})
 include_directories(${FCITX4_FCITX_CONFIG_INCLUDE_DIRS})
 include_directories(${FCITX4_FCITX_UTILS_INCLUDE_DIRS})
 
+include_directories(../third-party/)
+
 set(FCITX_SENN_SRC client.cpp fcitx.cpp senn.cpp ipc.cpp ui.cpp)
 
 ## A macro for easy building of the shared object library.

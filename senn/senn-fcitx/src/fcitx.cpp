@@ -68,32 +68,25 @@ INPUT_RETURN_VALUE FcitxSennDoInput(void *arg,
   return senn->client->DoInput(
     sym,
 
-    // Committed
-    [&](const std::string &in,
-        const int cursor_pos) {
-      senn::fcitx::ui::Committed(instance, in, cursor_pos);
+    [&](const senn::fcitx::states::Committed *state) {
+      senn::fcitx::ui::Committed(instance, state);
       // 何らかの文字が確定された場合、エンターキーによる改行は無効化させる
-      return in == "" ? IRV_TO_PROCESS : IRV_DO_NOTHING;
+      return state->input == "" ? IRV_TO_PROCESS : IRV_DO_NOTHING;
     },
 
-    // Converting
-    [&](const std::vector<std::string> &forms,
-        const int cursor_pos) {
-      senn::fcitx::ui::Converting(instance, forms, cursor_pos);
+    [&](const senn::fcitx::states::Converting *state) {
+      senn::fcitx::ui::Converting(instance, state);
       return IRV_TO_PROCESS;
     },
 
-    // Editing
-    [&](const boolean consumed,
-        const std::string &in,
-        const int cursor_pos) {
-      senn::fcitx::ui::Editing(instance, in, cursor_pos);
+    [&](const senn::fcitx::states::Editing *state) {
+      senn::fcitx::ui::Editing(instance, state);
       if (sym == FcitxKey_BackSpace) {
         // IMEが文字を削除した
         //     -> OSが文字が削除するのを抑制
         // IMEが文字を削除していない
         //     -> OSに文字を削除してもらう
-        return consumed ? IRV_DO_NOTHING : IRV_TO_PROCESS;
+        return state->consumed ? IRV_DO_NOTHING : IRV_TO_PROCESS;
       }
       return IRV_TO_PROCESS;
     });

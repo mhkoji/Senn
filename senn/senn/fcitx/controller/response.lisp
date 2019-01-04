@@ -17,21 +17,20 @@
 
 (defmethod make-response ((s converting) consumed)
   (declare  (ignore consumed))
-  (let ((forms (format nil "~{~A~,^ ~}"
-                       (mapcar #'senn.segment:segment-current-form
-                               (converting-segments s)))))
-    (format nil "~A ~A ~A~%"
-            :converting
-            (converting-current-segment-index s)
-            forms)))
+  (format nil "~A ~A~%"
+          :converting
+          (jsown:to-json
+           (jsown:new-js
+             ("forms"
+              (mapcar #'senn.segment:segment-current-form
+                      (converting-segments s)))
+             ("current"
+              (jsown:new-js
+                ("cursor-pos" (converting-current-segment-index s))))))))
 
 
 (defmethod make-response ((s committed) consumed)
   (declare  (ignore consumed))
-  (let ((input (committed-input s)))
-    (format nil "~A ~A ~A~%"
-            :committed
-            (length (sb-ext:string-to-octets
-                     input
-                     :external-format :utf-8))
-            input)))
+  (format nil "~A ~A~%"
+          :committed
+          (committed-input s)))

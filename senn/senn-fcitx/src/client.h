@@ -5,6 +5,7 @@
 #include <functional>
 
 #include "ipc.h"
+#include "states.h"
 
 namespace senn {
 namespace fcitx {
@@ -17,17 +18,12 @@ public:
 
   INPUT_RETURN_VALUE DoInput(
       FcitxKeySym,
-      std::function<
-          INPUT_RETURN_VALUE(const std::string&, const int)
-      >,
-      std::function<
-          INPUT_RETURN_VALUE(const std::vector<std::string>&, const int)
-      >,
-      std::function<
-          INPUT_RETURN_VALUE(const boolean consumed,
-                             const std::string&,
-                             const int)
-      >);
+      std::function<INPUT_RETURN_VALUE(
+          const senn::fcitx::states::Committed*)>,
+      std::function<INPUT_RETURN_VALUE(
+          const senn::fcitx::states::Converting*)>,
+      std::function<INPUT_RETURN_VALUE(
+          const senn::fcitx::states::Editing*)>);
 
   void SetConnection(senn::ipc::Connection*);
 
