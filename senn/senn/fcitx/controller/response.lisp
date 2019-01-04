@@ -24,9 +24,9 @@
              ("forms"
               (mapcar #'senn.segment:segment-current-form
                       (converting-segments s)))
-             ("cursor-pos"
+             ("cursor-form-index"
               (converting-current-segment-index s))
-             ("current"
+             ("cursor-form"
               (let ((segment (converting-current-segment s)))
                 (jsown:new-js
                   ("candidates"

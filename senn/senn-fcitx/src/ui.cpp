@@ -35,10 +35,10 @@ void Converting(FcitxInstance *instance,
   FcitxInputState *input = FcitxInstanceGetInputState(instance);
   FcitxMessages *client_preedit = FcitxInputStateGetClientPreedit(input);
   {
-    int i = 0, cursor_pos = converting->cursor_pos;
+    int i = 0, cursor_form_index = converting->cursor_form_index;
     std::vector<std::string>::const_iterator it = converting->forms.begin();
     for (; it != converting->forms.end(); ++it, ++i) {
-      FcitxMessageType type = (i == cursor_pos) ?
+      FcitxMessageType type = (i == cursor_form_index) ?
         (FcitxMessageType) (MSG_HIGHLIGHT | MSG_CANDIATE_CURSOR) :
         (FcitxMessageType) (MSG_INPUT);
       FcitxMessagesAddMessageAtLast(client_preedit, type, "%s", it->c_str());
@@ -51,8 +51,9 @@ void Converting(FcitxInstance *instance,
     FcitxCandidateWordReset(word_list);
     FcitxCandidateWordSetLayoutHint(word_list, CLH_Vertical);
     std::vector<std::string>::const_iterator it =
-        converting->candidates.begin();
-    for (int i = 0; it != converting->candidates.end(); ++it, ++i) {
+        converting->cursor_form_candidates.begin();
+    for (int i = 0; it != converting->cursor_form_candidates.end();
+         ++it, ++i) {
       FcitxCandidateWord word;
       int *p = fcitx_utils_new(int);
       *p = i;
@@ -62,7 +63,7 @@ void Converting(FcitxInstance *instance,
       word.priv = (void*) p;
       word.strExtra = NULL;
       word.strWord = strdup(it->c_str());
-      word.wordType = (i == converting->candidate_index) ?
+      word.wordType = (i == converting->cursor_form_candidate_index) ?
         MSG_CANDIATE_CURSOR : MSG_OTHER;
       FcitxCandidateWordAppend(word_list, &word);
     }
