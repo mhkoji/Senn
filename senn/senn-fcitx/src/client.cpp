@@ -20,7 +20,6 @@ void ParseCommitted(std::istringstream &content,
 void ParseConverting(picojson::value &content,
                      senn::fcitx::states::Converting *output) {
   output->cursor_pos = content
-    .get<picojson::object>()["current"]
     .get<picojson::object>()["cursor-pos"]
     .get<double>();
 
@@ -31,6 +30,20 @@ void ParseConverting(picojson::value &content,
        it != forms.end(); ++it) {
     output->forms.push_back(it->get<std::string>());
   }
+
+  const picojson::array candidates = content
+    .get<picojson::object>()["current"]
+    .get<picojson::object>()["candidates"]
+    .get<picojson::array>();
+  for (picojson::array::const_iterator it = candidates.begin();
+       it != candidates.end(); ++it) {
+    output->candidates.push_back(it->get<std::string>());
+  }
+
+  output->candidate_index = content
+    .get<picojson::object>()["current"]
+    .get<picojson::object>()["candidate-index"]
+    .get<double>();
 }
 
 void ParseEditing(std::istringstream &content,

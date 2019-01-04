@@ -21,6 +21,12 @@ void Committed(FcitxInstance *instance,
   FcitxUIUpdateInputWindow(instance);
 };
 
+
+INPUT_RETURN_VALUE
+get_candidate(void* arg, FcitxCandidateWord* word) {
+  return IRV_DO_NOTHING;
+}
+
 void Converting(FcitxInstance *instance,
                 const senn::fcitx::states::Converting *converting) {
   // 表示している文字列を削除
@@ -32,10 +38,33 @@ void Converting(FcitxInstance *instance,
     int i = 0, cursor_pos = converting->cursor_pos;
     std::vector<std::string>::const_iterator it = converting->forms.begin();
     for (; it != converting->forms.end(); ++it, ++i) {
-      FcitxMessageType type = i == cursor_pos ?
+      FcitxMessageType type = (i == cursor_pos) ?
         (FcitxMessageType) (MSG_HIGHLIGHT | MSG_CANDIATE_CURSOR) :
         (FcitxMessageType) (MSG_INPUT);
       FcitxMessagesAddMessageAtLast(client_preedit, type, "%s", it->c_str());
+    }
+  }
+
+  {
+    FcitxCandidateWordList *word_list =
+        FcitxInputStateGetCandidateList(input);
+    FcitxCandidateWordReset(word_list);
+    FcitxCandidateWordSetLayoutHint(word_list, CLH_Vertical);
+    std::vector<std::string>::const_iterator it =
+        converting->candidates.begin();
+    for (int i = 0; it != converting->candidates.end(); ++it, ++i) {
+      FcitxCandidateWord word;
+      int *p = fcitx_utils_new(int);
+      *p = i;
+      word.callback = get_candidate;
+      word.extraType = MSG_OTHER;
+      word.owner = instance;
+      word.priv = (void*) p;
+      word.strExtra = NULL;
+      word.strWord = strdup(it->c_str());
+      word.wordType = (i == converting->candidate_index) ?
+        MSG_CANDIATE_CURSOR : MSG_OTHER;
+      FcitxCandidateWordAppend(word_list, &word);
     }
   }
 

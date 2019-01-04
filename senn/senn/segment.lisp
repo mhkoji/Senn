@@ -1,7 +1,10 @@
 (defpackage :senn.segment
   (:use :cl)
   (:export :make-segment
+           :segment-forms
+           :segment-has-more-forms-p
            :segment-current-form
+           :segment-current-index
            :append-forms!
            :try-move-cursor-pos!))
 (in-package :senn.segment)

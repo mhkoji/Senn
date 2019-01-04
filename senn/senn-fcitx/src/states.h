@@ -16,6 +16,8 @@ struct Editing {
 struct Converting {
   std::vector<std::string> forms;
   int cursor_pos;
+  std::vector<std::string> candidates;
+  int candidate_index;
 };
 
 
