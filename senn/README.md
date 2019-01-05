@@ -22,9 +22,15 @@ Add the code below to your .emacs file.
 ## Fcitx (WIP)
 
 ```
+% cd <path/to/Hachee>/senn-fcitx
+% ros dump executable bin/server.ros -o bin/server
+% sudo mkdir /usr/lib/senn
+% sudo mv bin/server /usr/lib/senn
+% /usr/lib/senn/server
+
 % sudo apt install fcitx-libs-dev
 % mkdir <path/to/Hachee>/senn/senn-fcitx/build
-% cd build
+% cd <path/to/Hachee>/senn/senn-fcitx/build
 % cmake ..
 % make && sudo make install
 ```

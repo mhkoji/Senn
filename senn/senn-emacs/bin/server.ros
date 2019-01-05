@@ -12,18 +12,8 @@ exec ros -Q -- $0 "$@"
   (:use :cl))
 (in-package :ros.script.run.3749247322)
 (ql:quickload :senn :silent t)
-(ql:quickload :cl-fad :silent t)
 
-
-(defvar *kkc*
-  (let ((corpus-pathnames
-         (cl-fad:list-directory
-          (merge-pathnames
-           "src/kkc/data/aozora/word-pron-utf8/"
-           (asdf:system-source-directory :hachee)))))
-    (log:debug "Loading: ~A" corpus-pathnames)
-    (hachee.kkc:create-kkc corpus-pathnames)))
-
+(defvar *kkc* (senn.kkc:create-kkc))
 
 (defun main (&rest argv)
   (declare (ignore argv))

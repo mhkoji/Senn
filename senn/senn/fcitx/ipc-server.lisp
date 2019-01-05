@@ -28,16 +28,11 @@
      (log/info controller "Disconnected"))))
 
 
-(defun enter-loop (&key (socket-name "/tmp/senn.sock"))
+(defun enter-loop (kkc &key (socket-name "/tmp/senn.sock"))
   (when (cl-fad:file-exists-p socket-name)
     (delete-file socket-name))
   (let ((threads nil)
-        (server-socket (server-listen socket-name))
-        (kkc (hachee.kkc:create-kkc
-              (cl-fad:list-directory
-               (merge-pathnames
-                "src/kkc/data/aozora/word-pron-utf8/"
-                (asdf:system-source-directory :hachee))))))
+        (server-socket (server-listen socket-name)))
     (log:info "Wait for client...")
     (unwind-protect
          (loop for id from 1
