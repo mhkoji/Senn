@@ -2,8 +2,7 @@
 #include <sstream>
 #include <picojson/picojson.h>
 
-#include "client.h"
-#include "ipc.h"
+#include "ipc_client.h"
 
 namespace senn {
 namespace fcitx {
@@ -61,12 +60,12 @@ void ParseEditing(std::istringstream &content,
 } // namespace
 
 
-Client::Client()
-  : connection_(nullptr) {}
+IPCClient::IPCClient(senn::ipc::Connection* conn)
+  : connection_(conn) {}
 
 
 INPUT_RETURN_VALUE
-Client::DoInput(
+IPCClient::DoInput(
     FcitxKeySym code,
     std::function<INPUT_RETURN_VALUE(
         const senn::fcitx::states::Committed*)> on_committed,
@@ -113,16 +112,12 @@ Client::DoInput(
   return on_editing(&editing);
 }
 
-
-void Client::SetConnection(senn::ipc::Connection *conn) {
-  if (connection_) {
-    connection_->Close();
-  }
-  connection_ = conn;
+IPCClient* IPCClient::Create(const std::string &socket_name) {
+  return new IPCClient(senn::ipc::Connection::ConnectTo(socket_name));
 }
 
 
-Client::~Client() {
+IPCClient::~IPCClient() {
   if (connection_) {
     connection_->Close();
   }

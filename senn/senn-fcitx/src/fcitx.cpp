@@ -1,13 +1,12 @@
 #include <fcitx/instance.h>
 #include <fcitx/ime.h>
 #include <fcitx/context.h>
-
 #include <string>
 #include <iostream>
 
 #include "ui.h"
-#include "senn.h"
-#include "client.h"
+#include "ipc_client.h"
+#include "ipc_server.h"
 
 const std::string SOCKET_NAME = "/tmp/senn.sock";
 
@@ -27,11 +26,9 @@ static void FcitxSennDestroy(void *arg) {
 static boolean FcitxSennInit(void *arg) {
   FcitxSenn *senn = (FcitxSenn *)arg;
 
-  senn::InvokeIMServer(SOCKET_NAME);
-
-  senn->client->SetConnection(
-      senn::ipc::Connection::ConnectTo(SOCKET_NAME)
-  );
+  if (!senn->client) {
+    senn->client = senn::fcitx::IPCClient::Create(SOCKET_NAME);
+  }
 
   boolean flag = true;
   FcitxInstanceSetContext(senn->fcitx,
@@ -106,7 +103,7 @@ static void* FcitxSennCreate(FcitxInstance *fcitx) {
       sizeof(FcitxSenn)
   );
   senn->fcitx = fcitx;
-  senn->client = new senn::fcitx::Client();
+  senn->client = nullptr;
 
   FcitxIMIFace iface;
   memset(&iface, 0, sizeof(FcitxIMIFace));
@@ -115,6 +112,8 @@ static void* FcitxSennCreate(FcitxInstance *fcitx) {
   iface.DoInput = FcitxSennDoInput;
   iface.DoReleaseInput = FcitxSennDoReleaseInput;
   iface.ReloadConfig = FcitxSennReloadConfig;
+
+  senn::fcitx::InvokeIPCServer(SOCKET_NAME);
 
   FcitxInstanceRegisterIMv2(
       fcitx,
