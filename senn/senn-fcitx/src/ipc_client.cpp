@@ -65,7 +65,7 @@ IPCClient::IPCClient(senn::ipc::Connection* conn)
 
 
 INPUT_RETURN_VALUE
-IPCClient::DoInput(
+IPCClient::TransitByInput(
     FcitxKeySym code,
     std::function<INPUT_RETURN_VALUE(
         const senn::fcitx::states::Committed*)> on_committed,
@@ -76,7 +76,7 @@ IPCClient::DoInput(
   {
     std::stringstream ss;
     ss << "{"
-       << "\"op\": \"do-input\","
+       << "\"op\": \"transit-by-input\","
        << "\"args\": {" << "\"code\": " << code << "}"
        << "}\n";
     connection_->Write(ss.str());

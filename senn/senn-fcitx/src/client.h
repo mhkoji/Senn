@@ -12,7 +12,7 @@ class Client {
 public:
   virtual ~Client() {};
 
-  virtual INPUT_RETURN_VALUE DoInput(
+  virtual INPUT_RETURN_VALUE TransitByInput(
       FcitxKeySym,
       std::function<INPUT_RETURN_VALUE(
           const senn::fcitx::states::Committed*)>,

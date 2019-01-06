@@ -16,7 +16,7 @@
              (when-let ((line (funcall reader)))
                (let ((expr (as-expr line)))
                  (ecase (expr-op expr)
-                   (:do-input
+                   (:transit-by-input
                     (destructuring-bind (new-state &optional (consumed t))
                         (alexandria:ensure-list
                          (transit-by-input client state

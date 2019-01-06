@@ -51,8 +51,8 @@ static void FcitxSennReset(void *arg) {
 }
 
 INPUT_RETURN_VALUE FcitxSennDoInput(void *arg,
-                                      FcitxKeySym _sym,
-                                      uint32_t _state) {
+                                    FcitxKeySym _sym,
+                                    uint32_t _state) {
   FcitxSenn *senn = (FcitxSenn *)arg;
   FcitxInstance *instance = senn->fcitx;
   FcitxInputState *input = FcitxInstanceGetInputState(instance);
@@ -62,7 +62,7 @@ INPUT_RETURN_VALUE FcitxSennDoInput(void *arg,
   // uint32_t state = FcitxInputStateGetKeyState(input);
   // std::cout << sym << " " << keycode << " " << state << std::endl;
 
-  return senn->client->DoInput(
+  return senn->client->TransitByInput(
     sym,
 
     [&](const senn::fcitx::states::Committed *state) {
@@ -90,8 +90,8 @@ INPUT_RETURN_VALUE FcitxSennDoInput(void *arg,
 }
 
 INPUT_RETURN_VALUE FcitxSennDoReleaseInput(void *arg,
-                                             FcitxKeySym sym,
-                                             uint32_t state) {
+                                           FcitxKeySym sym,
+                                           uint32_t state) {
   return IRV_TO_PROCESS;
 }
 

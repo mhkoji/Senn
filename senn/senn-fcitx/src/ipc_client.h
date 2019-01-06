@@ -9,7 +9,7 @@ class IPCClient : public Client {
 public:
   ~IPCClient();
 
-  INPUT_RETURN_VALUE DoInput(
+  INPUT_RETURN_VALUE TransitByInput(
       FcitxKeySym,
       std::function<INPUT_RETURN_VALUE(
           const senn::fcitx::states::Committed*)>,
