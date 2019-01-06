@@ -13,10 +13,6 @@
    (:file "fiveam"))
 
   :perform (asdf:test-op (o s)
-             (funcall (intern (symbol-name :set-system-pathname)
-                              :hachee.t.fiveam)
-                      (asdf/pathname:pathname-directory-pathname
-                       (asdf:system-definition-pathname :hachee-test)))
              (funcall (intern (symbol-name :run!) :fiveam) :hachee))
 
   :depends-on (:hachee :fiveam))

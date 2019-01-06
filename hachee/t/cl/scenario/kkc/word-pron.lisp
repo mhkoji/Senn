@@ -7,8 +7,8 @@
   (list (merge-pathnames "src/kkc/data/aozora/word-pron-utf8/kokoro.txt"
                          system-pathname)))
 
-(defmacro build-and-convert-pronunciations (system-pathname &key test)
-  `(let ((kkc (hachee.kkc:create-kkc (pathnames ,system-pathname))))
+(defmacro build-and-convert-pronunciations (pathnames &key test)
+  `(let ((kkc (hachee.kkc:create-kkc ,pathnames)))
      (,test
       (equal (mapcar #'hachee.kkc.word:word->key
                      (hachee.kkc:convert kkc "わたくしのせんせい"))

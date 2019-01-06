@@ -3,11 +3,8 @@
   (:export :set-system-pathname))
 (in-package :hachee.t.fiveam)
 
-(defvar *system-pathname* nil)
-
-(defun set-system-pathname (pathname)
-  (setq *system-pathname* pathname))
-
+(defvar *system-pathname*
+  (asdf:system-source-directory :hachee))
 
 (def-suite :hachee)
 (in-suite* :hachee)
@@ -33,4 +30,7 @@
 
 (test hachee.t.scenario.kkc
   (hachee.t.scenario.kkc.word-pron:build-and-convert-pronunciations
-   *system-pathname* :test is))
+   (cl-fad:list-directory
+    (merge-pathnames "src/kkc/data/aozora/word-pron-utf8/"
+                     *system-pathname*))
+   :test is))
