@@ -80,12 +80,16 @@ INPUT_RETURN_VALUE FcitxSennDoInput(void *arg,
       senn::fcitx::ui::Editing(instance, state);
       if (sym == FcitxKey_BackSpace) {
         // IMEが文字を削除した
-        //     -> OSが文字が削除するのを抑制
+        //     -> OSが文字が削除するのを抑制 (IRV_DO_NOTHING)
         // IMEが文字を削除していない
-        //     -> OSに文字を削除してもらう
+        //     -> OSに文字を削除してもらう (IRV_TO_PROCESS)
         return state->consumed ? IRV_DO_NOTHING : IRV_TO_PROCESS;
       }
-      return IRV_TO_PROCESS;
+
+      // MEMO:
+      //   バッファが空の状態での、上下左右の矢印キー対応
+      //   とりあえずこれで動くか様子見
+      return state->consumed ? IRV_TO_PROCESS : IRV_FLAG_FORWARD_KEY;
     });
 }
 

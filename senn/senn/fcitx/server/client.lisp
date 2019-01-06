@@ -41,6 +41,12 @@
          (make-committed :input (converting-current-input s)))))
 
 
+(defun buffer-empty-p (buffer)
+  (string= (senn.buffer:buffer-string buffer) ""))
+
+(defun editing-buffer-empty-p (editing)
+  (buffer-empty-p (editing-buffer editing)))
+
 (defmethod transit-by-input ((c client) (s editing)
                              code)
   (cond ((<= (char-code #\a) code (char-code #\~))
@@ -53,30 +59,30 @@
                                (editing-buffer s))))
            (let ((words (senn.kkc:convert (client-kkc c)
                                           pronunciation)))
-             (let ((segments
-                    (mapcar (lambda (w)
-                              (senn.segment:make-segment
-                               :pron (senn.kkc:word-pron w)
-                               :forms (list (senn.kkc:word-form w))
-                               :has-more-forms-p t
-                               :current-index 0))
-                            words)))
+             (let ((segments (mapcar (lambda (w)
+                                       (senn.segment:make-segment
+                                        :pron (senn.kkc:word-pron w)
+                                        :forms (list (senn.kkc:word-form w))
+                                        :has-more-forms-p t
+                                        :current-index 0))
+                                     words)))
                (make-converting :segments segments
                                 :pronunciation pronunciation)))))
-        ((and (= code +backspace-key+)
-              (string/= (senn.buffer:buffer-string (editing-buffer s))
-                        ""))
-         (setf (editing-buffer s)
-               (senn.buffer:delete-char (editing-buffer s)))
-         s)
         ((= code +enter-key+)
          (make-committed :input (senn.buffer:buffer-string
                                  (editing-buffer s))))
-        ((= code +left-key+)
+        ((and (= code +backspace-key+)
+              (not (editing-buffer-empty-p s)))
+         (setf (editing-buffer s)
+               (senn.buffer:delete-char (editing-buffer s)))
+         s)
+        ((and (= code +left-key+)
+              (not (editing-buffer-empty-p s)))
          (setf (editing-buffer s)
                (senn.buffer:move-cursor-pos (editing-buffer s) -1))
          s)
-        ((= code +right-key+)
+        ((and (= code +right-key+)
+              (not (editing-buffer-empty-p s)))
          (setf (editing-buffer s)
                (senn.buffer:move-cursor-pos (editing-buffer s) +1))
          s)
