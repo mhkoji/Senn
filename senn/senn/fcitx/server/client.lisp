@@ -1,4 +1,14 @@
-(in-package :senn.fcitx.controller)
+(defpackage :senn.fcitx.server.client
+  (:use :cl :senn.fcitx.states)
+  (:export :make-client
+           :client-id
+           :transit-by-input))
+(in-package :senn.fcitx.server.client)
+
+(defstruct client id kkc)
+
+(defgeneric transit-by-input (client state code))
+
 
 (defvar +space-key+ 32)
 (defvar +backspace-key+ 65288)
@@ -6,21 +16,18 @@
 (defvar +left-key+  65361)
 (defvar +right-key+ 65363)
 
-
-(defmethod transit-by-input ((c controller)
-                             (s committed)
+(defmethod transit-by-input ((c client) (s committed)
                              code)
   (transit-by-input c (make-editing) code))
 
 
-(defmethod transit-by-input ((c controller)
-                             (s converting)
+(defmethod transit-by-input ((c client) (s converting)
                              code)
   (cond ((= code +space-key+)
          (senn.segment:append-forms!
           (converting-current-segment s)
           (lambda (pron)
-            (let ((words (senn.kkc:lookup (controller-kkc c) pron)))
+            (let ((words (senn.kkc:lookup (client-kkc c) pron)))
               (mapcar #'senn.kkc:word-form words))))
          (senn.segment:try-move-cursor-pos!
           (converting-current-segment s)
@@ -34,8 +41,7 @@
          (make-committed :input (converting-current-input s)))))
 
 
-(defmethod transit-by-input ((c controller)
-                             (s editing)
+(defmethod transit-by-input ((c client) (s editing)
                              code)
   (cond ((<= (char-code #\a) code (char-code #\~))
          (setf (editing-buffer s)
@@ -45,7 +51,7 @@
         ((= code +space-key+)
          (let ((pronunciation (senn.buffer:buffer-string
                                (editing-buffer s))))
-           (let ((words (senn.kkc:convert (controller-kkc c)
+           (let ((words (senn.kkc:convert (client-kkc c)
                                           pronunciation)))
              (let ((segments
                     (mapcar (lambda (w)

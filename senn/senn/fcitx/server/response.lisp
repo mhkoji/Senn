@@ -1,4 +1,4 @@
-(in-package :senn.fcitx.controller)
+(in-package :senn.fcitx.server)
 
 (defun buffer-cursor-pos-in-utf-8 (buffer)
   (length (sb-ext:string-to-octets

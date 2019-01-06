@@ -1,31 +1,31 @@
-(defpackage :senn.fcitx.ipc-server
-  (:use :cl :senn.ipc)
+(defpackage :senn.fcitx.server.ipc
+  (:use :cl
+        :senn.ipc)
   (:export :enter-loop)
-  (:import-from :senn.fcitx.controller
-                :make-controller
-                :controller-id
-                :process-client))
-(in-package :senn.fcitx.ipc-server)
+  (:import-from :senn.fcitx.server.client
+                :make-client
+                :client-id))
+(in-package :senn.fcitx.server.ipc)
 
-(defmacro log/info (controller format-str &rest args)
+(defmacro log/info (client format-str &rest args)
   `(log:info ,(concatenate 'string "[~A]: " format-str)
-             (controller-id ,controller)
+             (client-id ,client)
              ,@args))
 
-(defun spawn-client-thread (controller client-socket)
-  (log/info controller "New client")
+(defun spawn-client-thread (client client-socket)
+  (log/info client "New client")
   (bordeaux-threads:make-thread
    (lambda ()
-     (process-client controller
+     (senn.fcitx.server:process-client client
       :reader (lambda ()
                 (let ((expr (client-read-line client-socket)))
-                  (log/info controller "Read: ~A" expr)
+                  (log/info client "Read: ~A" expr)
                   expr))
       :writer (lambda (line)
                 (client-write-line client-socket line)
-                (log/info controller "Written: ~A" line)))
+                (log/info client "Written: ~A" line)))
      (client-close client-socket)
-     (log/info controller "Disconnected"))))
+     (log/info client "Disconnected"))))
 
 
 (defun enter-loop (kkc &key (socket-name "/tmp/senn.sock"))
@@ -37,9 +37,8 @@
     (unwind-protect
          (loop for id from 1
                for client-socket = (server-accept server-socket)
-               do (let ((controller (make-controller :id id :kkc kkc)))
-                    (push (spawn-client-thread controller
-                                               client-socket)
+               do (let ((client (make-client :id id :kkc kkc)))
+                    (push (spawn-client-thread client client-socket)
                           threads)))
       (mapc #'bordeaux-threads:destroy-thread threads)
       (server-close server-socket))))

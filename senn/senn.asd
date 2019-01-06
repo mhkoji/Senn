@@ -19,8 +19,8 @@
     :pathname "fcitx"
     :components
     ((:file "states")
-     (:file "controller/controller")
-     (:file "controller/transit")
-     (:file "controller/response")
-     (:file "ipc-server"))))
+     (:file "server/client")
+     (:file "server/server")
+     (:file "server/response")
+     (:file "server/ipc"))))
   :depends-on (:hachee))
