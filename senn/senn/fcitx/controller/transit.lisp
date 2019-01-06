@@ -37,7 +37,12 @@
 (defmethod transit-by-input ((c controller)
                              (s editing)
                              code)
-  (cond ((= code +space-key+)
+  (cond ((<= (char-code #\a) code (char-code #\~))
+         (setf (editing-buffer s)
+               (senn.buffer:insert-char (editing-buffer s)
+                                        (code-char code)))
+         s)
+        ((= code +space-key+)
          (let ((pronunciation (senn.buffer:buffer-string
                                (editing-buffer s))))
            (let ((words (senn.kkc:convert (controller-kkc c)
@@ -52,14 +57,12 @@
                             words)))
                (make-converting :segments segments
                                 :pronunciation pronunciation)))))
-        ((= code +backspace-key+)
-         (if (string= (senn.buffer:buffer-string (editing-buffer s))
-                      "")
-             (list s nil)
-             (progn
-               (setf (editing-buffer s)
-                     (senn.buffer:delete-char (editing-buffer s)))
-               s)))
+        ((and (= code +backspace-key+)
+              (string/= (senn.buffer:buffer-string (editing-buffer s))
+                        ""))
+         (setf (editing-buffer s)
+               (senn.buffer:delete-char (editing-buffer s)))
+         s)
         ((= code +enter-key+)
          (make-committed :input (senn.buffer:buffer-string
                                  (editing-buffer s))))
@@ -72,7 +75,4 @@
                (senn.buffer:move-cursor-pos (editing-buffer s) +1))
          s)
         (t
-         (setf (editing-buffer s)
-               (senn.buffer:insert-char (editing-buffer s)
-                                        (code-char code)))
-         s)))
+         (list s nil))))
