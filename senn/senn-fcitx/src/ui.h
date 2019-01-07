@@ -3,17 +3,17 @@
 #include <vector>
 #include <string>
 
-#include "states.h"
+#include "views.h"
 
 namespace senn {
 namespace fcitx {
 namespace ui {
 
-void Committed(FcitxInstance *, const senn::fcitx::states::Committed*);
+void Draw(FcitxInstance*, const senn::fcitx::views::Committed*);
 
-void Converting(FcitxInstance *, const senn::fcitx::states::Converting*);
+void Draw(FcitxInstance*, const senn::fcitx::views::Converting*);
 
-void Editing(FcitxInstance *, const senn::fcitx::states::Editing*);
+void Draw(FcitxInstance*, const senn::fcitx::views::Editing*);
 
 } // ui
 } // fcitx

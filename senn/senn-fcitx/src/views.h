@@ -4,10 +4,9 @@
 
 namespace senn {
 namespace fcitx {
-namespace states {
+namespace views {
 
 struct Editing {
-  boolean consumed;
   std::string input;
   int cursor_pos;
 };
@@ -25,6 +24,6 @@ struct Committed {
   std::string input;
 };
 
-} // states
+} // views
 } // fcitx
 } // senn

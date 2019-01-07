@@ -5,29 +5,29 @@
 #include <iostream>
 
 #include "ui.h"
-#include "ipc_client.h"
-#include "ipc_server.h"
+#include "ipc_stateful_im_proxy.h"
+#include "ipc_stateful_im_proxy_server.h"
 
 const std::string SOCKET_NAME = "/tmp/senn.sock";
 
 
 typedef struct _FcitxSenn {
   FcitxInstance *fcitx;
-  senn::fcitx::Client *client;
+  senn::fcitx::StatefulIMProxy *im;
 } FcitxSenn;
 
 
 static void FcitxSennDestroy(void *arg) {
   FcitxSenn *senn = (FcitxSenn *)arg;
-  delete senn->client;
+  delete senn->im;
   free(senn);
 }
 
 static boolean FcitxSennInit(void *arg) {
   FcitxSenn *senn = (FcitxSenn *)arg;
 
-  if (!senn->client) {
-    senn->client = senn::fcitx::IPCClient::Create(SOCKET_NAME);
+  if (!senn->im) {
+    senn->im = senn::fcitx::IPCStatefulIMProxy::Create(SOCKET_NAME);
   }
 
   boolean flag = true;
@@ -62,34 +62,19 @@ INPUT_RETURN_VALUE FcitxSennDoInput(void *arg,
   // uint32_t state = FcitxInputStateGetKeyState(input);
   // std::cout << sym << " " << keycode << " " << state << std::endl;
 
-  return senn->client->TransitByInput(
+  return senn->im->Input(
     sym,
 
-    [&](const senn::fcitx::states::Committed *state) {
-      senn::fcitx::ui::Committed(instance, state);
-      // 何らかの文字が確定された場合、エンターキーによる改行は無効化させる
-      return state->input == "" ? IRV_TO_PROCESS : IRV_DO_NOTHING;
+    [&](const senn::fcitx::views::Committed *view) {
+      senn::fcitx::ui::Draw(instance, view);
     },
 
-    [&](const senn::fcitx::states::Converting *state) {
-      senn::fcitx::ui::Converting(instance, state);
-      return IRV_TO_PROCESS;
+    [&](const senn::fcitx::views::Converting *view) {
+      senn::fcitx::ui::Draw(instance, view);
     },
 
-    [&](const senn::fcitx::states::Editing *state) {
-      senn::fcitx::ui::Editing(instance, state);
-      if (sym == FcitxKey_BackSpace) {
-        // IMEが文字を削除した
-        //     -> OSが文字が削除するのを抑制 (IRV_DO_NOTHING)
-        // IMEが文字を削除していない
-        //     -> OSに文字を削除してもらう (IRV_TO_PROCESS)
-        return state->consumed ? IRV_DO_NOTHING : IRV_TO_PROCESS;
-      }
-
-      // MEMO:
-      //   バッファが空の状態での、上下左右の矢印キー対応
-      //   とりあえずこれで動くか様子見
-      return state->consumed ? IRV_TO_PROCESS : IRV_FLAG_FORWARD_KEY;
+    [&](const senn::fcitx::views::Editing *view) {
+      senn::fcitx::ui::Draw(instance, view);
     });
 }
 
@@ -107,7 +92,7 @@ static void* FcitxSennCreate(FcitxInstance *fcitx) {
       sizeof(FcitxSenn)
   );
   senn->fcitx = fcitx;
-  senn->client = nullptr;
+  senn->im = nullptr;
 
   FcitxIMIFace iface;
   memset(&iface, 0, sizeof(FcitxIMIFace));

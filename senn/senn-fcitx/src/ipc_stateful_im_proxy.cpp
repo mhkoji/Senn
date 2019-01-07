@@ -2,7 +2,7 @@
 #include <sstream>
 #include <picojson/picojson.h>
 
-#include "ipc_client.h"
+#include "ipc_stateful_im_proxy.h"
 
 namespace senn {
 namespace fcitx {
@@ -10,14 +10,14 @@ namespace fcitx {
 namespace {
 
 void ParseCommitted(std::istringstream &content,
-                    senn::fcitx::states::Committed *output) {
+                    senn::fcitx::views::Committed *output) {
   std::string input;
   content >> input;
   output->input = input;
 }
 
 void ParseConverting(picojson::value &content,
-                     senn::fcitx::states::Converting *output) {
+                     senn::fcitx::views::Converting *output) {
   const picojson::array forms = content
     .get<picojson::object>()["forms"]
     .get<picojson::array>();
@@ -46,37 +46,43 @@ void ParseConverting(picojson::value &content,
 }
 
 void ParseEditing(std::istringstream &content,
-                  senn::fcitx::states::Editing *output) {
-  int consumed, cursor_pos;
+                  senn::fcitx::views::Editing *output) {
+  int cursor_pos;
   std::string input;
-  content >> consumed;
   content >> cursor_pos;
   content >> input;
-  output->consumed = (consumed == 1);
-  output->input = input;
   output->cursor_pos = cursor_pos;
+  output->input = input;
+}
+
+INPUT_RETURN_VALUE ParseInputReturnValue(const std::string &s) {
+  if (s == "IRV_TO_PROCESS") {
+    return IRV_TO_PROCESS;
+  } else if (s == "IRV_DO_NOTHING") {
+    return IRV_DO_NOTHING;
+  } else if (s == "IRV_FLAG_FORWARD_KEY") {
+    return IRV_FLAG_FORWARD_KEY;
+  }
+  return IRV_TO_PROCESS;
 }
 
 } // namespace
 
 
-IPCClient::IPCClient(senn::ipc::Connection* conn)
+IPCStatefulIMProxy::IPCStatefulIMProxy(senn::ipc::Connection* conn)
   : connection_(conn) {}
 
 
 INPUT_RETURN_VALUE
-IPCClient::TransitByInput(
+IPCStatefulIMProxy::Input(
     FcitxKeySym code,
-    std::function<INPUT_RETURN_VALUE(
-        const senn::fcitx::states::Committed*)> on_committed,
-    std::function<INPUT_RETURN_VALUE(
-        const senn::fcitx::states::Converting*)> on_converting,
-    std::function<INPUT_RETURN_VALUE(
-        const senn::fcitx::states::Editing*)> on_editing) {
+    std::function<void(const senn::fcitx::views::Committed*)> on_committed,
+    std::function<void(const senn::fcitx::views::Converting*)> on_converting,
+    std::function<void(const senn::fcitx::views::Editing*)> on_editing) {
   {
     std::stringstream ss;
     ss << "{"
-       << "\"op\": \"transit-by-input\","
+       << "\"op\": \"input\","
        << "\"args\": {" << "\"code\": " << code << "}"
        << "}\n";
     connection_->Write(ss.str());
@@ -85,39 +91,41 @@ IPCClient::TransitByInput(
   std::string result;
   connection_->ReadLine(&result);
 
-  std::string type;
+  std::string input_return_value, type;
   std::istringstream iss(result);
+  iss >> input_return_value;
   iss >> type;
 
   if (type == "COMMITTED") {
-    senn::fcitx::states::Committed committed;
+    senn::fcitx::views::Committed committed;
     ParseCommitted(iss, &committed);
-    return on_committed(&committed);
-  }
-
-  if (type == "CONVERTING") {
+    on_committed(&committed);
+  } else if (type == "CONVERTING") {
     std::string content;
     std::getline(iss, content);
 
     picojson::value v;
     picojson::parse(v, content);
 
-    senn::fcitx::states::Converting converting;
+    senn::fcitx::views::Converting converting;
     ParseConverting(v, &converting);
-    return on_converting(&converting);
+    on_converting(&converting);
+  } else {
+    senn::fcitx::views::Editing editing;
+    ParseEditing(iss, &editing);
+    on_editing(&editing);
   }
 
-  senn::fcitx::states::Editing editing;
-  ParseEditing(iss, &editing);
-  return on_editing(&editing);
+  return ParseInputReturnValue(input_return_value);
 }
 
-IPCClient* IPCClient::Create(const std::string &socket_name) {
-  return new IPCClient(senn::ipc::Connection::ConnectTo(socket_name));
+IPCStatefulIMProxy*
+IPCStatefulIMProxy::Create(const std::string &socket_name) {
+  return new IPCStatefulIMProxy(senn::ipc::Connection::ConnectTo(socket_name));
 }
 
 
-IPCClient::~IPCClient() {
+IPCStatefulIMProxy::~IPCStatefulIMProxy() {
   if (connection_) {
     connection_->Close();
   }

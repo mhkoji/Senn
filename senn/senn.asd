@@ -18,9 +18,9 @@
    (:module :fcitx
     :pathname "fcitx"
     :components
-    ((:file "states")
-     (:file "server/client")
+    ((:file "states/states")
+     (:file "states/view")
+     (:file "im")
      (:file "server/server")
-     (:file "server/response")
      (:file "server/ipc"))))
   :depends-on (:hachee))

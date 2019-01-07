@@ -1,6 +1,8 @@
 (defpackage :senn.fcitx.states
   (:use :cl)
-  (:export :editing
+  (:export :to-view
+
+           :editing
            :make-editing
            :editing-buffer
 
@@ -16,10 +18,10 @@
 
            :committed
            :make-committed
-           :committed-input)
-  (:import-from :alexandria
-                :if-let))
+           :committed-input))
 (in-package :senn.fcitx.states)
+
+(defgeneric to-view (s))
 
 (defstruct editing
   (buffer (senn.buffer:make-buffer)))

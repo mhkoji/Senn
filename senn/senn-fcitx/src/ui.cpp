@@ -9,8 +9,8 @@ namespace senn {
 namespace fcitx {
 namespace ui {
 
-void Committed(FcitxInstance *instance,
-               const senn::fcitx::states::Committed *committed) {
+void Draw(FcitxInstance *instance,
+          const senn::fcitx::views::Committed *committed) {
   // 入力を確定
   FcitxInputContext *ic = FcitxInstanceGetCurrentIC(instance);
   FcitxInstanceCommitString(instance, ic, committed->input.c_str());
@@ -27,8 +27,8 @@ get_candidate(void* arg, FcitxCandidateWord* word) {
   return IRV_DO_NOTHING;
 }
 
-void Converting(FcitxInstance *instance,
-                const senn::fcitx::states::Converting *converting) {
+void Draw(FcitxInstance *instance,
+          const senn::fcitx::views::Converting *converting) {
   // 表示している文字列を削除
   FcitxInstanceCleanInputWindow(instance);
 
@@ -72,8 +72,8 @@ void Converting(FcitxInstance *instance,
   FcitxUIUpdateInputWindow(instance);
 }
 
-void Editing(FcitxInstance *instance,
-             const senn::fcitx::states::Editing *editing) {
+void Draw(FcitxInstance *instance,
+          const senn::fcitx::views::Editing *editing) {
   // 表示している文字列を削除
   FcitxInstanceCleanInputWindow(instance);
 

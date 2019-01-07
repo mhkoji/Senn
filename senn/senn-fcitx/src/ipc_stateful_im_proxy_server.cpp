@@ -2,7 +2,7 @@
 #include <spawn.h>
 #include <unistd.h>
 
-#include "ipc_server.h"
+#include "ipc_stateful_im_proxy_server.h"
 
 extern "C" {
 
