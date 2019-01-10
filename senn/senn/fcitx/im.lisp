@@ -20,13 +20,12 @@
 
 
 (defun committed (input)
-  (list
-   (make-committed :input input)
-   (if (string= input "")
-       :IRV_TO_PROCESS
-       ;; 何らかの文字が確定された場合
-       ;; エンターキーによる改行は無効化させる
-       :IRV_DO_NOTHING)))
+  (list (make-committed :input input)
+        (if (string= input "")
+            :IRV_TO_PROCESS
+            ;; 何らかの文字が確定された場合
+            ;; エンターキーによる改行は無効化させる
+            :IRV_DO_NOTHING)))
 
 (defmethod input ((im im) (s converting) code)
   (cond ((= code +space-key+)
@@ -35,16 +34,17 @@
           (lambda (pron)
             (let ((words (senn.kkc:lookup (im-kkc im) pron)))
               (mapcar #'senn.kkc:word-form words))))
-         (senn.segment:try-move-cursor-pos!
-          (converting-current-segment s)
-          +1)
+         (senn.segment:try-move-cursor-pos! (converting-current-segment s)
+                                            +1)
          (list s :IRV_TO_PROCESS))
 
         ((= code +left-key+)
-         (list (converting-move-curret-segment s -1) :IRV_TO_PROCESS))
+         (list (converting-move-curret-segment s -1)
+               :IRV_TO_PROCESS))
 
         ((= code +right-key+)
-         (list (converting-move-curret-segment s +1) :IRV_TO_PROCESS))
+         (list (converting-move-curret-segment s +1)
+               :IRV_TO_PROCESS))
 
         (t
          (committed (converting-current-input s)))))
@@ -66,8 +66,7 @@
         ((= code +space-key+)
          (let ((pronunciation (senn.buffer:buffer-string
                                (editing-buffer s))))
-           (let ((words (senn.kkc:convert (im-kkc im)
-                                          pronunciation)))
+           (let ((words (senn.kkc:convert (im-kkc im) pronunciation)))
              (let ((segments (mapcar (lambda (w)
                                        (senn.segment:make-segment
                                         :pron (senn.kkc:word-pron w)
@@ -84,14 +83,12 @@
 
         ((= code +backspace-key+)
          (if (editing-buffer-empty-p s)
-             ;; IMEが文字を削除していない
-             ;:     -> OSに文字を削除してもらう (IRV_TO_PROCESS)
+             ;; IMEが文字を削除していない -> OSに文字を削除してもらう
              (list s :IRV_TO_PROCESS)
              (progn
                (setf (editing-buffer s)
                      (senn.buffer:delete-char (editing-buffer s)))
-               ;; IMEが文字を削除した
-               ;;     -> OSが文字が削除するのを抑制 (IRV_DO_NOTHING)
+               ;; IMEが文字を削除した -> OSが文字が削除するのを抑制
                (list s :IRV_DO_NOTHING))))
 
         ((and (= code +left-key+)
@@ -106,7 +103,10 @@
                (senn.buffer:move-cursor-pos (editing-buffer s) +1))
          (list s :IRV_TO_PROCESS))
 
-        (t
+        ((editing-buffer-empty-p s)
          ;; バッファが空の状態での、上下左右の矢印キー対応
          ;; とりあえずこれで動くか様子見
-         (list s :IRV_FLAG_FORWARD_KEY))))
+         (list s :IRV_FLAG_FORWARD_KEY))
+
+        (t
+         (list s :IRV_DO_NOTHING))))
