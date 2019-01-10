@@ -1,6 +1,7 @@
 #include <fcitx/instance.h>
 #include <fcitx/ime.h>
 #include <fcitx/context.h>
+#include <sys/stat.h>
 #include <string>
 #include <iostream>
 
@@ -102,7 +103,10 @@ static void* FcitxSennCreate(FcitxInstance *fcitx) {
   iface.DoReleaseInput = FcitxSennDoReleaseInput;
   iface.ReloadConfig = FcitxSennReloadConfig;
 
-  senn::fcitx::InvokeIPCServer(SOCKET_NAME);
+  struct stat st;
+  if (stat(SOCKET_NAME.c_str(), &st) != 0) {
+    senn::fcitx::InvokeIPCServer(SOCKET_NAME);
+  }
 
   FcitxInstanceRegisterIMv2(
       fcitx,

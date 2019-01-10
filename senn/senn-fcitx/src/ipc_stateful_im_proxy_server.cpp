@@ -1,6 +1,7 @@
 #include <string>
 #include <spawn.h>
 #include <unistd.h>
+#include <iostream>
 
 #include "ipc_stateful_im_proxy_server.h"
 
@@ -16,14 +17,13 @@ namespace fcitx {
 const std::string SERVER_PROGRAM_PATH = "/usr/lib/senn/server";
 
 bool InvokeIPCServer(const std::string &socket_name) {
-  // TODO: 動かす
-  // pid_t pid;
-  // char *argv[] = {NULL};
-  // const int status = posix_spawn(
-  //     &pid, SERVER_PROGRAM_PATH.c_str(), NULL, NULL, argv, environ);
-
-  // return status == 0;
-  return true;
+  pid_t pid;
+  char path[SERVER_PROGRAM_PATH.size()];
+  SERVER_PROGRAM_PATH.copy(path, SERVER_PROGRAM_PATH.size());
+  char *argv[] = {path, NULL};
+  const int status = posix_spawn(
+      &pid, SERVER_PROGRAM_PATH.c_str(), NULL, NULL, argv, environ);
+  return status == 0;
 }
 
 } // fcitx
