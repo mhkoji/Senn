@@ -14,13 +14,23 @@
   (string "")
   (cursor-pos 0))
 
+(defun replace-n-at-end (str)
+  (let ((len (length str)))
+    (if (and (< 0 len)
+             (char= (char str (1- len)) #\n))
+        (concatenate 'string
+                     (subseq str 0 (1- len))
+                     "ん")
+        str)))
+
 (defun insert-char (buffer char)
   (let ((string (buffer-string buffer))
         (pos (buffer-cursor-pos buffer)))
     (labels ((try-insertion (diff-from-pos)
                (if (< diff-from-pos 0)
                    (make-buffer :string (concatenate 'string
-                                                     (subseq string 0 pos)
+                                                     (replace-n-at-end
+                                                      (subseq string 0 pos))
                                                      (string char)
                                                      (subseq string pos))
                                 :cursor-pos (1+ pos))
