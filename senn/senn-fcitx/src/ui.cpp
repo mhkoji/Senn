@@ -45,7 +45,7 @@ void Draw(FcitxInstance *instance,
     }
   }
 
-  {
+  if (0 < converting->cursor_form_candidates.size()) {
     FcitxCandidateWordList *word_list =
         FcitxInputStateGetCandidateList(input);
     FcitxCandidateWordReset(word_list);
@@ -67,6 +67,15 @@ void Draw(FcitxInstance *instance,
         MSG_CANDIATE_CURSOR : MSG_OTHER;
       FcitxCandidateWordAppend(word_list, &word);
     }
+    // Set page by word index
+    FcitxCandidateWordSetFocus(word_list,
+                               converting->cursor_form_candidate_index);
+
+    FcitxMessages* aux = FcitxInputStateGetAuxUp(input);
+    FcitxMessagesSetMessageCount(aux, 0);
+    FcitxMessagesAddMessageAtLast(aux, MSG_TIPS, "(%d / %d)",
+                                  converting->cursor_form_candidate_index + 1,
+                                  converting->cursor_form_candidates.size());
   }
 
   FcitxUIUpdateInputWindow(instance);
