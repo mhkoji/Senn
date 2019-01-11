@@ -15,12 +15,19 @@
 
 (defmethod senn.fcitx.server:read-request ((client client))
   (when-let ((line (client-read-line (client-socket client))))
-    (log/info client "Read: ~A" line)
     (senn.op:as-expr line)))
 
 (defmethod senn.fcitx.server:send-response ((client client) resp)
-  (client-write-line (client-socket client) resp)
+  (client-write-line (client-socket client) resp))
+
+(defmethod senn.fcitx.server:read-request :around ((client client))
+  (let ((req (call-next-method)))
+    (log/info client "Read: ~A" req)
+    req))
+
+(defmethod senn.fcitx.server:send-response :after ((client client) resp)
   (log/info client "Written: ~A" resp))
+
 
 (defun spawn-client-thread (client im)
   (log/info client "New client")
