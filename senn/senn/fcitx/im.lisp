@@ -64,7 +64,7 @@
   (buffer-empty-p (editing-buffer editing)))
 
 (defmethod input ((im im) (s editing) code)
-  (cond ((<= (char-code #\a) code (char-code #\~))
+  (cond ((<= (char-code #\!) code (char-code #\~))
          (setf (editing-buffer s)
                (senn.buffer:insert-char (editing-buffer s)
                                         (code-char code)))
