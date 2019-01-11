@@ -71,8 +71,8 @@
   (assert (string= (buffer-string buf) "あか"))
   (assert (= (buffer-cursor-pos buf) 2)))
 
-(let ((buf (insert-char (make-buffer :string "kk"
+(let ((buf (insert-char (make-buffer :string "kr"
                                      :cursor-pos 1)
                         #\a)))
-  (assert (string= (buffer-string buf) "かk"))
+  (assert (string= (buffer-string buf) "かr"))
   (assert (= (buffer-cursor-pos buf) 1)))
