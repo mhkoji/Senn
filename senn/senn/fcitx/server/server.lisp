@@ -22,7 +22,10 @@
     (ecase (expr-op expr)
       (:input
        (destructuring-bind (new-state input-return-value)
-           (senn.fcitx.im:input im state (expr-arg expr "code"))
+           (let ((key (senn.fcitx.im:make-key
+                       :sym (expr-arg expr "sym")
+                       :state (expr-arg expr "state"))))
+             (senn.fcitx.im:input im state key))
          (let ((resp (make-response new-state input-return-value)))
            (send-response client resp))
          (loop-handling-request new-state im client))))))

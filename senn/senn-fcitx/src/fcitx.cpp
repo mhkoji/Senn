@@ -59,13 +59,11 @@ INPUT_RETURN_VALUE FcitxSennDoInput(void *arg,
   FcitxInputState *input = FcitxInstanceGetInputState(instance);
 
   FcitxKeySym sym = (FcitxKeySym) FcitxInputStateGetKeySym(input);
-  // uint32_t keycode = FcitxInputStateGetKeyCode(input);
-  // uint32_t state = FcitxInputStateGetKeyState(input);
+  uint32_t keycode = FcitxInputStateGetKeyCode(input);
+  uint32_t state = FcitxInputStateGetKeyState(input);
   // std::cout << sym << " " << keycode << " " << state << std::endl;
 
-  return senn->im->Input(
-    sym,
-
+  return senn->im->Input(sym, keycode, state,
     [&](const senn::fcitx::views::Committed *view) {
       senn::fcitx::ui::Draw(instance, view);
     },

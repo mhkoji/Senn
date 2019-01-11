@@ -10,7 +10,7 @@ public:
   ~IPCStatefulIMProxy();
 
   INPUT_RETURN_VALUE Input(
-      FcitxKeySym,
+      FcitxKeySym, uint32_t, uint32_t,
       std::function<void(const senn::fcitx::views::Committed*)>,
       std::function<void(const senn::fcitx::views::Converting*)>,
       std::function<void(const senn::fcitx::views::Editing*)>);

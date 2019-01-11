@@ -75,7 +75,7 @@ IPCStatefulIMProxy::IPCStatefulIMProxy(senn::ipc::Connection* conn)
 
 INPUT_RETURN_VALUE
 IPCStatefulIMProxy::Input(
-    FcitxKeySym code,
+    FcitxKeySym sym, uint32_t keycode, uint32_t state,
     std::function<void(const senn::fcitx::views::Committed*)> on_committed,
     std::function<void(const senn::fcitx::views::Converting*)> on_converting,
     std::function<void(const senn::fcitx::views::Editing*)> on_editing) {
@@ -83,7 +83,9 @@ IPCStatefulIMProxy::Input(
     std::stringstream ss;
     ss << "{"
        << "\"op\": \"input\","
-       << "\"args\": {" << "\"code\": " << code << "}"
+       << "\"args\": {" << "\"sym\": " << sym << ","
+                        << "\"keycode\": " << keycode << ","
+                        << "\"state\": " << state << "}"
        << "}\n";
     connection_->Write(ss.str());
   }
