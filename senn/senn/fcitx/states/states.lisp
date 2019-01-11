@@ -8,6 +8,7 @@
 
            :converting
            :make-converting
+           :converting-pronunciation
            :converting-segments
            :converting-current-segment
            :converting-current-input

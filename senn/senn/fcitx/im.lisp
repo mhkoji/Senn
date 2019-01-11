@@ -38,6 +38,13 @@
                                             +1)
          (list s :IRV_TO_PROCESS))
 
+        ((= code +backspace-key+)
+         (list (let ((pron (converting-pronunciation s)))
+                 (make-editing :buffer (senn.buffer:make-buffer
+                                        :string pron
+                                        :cursor-pos (length pron))))
+               :IRV_DO_NOTHING))
+
         ((= code +left-key+)
          (list (converting-move-curret-segment s -1)
                :IRV_TO_PROCESS))
