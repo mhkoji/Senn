@@ -22,7 +22,7 @@
     (ecase (expr-op expr)
       (:input
        (destructuring-bind (new-state input-return-value)
-           (let ((key (senn.fcitx.im:make-key
+           (let ((key (senn.fcitx.keys:make-key
                        :sym (expr-arg expr "sym")
                        :state (expr-arg expr "state"))))
              (senn.fcitx.im:input im state key))
