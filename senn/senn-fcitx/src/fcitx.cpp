@@ -9,7 +9,7 @@
 #include "ipc_stateful_im_proxy.h"
 #include "ipc_stateful_im_proxy_server.h"
 
-const std::string SOCKET_NAME = "/tmp/senn.sock";
+const std::string SOCKET_PATH = "/tmp/senn-server-socket";
 
 
 typedef struct _FcitxSenn {
@@ -28,7 +28,8 @@ static boolean FcitxSennInit(void *arg) {
   FcitxSenn *senn = (FcitxSenn *)arg;
 
   if (!senn->im) {
-    senn->im = senn::fcitx::IPCStatefulIMProxy::Create(SOCKET_NAME);
+    senn->im = senn::fcitx::IPCStatefulIMProxy::Create(
+        senn::ipc::Connection::ConnectAbstractTo(SOCKET_PATH));
   }
 
   boolean flag = true;
@@ -101,10 +102,7 @@ static void* FcitxSennCreate(FcitxInstance *fcitx) {
   iface.DoReleaseInput = FcitxSennDoReleaseInput;
   iface.ReloadConfig = FcitxSennReloadConfig;
 
-  struct stat st;
-  if (stat(SOCKET_NAME.c_str(), &st) != 0) {
-    senn::fcitx::InvokeIPCServer(SOCKET_NAME);
-  }
+  senn::fcitx::StartIPCServer(SOCKET_PATH);
 
   FcitxInstanceRegisterIMv2(
       fcitx,

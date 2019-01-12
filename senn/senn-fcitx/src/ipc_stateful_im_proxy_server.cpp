@@ -16,7 +16,7 @@ namespace fcitx {
 
 const std::string SERVER_PROGRAM_PATH = "/usr/lib/senn/server";
 
-bool InvokeIPCServer(const std::string &socket_name) {
+bool StartIPCServer(const std::string &socket_path) {
   pid_t pid;
   char path[SERVER_PROGRAM_PATH.size()];
   SERVER_PROGRAM_PATH.copy(path, SERVER_PROGRAM_PATH.size());

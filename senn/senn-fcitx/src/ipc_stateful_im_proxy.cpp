@@ -122,8 +122,8 @@ IPCStatefulIMProxy::Input(
 }
 
 IPCStatefulIMProxy*
-IPCStatefulIMProxy::Create(const std::string &socket_name) {
-  return new IPCStatefulIMProxy(senn::ipc::Connection::ConnectTo(socket_name));
+IPCStatefulIMProxy::Create(senn::ipc::Connection *conn) {
+  return new IPCStatefulIMProxy(conn);
 }
 
 

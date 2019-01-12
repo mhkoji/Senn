@@ -39,17 +39,21 @@
      (log/info client "Disconnected"))))
 
 
-(defun enter-loop (kkc &key (socket-name "/tmp/senn.sock"))
-  (when (cl-fad:file-exists-p socket-name)
+(defun enter-loop (kkc &key (socket-name "/tmp/senn-server-socket")
+                            (use-abstract t))
+  (when (and (not use-abstract)
+             (cl-fad:file-exists-p socket-name))
     (delete-file socket-name))
-  (let ((im (senn.fcitx.im:make-im :kkc kkc))
-        (threads nil)
-        (server-socket (server-listen socket-name)))
-    (log:info "Wait for client...")
-    (unwind-protect
-         (loop for client-id from 1
-               for client-socket = (server-accept server-socket)
-               for client = (make-client :id client-id :socket client-socket)
-               do (push (spawn-client-thread client im) threads))
-      (mapc #'bordeaux-threads:destroy-thread threads)
-      (server-close server-socket))))
+  (when-let ((server-socket (server-listen socket-name
+                             :use-abstract use-abstract)))
+    (let ((im (senn.fcitx.im:make-im :kkc kkc))
+          (threads nil))
+      (log:info "Wait for client...")
+      (unwind-protect
+           (loop for client-id from 1
+                 for client-socket = (server-accept server-socket)
+                 for client = (make-client :id client-id
+                                           :socket client-socket)
+                 do (push (spawn-client-thread client im) threads))
+        (mapc #'bordeaux-threads:destroy-thread threads)
+        (server-close server-socket)))))

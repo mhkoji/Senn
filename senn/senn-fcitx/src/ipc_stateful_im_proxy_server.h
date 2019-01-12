@@ -4,7 +4,8 @@
 namespace senn {
 namespace fcitx {
 
-bool InvokeIPCServer(const std::string&);
+// The server must prevent the double startup by itself.
+bool StartIPCServer(const std::string&);
 
 } // fcitx
 } // senn

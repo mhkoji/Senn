@@ -16,7 +16,7 @@ public:
       std::function<void(const senn::fcitx::views::Editing*)>);
 
 
-  static IPCStatefulIMProxy* Create(const std::string&);
+  static IPCStatefulIMProxy* Create(senn::ipc::Connection*);
 
 private:
   IPCStatefulIMProxy(senn::ipc::Connection*);

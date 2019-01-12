@@ -7,6 +7,7 @@ namespace ipc {
 class Connection {
 public:
   static Connection* ConnectTo(const std::string&);
+  static Connection* ConnectAbstractTo(const std::string&);
 
   void Write(const std::string&);
 

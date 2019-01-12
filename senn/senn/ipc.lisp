@@ -8,12 +8,19 @@
            :client-close))
 (in-package :senn.ipc)
 
-(defun server-listen (socket-name)
-  (let ((sbcl-socket (make-instance 'sb-bsd-sockets:local-socket
-                                    :type :stream)))
-    (sb-bsd-sockets:socket-bind sbcl-socket socket-name)
-    (sb-bsd-sockets:socket-listen sbcl-socket 100)
-    sbcl-socket))
+(defun server-listen (socket-name &key use-abstract)
+  (let ((sbcl-socket (make-instance
+                      (if use-abstract
+                          'sb-bsd-sockets:local-abstract-socket
+                          'sb-bsd-sockets:local-socket)
+                      :type :stream)))
+    (handler-case
+        (progn
+          (sb-bsd-sockets:socket-bind sbcl-socket socket-name)
+          (sb-bsd-sockets:socket-listen sbcl-socket 100)
+          sbcl-socket)
+      (sb-bsd-sockets:address-in-use-error ()
+        nil))))
 
 (defun server-close (server-socket)
   (sb-bsd-sockets:socket-close server-socket))

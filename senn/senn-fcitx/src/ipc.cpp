@@ -11,23 +11,53 @@
 namespace senn {
 namespace ipc {
 
-Connection* Connection::ConnectTo(const std::string &socket_name) {
-  // std::cout << "ConnectTo: called" << std::endl;
+namespace {
 
-  sockaddr_un addr;
-  addr.sun_family = AF_LOCAL;
-  strcpy(addr.sun_path, socket_name.c_str());
-
+int MakeLocalStreamSocketOrDie(void) {
   int socket_fd = socket(PF_LOCAL, SOCK_STREAM, 0);
   if (socket_fd < 0) {
-    std::cerr << "Failed to create socket" << std::endl;
+    std::cerr << "Failed to create socket: " << socket_fd << std::endl;
     std::exit(1);
   }
 
-  if ((connect(socket_fd,
-               reinterpret_cast<sockaddr*>(&addr),
-               SUN_LEN(&addr))) < 0) {
-    std::cerr << "Failed to connect" << std::endl;
+  return socket_fd;
+}
+
+} // namespace
+
+Connection* Connection::ConnectTo(const std::string &path) {
+  int socket_fd = MakeLocalStreamSocketOrDie();
+
+  sockaddr_un addr;
+  addr.sun_family = AF_LOCAL;
+  strcpy(addr.sun_path, path.c_str());
+  int connect_return_value = connect(
+      socket_fd,
+      reinterpret_cast<const struct sockaddr*>(&addr),
+      sizeof(addr));
+  if (connect_return_value < 0) {
+    close(socket_fd);
+    std::cerr << "Failed to connect: " << connect_return_value << std::endl;
+    std::exit(1);
+  }
+
+  return new Connection(socket_fd);
+}
+
+Connection* Connection::ConnectAbstractTo(const std::string &path) {
+  int socket_fd = MakeLocalStreamSocketOrDie();
+
+  sockaddr_un addr;
+  addr.sun_family = AF_LOCAL;
+  addr.sun_path[0] = '\0';
+  path.copy(&addr.sun_path[1], path.size());
+  int connect_return_value = connect(
+      socket_fd,
+      reinterpret_cast<const struct sockaddr*>(&addr),
+      sizeof(addr) - sizeof(addr.sun_path) + path.size() + 1);
+  if (connect_return_value < 0) {
+    close(socket_fd);
+    std::cerr << "Failed to connect: " << connect_return_value << std::endl;
     std::exit(1);
   }
 
