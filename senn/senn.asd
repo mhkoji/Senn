@@ -1,6 +1,6 @@
 (asdf:defsystem :senn
   :serial t
-  :pathname "senn"
+  :pathname "cl"
   :components
   ((:file "op")
    (:file "kkc")
