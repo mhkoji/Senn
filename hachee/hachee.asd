@@ -33,7 +33,8 @@
       ((:file "convert/convert")
        (:file "convert/score-fns")
        (:file "lookup")
-       (:file "kkc")))))
+       (:file "kkc")
+       (:file "profile")))))
 
    (:module :algorithm
     :pathname "algorithm"

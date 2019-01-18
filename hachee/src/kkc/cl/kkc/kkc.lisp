@@ -4,6 +4,7 @@
                 :curry)
   (:export :convert
            :lookup
+           :profile
            :make-kkc
            :create-kkc
            :word-form
