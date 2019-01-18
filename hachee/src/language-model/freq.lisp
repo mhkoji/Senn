@@ -1,9 +1,12 @@
 (defpackage :hachee.language-model.freq
   (:use :cl)
-  (:export :make-freq
-           :inc-count
+  (:export :inc-count
            :get-count
-           :conditional-probability))
+
+           :make-empty
+           :make-by-alist
+           :to-alist
+           :count-n-grams))
 (in-package :hachee.language-model.freq)
 
 (defmacro inchash (key hash)
@@ -20,3 +23,13 @@
 
 (defun get-count (freq tokens)
   (gethash tokens (freq-hash freq)))
+
+
+(defun make-empty ()
+  (make-freq))
+
+(defun make-by-alist (alist)
+  (make-freq :hash (alexandria:alist-hash-table alist :test #'equal)))
+
+(defun to-alist (freq)
+  (alexandria:hash-table-alist (freq-hash freq)))

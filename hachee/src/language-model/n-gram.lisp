@@ -7,12 +7,13 @@
                 :sentence-tokens)
   (:import-from :hachee.language-model.freq
                 :inc-count
-                :get-count
-                :make-freq)
+                :get-count)
   (:export :model
            :class-model
            :train
-           :transition-probability))
+           :transition-probability
+           :save-model
+           :load-model))
 (in-package :hachee.language-model.n-gram)
 
 (defun conditional-probability (freq token history-tokens)
@@ -66,7 +67,8 @@
 ;; - computing the probability of an event w_1, ..., w_{n-1} to w_n
 (defclass model ()
   ((freq
-    :initform (make-freq)
+    :initarg :freq
+    :initform (hachee.language-model.freq:make-empty)
     :reader model-freq)
    (weights
     :initarg :weights
@@ -141,6 +143,10 @@
 
 (defgeneric transition-probability (model token history-tokens))
 
+(defgeneric save-model (model stream))
+
+(defgeneric load-model (type stream))
+
 (defmethod train ((model model) (sentences list) &key BOS EOS)
   (dolist (sentence sentences)
     (let ((sentence-tokens (sentence-tokens sentence)))
@@ -151,6 +157,20 @@
                                    (token t)
                                    (history-tokens list))
   (interpolated-probability model token history-tokens))
+
+(defmethod save-model ((model model) stream)
+  (print (list :freq (hachee.language-model.freq:to-alist
+                      (model-freq model))
+               :weights (model-weights model))
+         stream)
+  (values))
+
+(defmethod load-model ((type (eql 'model)) stream)
+  (let ((list (read stream)))
+    (make-instance 'model
+                   :freq (hachee.language-model.freq:make-by-alist
+                          (getf list :freq))
+                   :weights (getf list :weights))))
 
 
 (defun class-token (classifier x)

@@ -57,6 +57,8 @@
                :cl-annot
                :cl-fad
                :cl-ppcre
+               :flexi-streams
                :jsown
                :log4cl
-               :metabang-bind))
+               :metabang-bind
+               :zip))

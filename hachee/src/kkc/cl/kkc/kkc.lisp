@@ -7,6 +7,7 @@
            :profile
            :make-kkc
            :create-kkc
+           :save-kkc
            :word-form
            :word-pron))
 (in-package :hachee.kkc)
@@ -80,7 +81,7 @@
                                             :EOS EOS)))
     model))
 
-(defstruct kkc score-fn dictionary)
+(defstruct kkc vocabulary language-model dictionary)
 
 (defun create-kkc (pathnames)
   (let* ((dictionary (build-dictionary pathnames))
@@ -88,14 +89,28 @@
          (language-model (build-language-model
                           pathnames :vocabulary vocabulary)))
     (hachee.kkc:make-kkc
-     :score-fn (hachee.kkc.convert.score-fns:of-form-pron
-                :vocabulary vocabulary
-                :language-model language-model)
+     :vocabulary vocabulary
+     :language-model language-model
      :dictionary dictionary)))
+
+(defun save-kkc (kkc pathname)
+  (zip:with-output-to-zipfile (writer pathname)
+    (let ((model-string (with-output-to-string (s)
+                          (hachee.language-model.n-gram:save-model
+                           (kkc-language-model kkc)
+                           s))))
+      (flexi-streams:with-input-from-sequence
+          (data-stream (flexi-streams:string-to-octets model-string))
+        (zip:write-zipentry writer
+                            "language-model.txt"
+                            data-stream
+                            :file-write-date (get-universal-time))))))
 
 (defun convert (kkc pronunciation &key 1st-boundary-index)
   (hachee.kkc.convert:execute pronunciation
-   :score-fn (kkc-score-fn kkc)
+   :score-fn (hachee.kkc.convert.score-fns:of-form-pron
+              :vocabulary (kkc-vocabulary kkc)
+              :language-model (kkc-language-model kkc))
    :dictionary (kkc-dictionary kkc)
    :1st-boundary-index 1st-boundary-index))
 
