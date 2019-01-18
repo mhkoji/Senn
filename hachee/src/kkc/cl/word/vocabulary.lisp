@@ -47,17 +47,3 @@
 
 (defun to-int-or-unk (vocab word)
   (or (to-int vocab word) (to-int vocab +UNK+)))
-
-
-#+nil
-(defun make-vocabulary-with-unk (vocab pathnames &key (overlap 2))
-  (let ((appear (make-hash-table :test #'equal)))
-    (dolist (pathname pathnames)
-      (let ((curr-appear (make-hash-table :test #'equal)))
-        (with-each-line (line pathname)
-          (dolist (token-str (cl-ppcre:split line " "))
-            (setf (gethash token-str curr-appear) t)))
-        (loop for token-str being the hash-key of curr-appear
-              do (when (<= overlap (inchash token-str appear))
-                   (add-str vocab token-str))))))
-  vocab)

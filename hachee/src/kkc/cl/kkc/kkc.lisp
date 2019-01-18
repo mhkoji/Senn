@@ -45,6 +45,21 @@
           (hachee.kkc.word.vocabulary:add vocab word))))
     vocab))
 
+(defun build-vocabulary-with-unk (pathnames &key (overlap 2))
+  (let ((vocab (hachee.kkc.word.vocabulary:make-vocabulary))
+        (word-key->freq (make-hash-table :test #'equal)))
+    (dolist (pathname pathnames)
+      (let ((curr-words (make-hash-table :test #'equal)))
+        (dolist (sentence (hachee.kkc.file:file->string-sentences pathname))
+          (dolist (word (sentence-words sentence))
+            (setf (gethash (word->key word) curr-words) word)))
+        (maphash (lambda (word-key word)
+                   (let ((freq (incf (gethash word-key word-key->freq 0))))
+                     (when (<= overlap freq)
+                       (hachee.kkc.word.vocabulary:add vocab word))))
+                 curr-words)))
+    vocab))
+
 (defun build-language-model (pathnames &key vocabulary)
   (let ((to-int-or-unk (curry #'hachee.kkc.word.vocabulary:to-int-or-unk
                               vocabulary))
