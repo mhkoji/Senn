@@ -1,10 +1,13 @@
 (defpackage :hachee.kkc.word.vocabulary
   (:use :cl)
+  (:shadow :load)
   (:export :add
            :to-int
            :to-int-or-unk
            :+UNK+ :+BOS+ :+EOS+
-           :make-vocabulary)
+           :make-vocabulary
+           :save
+           :load)
   (:import-from :hachee.kkc.word
                 :make-word
                 :word-pron
@@ -22,9 +25,11 @@
   (make-word :pron "__EOS__" :form ""))
 
 (defclass vocabulary ()
-  ((size :initform 0
+  ((size :initarg :size
+         :initform 0
          :accessor vocabulary-size)
-   (to-int-map :initform (make-hash-table :test #'equal)
+   (to-int-map :initarg :to-int-map
+               :initform (make-hash-table :test #'equal)
                :accessor vocabulary-to-int-map)))
 
 (defun add (vocab word)
@@ -47,3 +52,18 @@
 
 (defun to-int-or-unk (vocab word)
   (or (to-int vocab word) (to-int vocab +UNK+)))
+
+
+(defun save (vocab stream)
+  (print (list :to-int-map
+               (alexandria:hash-table-alist (vocabulary-to-int-map vocab)))
+         stream)
+  (values))
+
+(defun load (stream)
+  (let ((list (read stream)))
+    (let ((map (alexandria:alist-hash-table (getf list :to-int-map)
+                                            :test #'equal)))
+      (make-instance 'vocabulary
+                     :size (hash-table-count map)
+                     :to-int-map map))))

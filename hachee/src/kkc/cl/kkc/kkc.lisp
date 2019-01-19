@@ -8,6 +8,7 @@
            :make-kkc
            :create-kkc
            :save-kkc
+           :load-kkc
            :word-form
            :word-pron))
 (in-package :hachee.kkc)
@@ -88,23 +89,56 @@
          (vocabulary (build-vocabulary pathnames))
          (language-model (build-language-model
                           pathnames :vocabulary vocabulary)))
-    (hachee.kkc:make-kkc
-     :vocabulary vocabulary
-     :language-model language-model
-     :dictionary dictionary)))
+    (hachee.kkc:make-kkc :vocabulary vocabulary
+                         :language-model language-model
+                         :dictionary dictionary)))
 
 (defun save-kkc (kkc pathname)
   (zip:with-output-to-zipfile (writer pathname)
-    (let ((model-string (with-output-to-string (s)
-                          (hachee.language-model.n-gram:save-model
-                           (kkc-language-model kkc)
-                           s))))
-      (flexi-streams:with-input-from-sequence
-          (data-stream (flexi-streams:string-to-octets model-string))
-        (zip:write-zipentry writer
-                            "language-model.txt"
-                            data-stream
-                            :file-write-date (get-universal-time))))))
+    (labels ((add-to-zip (name data-string)
+               (flexi-streams:with-input-from-sequence
+                   (data-stream (flexi-streams:string-to-octets
+                                 data-string
+                                 :external-format :utf-8))
+                 (zip:write-zipentry
+                  writer name data-stream
+                  :file-write-date (get-universal-time)))))
+      (add-to-zip "language-model.txt"
+                  (with-output-to-string (s)
+                    (hachee.language-model.n-gram:save-model
+                     (kkc-language-model kkc)
+                     s)))
+      (add-to-zip "vocabulary.txt"
+                  (with-output-to-string (s)
+                    (hachee.kkc.word.vocabulary:save
+                     (kkc-vocabulary kkc)
+                     s)))
+      (add-to-zip "dictionary.txt"
+                  (with-output-to-string (s)
+                    (hachee.kkc.word.dictionary:save
+                     (kkc-dictionary kkc)
+                     s)))))
+  (values))
+
+(defun load-kkc (pathname)
+  (zip:with-zipfile (zip pathname)
+    (labels ((get-as-string (name)
+               (sb-ext:octets-to-string
+                (zip:zipfile-entry-contents
+                 (zip:get-zipfile-entry name zip))
+                :external-format :utf-8)))
+      (make-kkc
+       :language-model
+       (with-input-from-string (s (get-as-string "language-model.txt"))
+         (hachee.language-model.n-gram:load-model
+          'hachee.language-model.n-gram:model s))
+       :vocabulary
+       (with-input-from-string (s (get-as-string "vocabulary.txt"))
+         (hachee.kkc.word.vocabulary:load s))
+       :dictionary
+       (with-input-from-string (s (get-as-string "dictionary.txt"))
+         (hachee.kkc.word.dictionary:load s))))))
+
 
 (defun convert (kkc pronunciation &key 1st-boundary-index)
   (hachee.kkc.convert:execute pronunciation
