@@ -12,12 +12,10 @@
 (defvar senn-input-method-title "S"
   "String denoting SENN input method is working, which is shown on mode line.")
 
-(defvar senn-server-command-list
-  (list (expand-file-name "../bin/server.ros" senn-elisp-dir))
+(defvar senn-server-bin-list
+  (list (expand-file-name "../bin/server" senn-elisp-dir)
+        (expand-file-name "../bin/server.ros" senn-elisp-dir))
   "senn-server の PATH")
-
-(defvar senn-server-data-dir "~/.senn/slm"
-  "senn-server のデータがあるところ。")
 
 (defvar senn-working-buffer " *senn*")
 
@@ -99,12 +97,9 @@
 
 ;; serverを起動し、プロセスを返す。
 (defun senn-invoke-server ()
-  (loop for cmd in senn-server-command-list
-        for proc = (start-process
-                    "senn-kkc"
-                    senn-working-buffer
-                    cmd
-                    senn-server-data-dir)
+  (loop for bin in senn-server-bin-list
+        when (file-exists-p bin)
+        for proc = (start-process "senn-kkc" senn-working-buffer bin)
         when (senn-process-running-p proc) return proc))
 
 ;; serverが走ってなかったら起動。

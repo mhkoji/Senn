@@ -16,7 +16,8 @@ Add the code below to your .emacs file.
 ### Dump the Server (optional)
 
 ```
-% <path/to/Hachee>/senn/senn-emacs/bin/dump
+% cd <path/to/Hachee>/senn/senn-emacs/
+% ros dump executable bin/server.ros -o bin/server
 ```
 
 ## Fcitx
