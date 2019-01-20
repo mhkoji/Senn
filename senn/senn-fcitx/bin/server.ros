@@ -13,7 +13,7 @@ exec ros -Q -- $0 "$@"
 (in-package :ros.script.server.3755635753)
 (ql:quickload :senn :silent t)
 
-(defvar *kkc* (senn.kkc:create-kkc))
+(defvar *kkc* (senn.kkc:load-kkc))
 
 (defun main (&rest argv)
   (declare (ignorable argv))
