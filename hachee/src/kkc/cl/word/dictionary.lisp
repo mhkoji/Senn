@@ -1,11 +1,10 @@
 (defpackage :hachee.kkc.word.dictionary
   (:use :cl)
-  (:shadow :load)
-  (:export :make-dictionary
-           :add
+  (:export :add
            :lookup
-           :save
-           :load))
+           :make-dictionary
+           :save-dictionary
+           :load-dictionary))
 (in-package :hachee.kkc.word.dictionary)
 
 (defstruct dictionary
@@ -20,13 +19,13 @@
 (defun lookup (dictionary pron)
   (gethash pron (dictionary-hash dictionary)))
 
-(defun save (dict stream)
+(defun save-dictionary (dict stream)
   (print (list :hash
                (alexandria:hash-table-alist (dictionary-hash dict)))
          stream)
   (values))
 
-(defun load (stream)
+(defun load-dictionary (stream)
   (let ((list (read stream)))
     (make-dictionary :hash
                      (alexandria:alist-hash-table

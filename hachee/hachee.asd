@@ -33,6 +33,7 @@
       ((:file "convert/convert")
        (:file "convert/score-fns")
        (:file "lookup")
+       (:file "archive")
        (:file "kkc")
        (:file "profile")))))
 

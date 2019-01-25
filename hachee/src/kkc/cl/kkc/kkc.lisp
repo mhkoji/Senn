@@ -1,7 +1,5 @@
 (defpackage :hachee.kkc
   (:use :cl :hachee.kkc.word)
-  (:import-from :alexandria
-                :curry)
   (:export :convert
            :lookup
            :profile
@@ -10,7 +8,9 @@
            :save-kkc
            :load-kkc
            :word-form
-           :word-pron))
+           :word-pron)
+  (:import-from :alexandria
+                :curry))
 (in-package :hachee.kkc)
 
 (defun sentence-words (sentence)
@@ -93,52 +93,6 @@
                          :language-model language-model
                          :dictionary dictionary)))
 
-(defun save-kkc (kkc pathname)
-  (zip:with-output-to-zipfile (writer pathname)
-    (labels ((add-to-zip (name data-string)
-               (flexi-streams:with-input-from-sequence
-                   (data-stream (flexi-streams:string-to-octets
-                                 data-string
-                                 :external-format :utf-8))
-                 (zip:write-zipentry
-                  writer name data-stream
-                  :file-write-date (get-universal-time)))))
-      (add-to-zip "language-model.txt"
-                  (with-output-to-string (s)
-                    (hachee.language-model.n-gram:save-model
-                     (kkc-language-model kkc)
-                     s)))
-      (add-to-zip "vocabulary.txt"
-                  (with-output-to-string (s)
-                    (hachee.kkc.word.vocabulary:save
-                     (kkc-vocabulary kkc)
-                     s)))
-      (add-to-zip "dictionary.txt"
-                  (with-output-to-string (s)
-                    (hachee.kkc.word.dictionary:save
-                     (kkc-dictionary kkc)
-                     s)))))
-  (values))
-
-(defun load-kkc (pathname)
-  (zip:with-zipfile (zip pathname)
-    (labels ((get-as-string (name)
-               (sb-ext:octets-to-string
-                (zip:zipfile-entry-contents
-                 (zip:get-zipfile-entry name zip))
-                :external-format :utf-8)))
-      (make-kkc
-       :language-model
-       (with-input-from-string (s (get-as-string "language-model.txt"))
-         (hachee.language-model.n-gram:load-model
-          'hachee.language-model.n-gram:model s))
-       :vocabulary
-       (with-input-from-string (s (get-as-string "vocabulary.txt"))
-         (hachee.kkc.word.vocabulary:load s))
-       :dictionary
-       (with-input-from-string (s (get-as-string "dictionary.txt"))
-         (hachee.kkc.word.dictionary:load s))))))
-
 
 (defun convert (kkc pronunciation &key 1st-boundary-index)
   (hachee.kkc.convert:execute pronunciation
@@ -148,6 +102,22 @@
    :dictionary (kkc-dictionary kkc)
    :1st-boundary-index 1st-boundary-index))
 
+
 (defun lookup (kkc pronunciation)
   (hachee.kkc.lookup:execute pronunciation
    :dictionary (kkc-dictionary kkc)))
+
+
+(defun save-kkc (kkc pathname)
+  (hachee.kkc.archive:save pathname
+                           :vocabulary (kkc-vocabulary kkc)
+                           :dictionary (kkc-dictionary kkc)
+                           :language-model (kkc-language-model)))
+
+
+(defun load-kkc (pathname)
+  (destructuring-bind (&key vocabulary dictionary language-model)
+      (hachee.kkc.archive:load pathname)
+    (make-kkc :vocabulary vocabulary
+              :dictionary dictionary
+              :language-model language-model)))

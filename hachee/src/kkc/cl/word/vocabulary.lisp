@@ -1,13 +1,12 @@
 (defpackage :hachee.kkc.word.vocabulary
   (:use :cl)
-  (:shadow :load)
   (:export :add
            :to-int
            :to-int-or-unk
            :+UNK+ :+BOS+ :+EOS+
            :make-vocabulary
-           :save
-           :load)
+           :save-vocabulary
+           :load-vocabulary)
   (:import-from :hachee.kkc.word
                 :make-word
                 :word-pron
@@ -54,13 +53,13 @@
   (or (to-int vocab word) (to-int vocab +UNK+)))
 
 
-(defun save (vocab stream)
+(defun save-vocabulary (vocab stream)
   (print (list :to-int-map
                (alexandria:hash-table-alist (vocabulary-to-int-map vocab)))
          stream)
   (values))
 
-(defun load (stream)
+(defun load-vocabulary (stream)
   (let ((list (read stream)))
     (let ((map (alexandria:alist-hash-table (getf list :to-int-map)
                                             :test #'equal)))
