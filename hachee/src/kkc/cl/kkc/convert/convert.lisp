@@ -56,9 +56,11 @@
                   (curr-words
                    (or (hachee.kkc.word.dictionary:lookup dictionary
                                                           sub-pron)
-                       (list (make-word
-                              :pron sub-pron
-                              :form (hiragana->katakana sub-pron))))))
+                       (when (< (- end start) 8)
+                         ;; An unknown word is of length up to 8
+                         (list (make-word
+                                :pron sub-pron
+                                :form (hiragana->katakana sub-pron)))))))
               (dolist (curr-word curr-words)
                 (push (find-optimal-result score-fn prev-nodes curr-word)
                       (gethash end results))))))))

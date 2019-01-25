@@ -22,8 +22,6 @@
                (log p))
               ((/= p 0)
                (+ (log p)
-                  -10000
-                  #+nil
                   (log (hachee.kkc.models.unknown-word:probability
                         nil
                         curr-word))))
