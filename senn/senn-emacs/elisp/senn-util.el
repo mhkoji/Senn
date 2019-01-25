@@ -1,9 +1,3 @@
-(defun hiragana->katakana (hiragana-string)
-  (apply #'concat
-	 (mapcar #'char-to-string
-		 (mapcar #'japanese-katakana
-			 (vector-to-list hiragana-string)))))
-
 (defun string->hankaku (string)
   (apply #'concat
 	 (mapcar #'(lambda (ch)

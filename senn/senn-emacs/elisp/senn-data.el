@@ -45,6 +45,9 @@
 ;; -1のときは、全てひらがな表示。バックスぺースキーが押されたときなど。
 (defstruct senn-conversion
   pron
+  ;; kana-kanji, hiragana or katakana
+  mode
+  ;; used when mode is kana-kanji
   logP
   selects
   select-count
