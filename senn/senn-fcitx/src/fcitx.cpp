@@ -27,11 +27,6 @@ static void FcitxSennDestroy(void *arg) {
 static boolean FcitxSennInit(void *arg) {
   FcitxSenn *senn = (FcitxSenn *)arg;
 
-  if (!senn->im) {
-    senn->im = senn::fcitx::IPCStatefulIMProxy::Create(
-        senn::ipc::Connection::ConnectAbstractTo(SOCKET_PATH));
-  }
-
   boolean flag = true;
   FcitxInstanceSetContext(senn->fcitx,
                           CONTEXT_IM_KEYBOARD_LAYOUT,
@@ -63,6 +58,11 @@ INPUT_RETURN_VALUE FcitxSennDoInput(void *arg,
   uint32_t keycode = FcitxInputStateGetKeyCode(input);
   uint32_t state = FcitxInputStateGetKeyState(input);
   // std::cout << sym << " " << keycode << " " << state << std::endl;
+
+  if (!senn->im) {
+    senn->im = senn::fcitx::IPCStatefulIMProxy::Create(
+        senn::ipc::Connection::ConnectAbstractTo(SOCKET_PATH));
+  }
 
   return senn->im->Input(sym, keycode, state,
     [&](const senn::fcitx::views::Committed *view) {
