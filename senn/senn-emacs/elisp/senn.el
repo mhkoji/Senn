@@ -6,7 +6,6 @@
 (require 'cl)
 (require 'hi-lock)
 
-(require 'senn-util)
 (require 'senn-data)
 
 (defvar senn-input-method-title "S"
