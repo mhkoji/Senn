@@ -1,30 +1,32 @@
 (defpackage :hachee.kkc.convert
   (:use :cl :hachee.kkc.word)
   (:export :execute)
+  (:import-from :hachee.kkc.word.dictionary
+                :lookup)
   (:import-from :hachee.ja
-                :hiragana->katakana))
+                :hiragana->katakana)
+  (:import-from :alexandria
+                :when-let))
 (in-package :hachee.kkc.convert)
 
 (defun calculate-score (score-fn curr-word prev-words)
   (funcall score-fn curr-word prev-words))
 
+
 (defstruct node word score-so-far prev-node)
 
-(defun find-optimal-result (score-fn prev-nodes curr-word)
-  (let ((optimal-node nil)
-        (optimal-score (- #xffffffff)))
-    (dolist (prev-node prev-nodes)
-      (let ((new-score-so-far
-             (+ (node-score-so-far prev-node)
-                (calculate-score score-fn
-                                 curr-word
-                                 (list (node-word prev-node))))))
-        (when (< optimal-score new-score-so-far)
-          (setq optimal-score new-score-so-far)
-          (setq optimal-node (make-node :word curr-word
-                                        :prev-node prev-node
-                                        :score-so-far new-score-so-far)))))
-    optimal-node))
+(defun update-prev-node (node score-fn prev-nodes)
+  (dolist (prev-node prev-nodes)
+    (let ((score-so-far
+            (+ (node-score-so-far prev-node)
+               (calculate-score score-fn
+                                (node-word node)
+                                (list (node-word prev-node))))))
+      (when (or (null (node-score-so-far node))
+                (< (node-score-so-far node) score-so-far))
+        (setf (node-prev-node node) prev-node)
+        (setf (node-score-so-far node) score-so-far))))
+  (values))
 
 (defun backtrack (node acc)
   (if (null (node-prev-node node))
@@ -38,35 +40,47 @@
              :prev-node nil
              :score-so-far 0))
 
+(defun make-unknown-word (pron)
+  (make-word :pron pron :form (hiragana->katakana pron)))
+
+
+(defun add-entries (table end prev-entries nodes)
+  (push (list prev-entries nodes)
+        (gethash end table)))
+
+(defun get-entries (table end)
+  (gethash end table))
+
 (defun execute (pronunciation &key score-fn dictionary 1st-boundary-index)
-  (let ((length (length pronunciation))
-        (results (make-hash-table)))
-    ;; 初期化
-    (push *BOS-node* (gethash 0 results))
-    ;; DP
+  (let ((table (make-hash-table))
+        (length (length pronunciation)))
+    ;; Create table
+    (add-entries table 0 nil (list *BOS-node*))
     (loop for end from 1 to length do
       (loop for start from 0 below end do
         (when (or (not 1st-boundary-index)
                   (and (= start 0)
                        (= end 1st-boundary-index))
                   (<= 1st-boundary-index start))
-          (let ((sub-pron (subseq pronunciation start end)))
-            (let ((prev-nodes
-                   (gethash start results))
-                  (curr-words
-                   (or (hachee.kkc.word.dictionary:lookup dictionary
-                                                          sub-pron)
-                       (when (< (- end start) 8)
-                         ;; An unknown word is of length up to 8
-                         (list (make-word
-                                :pron sub-pron
-                                :form (hiragana->katakana sub-pron)))))))
-              (dolist (curr-word curr-words)
-                (push (find-optimal-result score-fn prev-nodes curr-word)
-                      (gethash end results))))))))
-    (let ((last-node (find-optimal-result
-                      score-fn
-                      (gethash length results)
-                      hachee.kkc.word.vocabulary:+EOS+)))
+          (let* ((sub-pron (subseq pronunciation start end))
+                 (words (or (lookup dictionary sub-pron)
+                            (when (or ;; Length up to 8
+                                   (< (- end start) 8)
+                                   1st-boundary-index)
+                              (list (make-unknown-word sub-pron))))))
+            (let ((nodes (mapcar (lambda (w) (make-node :word w))
+                                 words))
+                  (prev-entries (get-entries table start)))
+              (add-entries table end prev-entries nodes))))))
+    ;; DP
+    (loop for end from 1 to length do
+      (loop for (prev-entries nodes) in (get-entries table end) do
+        (dolist (prev-entry prev-entries)
+          (when-let ((prev-nodes (second prev-entry)))
+            (dolist (node nodes)
+              (update-prev-node node score-fn prev-nodes))))))
+    (let ((EOS (make-node :word hachee.kkc.word.vocabulary:+EOS+)))
+      (loop for (prev-entries nodes) in (get-entries table length) do
+        (update-prev-node EOS score-fn nodes))
       ;; skip EOS
-      (backtrack (node-prev-node last-node) nil))))
+      (backtrack (node-prev-node EOS) nil))))
