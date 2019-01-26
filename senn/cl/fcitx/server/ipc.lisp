@@ -1,6 +1,5 @@
 (defpackage :senn.fcitx.server.ipc
-  (:use :cl
-        :senn.ipc)
+  (:use :cl)
   (:export :enter-loop)
   (:import-from :alexandria
                 :when-let))
@@ -14,11 +13,14 @@
              ,@args))
 
 (defmethod senn.fcitx.server:read-request ((client client))
-  (when-let ((line (client-read-line (client-socket client))))
-    (senn.op:as-expr line)))
+  (let ((stream (hachee.ipc.unix:socket-stream (client-socket client))))
+    (when-let ((line (read-line stream)))
+      (senn.op:as-expr line))))
 
 (defmethod senn.fcitx.server:send-response ((client client) resp)
-  (client-write-line (client-socket client) resp))
+  (let ((stream (hachee.ipc.unix:socket-stream (client-socket client))))
+    (write-line resp stream)
+    (force-output stream)))
 
 (defmethod senn.fcitx.server:read-request :around ((client client))
   (let ((req (call-next-method)))
@@ -35,7 +37,7 @@
    (lambda ()
      (let ((initial-state (senn.fcitx.states:make-editing)))
        (senn.fcitx.server:loop-handling-request initial-state im client))
-     (client-close (client-socket client))
+     (hachee.ipc.unix:socket-close (client-socket client))
      (log/info client "Disconnected"))))
 
 
@@ -44,16 +46,16 @@
   (when (and (not use-abstract)
              (cl-fad:file-exists-p socket-name))
     (delete-file socket-name))
-  (when-let ((server-socket (server-listen socket-name
+  (when-let ((server-socket (hachee.ipc.unix:socket-listen
+                             socket-name
                              :use-abstract use-abstract)))
     (let ((im (senn.fcitx.im:make-im :kkc kkc))
           (threads nil))
       (log:info "Wait for client...")
       (unwind-protect
-           (loop for client-id from 1
-                 for client-socket = (server-accept server-socket)
-                 for client = (make-client :id client-id
-                                           :socket client-socket)
-                 do (push (spawn-client-thread client im) threads))
+           (loop for client-id from 1 do
+             (let* ((socket (hachee.ipc.unix:socket-accept server-socket))
+                    (client (make-client :id client-id :socket socket)))
+               (push (spawn-client-thread client im) threads)))
         (mapc #'bordeaux-threads:destroy-thread threads)
-        (server-close server-socket)))))
+        (hachee.ipc.unix:socket-close server-socket)))))

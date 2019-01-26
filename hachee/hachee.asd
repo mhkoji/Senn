@@ -16,6 +16,14 @@
      (:file "hiragana")
      (:file "romaji")))
 
+   (:module :ipc
+    :pathname "ipc"
+    :components
+    (#+linux
+     (:file "unix")
+     #+win32
+     (:file "named-pipe")))
+
    (:module :kkc
     :pathname "kkc/cl"
     :components

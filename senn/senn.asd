@@ -11,7 +11,6 @@
     ((:file "kkc")
      (:file "stdio-server")))
 
-   (:file "ipc")
    (:file "buffer")
    (:file "segment")
 

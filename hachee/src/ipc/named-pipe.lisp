@@ -1,6 +1,6 @@
-(defpackage :senn.win.named-pipe
+(defpackage :hachee.ipc.named-pipe
   (:use :cl))
-(in-package :senn.win.named-pipe)
+(in-package :hachee.ipc.named-pipe)
 
 (defun create-named-pipe ()
   (win32:create-named-pipe
