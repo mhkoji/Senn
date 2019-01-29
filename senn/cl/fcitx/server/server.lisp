@@ -17,15 +17,19 @@
           (symbol-name (type-of s))
           (senn.fcitx.states:to-view s)))
 
-(defun loop-handling-request (state im client)
-  (when-let ((expr (read-request client)))
-    (ecase (expr-op expr)
-      (:input
+(defun handle-request (expr state im client)
+  (ecase (expr-op expr)
+    (:input
+     (let ((key (senn.fcitx.keys:make-key
+                 :sym (expr-arg expr "sym")
+                 :state (expr-arg expr "state"))))
        (destructuring-bind (new-state input-return-value)
-           (let ((key (senn.fcitx.keys:make-key
-                       :sym (expr-arg expr "sym")
-                       :state (expr-arg expr "state"))))
-             (senn.fcitx.im:input im state key))
+           (senn.fcitx.im:input im state key)
          (let ((resp (make-response new-state input-return-value)))
            (send-response client resp))
-         (loop-handling-request new-state im client))))))
+         new-state)))))
+
+(defun loop-handling-request (state im client)
+  (when-let ((expr (read-request client)))
+    (let ((new-state (handle-request expr state im client)))
+      (loop-handling-request new-state im client))))
