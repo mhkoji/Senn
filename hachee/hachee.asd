@@ -71,4 +71,6 @@
                :jsown
                :log4cl
                :metabang-bind
+               #+win32
+               :win32
                :zip))
