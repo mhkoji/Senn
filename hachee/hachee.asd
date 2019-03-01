@@ -19,7 +19,8 @@
    (:module :ipc
     :pathname "ipc"
     :components
-    (#+linux
+    ((:file "op")
+     #+linux
      (:file "unix")
      #+win32
      (:file "named-pipe")))

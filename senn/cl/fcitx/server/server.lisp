@@ -1,6 +1,6 @@
 (defpackage :senn.fcitx.server
   (:use :cl
-        :senn.op)
+        :hachee.ipc.op)
   (:export :loop-handling-request
            :read-request
            :send-response)

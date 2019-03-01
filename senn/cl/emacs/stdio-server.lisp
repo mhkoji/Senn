@@ -1,6 +1,6 @@
 (defpackage :senn.emacs.stdio-server
   (:use :cl
-        :senn.op
+        :hachee.ipc.op
         :senn.emacs.kkc)
   (:export :enter-loop)
   (:import-from :alexandria

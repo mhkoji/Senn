@@ -1,5 +1,5 @@
 (defpackage :senn.emacs.kkc
-  (:use :cl :senn.op)
+  (:use :cl :hachee.ipc.op)
   (:export :kkc-eval))
 (in-package :senn.emacs.kkc)
 

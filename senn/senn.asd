@@ -2,8 +2,7 @@
   :serial t
   :pathname "cl"
   :components
-  ((:file "op")
-   (:file "kkc")
+  ((:file "kkc")
 
    (:module :emacs
     :pathname "emacs"

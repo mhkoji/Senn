@@ -1,10 +1,10 @@
-(defpackage :senn.op
+(defpackage :hachee.ipc.op
   (:use :cl)
   (:import-from :cl-arrows :->)
   (:export :as-expr
            :expr-op
            :expr-arg))
-(in-package :senn.op)
+(in-package :hachee.ipc.op)
 
 (defun as-expr (string)
   (jsown:parse string))
