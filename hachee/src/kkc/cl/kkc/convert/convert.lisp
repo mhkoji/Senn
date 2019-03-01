@@ -18,10 +18,10 @@
 (defun update-prev-node (node score-fn prev-nodes)
   (dolist (prev-node prev-nodes)
     (let ((score-so-far
-            (+ (node-score-so-far prev-node)
-               (calculate-score score-fn
-                                (node-word node)
-                                (list (node-word prev-node))))))
+           (+ (node-score-so-far prev-node)
+              (calculate-score score-fn
+                               (node-word node)
+                               (list (node-word prev-node))))))
       (when (or (null (node-score-so-far node))
                 (< (node-score-so-far node) score-so-far))
         (setf (node-prev-node node) prev-node)

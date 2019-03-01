@@ -3,7 +3,7 @@ include_directories(${FCITX4_FCITX_INCLUDE_DIRS})
 include_directories(${FCITX4_FCITX_CONFIG_INCLUDE_DIRS})
 include_directories(${FCITX4_FCITX_UTILS_INCLUDE_DIRS})
 
-include_directories(../third-party/)
+include_directories(../../third-party/)
 
 set(FCITX_SENN_SRC ipc.cpp ipc_stateful_im_proxy.cpp ipc_stateful_im_proxy_server.cpp ui.cpp fcitx.cpp)
 
