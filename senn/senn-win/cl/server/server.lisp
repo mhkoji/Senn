@@ -15,5 +15,4 @@
   (when-let ((expr (read-request client)))
     (print expr)
     (send-response client expr)
-    (sleep 300)
     (loop-handling-request state im client)))

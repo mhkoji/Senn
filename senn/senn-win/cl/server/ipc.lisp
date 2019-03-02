@@ -31,29 +31,14 @@
   (log/info client "Written: ~A" resp))
 
 
-(defun spawn-client-thread (client im)
-  (log/info client "New client")
-  (bordeaux-threads:make-thread
-   (lambda ()
-     (senn.win.server:loop-handling-request nil im client)
-     (hachee.ipc.named-pipe:disconnect (client-pipe client))
-     (log/info client "Disconnected"))))
-
-
 (defun enter-loop (kkc &key (pipe-name "\\\\.\\Pipe\\senn"))
   (declare (ignore kkc)) ;; ignore for a while
-  (let ((threads nil))
-    (log:info "Wait for client...")
-    (unwind-protect
-         (loop for client-id from 1
-               for pipe = (hachee.ipc.named-pipe:create pipe-name)
-               while pipe do
-                (progn
-                  (hachee.ipc.named-pipe:connect pipe)
-                  (push (spawn-client-thread
-                         (make-client :id client-id :pipe pipe)
-                         nil)
-                        threads)
-                  (print "end")
-                  (sleep 300)))
-      (mapc #'bordeaux-threads:destroy-thread threads))))
+  (log:info "Wait for client...")
+  (let ((pipe (hachee.ipc.named-pipe:create pipe-name)))
+    (hachee.ipc.named-pipe:connect pipe)
+    (let ((client (make-client :id 0 :pipe pipe)))
+      (log/info client "New client")
+      (unwind-protect
+           (senn.win.server:loop-handling-request nil nil client)
+        (hachee.ipc.named-pipe:disconnect pipe))
+      (log/info client "Disconnected"))))
