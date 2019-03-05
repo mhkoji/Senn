@@ -39,68 +39,70 @@ private:
 } // namespace
 
 BOOL RegisterServer() {
-  std::basic_string<WCHAR> clsid_key;
-  if (!CreateCLSIDKey(TEXT_SERVICE_CLSID, &clsid_key)) {
+  // Create clsid key CLSID\{xxxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxx}"
+  std::basic_string<WCHAR> clsid_key_string;
+  if (!CreateCLSIDKey(TEXT_SERVICE_CLSID, &clsid_key_string)) {
     return FALSE;
   }
 
-  HKEY clsid_handle = nullptr;
-  {
-    DWORD copied_strlen = 0;
-    if (RegCreateKeyEx(
-            HKEY_CLASSES_ROOT, clsid_key.c_str(),
-            0,
-            NULL,
-            REG_OPTION_NON_VOLATILE,
-            KEY_WRITE,
-            NULL,
-            &clsid_handle,
-            &copied_strlen) != ERROR_SUCCESS) {
+  HKEY hkey_clsid = nullptr;
+  if (RegCreateKeyEx(
+          HKEY_CLASSES_ROOT, clsid_key_string.c_str(),
+          0,
+          NULL,
+          REG_OPTION_NON_VOLATILE,
+          KEY_WRITE,
+          NULL,
+          &hkey_clsid,
+          NULL) != ERROR_SUCCESS) {
       return FALSE;
     }
-  }
-  RegKeyCloser clsid_closer(clsid_handle);
+  RegKeyCloser clsid_closer(hkey_clsid);
 
+  // Set description as default value of the clsid key
   if (RegSetValueEx(
-         clsid_handle, NULL, 0, REG_SZ,
+         hkey_clsid, NULL, 0, REG_SZ,
          (const BYTE *) TEXT_SERVICE_DESCRIPTION,
          (_countof(TEXT_SERVICE_DESCRIPTION)) * sizeof(WCHAR)) != ERROR_SUCCESS) {
     return FALSE;
   }
 
-  HKEY in_proc_server32_handle = nullptr;
+  // Create InProcServer32 key in the clsid key
+  HKEY hkey_in_proc_server32 = nullptr;
+  if (RegCreateKeyEx(
+          hkey_clsid, L"InProcServer32",
+          0,
+          NULL,
+          REG_OPTION_NON_VOLATILE,
+          KEY_WRITE,
+          NULL,
+          &hkey_in_proc_server32,
+          NULL) != ERROR_SUCCESS) {
+    return FALSE;
+  }
+  RegKeyCloser in_proc_server32_closer(hkey_in_proc_server32);
+
+  // Set module path as default value of the InProcServer32 key 
   {
-    DWORD copied_strlen = 0;
-    if (RegCreateKeyEx(
-            clsid_handle, L"InProcServer32",
-            0,
-            NULL,
-            REG_OPTION_NON_VOLATILE,
-            KEY_WRITE,
-            NULL,
-            &in_proc_server32_handle,
-            &copied_strlen) != ERROR_SUCCESS) {
+    WCHAR filename[MAX_PATH] = { '\0' };
+    DWORD num_chars = GetModuleFileName(g_module_handle, filename, ARRAYSIZE(filename));
+    if (num_chars == 0) {
+      return FALSE;
+    }
+    DWORD num_chars_including_null_termination =
+        num_chars < (MAX_PATH - 1) ? num_chars + 1 : MAX_PATH;
+
+    if (RegSetValueEx(
+            hkey_in_proc_server32, NULL, 0, REG_SZ,
+            (const BYTE *)filename,
+            (num_chars_including_null_termination) * sizeof(WCHAR)) != ERROR_SUCCESS) {
       return FALSE;
     }
   }
-  RegKeyCloser in_proc_server32_closer(in_proc_server32_handle);
 
-  WCHAR filename[MAX_PATH] = {'\0'};
-  DWORD num_chars = GetModuleFileName(g_module_handle, filename, ARRAYSIZE(filename));
-  if (num_chars == 0) {
-    return FALSE;
-  }
-  DWORD num_chars_including_null_termination = num_chars < (MAX_PATH - 1) ? num_chars + 1 : MAX_PATH;
-
+  // Add threading model to the InProcServer32 key
   if (RegSetValueEx(
-          in_proc_server32_handle, NULL, 0, REG_SZ,
-          (const BYTE *)filename,
-          (num_chars_including_null_termination) * sizeof(WCHAR)) != ERROR_SUCCESS) {
-    return FALSE;
-  }
-
-  if (RegSetValueEx(
-          in_proc_server32_handle, L"ThreadingModel", 0, REG_SZ,
+          hkey_in_proc_server32, L"ThreadingModel", 0, REG_SZ,
           (const BYTE *)TEXT_SERVICE_THREADING_MODEL,
           (_countof(TEXT_SERVICE_THREADING_MODEL)) * sizeof(WCHAR)) != ERROR_SUCCESS) {
     return FALSE;
