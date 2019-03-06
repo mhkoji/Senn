@@ -1,0 +1,4 @@
+LIBRARY   tip.dll
+
+EXPORTS
+  DllRegisterServer   PRIVATE

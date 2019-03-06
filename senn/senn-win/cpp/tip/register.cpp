@@ -4,10 +4,13 @@
 #include <string>
 
 #include "variable.h"
-#include "register.h"
 
 
 namespace {
+
+// strlen("{xxxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxx}")
+static const size_t CLSID_STRLEN = 38;
+
 
 BOOL CreateCLSIDKey(const GUID &clsid, std::basic_string<WCHAR> *output) {
   WCHAR clsid_buf[CLSID_STRLEN];
@@ -17,7 +20,6 @@ BOOL CreateCLSIDKey(const GUID &clsid, std::basic_string<WCHAR> *output) {
 
   *output = L"CLSID\\";
   *output += clsid_buf;
-
   return TRUE;
 }
 
@@ -38,10 +40,16 @@ private:
 
 } // namespace
 
-BOOL RegisterServer() {
+
+BOOL RegisterServer(const GUID &clsid,
+                    const BYTE *description,
+                    const DWORD description_bytes,
+                    const BYTE *threading_model,
+                    const DWORD threading_model_bytes,
+                    HINSTANCE module_handle) {
   // Create clsid key CLSID\{xxxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxx}"
   std::basic_string<WCHAR> clsid_key_string;
-  if (!CreateCLSIDKey(TEXT_SERVICE_CLSID, &clsid_key_string)) {
+  if (!CreateCLSIDKey(clsid, &clsid_key_string)) {
     return FALSE;
   }
 
@@ -60,10 +68,7 @@ BOOL RegisterServer() {
   RegKeyCloser clsid_closer(hkey_clsid);
 
   // Set description as default value of the clsid key
-  if (RegSetValueEx(
-         hkey_clsid, NULL, 0, REG_SZ,
-         (const BYTE *) TEXT_SERVICE_DESCRIPTION,
-         (_countof(TEXT_SERVICE_DESCRIPTION)) * sizeof(WCHAR)) != ERROR_SUCCESS) {
+  if (RegSetValueEx(hkey_clsid, NULL, 0, REG_SZ, description, description_bytes) != ERROR_SUCCESS) {
     return FALSE;
   }
 
@@ -85,7 +90,7 @@ BOOL RegisterServer() {
   // Set module path as default value of the InProcServer32 key 
   {
     WCHAR filename[MAX_PATH] = { '\0' };
-    DWORD num_chars = GetModuleFileName(g_module_handle, filename, ARRAYSIZE(filename));
+    DWORD num_chars = GetModuleFileName(module_handle, filename, ARRAYSIZE(filename));
     if (num_chars == 0) {
       return FALSE;
     }
@@ -101,10 +106,8 @@ BOOL RegisterServer() {
   }
 
   // Add threading model to the InProcServer32 key
-  if (RegSetValueEx(
-          hkey_in_proc_server32, L"ThreadingModel", 0, REG_SZ,
-          (const BYTE *)TEXT_SERVICE_THREADING_MODEL,
-          (_countof(TEXT_SERVICE_THREADING_MODEL)) * sizeof(WCHAR)) != ERROR_SUCCESS) {
+  if (RegSetValueEx(hkey_in_proc_server32, L"ThreadingModel", 0, REG_SZ,
+                    threading_model, threading_model_bytes) != ERROR_SUCCESS) {
     return FALSE;
   }
 
