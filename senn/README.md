@@ -58,3 +58,8 @@ Thus, you can uninstall senn-fcitx by the following commands:
 % sudo rm -rf /usr/share/fcitx/inputmethod/senn.conf
 % sudo rm -rf /usr/lib/x86_64-linux-gnu/fcitx/fcitx-senn.so
 ```
+
+## Windows (WIP)
+
+- Build tip
+- Run `cmd.exe` as administrator and execute `C:\WINDOWS\system32>regsvr32.exe <path\to\Release\dir>\tip.dll`
