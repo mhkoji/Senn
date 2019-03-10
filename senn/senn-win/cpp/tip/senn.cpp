@@ -15,6 +15,7 @@ namespace win {
 static const GUID kClsid =
 { 0x2ea7f750, 0x3e6b, 0x4f3e, { 0xa1, 0xd9, 0x8f, 0x28, 0xe6, 0x7, 0x21, 0x7d } };
 
+
 static const WCHAR kDescription[] = L"Senn";
 
 static const WCHAR kThreadingModel[] = L"Apartment";
@@ -34,38 +35,23 @@ const GUID& SennTextService::GetClsid() const {
 }
 
 
-const BYTE* SennTextService::GetDescription() const {
-  return (const BYTE*) kDescription;
-}
+void SennTextService::GetCOMServerSettings(registry::com_server::Settings *output) const {
+  output->description       = (const BYTE*) kDescription;
+  output->description_bytes = (_countof(kDescription)) * sizeof(WCHAR);
 
-DWORD SennTextService::GetDescriptionBytes() const {
-  return (_countof(kDescription)) * sizeof(WCHAR);
-}
-
-const BYTE* SennTextService::GetThreadingModel() const {
-  return (const BYTE*) kThreadingModel;
-}
-
-DWORD SennTextService::GetThreadingModelBytes() const {
-  return (_countof(kThreadingModel)) * sizeof(WCHAR);
+  output->threading_model       = (const BYTE*) kThreadingModel;
+  output->threading_model_bytes = (_countof(kThreadingModel)) * sizeof(WCHAR);
 }
 
 
-const GUID& SennTextService::GetProfileGuid() const {
-  return kProfileGuid;
-}
+void SennTextService::GetRegistrationSettings(text_service::registration::Settings *output) const {
+  output->profile_guid = kProfileGuid;
+  output->profile_description = kProfileDescription;
 
-const WCHAR* SennTextService::GetProfileDescription() const {
-  return kProfileDescription;
-}
-
-std::vector<GUID> SennTextService::GetCategories() const {
   size_t category_count = static_cast<size_t>(sizeof(kCategories) / sizeof(kCategories[0]));
-  std::vector<GUID> categories;
   for (size_t i = 0; i < category_count; i++) {
-    categories.push_back(kCategories[i]);
+    output->categories.push_back(kCategories[i]);
   }
-  return categories;
 }
 
 

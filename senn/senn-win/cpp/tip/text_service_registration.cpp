@@ -3,8 +3,11 @@
 #include <msctf.h>
 #include <combaseapi.h>
 
-#include "text_service_registerable.h"
+#include "text_service_registration.h"
 
+namespace senn {
+namespace win {
+namespace text_service {
 
 namespace {
 
@@ -72,15 +75,10 @@ BOOL RegisterCategories(const GUID &clsid,
 } // namespace
 
 
-namespace senn {
-namespace win {
-namespace text_service {
-
+namespace registration {
 
 // https://docs.microsoft.com/en-us/windows/desktop/tsf/text-service-registration
-BOOL TextServiceRegisterable::Register(
-    const TextServiceRegisterable* const obj,
-    const GUID& clsid) {
+BOOL Register(const Settings &settings, const GUID& clsid) {
   ITfInputProcessorProfiles *profiles;
   {
     HRESULT result = CoCreateInstance(CLSID_TF_InputProcessorProfiles,
@@ -101,8 +99,8 @@ BOOL TextServiceRegisterable::Register(
   if (!RegisterLanguageProfile(
            profiles,
            clsid,
-           obj->GetProfileGuid(),
-           obj->GetProfileDescription(),
+           settings.profile_guid,
+           settings.profile_description,
            -1)) {
     return FALSE;
   }
@@ -110,12 +108,22 @@ BOOL TextServiceRegisterable::Register(
 
   if (!RegisterCategories(
            clsid,
-           obj->GetCategories())) {
+           settings.categories)) {
     return FALSE;
   }
 
   return TRUE;
 }
+
+} // registration
+
+
+BOOL TextServiceRegisterable::RegisterTextService(const GUID &clsid) const {
+  registration::Settings settings;
+  GetRegistrationSettings(&settings);
+  return registration::Register(settings, clsid);
+}
+
 
 } // text_service
 } // win

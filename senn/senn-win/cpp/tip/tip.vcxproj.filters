@@ -30,7 +30,7 @@
     <ClInclude Include="senn.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="text_service_registerable.h">
+    <ClInclude Include="text_service_registration.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>
@@ -53,7 +53,7 @@
     <ClCompile Include="senn.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="text_service_registerable.cpp">
+    <ClCompile Include="text_service_registration.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>

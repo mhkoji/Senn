@@ -7,20 +7,16 @@
 #include "variable.h"
 
 using senn::win::g_senn_text_service;
-using senn::win::registry::COMServerRegisterable;
-using senn::win::text_service::TextServiceRegisterable;
 
 STDAPI DllRegisterServer() {
-  if (!COMServerRegisterable::Register(
-           g_senn_text_service,
+  if (!g_senn_text_service->RegisterCOMServer(
            g_senn_text_service->GetClsid(),
            g_module_handle)) {
     // DllUnregisterServer();
     return E_FAIL;
   }
 
-  if (!TextServiceRegisterable::Register(
-           g_senn_text_service,
+  if (!g_senn_text_service->RegisterTextService(
            g_senn_text_service->GetClsid())) {
     // DllUnregisterServer();
     return E_FAIL;

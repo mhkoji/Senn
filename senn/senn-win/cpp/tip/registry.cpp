@@ -8,6 +8,10 @@
 #include "registry.h"
 
 
+namespace senn {
+namespace win {
+namespace registry {
+
 namespace {
 
 // strlen("{xxxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxx}")
@@ -43,13 +47,10 @@ private:
 }  // namespace
 
 
-namespace senn {
-namespace win {
-namespace registry {
+namespace com_server {
 
-
-BOOL COMServerRegisterable::Register(
-    const COMServerRegisterable* const obj,
+BOOL Register(
+    const Settings &settings,
     const GUID &clsid,
     const HINSTANCE module_handle) {
   // Create clsid key CLSID\{xxxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxx}"
@@ -74,8 +75,8 @@ BOOL COMServerRegisterable::Register(
 
   // Set description as default value of the clsid key
   if (RegSetValueEx(hkey_clsid, NULL, 0, REG_SZ, 
-                    obj->GetDescription(),
-                    obj->GetDescriptionBytes()) != ERROR_SUCCESS) {
+                    settings.description,
+                    settings.description_bytes) != ERROR_SUCCESS) {
     return FALSE;
   }
 
@@ -114,14 +115,24 @@ BOOL COMServerRegisterable::Register(
 
   // Add threading model to the InProcServer32 key
   if (RegSetValueEx(hkey_in_proc_server32, L"ThreadingModel", 0, REG_SZ,
-                    obj->GetThreadingModel(),
-                    obj->GetThreadingModelBytes()) != ERROR_SUCCESS) {
+                    settings.threading_model,
+                    settings.threading_model_bytes) != ERROR_SUCCESS) {
     return FALSE;
   }
 
   return TRUE;
 }
 
+
+} // com_server
+
+
+BOOL COMServerRegisterable::RegisterCOMServer(const GUID &clsid, HINSTANCE module_handle) const {
+  com_server::Settings settings;
+  GetCOMServerSettings(&settings);
+  return com_server::Register(settings, clsid, module_handle);
+}
+ 
 
 } // registry
 } // win

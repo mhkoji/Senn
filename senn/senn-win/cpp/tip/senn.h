@@ -1,7 +1,7 @@
 #pragma once
 
 #include "registry.h"
-#include "text_service_registerable.h"
+#include "text_service_registration.h"
 
 namespace senn {
 namespace win {
@@ -9,23 +9,15 @@ namespace win {
 class SennTextService :
   public registry::COMServerRegisterable,
   public text_service::TextServiceRegisterable {
-
 public:
+
   const GUID& GetClsid() const;
 
-
 private:
-  const BYTE* GetDescription() const override;
-  DWORD GetDescriptionBytes()   const override;
 
-  const BYTE* GetThreadingModel() const override;
-  DWORD GetThreadingModelBytes()   const override;
+  void GetCOMServerSettings(registry::com_server::Settings*) const override;
 
- 
-  const GUID& GetProfileGuid()  const override;
-  const WCHAR* GetProfileDescription() const override;
-
-  std::vector<GUID> GetCategories() const override;
+  void GetRegistrationSettings(text_service::registration::Settings*) const override;
 };
 
 extern SennTextService *g_senn_text_service;
