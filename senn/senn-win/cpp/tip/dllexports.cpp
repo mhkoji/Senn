@@ -1,34 +1,35 @@
 #include "stdafx.h"
 #include <cstdlib>
+#include "registry.h"
+#include "text_service_registration.h"
+#include "settings.h"
 #include "variable.h"
-#include "register.h"
-#include "dllexports.h"
 
 
 STDAPI DllRegisterServer() {
-  if (!RegisterCOMServer(
-           TEXT_SERVICE_CLSID,
+  if (!senn::win::registry::RegisterCOMServer(
+           senn::win::settings::kClsid,
 
-           (const BYTE*) TEXT_SERVICE_DESCRIPTION,
-           (_countof(TEXT_SERVICE_DESCRIPTION)) * sizeof(WCHAR),
+           (const BYTE*) senn::win::settings::kDescription,
+           (_countof(senn::win::settings::kDescription)) * sizeof(WCHAR),
 
-           (const BYTE*) TEXT_SERVICE_THREADING_MODEL,
-           (_countof(TEXT_SERVICE_THREADING_MODEL)) * sizeof(WCHAR),
+           (const BYTE*)senn::win::settings::kThreadingModel,
+           (_countof(senn::win::settings::kThreadingModel)) * sizeof(WCHAR),
         
            g_module_handle)) {
     // DllUnregisterServer();
     return E_FAIL;
   }
 
-  if (!RegisterTextService(
-           TEXT_SERVICE_CLSID,
+  if (!senn::win::text_service_registration::Register(
+           senn::win::settings::kClsid,
 
-           TEXT_SERVICE_PROFILE_GUID,
-           TEXT_SERVICE_PROFILE_DESCRIPTION,
+           senn::win::settings::kProfileGuid,
+           senn::win::settings::kProfileDescription,
            -1,
 
-           std::vector<GUID>(TEXT_SERVICE_CATEGORIES,
-                             std::end(TEXT_SERVICE_CATEGORIES)))) {
+           std::vector<GUID>(senn::win::settings::kCategories,
+                             std::end(senn::win::settings::kCategories)))) {
     // DllUnregisterServer();
     return E_FAIL;
   }

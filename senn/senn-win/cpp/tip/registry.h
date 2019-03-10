@@ -1,7 +1,13 @@
 #pragma once
 
 #include "stdafx.h"
-#include <vector>
+#include <windows.h>
+
+
+namespace senn {
+namespace win {
+namespace registry {
+
 
 BOOL RegisterCOMServer(
     const GUID &clsid,
@@ -13,10 +19,6 @@ BOOL RegisterCOMServer(
 );
 
 
-BOOL RegisterTextService(
-  const GUID &clsid,
-  const GUID &profile_guid,
-  const WCHAR *profile_description,
-  const ULONG profile_description_len,
-  const std::vector<GUID> &categories
-);
+} // registry
+} // win
+} // senn
