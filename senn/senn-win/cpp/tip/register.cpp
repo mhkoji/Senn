@@ -13,8 +13,9 @@ static const size_t CLSID_STRLEN = 38;
 
 
 BOOL CreateCLSIDKey(const GUID &clsid, std::basic_string<WCHAR> *output) {
-  WCHAR clsid_buf[CLSID_STRLEN];
-  if (!StringFromGUID2(clsid, clsid_buf, CLSID_STRLEN)) {
+  // +1 for '\0' at the end of the string
+  WCHAR clsid_buf[CLSID_STRLEN + 1];
+  if (!StringFromGUID2(clsid, clsid_buf, (_countof(clsid_buf)))) {
     return FALSE;
   }
 
