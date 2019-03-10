@@ -48,12 +48,10 @@ namespace win {
 namespace registry {
 
 
-BOOL RegisterCOMServer(const GUID &clsid,
-                       const BYTE *description,
-                       const DWORD description_bytes,
-                       const BYTE *threading_model,
-                       const DWORD threading_model_bytes,
-                       const HINSTANCE module_handle) {
+BOOL COMServerRegisterable::Register(
+    const COMServerRegisterable* const obj,
+    const GUID &clsid,
+    const HINSTANCE module_handle) {
   // Create clsid key CLSID\{xxxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxx}"
   std::basic_string<WCHAR> clsid_key_string;
   if (!CreateCLSIDKey(clsid, &clsid_key_string)) {
@@ -75,7 +73,9 @@ BOOL RegisterCOMServer(const GUID &clsid,
   RegKeyCloser clsid_closer(hkey_clsid);
 
   // Set description as default value of the clsid key
-  if (RegSetValueEx(hkey_clsid, NULL, 0, REG_SZ, description, description_bytes) != ERROR_SUCCESS) {
+  if (RegSetValueEx(hkey_clsid, NULL, 0, REG_SZ, 
+                    obj->GetDescription(),
+                    obj->GetDescriptionBytes()) != ERROR_SUCCESS) {
     return FALSE;
   }
 
@@ -105,16 +105,17 @@ BOOL RegisterCOMServer(const GUID &clsid,
       num_chars < (MAX_PATH - 1) ? num_chars + 1 : MAX_PATH;
 
     if (RegSetValueEx(
-      hkey_in_proc_server32, NULL, 0, REG_SZ,
-      (const BYTE *)filename,
-      (num_chars_including_null_termination) * sizeof(WCHAR)) != ERROR_SUCCESS) {
+            hkey_in_proc_server32, NULL, 0, REG_SZ,
+            (const BYTE *)filename,
+            (num_chars_including_null_termination) * sizeof(WCHAR)) != ERROR_SUCCESS) {
       return FALSE;
     }
   }
 
   // Add threading model to the InProcServer32 key
   if (RegSetValueEx(hkey_in_proc_server32, L"ThreadingModel", 0, REG_SZ,
-                    threading_model, threading_model_bytes) != ERROR_SUCCESS) {
+                    obj->GetThreadingModel(),
+                    obj->GetThreadingModelBytes()) != ERROR_SUCCESS) {
     return FALSE;
   }
 

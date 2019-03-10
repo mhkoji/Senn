@@ -2,11 +2,8 @@
 
 #include <msctf.h>
 #include <combaseapi.h>
-#include <string>
-#include <vector>
 
-#include "variable.h"
-#include "text_service_registration.h"
+#include "text_service_registerable.h"
 
 
 namespace {
@@ -46,7 +43,8 @@ BOOL RegisterLanguageProfile(ITfInputProcessorProfiles *profiles,
 
 BOOL RegisterCategories(const GUID &clsid,
                         const std::vector<GUID> &categories) {
-  ITfCategoryMgr *category_mgr; {
+  ITfCategoryMgr *category_mgr;
+  {
     HRESULT result = CoCreateInstance(
         CLSID_TF_CategoryMgr,
         NULL,
@@ -76,15 +74,13 @@ BOOL RegisterCategories(const GUID &clsid,
 
 namespace senn {
 namespace win {
-namespace text_service_registration {
+namespace text_service {
 
 
 // https://docs.microsoft.com/en-us/windows/desktop/tsf/text-service-registration
-BOOL Register(const GUID &clsid,
-              const GUID &profile_guid,
-              const WCHAR *profile_description,
-              const ULONG profile_description_len,
-              const std::vector<GUID> &categories) {
+BOOL TextServiceRegisterable::Register(
+    const TextServiceRegisterable* const obj,
+    const GUID& clsid) {
   ITfInputProcessorProfiles *profiles;
   {
     HRESULT result = CoCreateInstance(CLSID_TF_InputProcessorProfiles,
@@ -105,22 +101,22 @@ BOOL Register(const GUID &clsid,
   if (!RegisterLanguageProfile(
            profiles,
            clsid,
-           profile_guid,
-           profile_description,
-           profile_description_len)) {
+           obj->GetProfileGuid(),
+           obj->GetProfileDescription(),
+           -1)) {
     return FALSE;
   }
 
+
   if (!RegisterCategories(
            clsid,
-           categories)) {
+           obj->GetCategories())) {
     return FALSE;
   }
 
   return TRUE;
 }
 
-
-} // text_service_registration
+} // text_service
 } // win
 } // senn

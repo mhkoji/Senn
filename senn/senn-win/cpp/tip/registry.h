@@ -8,16 +8,22 @@ namespace senn {
 namespace win {
 namespace registry {
 
+class COMServerRegisterable {
+  public:
+    virtual ~COMServerRegisterable() {}
 
-BOOL RegisterCOMServer(
-    const GUID &clsid,
-    const BYTE* description,
-    const DWORD description_bytes,
-    const BYTE* threading_model,
-    const DWORD threading_model_bytes,
-    HINSTANCE module_handle
-);
+    virtual const BYTE* GetDescription() const = 0;
+    virtual DWORD GetDescriptionBytes()  const = 0;
 
+    virtual const BYTE* GetThreadingModel() const = 0;
+    virtual DWORD GetThreadingModelBytes()  const = 0;
+
+
+    static BOOL Register(
+        const COMServerRegisterable* const,
+        const GUID&,
+        HINSTANCE);
+  };
 
 } // registry
 } // win

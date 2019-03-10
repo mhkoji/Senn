@@ -149,17 +149,17 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="settings.h" />
-    <ClInclude Include="text_service_registration.h" />
+    <ClInclude Include="senn.h" />
+    <ClInclude Include="text_service_registerable.h" />
     <ClInclude Include="registry.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="variable.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="dllexports.cpp" />
     <ClCompile Include="dllmain.cpp" />
-    <ClCompile Include="text_service_registration.cpp" />
+    <ClCompile Include="senn.cpp" />
+    <ClCompile Include="text_service_registerable.cpp" />
     <ClCompile Include="registry.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

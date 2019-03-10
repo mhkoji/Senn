@@ -27,10 +27,10 @@
     <ClInclude Include="registry.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="text_service_registration.h">
+    <ClInclude Include="senn.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="settings.h">
+    <ClInclude Include="text_service_registerable.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>
@@ -47,13 +47,13 @@
     <ClCompile Include="variable.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="dllexports.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="registry.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="text_service_registration.cpp">
+    <ClCompile Include="senn.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="text_service_registerable.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
