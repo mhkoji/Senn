@@ -11,12 +11,10 @@
 namespace senn {
 namespace win {
 
-const GUID& SennRegistration::GetClsid() const {
-  return kClsid;
-}
+/////////////////////////////////////////////////////////
 
-
-void SennRegistration::GetCOMServerSettings(registry::com_server::Settings *output) const {
+void DllRegistration::COMServerRegisterable::GetCOMServerSettings(
+    registry::com_server::Settings *output) const {
   output->description       = (const BYTE*) kDescription;
   output->description_bytes = (_countof(kDescription)) * sizeof(WCHAR);
 
@@ -25,7 +23,8 @@ void SennRegistration::GetCOMServerSettings(registry::com_server::Settings *outp
 }
 
 
-void SennRegistration::GetRegistrationSettings(text_service::registration::Settings *output) const {
+void DllRegistration::TextServiceRegisterable::GetRegistrationSettings(
+    text_service::registration::Settings *output) const {
   output->profile_guid = kProfileGuid;
   output->profile_description = kProfileDescription;
 
@@ -36,20 +35,40 @@ void SennRegistration::GetRegistrationSettings(text_service::registration::Setti
 }
 
 
-HRESULT SennRegistration::Register(const SennRegistration *senn, HINSTANCE module_handle) {
-  if (!senn->RegisterCOMServer(senn->GetClsid(), module_handle)) {
-    // DllUnregisterServer();
+DllRegistration::DllRegistration() :
+  com_server_(new DllRegistration::COMServerRegisterable()),
+  text_service_(new DllRegistration::TextServiceRegisterable()) {
+}
+
+const GUID& DllRegistration::GetClsid() const {
+  return kClsid;
+}
+
+
+HRESULT DllRegistration::Register(const DllRegistration *senn, HINSTANCE module_handle) {
+  if (!senn->com_server_->Register(senn->GetClsid(), module_handle)) {
+    DllRegistration::Unregister(senn);
     return E_FAIL;
   }
 
-  if (!senn->RegisterTextService(senn->GetClsid())) {
-    // DllUnregisterServer();
+  if (!senn->text_service_->Register(senn->GetClsid())) {
+    DllRegistration::Unregister(senn);
     return E_FAIL;
   }
 
   return S_OK;
 }
 
+
+HRESULT DllRegistration::Unregister(const DllRegistration *senn) {
+  senn->text_service_->Unregister(senn->GetClsid());
+
+  senn->com_server_->Unregister(senn->GetClsid());
+
+  return S_OK;
+}
+
+/////////////////////////////////////////////////////////
 
 } // win
 } // senn

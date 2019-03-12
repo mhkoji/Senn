@@ -20,6 +20,8 @@ struct Settings {
 
 BOOL Register(const Settings&, const GUID&, HINSTANCE);
 
+void Unregister(const GUID&);
+
 } // com_server
 
 
@@ -29,7 +31,9 @@ public:
 
   virtual void GetCOMServerSettings(com_server::Settings *) const = 0;
 
-  BOOL RegisterCOMServer(const GUID&, HINSTANCE) const;
+  BOOL Register(const GUID&, HINSTANCE) const;
+
+  void Unregister(const GUID&) const;
 };
 
 

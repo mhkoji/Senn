@@ -72,6 +72,37 @@ BOOL RegisterCategories(const GUID &clsid,
   return TRUE;
 }
 
+BOOL UnregisterCategories(const GUID &clsid,
+                          const std::vector<GUID> &categories) {
+  ITfCategoryMgr *category_mgr;
+  {
+    HRESULT result = CoCreateInstance(
+      CLSID_TF_CategoryMgr,
+      NULL,
+      CLSCTX_INPROC_SERVER,
+      IID_ITfCategoryMgr,
+      (void**)&category_mgr
+    );
+
+    if (result != S_OK) {
+      return FALSE;
+    }
+  }
+  ObjectReleaser releaser(category_mgr);
+
+  for (std::vector<GUID>::const_iterator it = categories.begin();
+    it != categories.end(); ++it) {
+    if (category_mgr->UnregisterCategory(clsid, *it, clsid) != S_OK) {
+      return FALSE;
+    }
+  }
+
+  return TRUE;
+}
+
+
+
+
 } // namespace
 
 
@@ -115,13 +146,40 @@ BOOL Register(const Settings &settings, const GUID& clsid) {
   return TRUE;
 }
 
+void Unregister(const Settings &settings, const GUID& clsid) {
+  UnregisterCategories(clsid, settings.categories);
+
+  ITfInputProcessorProfiles *profiles;
+  {
+    HRESULT result = CoCreateInstance(CLSID_TF_InputProcessorProfiles,
+                                      NULL,
+                                      CLSCTX_INPROC_SERVER,
+                                     IID_ITfInputProcessorProfiles,
+                                     (void**)&profiles);
+    if (result != S_OK) {
+      return;
+    }
+  }
+  ObjectReleaser releaser(profiles);
+
+  profiles->Unregister(clsid);
+ }
+
+
 } // registration
 
 
-BOOL TextServiceRegisterable::RegisterTextService(const GUID &clsid) const {
+BOOL TextServiceRegisterable::Register(const GUID &clsid) const {
   registration::Settings settings;
   GetRegistrationSettings(&settings);
   return registration::Register(settings, clsid);
+}
+
+
+void TextServiceRegisterable::Unregister(const GUID &clsid) const {
+  registration::Settings settings;
+  GetRegistrationSettings(&settings);
+  registration::Unregister(settings, clsid);
 }
 
 

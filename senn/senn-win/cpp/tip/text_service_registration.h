@@ -20,6 +20,8 @@ struct Settings {
 
 BOOL Register(const Settings&, const GUID&);
 
+void Unregister(const Settings&, const GUID&);
+
 } // registration
 
 
@@ -29,7 +31,9 @@ public:
 
   virtual void GetRegistrationSettings(registration::Settings*) const = 0;
 
-  BOOL RegisterTextService(const GUID&) const;
+  BOOL Register(const GUID&) const;
+
+  void Unregister(const GUID&) const;
 };
 
 

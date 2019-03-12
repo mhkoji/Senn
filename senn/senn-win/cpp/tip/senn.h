@@ -27,20 +27,35 @@ static const WCHAR kProfileDescription[] = L"Senn Text Service";
 static const GUID kCategories[] = { GUID_TFCAT_TIP_KEYBOARD };
 
 
-class SennRegistration :
-  public registry::COMServerRegisterable,
-  public text_service::TextServiceRegisterable {
+class DllRegistration {
+  class COMServerRegisterable : public registry::COMServerRegisterable {
+  private:
+    void GetCOMServerSettings(registry::com_server::Settings *) const override;
+  };
+
+  class TextServiceRegisterable : public text_service::TextServiceRegisterable {
+  private:
+    void GetRegistrationSettings(text_service::registration::Settings*) const override;
+  };
+
 public:
+
+  DllRegistration();
 
   const GUID& GetClsid() const;
 
-  static HRESULT Register(const SennRegistration*, HINSTANCE);
-
 private:
 
-  void GetCOMServerSettings(registry::com_server::Settings*) const override;
+  const COMServerRegisterable* const com_server_;
+ 
+  const TextServiceRegisterable* const text_service_;
 
-  void GetRegistrationSettings(text_service::registration::Settings*) const override;
+
+public:
+
+  static HRESULT Register(const DllRegistration*, HINSTANCE);
+
+  static HRESULT Unregister(const DllRegistration*);
 };
 
 

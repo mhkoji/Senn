@@ -9,5 +9,9 @@
 using namespace senn::win;
 
 STDAPI DllRegisterServer() {
-  return SennRegistration::Register(new SennRegistration(), g_module_handle);
+  return DllRegistration::Register(new DllRegistration(), g_module_handle);
+}
+
+STDAPI DllUnregisterServer(void) {
+  return DllRegistration::Unregister(new DllRegistration());
 }

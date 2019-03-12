@@ -44,6 +44,29 @@ private:
   const HKEY key_;
 };
 
+
+LONG RecurseDeleteKey(HKEY hParentKey, LPCTSTR lpszKey) {
+  HKEY hKey;
+  if (RegOpenKey(hParentKey, lpszKey, &hKey) != ERROR_SUCCESS) {
+    return ERROR_SUCCESS; // let's assume we couldn't open it because it's not there
+  }
+  RegKeyCloser clsid_closer(hKey);
+
+  LONG lRes = ERROR_SUCCESS;
+  TCHAR szBuffer[256];
+  DWORD dwSize = ARRAYSIZE(szBuffer);
+  FILETIME time;
+  while (RegEnumKeyEx(hKey, 0, szBuffer, &dwSize, NULL, NULL, NULL, &time) == ERROR_SUCCESS) {
+    szBuffer[ARRAYSIZE(szBuffer) - 1] = '\0';
+    lRes = RecurseDeleteKey(hKey, szBuffer);
+    if (lRes != ERROR_SUCCESS) {
+      return lRes;
+    }
+    dwSize = ARRAYSIZE(szBuffer);
+  }
+  return RegDeleteKey(hParentKey, lpszKey);
+}
+
 }  // namespace
 
 
@@ -124,15 +147,30 @@ BOOL Register(
 }
 
 
+
+void Unregister(const GUID &clsid) {
+  std::basic_string<WCHAR> clsid_key_string;
+  if (!CreateCLSIDKey(clsid, &clsid_key_string)) {
+    return;
+  }
+
+  RecurseDeleteKey(HKEY_CLASSES_ROOT, clsid_key_string.c_str());
+}
+
+
 } // com_server
 
 
-BOOL COMServerRegisterable::RegisterCOMServer(const GUID &clsid, HINSTANCE module_handle) const {
+BOOL COMServerRegisterable::Register(const GUID &clsid, HINSTANCE module_handle) const {
   com_server::Settings settings;
   GetCOMServerSettings(&settings);
   return com_server::Register(settings, clsid, module_handle);
 }
  
+void COMServerRegisterable::Unregister(const GUID &clsid) const {
+  com_server::Unregister(clsid);
+}
+
 
 } // registry
 } // win
