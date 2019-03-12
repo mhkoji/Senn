@@ -9,7 +9,8 @@
 
 
 namespace senn {
-namespace win {
+namespace senn_win {
+
 
 
 } // win

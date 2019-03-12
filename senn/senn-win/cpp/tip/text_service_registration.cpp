@@ -101,8 +101,6 @@ BOOL UnregisterCategories(const GUID &clsid,
 }
 
 
-
-
 } // namespace
 
 
@@ -201,14 +199,14 @@ DllRegistration::DllRegistration(const GUID* const clsid)
 HRESULT DllRegistration::Register(
     const DllRegistration *reg,
     const registry::com_server::SettingsProvider* const com_server_settings_provider,
-    const text_service::registration::SettingsProvider* const text_service_registration_settings_provider) {
+    const text_service::registration::SettingsProvider* const text_service_settings_provider) {
   if (!reg->com_server_->Register(com_server_settings_provider)) {
-    DllRegistration::Unregister(reg, text_service_registration_settings_provider);
+    DllRegistration::Unregister(reg, text_service_settings_provider);
     return E_FAIL;
   }
 
-  if (!reg->text_service_->Register(text_service_registration_settings_provider)) {
-    DllRegistration::Unregister(reg, text_service_registration_settings_provider);
+  if (!reg->text_service_->Register(text_service_settings_provider)) {
+    DllRegistration::Unregister(reg, text_service_settings_provider);
     return E_FAIL;
   }
 

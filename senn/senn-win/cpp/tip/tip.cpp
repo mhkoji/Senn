@@ -6,18 +6,18 @@
 #include "senn.h"
 #include "variable.h"
 
-using namespace senn::win;
+using namespace senn;
 
 
 STDAPI DllRegisterServer() {
-  return text_service::DllRegistration::Register(
-      new text_service::DllRegistration(&kClsid),
-      new registration::COMServerSettingsProvider(g_module_handle),
-      new registration::TextServiceRegistrationSettingsProvider());
+  return win::text_service::DllRegistration::Register(
+      new win::text_service::DllRegistration(&senn_win::kClsid),
+      new senn_win::registration::COMServerSettingsProvider(g_module_handle),
+      new senn_win::registration::TextServiceSettingsProvider());
 }
 
 STDAPI DllUnregisterServer(void) {
-  return text_service::DllRegistration::Unregister(
-      new text_service::DllRegistration(&kClsid),
-      new registration::TextServiceRegistrationSettingsProvider());
+  return win::text_service::DllRegistration::Unregister(
+      new win::text_service::DllRegistration(&senn_win::kClsid),
+      new senn_win::registration::TextServiceSettingsProvider());
 }

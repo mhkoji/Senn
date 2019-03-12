@@ -6,7 +6,7 @@
 #include "text_service_registration.h"
 
 namespace senn {
-namespace win {
+namespace senn_win {
 
   // {2EA7F750-3E6B-4F3E-A1D9-8F28E607217D}
 static const GUID kClsid =
@@ -57,7 +57,7 @@ private:
   const HINSTANCE module_handle_;
 };
 
-class TextServiceRegistrationSettingsProvider
+class TextServiceSettingsProvider
   : public ::senn::win::text_service::registration::SettingsProvider {
 public:
   void Get(::senn::win::text_service::registration::Settings *output) const override {
@@ -72,6 +72,7 @@ public:
 };
 
 } // registration /////////////////////////////////////////////////////////
+
 
 } // win
 } // senn
