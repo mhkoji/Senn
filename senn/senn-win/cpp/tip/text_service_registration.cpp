@@ -109,7 +109,7 @@ BOOL UnregisterCategories(const GUID &clsid,
 namespace registration {
 
 // https://docs.microsoft.com/en-us/windows/desktop/tsf/text-service-registration
-BOOL Register(const Settings &settings, const GUID& clsid) {
+BOOL Register(const GUID& clsid, const Settings &settings) {
   ITfInputProcessorProfiles *profiles;
   {
     HRESULT result = CoCreateInstance(CLSID_TF_InputProcessorProfiles,
@@ -146,7 +146,7 @@ BOOL Register(const Settings &settings, const GUID& clsid) {
   return TRUE;
 }
 
-void Unregister(const Settings &settings, const GUID& clsid) {
+void Unregister(const GUID& clsid, const Settings &settings) {
   UnregisterCategories(clsid, settings.categories);
 
   ITfInputProcessorProfiles *profiles;
@@ -169,17 +169,61 @@ void Unregister(const Settings &settings, const GUID& clsid) {
 } // registration
 
 
-BOOL TextServiceRegisterable::Register(const GUID &clsid) const {
+TextServiceRegistrar::TextServiceRegistrar(const GUID* const clsid)
+  : clsid_(clsid) {
+}
+
+BOOL TextServiceRegistrar::Register(
+    const registration::SettingsProvider* const provider) const {
   registration::Settings settings;
-  GetRegistrationSettings(&settings);
-  return registration::Register(settings, clsid);
+  provider->Get(&settings);
+  return registration::Register(*clsid_, settings);
 }
 
 
-void TextServiceRegisterable::Unregister(const GUID &clsid) const {
+void TextServiceRegistrar::Unregister(
+    const registration::SettingsProvider* const provider) const {
   registration::Settings settings;
-  GetRegistrationSettings(&settings);
-  registration::Unregister(settings, clsid);
+  provider->Get(&settings);
+  registration::Unregister(*clsid_, settings);
+}
+
+
+/////////////////////////////////////////////////////////
+
+
+DllRegistration::DllRegistration(const GUID* const clsid)
+  : com_server_(new registry::COMServerRegistrar(clsid)),
+    text_service_(new TextServiceRegistrar(clsid)) {
+}
+
+
+HRESULT DllRegistration::Register(
+    const DllRegistration *reg,
+    const registry::com_server::SettingsProvider* const com_server_settings_provider,
+    const text_service::registration::SettingsProvider* const text_service_registration_settings_provider) {
+  if (!reg->com_server_->Register(com_server_settings_provider)) {
+    DllRegistration::Unregister(reg, text_service_registration_settings_provider);
+    return E_FAIL;
+  }
+
+  if (!reg->text_service_->Register(text_service_registration_settings_provider)) {
+    DllRegistration::Unregister(reg, text_service_registration_settings_provider);
+    return E_FAIL;
+  }
+
+  return S_OK;
+}
+
+
+HRESULT DllRegistration::Unregister(
+    const DllRegistration *reg,
+    const text_service::registration::SettingsProvider* const provider) {
+  reg->text_service_->Unregister(provider);
+
+  reg->com_server_->Unregister();
+
+  return S_OK;
 }
 
 

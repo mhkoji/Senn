@@ -8,10 +8,16 @@
 
 using namespace senn::win;
 
+
 STDAPI DllRegisterServer() {
-  return DllRegistration::Register(new DllRegistration(), g_module_handle);
+  return text_service::DllRegistration::Register(
+      new text_service::DllRegistration(&kClsid),
+      new registration::COMServerSettingsProvider(g_module_handle),
+      new registration::TextServiceRegistrationSettingsProvider());
 }
 
 STDAPI DllUnregisterServer(void) {
-  return DllRegistration::Unregister(new DllRegistration());
+  return text_service::DllRegistration::Unregister(
+      new text_service::DllRegistration(&kClsid),
+      new registration::TextServiceRegistrationSettingsProvider());
 }

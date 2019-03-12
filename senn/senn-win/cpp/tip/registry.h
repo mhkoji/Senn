@@ -11,29 +11,47 @@ namespace registry {
 namespace com_server {
 
 struct Settings {
-  const BYTE *description;
-  DWORD       description_bytes;
+  struct {
+    const BYTE *content;
+    DWORD      bytes;
+  } description;
 
-  const BYTE *threading_model;
-  DWORD       threading_model_bytes;
+  struct {
+    const BYTE *content;
+    DWORD       bytes;
+  } threading_model;
+
+  struct {
+    WCHAR content[MAX_PATH] = { '\0' };
+    DWORD size_including_null_termination;
+  } module_file_name;
 };
 
-BOOL Register(const Settings&, const GUID&, HINSTANCE);
+BOOL Register(const GUID&, const Settings&);
 
 void Unregister(const GUID&);
+
+
+class SettingsProvider {
+public:
+  ~SettingsProvider() {}
+
+  virtual BOOL Get(Settings*) const = 0;
+};
 
 } // com_server
 
 
-class COMServerRegisterable {
+class COMServerRegistrar {
 public:
-  virtual ~COMServerRegisterable() {}
+  COMServerRegistrar(const GUID* const);
 
-  virtual void GetCOMServerSettings(com_server::Settings *) const = 0;
+  BOOL Register(const com_server::SettingsProvider* const) const;
 
-  BOOL Register(const GUID&, HINSTANCE) const;
+  void Unregister() const;
 
-  void Unregister(const GUID&) const;
+private:
+  const GUID* const clsid_;;
 };
 
 

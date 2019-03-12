@@ -3,6 +3,8 @@
 #include <windows.h>
 #include <vector>
 
+#include "registry.h"
+
 
 namespace senn {
 namespace win {
@@ -18,22 +20,57 @@ struct Settings {
 };
 
 
-BOOL Register(const Settings&, const GUID&);
+BOOL Register(const GUID&, const Settings&);
 
-void Unregister(const Settings&, const GUID&);
+void Unregister(const GUID&, const Settings&);
+
+
+class SettingsProvider {
+public:
+  virtual ~SettingsProvider() {}
+
+  virtual void Get(registration::Settings*) const = 0;
+};
 
 } // registration
 
 
-class TextServiceRegisterable {
+
+class TextServiceRegistrar {
 public:
-  virtual ~TextServiceRegisterable() {};
+  TextServiceRegistrar(const GUID* const);
 
-  virtual void GetRegistrationSettings(registration::Settings*) const = 0;
+  BOOL Register(const registration::SettingsProvider* const) const;
 
-  BOOL Register(const GUID&) const;
+  void Unregister(const registration::SettingsProvider* const provider) const;
 
-  void Unregister(const GUID&) const;
+private:
+
+  const GUID* const clsid_;
+};
+
+
+class DllRegistration {
+public:
+
+  DllRegistration(const GUID * const);
+
+private:
+
+  const registry::COMServerRegistrar* const com_server_;
+
+  const TextServiceRegistrar* const text_service_;
+
+public:
+
+  static HRESULT Register(
+      const DllRegistration*,
+      const registry::com_server::SettingsProvider* const,
+      const registration::SettingsProvider* const);
+
+  static HRESULT Unregister(
+      const DllRegistration*,
+      const registration::SettingsProvider* const);
 };
 
 

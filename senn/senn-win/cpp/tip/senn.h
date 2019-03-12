@@ -27,37 +27,51 @@ static const WCHAR kProfileDescription[] = L"Senn Text Service";
 static const GUID kCategories[] = { GUID_TFCAT_TIP_KEYBOARD };
 
 
-class DllRegistration {
-  class COMServerRegisterable : public registry::COMServerRegisterable {
-  private:
-    void GetCOMServerSettings(registry::com_server::Settings *) const override;
-  };
+namespace registration { /////////////////////////////////////////////////////////
 
-  class TextServiceRegisterable : public text_service::TextServiceRegisterable {
-  private:
-    void GetRegistrationSettings(text_service::registration::Settings*) const override;
-  };
-
+class COMServerSettingsProvider
+  : public ::senn::win::registry::com_server::SettingsProvider {
 public:
+  COMServerSettingsProvider(HINSTANCE module_handle) : module_handle_(module_handle) {
+  }
 
-  DllRegistration();
+  BOOL Get(::senn::win::registry::com_server::Settings *output) const override {
+    DWORD size = ARRAYSIZE(output->module_file_name.content);
+    DWORD num_chars = GetModuleFileName(module_handle_, output->module_file_name.content, size);
+    if (num_chars == 0) {
+      return FALSE;
+    }
+    output->module_file_name.size_including_null_termination =
+      num_chars < (size - 1) ? num_chars + 1 : size;
 
-  const GUID& GetClsid() const;
+    output->description.content = (const BYTE*)kDescription;
+    output->description.bytes = (_countof(kDescription)) * sizeof(WCHAR);
+
+    output->threading_model.content = (const BYTE*)kThreadingModel;
+    output->threading_model.bytes = (_countof(kThreadingModel)) * sizeof(WCHAR);
+
+    return TRUE;
+  }
 
 private:
-
-  const COMServerRegisterable* const com_server_;
- 
-  const TextServiceRegisterable* const text_service_;
-
-
-public:
-
-  static HRESULT Register(const DllRegistration*, HINSTANCE);
-
-  static HRESULT Unregister(const DllRegistration*);
+  const HINSTANCE module_handle_;
 };
 
+class TextServiceRegistrationSettingsProvider
+  : public ::senn::win::text_service::registration::SettingsProvider {
+public:
+  void Get(::senn::win::text_service::registration::Settings *output) const override {
+    output->profile_guid = kProfileGuid;
+    output->profile_description = kProfileDescription;
+
+    size_t category_count = static_cast<size_t>(sizeof(kCategories) / sizeof(kCategories[0]));
+    for (size_t i = 0; i < category_count; i++) {
+      output->categories.push_back(kCategories[i]);
+    }
+  }
+};
+
+} // registration /////////////////////////////////////////////////////////
 
 } // win
 } // senn

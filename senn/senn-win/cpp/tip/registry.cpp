@@ -72,10 +72,7 @@ LONG RecurseDeleteKey(HKEY hParentKey, LPCTSTR lpszKey) {
 
 namespace com_server {
 
-BOOL Register(
-    const Settings &settings,
-    const GUID &clsid,
-    const HINSTANCE module_handle) {
+BOOL Register(const GUID &clsid, const Settings &settings) {
   // Create clsid key CLSID\{xxxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxx}"
   std::basic_string<WCHAR> clsid_key_string;
   if (!CreateCLSIDKey(clsid, &clsid_key_string)) {
@@ -98,8 +95,8 @@ BOOL Register(
 
   // Set description as default value of the clsid key
   if (RegSetValueEx(hkey_clsid, NULL, 0, REG_SZ, 
-                    settings.description,
-                    settings.description_bytes) != ERROR_SUCCESS) {
+                    settings.description.content,
+                    settings.description.bytes) != ERROR_SUCCESS) {
     return FALSE;
   }
 
@@ -119,27 +116,18 @@ BOOL Register(
   RegKeyCloser in_proc_server32_closer(hkey_in_proc_server32);
 
   // Set module path as default value of the InProcServer32 key 
-  {
-    WCHAR filename[MAX_PATH] = { '\0' };
-    DWORD num_chars = GetModuleFileName(module_handle, filename, ARRAYSIZE(filename));
-    if (num_chars == 0) {
+  if (RegSetValueEx(hkey_in_proc_server32, NULL, 0, REG_SZ,
+                    (const BYTE*) settings.module_file_name.content,
+                    settings.module_file_name.size_including_null_termination)
+          != ERROR_SUCCESS) {
       return FALSE;
-    }
-    DWORD num_chars_including_null_termination =
-      num_chars < (MAX_PATH - 1) ? num_chars + 1 : MAX_PATH;
-
-    if (RegSetValueEx(
-            hkey_in_proc_server32, NULL, 0, REG_SZ,
-            (const BYTE *)filename,
-            (num_chars_including_null_termination) * sizeof(WCHAR)) != ERROR_SUCCESS) {
-      return FALSE;
-    }
   }
 
   // Add threading model to the InProcServer32 key
   if (RegSetValueEx(hkey_in_proc_server32, L"ThreadingModel", 0, REG_SZ,
-                    settings.threading_model,
-                    settings.threading_model_bytes) != ERROR_SUCCESS) {
+                    settings.threading_model.content,
+                    settings.threading_model.bytes)
+          != ERROR_SUCCESS) {
     return FALSE;
   }
 
@@ -161,14 +149,20 @@ void Unregister(const GUID &clsid) {
 } // com_server
 
 
-BOOL COMServerRegisterable::Register(const GUID &clsid, HINSTANCE module_handle) const {
+COMServerRegistrar::COMServerRegistrar(const GUID* const clsid) : clsid_(clsid) {
+}
+
+BOOL COMServerRegistrar::Register(
+   const com_server::SettingsProvider* const provider) const {
   com_server::Settings settings;
-  GetCOMServerSettings(&settings);
-  return com_server::Register(settings, clsid, module_handle);
+  if (!provider->Get(&settings)) {
+    return FALSE;
+  }
+  return com_server::Register(*clsid_, settings);
 }
  
-void COMServerRegisterable::Unregister(const GUID &clsid) const {
-  com_server::Unregister(clsid);
+void COMServerRegistrar::Unregister() const {
+  com_server::Unregister(*clsid_);
 }
 
 
