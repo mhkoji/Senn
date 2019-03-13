@@ -14,7 +14,7 @@
 
 (defmethod senn.fcitx.server:read-request ((client client))
   (let ((stream (hachee.ipc.unix:socket-stream (client-socket client))))
-    (when-let ((line (read-line stream)))
+    (when-let ((line (read-line stream nil nil nil)))
       (hachee.ipc.op:as-expr line))))
 
 (defmethod senn.fcitx.server:send-response ((client client) resp)
