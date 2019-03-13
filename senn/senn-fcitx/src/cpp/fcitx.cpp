@@ -41,10 +41,20 @@ static boolean FcitxSennInit(void *arg) {
                           CONTEXT_DISABLE_QUICKPHRASE,
                           &flag);
 
+  // std::cout << "senn-fcitx: initialized:"
+  //           << " [" << std::hex << arg << "]"
+  //           << std::endl;
+
   return true;
 }
 
 static void FcitxSennReset(void *arg) {
+  FcitxSenn *senn = (FcitxSenn *)arg;
+  FcitxInstance *instance = senn->fcitx;
+  senn::fcitx::views::Editing editing_view;
+  editing_view.input = "";
+  editing_view.cursor_pos = 0;
+  senn::fcitx::ui::Draw(instance, &editing_view);
 }
 
 INPUT_RETURN_VALUE FcitxSennDoInput(void *arg,
@@ -88,9 +98,7 @@ void FcitxSennReloadConfig(void *arg) {
 }
 
 static void* FcitxSennCreate(FcitxInstance *fcitx) {
-  FcitxSenn *senn = (FcitxSenn*) fcitx_utils_malloc0(
-      sizeof(FcitxSenn)
-  );
+  FcitxSenn *senn = (FcitxSenn*) fcitx_utils_malloc0(sizeof(FcitxSenn));
   senn->fcitx = fcitx;
   senn->im = nullptr;
 
@@ -114,6 +122,10 @@ static void* FcitxSennCreate(FcitxInstance *fcitx) {
       10,
       "ja"
   );
+
+  // std::cout << "senn-fcitx: created:"
+  //           << " [" << std::hex << senn << "]"
+  //           << std::endl;
 
   return senn;
 }
