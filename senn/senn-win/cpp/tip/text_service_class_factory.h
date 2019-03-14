@@ -12,16 +12,15 @@ template <typename T>
 class ClassFactory : public IClassFactory {
 public:
 
-  HRESULT __stdcall QueryInterface(REFIID riid, void** ppv) override {
+  HRESULT __stdcall QueryInterface(REFIID riid, void **ppv) override {
     if (ppv == nullptr) {
       return E_INVALIDARG;
     }
-    if (::IsEqualIID(riid, IID_IUnknown)) {
+    if (IsEqualIID(riid, IID_IUnknown)) {
       *ppv = static_cast<IUnknown *>(this);
     } else if (::IsEqualIID(riid, IID_IClassFactory)) {
       *ppv = static_cast<IClassFactory *>(this);
-    }
-    else {
+    } else {
       *ppv = nullptr;
       return E_NOINTERFACE;
     }

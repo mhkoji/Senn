@@ -21,17 +21,18 @@ EditSession::~EditSession() {
 }
 
 
-HRESULT __stdcall EditSession::QueryInterface(REFIID riid, void** ppvObject) {
+HRESULT __stdcall EditSession::QueryInterface(REFIID riid, void **ppvObject) {
   if (ppvObject == NULL) {
     return E_INVALIDARG;
   }
-
-  *ppvObject = CastSelf(this, riid);
-  if (*ppvObject == NULL) {
+  if (IsEqualIID(riid, IID_IUnknown) ||
+      IsEqualIID(riid, IID_ITfEditSession)) {
+    *ppvObject = (ITfLangBarItem *)this;
+  } else {
+    *ppvObject = NULL;
     return E_NOINTERFACE;
   }
   AddRef();
-
   return S_OK;
 }
 
@@ -51,37 +52,30 @@ ULONG __stdcall EditSession::Release(void) {
   return count;
 }
 
-void* EditSession::CastSelf(EditSession *self, REFIID riid) {
-  if (IsEqualIID(riid, IID_IUnknown) || IsEqualIID(riid, IID_ITfEditSession)) {
-    return (ITfLangBarItem *)self;
-  }
-  return NULL;
-}
-
 
 HRESULT __stdcall EditSession::DoEditSession(TfEditCookie ec) {
-  ITfInsertAtSelection *insert_at_selection;
-  if (context_->QueryInterface(IID_ITfInsertAtSelection,
-                               (void **)&insert_at_selection) != S_OK) {
+  ITfInsertAtSelection *insert;
+  if (context_->QueryInterface(
+          IID_ITfInsertAtSelection, (void **)&insert) !=
+      S_OK) {
     return S_OK;
   }
 
-  ITfRange *pRange;
-  if (insert_at_selection->InsertTextAtSelection(ec, 0, L"a", 1, &pRange) != S_OK) {
-    insert_at_selection->Release();
+  ITfRange *range;
+  if (insert->InsertTextAtSelection(ec, 0, L"a", 1, &range) != S_OK) {
+    insert->Release();
     return S_OK;
   }
 
-  pRange->Collapse(ec, TF_ANCHOR_END);
+  range->Collapse(ec, TF_ANCHOR_END);
 
-  TF_SELECTION tfSelection;
-  tfSelection.range = pRange;
-  tfSelection.style.ase = TF_AE_NONE;
-  tfSelection.style.fInterimChar = FALSE;
+  TF_SELECTION selection;
+  selection.range = range;
+  selection.style.ase = TF_AE_NONE;
+  selection.style.fInterimChar = FALSE;
+  context_->SetSelection(ec, 1, &selection);
 
-  context_->SetSelection(ec, 1, &tfSelection);
-
-  pRange->Release();
+  range->Release();
 
   return S_OK;
 }
@@ -91,13 +85,16 @@ HRESULT __stdcall TextService::QueryInterface(REFIID riid, void** ppvObject) {
   if (ppvObject == NULL) {
     return E_INVALIDARG;
   }
-
-  *ppvObject = CastSelf(this, riid);
-  if (*ppvObject == NULL) {
+  if (IsEqualIID(riid, IID_IUnknown) ||
+      IsEqualIID(riid, IID_ITfTextInputProcessor)) {
+    *ppvObject = (ITfTextInputProcessor *)this;
+  } else if (IsEqualIID(riid, IID_ITfKeyEventSink)) {
+    *ppvObject = (ITfKeyEventSink *)this;
+  } else {
+    *ppvObject = NULL;
     return E_NOINTERFACE;
   }
   AddRef();
-
   return S_OK;
 }
 
@@ -117,17 +114,6 @@ ULONG __stdcall TextService::Release(void) {
   return count;
 }
 
-void* TextService::CastSelf(TextService *self, REFIID riid) {
-  if (IsEqualIID(riid, IID_IUnknown) ||
-      IsEqualIID(riid, IID_ITfTextInputProcessor)) {
-    return (ITfTextInputProcessor *)self;
-  }
-  if (IsEqualIID(riid, IID_ITfKeyEventSink)) {
-    return (ITfKeyEventSink *)self;
-  }
-  return NULL;
-}
-
 
 HRESULT TextService::Activate(ITfThreadMgr *thread_mgr, TfClientId client_id) {
   thread_mgr_ = thread_mgr;
@@ -135,29 +121,16 @@ HRESULT TextService::Activate(ITfThreadMgr *thread_mgr, TfClientId client_id) {
 
   client_id_ = client_id;
 
-  ITfKeystrokeMgr *keystroke_mgr;
-  if (thread_mgr->QueryInterface(IID_ITfKeystrokeMgr, (void **)&keystroke_mgr)
-      != S_OK) {
-    return FALSE;
-  }
-
-  HRESULT result = keystroke_mgr->AdviseKeyEventSink(
-      client_id, (ITfKeyEventSink*)this, TRUE);
-
-  keystroke_mgr->Release();
-
-  return result == S_OK;
+  return S_OK;
 }
 
 HRESULT TextService::Deactivate() {
   ITfKeystrokeMgr *keystroke_mgr;
-  if (thread_mgr_->QueryInterface(IID_ITfKeystrokeMgr,
-                                  (void **)&keystroke_mgr) !=
+  if (thread_mgr_->QueryInterface(
+          IID_ITfKeystrokeMgr, (void **)&keystroke_mgr) !=
       S_OK) {
     return S_OK;
   }
-  keystroke_mgr->UnadviseKeyEventSink(client_id_);
-  keystroke_mgr->Release();
 
   if (thread_mgr_) {
     thread_mgr_->Release();
@@ -182,11 +155,10 @@ HRESULT __stdcall TextService::OnTestKeyUp(ITfContext *pic, WPARAM wParam, LPARA
 HRESULT __stdcall TextService::OnKeyDown(ITfContext *pic, WPARAM wParam, LPARAM lParam, BOOL *pfEaten) {
   ITfEditSession *edit_session = new EditSession(pic);
   HRESULT hr = S_OK;
-  if (pic->RequestEditSession(client_id_,
-                              edit_session,
-                              TF_ES_SYNC | TF_ES_READWRITE,
-                              &hr) != S_OK) {
-      hr = E_FAIL;
+  if (pic->RequestEditSession(
+          client_id_, edit_session, TF_ES_SYNC | TF_ES_READWRITE, &hr) !=
+      S_OK) {
+    hr = E_FAIL;
   }
 
   edit_session->Release();

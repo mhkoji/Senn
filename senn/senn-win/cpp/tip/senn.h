@@ -102,10 +102,7 @@ private:
 
   ITfContext *context_;
 
-  ULONG ref_count_ = 0;
-
-
-  static void* CastSelf(EditSession*, REFIID);
+  ULONG ref_count_ = 1;
 };
 
 
@@ -113,8 +110,9 @@ class TextService
     : public ITfKeyEventSink,
       public ITfTextInputProcessor {
 public:
+
   // IUnknow
-  HRESULT __stdcall QueryInterface(REFIID riid, void ** ppvObject) override;
+  HRESULT __stdcall QueryInterface(REFIID, void **) override;
   ULONG __stdcall AddRef(void) override;
   ULONG __stdcall Release(void) override;
 
@@ -136,10 +134,7 @@ private:
 
   TfClientId client_id_;
 
-  ULONG ref_count_ = 0;
-
-
-  static void* CastSelf(TextService*, REFIID);
+  ULONG ref_count_ = 1;
 };
 
 class TextServiceFactory
