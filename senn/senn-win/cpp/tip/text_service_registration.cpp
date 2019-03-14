@@ -152,8 +152,8 @@ void Unregister(const GUID& clsid, const Settings &settings) {
     HRESULT result = CoCreateInstance(CLSID_TF_InputProcessorProfiles,
                                       NULL,
                                       CLSCTX_INPROC_SERVER,
-                                     IID_ITfInputProcessorProfiles,
-                                     (void**)&profiles);
+                                      IID_ITfInputProcessorProfiles,
+                                      (void**)&profiles);
     if (result != S_OK) {
       return;
     }

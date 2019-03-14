@@ -150,6 +150,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="senn.h" />
+    <ClInclude Include="text_service_class_factory.h" />
     <ClInclude Include="text_service_registration.h" />
     <ClInclude Include="registry.h" />
     <ClInclude Include="stdafx.h" />

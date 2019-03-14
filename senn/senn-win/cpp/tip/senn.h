@@ -4,6 +4,7 @@
 
 #include "registry.h"
 #include "text_service_registration.h"
+#include "text_service_class_factory.h"
 
 namespace senn {
 namespace senn_win {
@@ -32,12 +33,14 @@ namespace registration { ///////////////////////////////////////////////////////
 class COMServerSettingsProvider
   : public ::senn::win::registry::com_server::SettingsProvider {
 public:
-  COMServerSettingsProvider(HINSTANCE module_handle) : module_handle_(module_handle) {
+  COMServerSettingsProvider(HINSTANCE module_handle) :
+      module_handle_(module_handle) {
   }
 
   BOOL Get(::senn::win::registry::com_server::Settings *output) const override {
     DWORD size = ARRAYSIZE(output->module_file_name.content);
-    DWORD num_chars = GetModuleFileName(module_handle_, output->module_file_name.content, size);
+    DWORD num_chars = GetModuleFileName(
+        module_handle_, output->module_file_name.content, size);
     if (num_chars == 0) {
       return FALSE;
     }
@@ -64,7 +67,8 @@ public:
     output->profile_guid = kProfileGuid;
     output->profile_description = kProfileDescription;
 
-    size_t category_count = static_cast<size_t>(sizeof(kCategories) / sizeof(kCategories[0]));
+    size_t category_count =
+        static_cast<size_t>(sizeof(kCategories) / sizeof(kCategories[0]));
     for (size_t i = 0; i < category_count; i++) {
       output->categories.push_back(kCategories[i]);
     }
@@ -72,6 +76,100 @@ public:
 };
 
 } // registration /////////////////////////////////////////////////////////
+
+
+namespace text_service { /////////////////////////////////////////////////////////
+
+class EditSession :
+  public ITfEditSession {
+public:
+  EditSession(ITfContext *);
+  ~EditSession();
+
+  // IUnknow
+  HRESULT __stdcall QueryInterface(REFIID riid, void ** ppvObject) override;
+  ULONG __stdcall AddRef(void) override;
+  ULONG __stdcall Release(void) override;
+
+private:
+  // ITfEditSession
+  HRESULT __stdcall DoEditSession(TfEditCookie ec) override;
+
+  ITfContext *context_;
+
+  ULONG ref_count_ = 0;
+
+
+  static void* CastSelf(EditSession*, REFIID);
+};
+
+
+class TextService
+    : public ITfKeyEventSink,
+      public ITfTextInputProcessor {
+public:
+  // IUnknow
+  HRESULT __stdcall QueryInterface(REFIID riid, void ** ppvObject) override;
+  ULONG __stdcall AddRef(void) override;
+  ULONG __stdcall Release(void) override;
+
+  // ITfKeyEventSink
+  HRESULT __stdcall OnSetFocus(BOOL fForeground) override;
+  HRESULT __stdcall OnTestKeyDown(ITfContext*, WPARAM, LPARAM, BOOL*) override;
+  HRESULT __stdcall OnTestKeyUp(ITfContext*, WPARAM, LPARAM, BOOL*) override;
+  HRESULT __stdcall OnKeyDown(ITfContext*, WPARAM, LPARAM, BOOL*) override;
+  HRESULT __stdcall OnKeyUp(ITfContext*, WPARAM, LPARAM, BOOL*) override;
+  HRESULT __stdcall OnPreservedKey(ITfContext*, REFGUID, BOOL*) override;
+
+  // ITfTextInputProcessor
+  HRESULT Activate(ITfThreadMgr*, TfClientId);
+  HRESULT Deactivate();
+
+private:
+
+  ITfThreadMgr *thread_mgr_;
+
+  TfClientId client_id_;
+
+  ULONG ref_count_ = 0;
+
+
+  static void* CastSelf(TextService*, REFIID);
+};
+
+class TextServiceFactory
+    : public senn::win::text_service::ClassFactory<TextService> {
+public:
+  class ServerLocker {
+  public:
+    virtual ~ServerLocker() {};
+
+    virtual void Lock() = 0;
+
+    virtual void Unlock() = 0;
+  };
+
+  TextServiceFactory(ServerLocker* const locker) : locker_(locker) {}
+
+  REFIID GetIid() {
+    return kClsid;
+  }
+ 
+  HRESULT __stdcall LockServer(BOOL lock) override {
+    if (lock) {
+      locker_->Lock();
+    } else {
+      locker_->Unlock();
+    }
+    return S_OK;
+  }
+
+private:
+
+  ServerLocker* const locker_;
+};
+
+} // text_service /////////////////////////////////////////////////////////
 
 
 } // win

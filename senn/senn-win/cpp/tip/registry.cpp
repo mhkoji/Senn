@@ -48,7 +48,8 @@ private:
 LONG RecurseDeleteKey(HKEY hParentKey, LPCTSTR lpszKey) {
   HKEY hKey;
   if (RegOpenKey(hParentKey, lpszKey, &hKey) != ERROR_SUCCESS) {
-    return ERROR_SUCCESS; // let's assume we couldn't open it because it's not there
+    // let's assume we couldn't open it because it's not there
+    return ERROR_SUCCESS;
   }
   RegKeyCloser clsid_closer(hKey);
 
@@ -68,7 +69,6 @@ LONG RecurseDeleteKey(HKEY hParentKey, LPCTSTR lpszKey) {
 }
 
 }  // namespace
-
 
 namespace com_server {
 
