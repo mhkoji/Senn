@@ -88,7 +88,8 @@ BOOL Register(const GUID &clsid, const Settings &settings) {
           KEY_WRITE,
           NULL,
           &hkey_clsid,
-          NULL) != ERROR_SUCCESS) {
+          NULL) !=
+      ERROR_SUCCESS) {
     return FALSE;
   }
   RegKeyCloser clsid_closer(hkey_clsid);
@@ -96,7 +97,8 @@ BOOL Register(const GUID &clsid, const Settings &settings) {
   // Set description as default value of the clsid key
   if (RegSetValueEx(hkey_clsid, NULL, 0, REG_SZ, 
                     settings.description.content,
-                    settings.description.bytes) != ERROR_SUCCESS) {
+                    settings.description.bytes) !=
+      ERROR_SUCCESS) {
     return FALSE;
   }
 
@@ -110,7 +112,8 @@ BOOL Register(const GUID &clsid, const Settings &settings) {
           KEY_WRITE,
           NULL,
           &hkey_in_proc_server32,
-          NULL) != ERROR_SUCCESS) {
+          NULL) !=
+      ERROR_SUCCESS) {
     return FALSE;
   }
   RegKeyCloser in_proc_server32_closer(hkey_in_proc_server32);
@@ -118,16 +121,17 @@ BOOL Register(const GUID &clsid, const Settings &settings) {
   // Set module path as default value of the InProcServer32 key 
   if (RegSetValueEx(hkey_in_proc_server32, NULL, 0, REG_SZ,
                     (const BYTE*) settings.module_file_name.content,
-                    settings.module_file_name.size_including_null_termination)
-          != ERROR_SUCCESS) {
+                    settings.module_file_name.size_including_null_termination
+                        * sizeof(WCHAR)) !=
+      ERROR_SUCCESS) {
       return FALSE;
   }
 
   // Add threading model to the InProcServer32 key
   if (RegSetValueEx(hkey_in_proc_server32, L"ThreadingModel", 0, REG_SZ,
                     settings.threading_model.content,
-                    settings.threading_model.bytes)
-          != ERROR_SUCCESS) {
+                    settings.threading_model.bytes) !=
+      ERROR_SUCCESS) {
     return FALSE;
   }
 
