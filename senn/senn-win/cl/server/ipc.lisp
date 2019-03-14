@@ -2,6 +2,7 @@
   (:use :cl)
   (:export :enter-loop)
   (:import-from :alexandria
+                :if-let
                 :when-let))
 (in-package :senn.win.server.ipc)
 
@@ -33,12 +34,14 @@
 
 (defun enter-loop (kkc &key (pipe-name "\\\\.\\Pipe\\senn"))
   (declare (ignore kkc)) ;; ignore for a while
-  (log:info "Wait for client...")
-  (let ((pipe (hachee.ipc.named-pipe:create pipe-name)))
-    (hachee.ipc.named-pipe:connect pipe)
-    (let ((client (make-client :id 0 :pipe pipe)))
-      (log/info client "New client")
-      (unwind-protect
-           (senn.win.server:loop-handling-request nil nil client)
-        (hachee.ipc.named-pipe:disconnect pipe))
-      (log/info client "Disconnected"))))
+  (if-let ((pipe (hachee.ipc.named-pipe:create pipe-name)))
+    (progn
+      (log:info "Wait for client...")
+      (hachee.ipc.named-pipe:connect pipe)
+      (let ((client (make-client :id 0 :pipe pipe)))
+        (log/info client "New client")
+        (unwind-protect
+             (senn.win.server:loop-handling-request nil nil client)
+          (hachee.ipc.named-pipe:disconnect-and-close pipe))
+        (log/info client "Disconnected")))
+    (log:info "Could not create pipe")))

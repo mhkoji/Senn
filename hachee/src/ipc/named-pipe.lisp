@@ -2,29 +2,39 @@
   (:use :cl)
   (:export :create
            :connect
-           :disconnect
+           :disconnect-and-close
 
            :read-file
            :write-file))
 (in-package :hachee.ipc.named-pipe)
 
+(defun h= (handle1 handle2)
+  (= (cffi:pointer-address handle1)
+     (cffi:pointer-address handle2)))
+
+
 (defun create (pipe-name)
-  (win32:create-named-pipe
-   pipe-name
-   win32:+pipe-access-duplex+
-   (logior win32:+pipe-type-byte+
-           win32:+pipe-wait+)
-   1
-   0
-   0
-   100
-   (cffi:null-pointer)))
+  (let ((pipe (win32:create-named-pipe
+               pipe-name
+               win32:+pipe-access-duplex+
+               (logior win32:+pipe-type-byte+
+                       win32:+pipe-wait+)
+               1
+               0
+               0
+               100
+               (cffi:null-pointer))))
+    (if (h= pipe win32:+invalid-handle-value+)
+        nil
+        pipe)))
+
 
 (defun connect (pipe)
   (win32:connect-named-pipe pipe (cffi:null-pointer)))
 
-(defun disconnect (pipe)
-  (win32:disconnect-named-pipe pipe))
+(defun disconnect-and-close (pipe)
+  (win32:disconnect-named-pipe pipe)
+  (win32:close-handle pipe))
 
 
 ;;; Windows File API
@@ -33,19 +43,23 @@
   (let ((buf-size 4096))
     (cffi:with-foreign-object (buf :unsigned-char buf-size)
       (cffi:with-foreign-object (bytes-read-ptr 'win32:dword)
-        (win32:read-file file
-                         buf
-                         buf-size
-                         bytes-read-ptr
-                         (cffi:null-pointer))
-        (let ((bytes-read (cffi:mem-ref bytes-read-ptr 'win32:dword)))
-          (let ((octets-in-list
-                 (loop for i from 0 below bytes-read
-                       collect (cffi:mem-ref buf :unsigned-char i))))
-            (make-array bytes-read
-                        :element-type '(unsigned-byte 8)
-                        :initial-contents octets-in-list
-                        :adjustable nil)))))))
+        (let ((return-value (win32:read-file file
+                                             buf
+                                             buf-size
+                                             bytes-read-ptr
+                                             (cffi:null-pointer))))
+          (if (= return-value 0)
+              nil
+              ;; succeeds
+              (let ((bytes-read
+                     (cffi:mem-ref bytes-read-ptr 'win32:dword)))
+                (let ((octet-list
+                       (loop for i from 0 below bytes-read
+                          collect (cffi:mem-ref buf :unsigned-char i))))
+                  (make-array bytes-read
+                              :element-type '(unsigned-byte 8)
+                              :initial-contents octet-list
+                              :adjustable nil)))))))))
 
 (defun write-file (file octets)
   (cffi:with-foreign-object (buf :unsigned-char (length octets))
