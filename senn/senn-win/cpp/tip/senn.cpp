@@ -120,16 +120,29 @@ HRESULT TextService::Activate(ITfThreadMgr *thread_mgr, TfClientId client_id) {
   thread_mgr->AddRef();
 
   client_id_ = client_id;
+  ITfKeystrokeMgr *keystroke_mgr;
+  if (thread_mgr->QueryInterface(IID_ITfKeystrokeMgr, (void **)&keystroke_mgr) != 
+      S_OK) {
+    return FALSE;
+  }
 
-  return S_OK;
+  HRESULT result = keystroke_mgr->AdviseKeyEventSink(
+      client_id, (ITfKeyEventSink*)this, TRUE);
+ 
+  keystroke_mgr->Release();
+
+  return result;
 }
 
 HRESULT TextService::Deactivate() {
-  ITfKeystrokeMgr *keystroke_mgr;
-  if (thread_mgr_->QueryInterface(
-          IID_ITfKeystrokeMgr, (void **)&keystroke_mgr) !=
-      S_OK) {
-    return S_OK;
+  {
+    ITfKeystrokeMgr *keystroke_mgr;
+    if (thread_mgr_->QueryInterface(IID_ITfKeystrokeMgr, (void **)&keystroke_mgr) !=
+        S_OK) {
+      return S_OK;
+    }
+    keystroke_mgr->UnadviseKeyEventSink(client_id_);
+    keystroke_mgr->Release();
   }
 
   if (thread_mgr_) {
@@ -145,14 +158,12 @@ HRESULT __stdcall TextService::OnSetFocus(BOOL fForeground) {
 }
 
 HRESULT __stdcall TextService::OnTestKeyDown(ITfContext *pic, WPARAM wParam, LPARAM lParam, BOOL *pfEaten) {
-  return S_OK;
-}
-
-HRESULT __stdcall TextService::OnTestKeyUp(ITfContext *pic, WPARAM wParam, LPARAM lParam, BOOL *pfEaten) {
+  *pfEaten = true;
   return S_OK;
 }
 
 HRESULT __stdcall TextService::OnKeyDown(ITfContext *pic, WPARAM wParam, LPARAM lParam, BOOL *pfEaten) {
+  *pfEaten = true;
   ITfEditSession *edit_session = new EditSession(pic);
   HRESULT hr = S_OK;
   if (pic->RequestEditSession(
@@ -162,6 +173,11 @@ HRESULT __stdcall TextService::OnKeyDown(ITfContext *pic, WPARAM wParam, LPARAM 
   }
 
   edit_session->Release();
+  return S_OK;
+}
+
+HRESULT __stdcall TextService::OnTestKeyUp(ITfContext *pic, WPARAM wParam, LPARAM lParam, BOOL *pfEaten) {
+  *pfEaten = false;
   return S_OK;
 }
 
