@@ -62,7 +62,7 @@ STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, void** ppv) {
   }
 
   if (IsEqualIID(riid, IID_IClassFactory) || IsEqualIID(riid, IID_IUnknown)) {
-    for (int i = 0; i < ARRAYSIZE(g_class_factory_objects); i++) {
+    for (size_t i = 0; i < ARRAYSIZE(g_class_factory_objects); i++) {
       if (g_class_factory_objects[i] != nullptr &&
           IsEqualGUID(rclsid, g_class_factory_objects[i]->GetIid())) {
         *ppv = (void *)g_class_factory_objects[i];

@@ -9,10 +9,15 @@ BOOL APIENTRY DllMain(HMODULE hModule,
     switch (ul_reason_for_call) {
     case DLL_PROCESS_ATTACH:
       g_module_handle = hModule;
+      if (!InitializeCriticalSectionAndSpinCount(&g_CS, 0)) {
+        return FALSE;
+      }
+      break;
     case DLL_THREAD_ATTACH:
     case DLL_THREAD_DETACH:
     case DLL_PROCESS_DETACH:
-        break;
+      DeleteCriticalSection(&g_CS);
+      break;
     }
     return TRUE;
 }
