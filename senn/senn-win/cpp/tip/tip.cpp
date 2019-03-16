@@ -1,9 +1,10 @@
 ﻿// tip.cpp : DLL アプリケーション用にエクスポートされる関数を定義します。
 //
 
-#include "stdafx.h"
-
 #include "senn.h"
+#include "registration.h"
+#include "text-service/text_service.h"
+
 #include "variable.h"
 
 using namespace senn;

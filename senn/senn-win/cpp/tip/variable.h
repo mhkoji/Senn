@@ -1,7 +1,6 @@
 #pragma once
 
-#include "stdafx.h"
-#include "senn.h"
+#include "text-service/text_service.h"
 
 extern HINSTANCE g_module_handle;
 

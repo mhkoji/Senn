@@ -139,6 +139,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;TIP_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <ForcedIncludeFiles>stdafx.h</ForcedIncludeFiles>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -149,27 +150,31 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="registration.h" />
     <ClInclude Include="senn.h" />
-    <ClInclude Include="text_service_class_factory.h" />
-    <ClInclude Include="text_service_registration.h" />
-    <ClInclude Include="registry.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
+    <ClInclude Include="text-service\object_releaser.h" />
+    <ClInclude Include="text-service\ui.h" />
     <ClInclude Include="variable.h" />
+    <ClInclude Include="win\registry.h" />
+    <ClInclude Include="win\text-service\class_factory.h" />
+    <ClInclude Include="win\text-service\registration.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
-    <ClCompile Include="senn.cpp" />
-    <ClCompile Include="text_service_registration.cpp" />
-    <ClCompile Include="registry.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="text-service\text_service.cpp" />
+    <ClCompile Include="text-service\ui.cpp" />
     <ClCompile Include="tip.cpp" />
     <ClCompile Include="variable.cpp" />
+    <ClCompile Include="win\registry.cpp" />
+    <ClCompile Include="win\text-service\registration.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

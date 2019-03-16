@@ -3,7 +3,7 @@
 #include <windows.h>
 #include <vector>
 
-#include "registry.h"
+#include "../registry.h"
 
 
 namespace senn {

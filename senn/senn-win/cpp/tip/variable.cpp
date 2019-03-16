@@ -1,5 +1,4 @@
-#include "stdafx.h"
-#include "senn.h"
+#include "text-service/text_service.h"
 
 HINSTANCE g_module_handle;
 

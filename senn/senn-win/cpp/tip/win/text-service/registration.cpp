@@ -1,9 +1,7 @@
-#include "stdafx.h"
-
 #include <msctf.h>
 #include <combaseapi.h>
 
-#include "text_service_registration.h"
+#include "registration.h"
 
 namespace senn {
 namespace win {
