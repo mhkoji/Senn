@@ -11,125 +11,248 @@
 namespace senn {
 namespace senn_win {
 
+template <typename T>
+class ObjectReleaser {
+public:
+  ObjectReleaser(T *pobj) : pobj(pobj) {}
+
+  ~ObjectReleaser() {
+    if (pobj) {
+      pobj->Release();
+    }
+  }
+
+private:
+  T *pobj;
+};
+
 namespace text_service { /////////////////////////////////////////////////////////
-  
-EditSession::EditSession(ITfContext *context) : context_(context) {
+
+namespace ui {
+namespace editing {
+
+} // editing
+
+
+HRESULT __stdcall EnumDisplayAttributeInfo::Clone(
+    IEnumTfDisplayAttributeInfo **ppEnum) {
+  if (ppEnum == nullptr) {
+    return E_INVALIDARG;
+  }
+
+  EnumDisplayAttributeInfo *clone = new EnumDisplayAttributeInfo();
+  clone->index_ = index_;
+  *ppEnum = clone;
+  return S_OK;
+}
+
+HRESULT __stdcall EnumDisplayAttributeInfo::Next(
+    ULONG ulCount,
+    ITfDisplayAttributeInfo **rgInfo,
+    ULONG *pcFetched) {
+  ULONG items = 0;
+  for (; items < ulCount; ++items) {
+    ITfDisplayAttributeInfo *attribute = nullptr;
+    if (index_ == 0) {
+      attribute = new editing::DisplayAttributeInfo();
+    } else {
+      break;
+    }
+    rgInfo[items] = attribute;
+    attribute->AddRef();
+    ++index_;
+  }
+
+  if (pcFetched) {
+    *pcFetched = items;
+  }
+
+  return (items == ulCount) ? S_OK : S_FALSE;
+}
+
+HRESULT __stdcall EnumDisplayAttributeInfo::Reset(void) {
+  index_ = 0;
+  return S_OK;
+}
+
+HRESULT __stdcall EnumDisplayAttributeInfo::Skip(ULONG ulCount) {
+  if (0 < ulCount && index_ == 0) {
+    ++index_;
+  }
+  return S_OK;
+}
+
+ITfRange *InsertTextAndStartComposition(
+    ITfCompositionSink *composition_sink,
+    TfEditCookie ec,
+    const std::wstring& text,
+    ITfContext *context,
+    ITfComposition **output) {
+  ITfRange *range;
+
+  ITfInsertAtSelection *insert;
+  if (context->QueryInterface(IID_ITfInsertAtSelection, (void**)&insert) !=
+      S_OK) {
+    return nullptr;
+  }
+  ObjectReleaser<ITfInsertAtSelection> insert_releaser(insert);
+
+  if (insert->InsertTextAtSelection(
+          ec, 0, text.c_str(), text.size(), &range) !=
+      S_OK) {
+    return nullptr;
+  }
+
+  ITfContextComposition *context_composition;
+  if (context->QueryInterface(
+          IID_ITfContextComposition, (void**)&context_composition) !=
+      S_OK) {
+    return nullptr;
+  }
+  ObjectReleaser<ITfContextComposition> context_composition_releader(
+      context_composition);
+
+  // MEMO: StartComposition seems to fail if compositin_sink is nullptr.
+  if (context_composition->StartComposition(
+          ec, range, composition_sink, output) !=
+      S_OK) {
+    return nullptr;
+  }
+  return range;
+}
+
+ITfRange *ReplaceTextInComposition(
+    TfEditCookie ec,
+    const std::wstring& text,
+    ITfComposition *composition) {
+  ITfRange *range;
+  composition->GetRange(&range);
+  range->SetText(ec, 0, text.c_str(), text.length());
+  return range;
+}
+
+
+void SetDisplayAttribute(
+    TfEditCookie ec,
+    ITfContext *context,
+    ITfRange *range,
+    TfGuidAtom attribute_atom) {
+  ITfProperty *display_attribute;
+  if (context->GetProperty(GUID_PROP_ATTRIBUTE, &display_attribute) !=
+      S_OK) {
+    return;
+  }
+  ObjectReleaser<ITfProperty> releaser(display_attribute);
+
+  VARIANT var;
+  var.vt = VT_I4;
+  var.lVal = attribute_atom;
+  display_attribute->SetValue(ec, range, &var);
+}
+
+} // ui
+
+
+EditSession::EditSession(ITfCompositionSink *composition_sink,
+                         ITfContext *context,
+                         const std::wstring& text,
+                         ITfComposition **composition,
+                         TfGuidAtom editing_atom)
+    : composition_sink_(composition_sink),
+      context_(context),
+      text_(text),
+      composition_(composition),
+      editing_atom_(editing_atom) {
+  context_->AddRef();
 }
 
 EditSession::~EditSession() {
   context_->Release();
 }
 
-
-HRESULT __stdcall EditSession::QueryInterface(REFIID riid, void **ppvObject) {
-  if (ppvObject == NULL) {
-    return E_INVALIDARG;
-  }
-  if (IsEqualIID(riid, IID_IUnknown) ||
-      IsEqualIID(riid, IID_ITfEditSession)) {
-    *ppvObject = (ITfLangBarItem *)this;
-  } else {
-    *ppvObject = NULL;
-    return E_NOINTERFACE;
-  }
-  AddRef();
-  return S_OK;
-}
-
-ULONG __stdcall EditSession::AddRef(void) {
-  return ++ref_count_;
-}
-
-ULONG __stdcall EditSession::Release(void) {
-  if (ref_count_ <= 0) {
-    return 0;
-  }
-
-  const ULONG count = --ref_count_;
-  if (count == 0) {
-    delete this;
-  }
-  return count;
-}
-
-
 HRESULT __stdcall EditSession::DoEditSession(TfEditCookie ec) {
-  ITfInsertAtSelection *insert;
-  if (context_->QueryInterface(
-          IID_ITfInsertAtSelection, (void **)&insert) !=
-      S_OK) {
-    return S_OK;
-  }
-
+  // Draw the text on the screen.
+  // If it is the first time to draw, we have to create a composition as well.
   ITfRange *range;
-  if (insert->InsertTextAtSelection(ec, 0, L"a", 1, &range) != S_OK) {
-    insert->Release();
-    return S_OK;
-  }
-
-  range->Collapse(ec, TF_ANCHOR_END);
-
-  TF_SELECTION selection;
-  selection.range = range;
-  selection.style.ase = TF_AE_NONE;
-  selection.style.fInterimChar = FALSE;
-  context_->SetSelection(ec, 1, &selection);
-
-  range->Release();
-
-  return S_OK;
-}
-
-
-HRESULT __stdcall TextService::QueryInterface(REFIID riid, void** ppvObject) {
-  if (ppvObject == NULL) {
-    return E_INVALIDARG;
-  }
-  if (IsEqualIID(riid, IID_IUnknown) ||
-      IsEqualIID(riid, IID_ITfTextInputProcessor)) {
-    *ppvObject = (ITfTextInputProcessor *)this;
-  } else if (IsEqualIID(riid, IID_ITfKeyEventSink)) {
-    *ppvObject = (ITfKeyEventSink *)this;
+  if (*composition_ == nullptr) {
+    range = ui::InsertTextAndStartComposition(
+        composition_sink_, ec, text_, context_, composition_);
+    if (*composition_ == nullptr || range == nullptr) {
+      return S_OK;
+    }
   } else {
-    *ppvObject = NULL;
-    return E_NOINTERFACE;
+    range = ui::ReplaceTextInComposition(ec, text_, *composition_);
+    if (range == nullptr) {
+      return S_OK;
+    }
   }
-  AddRef();
+  ObjectReleaser<ITfRange> range_releaser(range);
+
+  // Decorate the text with a display attribute of an underline, etc.
+  ui::SetDisplayAttribute(ec, context_, range, editing_atom_);
+
+  // Update the selection
+  // We'll make it an insertion point just past the inserted text. 
+  {
+    ITfRange *range_for_selection;
+    if (range->Clone(&range_for_selection) == S_OK) {
+      range_for_selection->Collapse(ec, TF_ANCHOR_END);
+
+      TF_SELECTION selection;
+      selection.range = range_for_selection;
+      selection.style.ase = TF_AE_NONE;
+      selection.style.fInterimChar = FALSE;
+      context_->SetSelection(ec, 1, &selection);
+
+      range_for_selection->Release();
+    }
+  }
+ 
   return S_OK;
 }
 
-ULONG __stdcall TextService::AddRef(void) {
-  return ++ref_count_;
-}
 
-ULONG __stdcall TextService::Release(void) {
-  if (ref_count_ <= 0) {
-    return 0;
-  }
-
-  const ULONG count = --ref_count_;
-  if (count == 0) {
-    delete this;
-  }
-  return count;
-}
-
+// ITfTextInputProcessor
 
 HRESULT TextService::Activate(ITfThreadMgr *thread_mgr, TfClientId client_id) {
   thread_mgr_ = thread_mgr;
   thread_mgr->AddRef();
 
   client_id_ = client_id;
-  ITfKeystrokeMgr *keystroke_mgr;
-  if (thread_mgr->QueryInterface(IID_ITfKeystrokeMgr, (void **)&keystroke_mgr) != 
-      S_OK) {
-    return FALSE;
+
+  HRESULT result;
+  {
+    ITfKeystrokeMgr *keystroke_mgr;
+    if (thread_mgr->QueryInterface(IID_ITfKeystrokeMgr, (void **)&keystroke_mgr) != 
+        S_OK) {
+      return FALSE;
+    }
+
+    result = keystroke_mgr->AdviseKeyEventSink(
+        client_id, static_cast<ITfKeyEventSink*>(this), TRUE);
+
+    keystroke_mgr->Release();
+
+    if (FAILED(result)) {
+      return result;
+    }
   }
 
-  HRESULT result = keystroke_mgr->AdviseKeyEventSink(
-      client_id, (ITfKeyEventSink*)this, TRUE);
- 
-  keystroke_mgr->Release();
+  {
+    ITfCategoryMgr *category_mgr;
+    result = CoCreateInstance(CLSID_TF_CategoryMgr, nullptr, CLSCTX_INPROC_SERVER,
+                              IID_ITfCategoryMgr, (void**)&category_mgr);
+    if (FAILED(result)) {
+      return FALSE;
+    }
+    ObjectReleaser<ITfCategoryMgr> category_mgr_releaser(category_mgr);
+
+    result = category_mgr->RegisterGUID(
+        ui::editing::kDisplayAttributeGuid, &display_attribute_vals_.editing_atom);
+    if (FAILED(result)) {
+      return result;
+    }
+  }
 
   return result;
 }
@@ -153,6 +276,41 @@ HRESULT TextService::Deactivate() {
 }
 
 
+// ITfDisplayAttributeProvider
+
+HRESULT __stdcall TextService::EnumDisplayAttributeInfo(
+    IEnumTfDisplayAttributeInfo **attribute_info) {
+  if (attribute_info == nullptr) {
+    return E_INVALIDARG;
+  }
+  *attribute_info = new ui::EnumDisplayAttributeInfo();
+  return S_OK;
+}
+
+HRESULT __stdcall TextService::GetDisplayAttributeInfo(
+    REFGUID guid,
+    ITfDisplayAttributeInfo **attribute) {
+  if (attribute == nullptr) {
+    return E_INVALIDARG;
+  }                                     
+  if (IsEqualGUID(guid, ui::editing::kDisplayAttributeGuid)) {
+    *attribute = new ui::editing::DisplayAttributeInfo();
+  } else {
+    *attribute = nullptr;
+    return E_INVALIDARG;
+  }
+  return S_OK;
+}
+
+HRESULT __stdcall TextService::OnCompositionTerminated(
+    TfEditCookie ecWrite,
+    ITfComposition * pComposition) {
+  return S_OK;
+}
+
+
+// ITfKeyEventSink
+
 HRESULT __stdcall TextService::OnSetFocus(BOOL fForeground) {
   return S_OK;
 }
@@ -164,16 +322,24 @@ HRESULT __stdcall TextService::OnTestKeyDown(ITfContext *pic, WPARAM wParam, LPA
 
 HRESULT __stdcall TextService::OnKeyDown(ITfContext *pic, WPARAM wParam, LPARAM lParam, BOOL *pfEaten) {
   *pfEaten = true;
-  ITfEditSession *edit_session = new EditSession(pic);
-  HRESULT hr = S_OK;
-  if (pic->RequestEditSession(
-          client_id_, edit_session, TF_ES_SYNC | TF_ES_READWRITE, &hr) !=
-      S_OK) {
-    hr = E_FAIL;
-  }
+  text_ += L"a";
 
-  edit_session->Release();
-  return S_OK;
+  EditSession *edit_session = new EditSession(
+      this,
+      pic,
+      text_,
+      &composition_,
+      display_attribute_vals_.editing_atom);
+  ObjectReleaser<EditSession> edit_session_releaser(edit_session);
+
+  HRESULT result;
+  if (pic->RequestEditSession(
+          client_id_, edit_session, TF_ES_SYNC | TF_ES_READWRITE, &result) ==
+      S_OK) {
+    return S_OK;
+  } else {
+    return E_FAIL;
+  }
 }
 
 HRESULT __stdcall TextService::OnTestKeyUp(ITfContext *pic, WPARAM wParam, LPARAM lParam, BOOL *pfEaten) {
