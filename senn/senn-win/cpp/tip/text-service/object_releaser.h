@@ -7,16 +7,16 @@ namespace text_service {
 template <typename T>
 class ObjectReleaser {
 public:
-  ObjectReleaser(T *pobj) : pobj(pobj) {}
+  ObjectReleaser(T *obj) : obj_(obj) {}
 
   ~ObjectReleaser() {
-    if (pobj) {
-      pobj->Release();
+    if (obj_) {
+      obj_->Release();
     }
   }
 
 private:
-  T *pobj;
+  T *obj_;
 };
 
 }  // text_service

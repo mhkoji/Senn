@@ -55,7 +55,8 @@ LONG RecurseDeleteKey(HKEY hParentKey, LPCTSTR lpszKey) {
   TCHAR szBuffer[256];
   DWORD dwSize = ARRAYSIZE(szBuffer);
   FILETIME time;
-  while (RegEnumKeyEx(hKey, 0, szBuffer, &dwSize, NULL, NULL, NULL, &time) == ERROR_SUCCESS) {
+  while (RegEnumKeyEx(hKey, 0, szBuffer, &dwSize, NULL, NULL, NULL, &time) ==
+         ERROR_SUCCESS) {
     szBuffer[ARRAYSIZE(szBuffer) - 1] = '\0';
     lRes = RecurseDeleteKey(hKey, szBuffer);
     if (lRes != ERROR_SUCCESS) {

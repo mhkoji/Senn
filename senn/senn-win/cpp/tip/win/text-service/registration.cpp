@@ -5,24 +5,27 @@
 
 namespace senn {
 namespace win {
-namespace text_service {
+  
 
-namespace {
-
+template <typename T>
 class ObjectReleaser {
 public:
-  ObjectReleaser(IUnknown *pobj) : pobj(pobj) {}
+  ObjectReleaser(T *obj) : obj_(obj) {}
 
   ~ObjectReleaser() {
-    if (pobj) {
-      pobj->Release();
+    if (obj_) {
+      obj_->Release();
     }
   }
 
 private:
-  IUnknown *pobj;
+  T *obj_;
 };
 
+
+namespace text_service {
+
+namespace {
 
 BOOL RegisterLanguageProfile(ITfInputProcessorProfiles *profiles,
                              const GUID &clsid,
@@ -47,18 +50,13 @@ BOOL RegisterCategories(const GUID &clsid,
   ITfCategoryMgr *category_mgr;
   {
     HRESULT result = CoCreateInstance(
-        CLSID_TF_CategoryMgr,
-        NULL,
-        CLSCTX_INPROC_SERVER,
-        IID_ITfCategoryMgr,
-        (void**)&category_mgr
-    );
-
+        CLSID_TF_CategoryMgr, nullptr, CLSCTX_INPROC_SERVER,
+        IID_ITfCategoryMgr, (void**)&category_mgr);
     if (result != S_OK) {
       return FALSE;
     }
   }
-  ObjectReleaser releaser(category_mgr);
+  ObjectReleaser<ITfCategoryMgr> releaser(category_mgr);
 
   for (std::vector<GUID>::const_iterator it = categories.begin();
        it != categories.end(); ++it) {
@@ -75,18 +73,13 @@ BOOL UnregisterCategories(const GUID &clsid,
   ITfCategoryMgr *category_mgr;
   {
     HRESULT result = CoCreateInstance(
-      CLSID_TF_CategoryMgr,
-      NULL,
-      CLSCTX_INPROC_SERVER,
-      IID_ITfCategoryMgr,
-      (void**)&category_mgr
-    );
-
+        CLSID_TF_CategoryMgr, nullptr, CLSCTX_INPROC_SERVER,
+        IID_ITfCategoryMgr, (void**)&category_mgr);
     if (result != S_OK) {
       return FALSE;
     }
   }
-  ObjectReleaser releaser(category_mgr);
+  ObjectReleaser<ITfCategoryMgr> releaser(category_mgr);
 
   for (std::vector<GUID>::const_iterator it = categories.begin();
     it != categories.end(); ++it) {
@@ -108,16 +101,14 @@ namespace registration {
 BOOL Register(const GUID& clsid, const Settings &settings) {
   ITfInputProcessorProfiles *profiles;
   {
-    HRESULT result = CoCreateInstance(CLSID_TF_InputProcessorProfiles,
-                                      NULL,
-                                      CLSCTX_INPROC_SERVER,
-                                      IID_ITfInputProcessorProfiles,
-                                      (void**)&profiles);
+    HRESULT result = CoCreateInstance(
+        CLSID_TF_InputProcessorProfiles, nullptr, CLSCTX_INPROC_SERVER,
+        IID_ITfInputProcessorProfiles, (void**)&profiles);
     if (result != S_OK) {
       return FALSE;
     }
   }
-  ObjectReleaser releaser(profiles);
+  ObjectReleaser<ITfInputProcessorProfiles> releaser(profiles);
 
   if (profiles->Register(clsid) != S_OK) {
     return FALSE;
@@ -147,16 +138,14 @@ void Unregister(const GUID& clsid, const Settings &settings) {
 
   ITfInputProcessorProfiles *profiles;
   {
-    HRESULT result = CoCreateInstance(CLSID_TF_InputProcessorProfiles,
-                                      NULL,
-                                      CLSCTX_INPROC_SERVER,
-                                      IID_ITfInputProcessorProfiles,
-                                      (void**)&profiles);
+    HRESULT result = CoCreateInstance(
+        CLSID_TF_InputProcessorProfiles, nullptr, CLSCTX_INPROC_SERVER,
+        IID_ITfInputProcessorProfiles, (void**)&profiles);
     if (result != S_OK) {
       return;
     }
   }
-  ObjectReleaser releaser(profiles);
+  ObjectReleaser<ITfInputProcessorProfiles> releaser(profiles);
 
   profiles->Unregister(clsid);
  }
