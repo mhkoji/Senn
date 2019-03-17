@@ -155,22 +155,22 @@ private:
 
 
 ITfRange *InsertTextAndStartComposition(
-  ITfCompositionSink*,
-  TfEditCookie,
-  const std::wstring&,
-  ITfContext*,
-  ITfComposition**);
+    const std::wstring&,
+    TfEditCookie,
+    ITfContext*,
+    ITfCompositionSink*,
+    ITfComposition**);
 
 ITfRange *ReplaceTextInComposition(
-  TfEditCookie,
-  const std::wstring&,
-  ITfComposition*);
+    const std::wstring&,
+    TfEditCookie,
+    ITfComposition*);
 
 void SetDisplayAttribute(
-  TfEditCookie,
-  ITfContext*,
-  ITfRange*,
-  TfGuidAtom attribute_atom);
+    TfEditCookie,
+    ITfContext*,
+    ITfRange*,
+    TfGuidAtom attribute_atom);
 
 namespace editing {
 

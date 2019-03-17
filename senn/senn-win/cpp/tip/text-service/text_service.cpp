@@ -7,16 +7,16 @@ namespace senn {
 namespace senn_win {
 namespace text_service {
 
-EditSession::EditSession(ITfCompositionSink *composition_sink,
+EditSession::EditSession(std::wstring text,
                          ITfContext *context,
-                         ITfComposition **composition,
-                         const std::wstring& text,
-                         TfGuidAtom editing_atom)
-    : composition_sink_(composition_sink),
+                         TfGuidAtom display_attribute_atom,
+                         ITfCompositionSink *composition_sink,
+                         CompositionHolder *composition_holder)
+    : text_(text),
       context_(context),
-      text_(text),
-      composition_(composition),
-      editing_atom_(editing_atom) {
+      display_attribute_atom_(display_attribute_atom),
+      composition_sink_(composition_sink),
+      composition_holder_(composition_holder) {
   context_->AddRef();
 }
 
@@ -28,14 +28,17 @@ HRESULT __stdcall EditSession::DoEditSession(TfEditCookie ec) {
   // Draw the text on the screen.
   // If it is the first time to draw, we have to create a composition as well.
   ITfRange *range;
-  if (*composition_ == nullptr) {
+  if (composition_holder_->Get() == nullptr) {
+    ITfComposition *composition;
     range = ui::InsertTextAndStartComposition(
-        composition_sink_, ec, text_, context_, composition_);
-    if (*composition_ == nullptr || range == nullptr) {
+      text_, ec, context_, composition_sink_, &composition);
+    if (composition == nullptr || range == nullptr) {
       return S_OK;
     }
-  } else {
-    range = ui::ReplaceTextInComposition(ec, text_, *composition_);
+    composition_holder_->Set(composition);
+  }
+  else {
+    range = ui::ReplaceTextInComposition(text_, ec, composition_holder_->Get());
     if (range == nullptr) {
       return S_OK;
     }
@@ -43,7 +46,7 @@ HRESULT __stdcall EditSession::DoEditSession(TfEditCookie ec) {
   ObjectReleaser<ITfRange> range_releaser(range);
 
   // Decorate the text with a display attribute of an underline, etc.
-  ui::SetDisplayAttribute(ec, context_, range, editing_atom_);
+  ui::SetDisplayAttribute(ec, context_, range, display_attribute_atom_);
 
   // Update the selection
   // We'll make it an insertion point just past the inserted text. 
@@ -61,10 +64,9 @@ HRESULT __stdcall EditSession::DoEditSession(TfEditCookie ec) {
       range_for_selection->Release();
     }
   }
- 
+
   return S_OK;
 }
-
 
 // ITfTextInputProcessor
 
@@ -113,7 +115,7 @@ HRESULT TextService::Activate(ITfThreadMgr *thread_mgr, TfClientId client_id) {
     ObjectReleaser<ITfCategoryMgr> category_mgr_releaser(category_mgr);
 
     result = category_mgr->RegisterGUID(
-        ui::editing::kDisplayAttributeGuid, &display_attribute_vals_.editing_atom);
+        ui::editing::kDisplayAttributeGuid, &editing_display_attribute_atom_);
     if (FAILED(result)) {
       return result;
     }
@@ -188,16 +190,15 @@ HRESULT __stdcall TextService::OnTestKeyDown(
 
 HRESULT __stdcall TextService::OnKeyDown(
     ITfContext *context, WPARAM wParam, LPARAM lParam, BOOL *pfEaten) {
-  EditSession *edit_session = nullptr;
+  *pfEaten = true;
 
-  *pfEaten = stateful_im_->Input(wParam,
-      [&](const std::wstring *text) {
-        edit_session = new EditSession(
-            this, context, &composition_,
-            *text,           
-            display_attribute_vals_.editing_atom);
-      });
-  
+  EditSession *edit_session = nullptr;
+  stateful_im_->Input(wParam,
+    [&](const std::wstring *text) {
+      edit_session = new EditSession(
+          *text, context, editing_display_attribute_atom_, 
+          this, &composition_holder_);
+  });
   if (edit_session == nullptr) {
     return E_FAIL;
   }

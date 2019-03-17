@@ -13,13 +13,30 @@ namespace senn {
 namespace senn_win {
 namespace text_service {
 
+class CompositionHolder {
+public:
+
+  CompositionHolder() : composition_(nullptr) {}
+
+  ITfComposition *Get() {
+    return composition_;
+  }
+
+  void Set(ITfComposition *c) {
+    composition_ = c;
+  }
+
+private:
+  ITfComposition *composition_;
+};
+
 class EditSession : public ITfEditSession {
 public:
-  EditSession(ITfCompositionSink*,
+  EditSession(std::wstring text,
               ITfContext*,
-              ITfComposition**,
-              const std::wstring&,
-              TfGuidAtom);
+              TfGuidAtom,
+              ITfCompositionSink*,
+              CompositionHolder*);
   ~EditSession();
 
   // IUnknow
@@ -58,15 +75,15 @@ private:
   // ITfEditSession
   HRESULT __stdcall DoEditSession(TfEditCookie ec);
 
-  ITfCompositionSink *composition_sink_;
+  const std::wstring text_;
   
   ITfContext* const context_;
 
-  const std::wstring text_;
+  const TfGuidAtom display_attribute_atom_;
 
-  ITfComposition** const composition_;
+  ITfCompositionSink *composition_sink_;
 
-  const TfGuidAtom editing_atom_;
+  CompositionHolder* const composition_holder_;
 
   ULONG ref_count_ = 1;
 };
@@ -78,6 +95,14 @@ class TextService
       public ITfCompositionSink,
       public ITfTextInputProcessor {
 public:
+
+  TextService()
+    : stateful_im_(nullptr),
+      thread_mgr_(nullptr),
+      client_id_(TF_CLIENTID_NULL),
+      composition_holder_(CompositionHolder()),
+      editing_display_attribute_atom_(TF_INVALID_GUIDATOM) {}
+
   // IUnknow
   HRESULT __stdcall QueryInterface(REFIID riid, void** ppvObject) {
     if (ppvObject == NULL) {
@@ -145,17 +170,10 @@ private:
   TfClientId client_id_;
 
 
-  ITfContext *context_ = nullptr;
+  CompositionHolder composition_holder_;
 
-  ITfComposition *composition_;
-
-  TfGuidAtom editing_atom_;
-
-
-  struct {
-    TfGuidAtom editing_atom = TF_INVALID_GUIDATOM;
-  } display_attribute_vals_;
-
+  TfGuidAtom editing_display_attribute_atom_;
+ 
 
   ULONG ref_count_ = 1;
 };

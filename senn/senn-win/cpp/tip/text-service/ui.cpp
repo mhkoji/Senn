@@ -55,10 +55,10 @@ HRESULT __stdcall EnumDisplayAttributeInfo::Skip(ULONG ulCount) {
 }
 
 ITfRange *InsertTextAndStartComposition(
-    ITfCompositionSink *composition_sink,
-    TfEditCookie ec,
     const std::wstring& text,
+    TfEditCookie ec,
     ITfContext *context,
+    ITfCompositionSink *composition_sink,
     ITfComposition **output) {
   ITfRange *range;
 
@@ -94,8 +94,8 @@ ITfRange *InsertTextAndStartComposition(
 }
 
 ITfRange *ReplaceTextInComposition(
-    TfEditCookie ec,
     const std::wstring& text,
+    TfEditCookie ec,
     ITfComposition *composition) {
   ITfRange *range;
   composition->GetRange(&range);
