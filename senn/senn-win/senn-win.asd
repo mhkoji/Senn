@@ -2,6 +2,8 @@
   :serial t
   :pathname "cl"
   :components
-  ((:file "server/server")
+  ((:file "keys")
+   (:file "im")
+   (:file "server/server")
    (:file "server/ipc"))
-  :depends-on (:hachee))
+  :depends-on (:senn))
