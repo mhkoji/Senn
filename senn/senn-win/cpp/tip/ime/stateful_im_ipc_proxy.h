@@ -1,27 +1,27 @@
 #pragma once
 
 #include <windows.h>
-#include "stateful_im_proxy.h"
+#include "stateful_im.h"
 
 namespace senn {
 namespace senn_win {
 namespace ime {
 
-class IPCStatefulIMProxy : public StatefulIMProxy {
+class StatefulIMIPCProxy : public StatefulIM {
 public:
   bool Input(
       uint64_t keycode,
       std::function<void(const std::wstring* const text)>) override;
 
-  ~IPCStatefulIMProxy() override;
+  ~StatefulIMIPCProxy() override;
 
 private:
-  IPCStatefulIMProxy(HANDLE);
+  StatefulIMIPCProxy(HANDLE);
 
   const HANDLE pipe_;
 
 public:
-  static IPCStatefulIMProxy *Create(const WCHAR* const named_pipe_path);
+  static StatefulIMIPCProxy *Create(const WCHAR* const named_pipe_path);
 };
 
 }  // ime

@@ -1,20 +1,20 @@
 #pragma once
 
 #include <sstream>
-#include "ipc_stateful_im_proxy.h"
+#include "stateful_im_ipc_proxy.h"
 
 namespace senn {
 namespace senn_win {
 namespace ime {
 
-IPCStatefulIMProxy::IPCStatefulIMProxy(const HANDLE pipe) : pipe_(pipe) {
+StatefulIMIPCProxy::StatefulIMIPCProxy(const HANDLE pipe) : pipe_(pipe) {
 }
 
-IPCStatefulIMProxy::~IPCStatefulIMProxy() {
+StatefulIMIPCProxy::~StatefulIMIPCProxy() {
   CloseHandle(pipe_);
 }
 
-bool IPCStatefulIMProxy::Input(
+bool StatefulIMIPCProxy::Input(
     uint64_t keycode,
     std::function<void(const std::wstring* const text)> on_editing) {
   {
@@ -50,7 +50,7 @@ bool IPCStatefulIMProxy::Input(
   return true;
 };
 
-IPCStatefulIMProxy *IPCStatefulIMProxy::Create(
+StatefulIMIPCProxy *StatefulIMIPCProxy::Create(
     const WCHAR* const named_pipe_path) {
   HANDLE pipe = CreateFile(
       named_pipe_path,
@@ -63,7 +63,7 @@ IPCStatefulIMProxy *IPCStatefulIMProxy::Create(
   if (pipe == INVALID_HANDLE_VALUE) {
     return nullptr;
   }
-  return new IPCStatefulIMProxy(pipe);
+  return new StatefulIMIPCProxy(pipe);
 }
 
 }  // ime

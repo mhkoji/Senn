@@ -1,6 +1,6 @@
 #include "object_releaser.h"
 #include "text_service.h"
-#include "../ime/ipc_stateful_im_proxy.h"
+#include "../ime/stateful_im_ipc_proxy.h"
 #include "ui.h"
 
 namespace senn {
@@ -76,7 +76,7 @@ HRESULT TextService::Activate(ITfThreadMgr *thread_mgr, TfClientId client_id) {
 
   // Create a stateful IM to process user inputs of keys.
   stateful_im_ =
-      ::senn::senn_win::ime::IPCStatefulIMProxy::Create(kNamedPipePath);
+      ::senn::senn_win::ime::StatefulIMIPCProxy::Create(kNamedPipePath);
   if (stateful_im_ == nullptr) {
     return E_FAIL;
   }

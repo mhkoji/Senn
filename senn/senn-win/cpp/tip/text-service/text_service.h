@@ -7,7 +7,7 @@
 
 #include "../senn.h"
 #include "../win/text-service/class_factory.h"
-#include "../ime/stateful_im_proxy.h"
+#include "../ime/stateful_im.h"
 
 namespace senn {
 namespace senn_win {
@@ -137,7 +137,7 @@ public:
 
 private:
   // The input method that manages the states.
-  ::senn::senn_win::ime::StatefulIMProxy *stateful_im_;
+  ::senn::senn_win::ime::StatefulIM *stateful_im_;
 
 
   ITfThreadMgr *thread_mgr_;

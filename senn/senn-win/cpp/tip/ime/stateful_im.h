@@ -6,9 +6,9 @@ namespace senn {
 namespace senn_win {
 namespace ime {
 
-class StatefulIMProxy {
+class StatefulIM {
 public:
-  virtual ~StatefulIMProxy() {}
+  virtual ~StatefulIM() {}
 
   virtual bool Input(
       uint64_t keycode,

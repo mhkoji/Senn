@@ -45,10 +45,10 @@
     <ClInclude Include="registration.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="ime\stateful_im_proxy.h">
+    <ClInclude Include="ime\stateful_im_ipc_proxy.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="ime\ipc_stateful_im_proxy.h">
+    <ClInclude Include="ime\stateful_im.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="text-service\text_service.h">
@@ -80,7 +80,7 @@
     <ClCompile Include="text-service\ui.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="ime\ipc_stateful_im_proxy.cpp">
+    <ClCompile Include="ime\stateful_im_ipc_proxy.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
