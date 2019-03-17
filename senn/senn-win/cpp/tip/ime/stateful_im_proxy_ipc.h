@@ -7,21 +7,21 @@ namespace senn {
 namespace senn_win {
 namespace ime {
 
-class StatefulIMIPCProxy : public StatefulIM {
+class StatefulIMProxyIPC : public StatefulIM {
 public:
   bool Input(
       uint64_t keycode,
       std::function<void(const std::wstring* const text)>) override;
 
-  ~StatefulIMIPCProxy() override;
+  ~StatefulIMProxyIPC() override;
 
 private:
-  StatefulIMIPCProxy(HANDLE);
+  StatefulIMProxyIPC(HANDLE);
 
   const HANDLE pipe_;
 
 public:
-  static StatefulIMIPCProxy *Create(const WCHAR* const named_pipe_path);
+  static StatefulIMProxyIPC *Create(const WCHAR* const named_pipe_path);
 };
 
 }  // ime
