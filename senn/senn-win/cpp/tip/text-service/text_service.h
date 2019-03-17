@@ -7,6 +7,7 @@
 
 #include "../senn.h"
 #include "../win/text-service/class_factory.h"
+#include "../ime/stateful_im_proxy.h"
 
 namespace senn {
 namespace senn_win {
@@ -16,8 +17,8 @@ class EditSession : public ITfEditSession {
 public:
   EditSession(ITfCompositionSink*,
               ITfContext*,
-              const std::wstring&,
               ITfComposition**,
+              const std::wstring&,
               TfGuidAtom);
   ~EditSession();
 
@@ -61,7 +62,7 @@ private:
   
   ITfContext* const context_;
 
-  const std::wstring& text_;
+  const std::wstring text_;
 
   ITfComposition** const composition_;
 
@@ -135,6 +136,9 @@ public:
   HRESULT __stdcall GetDisplayAttributeInfo(REFGUID, ITfDisplayAttributeInfo**) override;
 
 private:
+  // The input method that manages the states.
+  ::senn::senn_win::ime::StatefulIMProxy *stateful_im_;
+
 
   ITfThreadMgr *thread_mgr_;
 
@@ -142,8 +146,6 @@ private:
 
 
   ITfContext *context_ = nullptr;
-
-  std::wstring text_ = L"";
 
   ITfComposition *composition_;
 

@@ -70,7 +70,7 @@ ITfRange *InsertTextAndStartComposition(
   ObjectReleaser<ITfInsertAtSelection> insert_releaser(insert);
 
   if (insert->InsertTextAtSelection(
-          ec, 0, text.c_str(), text.size(), &range) !=
+          ec, 0, text.c_str(), static_cast<LONG>(text.size()), &range) !=
       S_OK) {
     return nullptr;
   }
@@ -99,7 +99,7 @@ ITfRange *ReplaceTextInComposition(
     ITfComposition *composition) {
   ITfRange *range;
   composition->GetRange(&range);
-  range->SetText(ec, 0, text.c_str(), text.length());
+  range->SetText(ec, 0, text.c_str(), static_cast<LONG>(text.length()));
   return range;
 }
 

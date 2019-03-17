@@ -150,6 +150,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="ime\ipc_stateful_im_proxy.h" />
+    <ClInclude Include="ime\stateful_im_proxy.h" />
     <ClInclude Include="registration.h" />
     <ClInclude Include="senn.h" />
     <ClInclude Include="stdafx.h" />
@@ -163,6 +165,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="ime\ipc_stateful_im_proxy.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

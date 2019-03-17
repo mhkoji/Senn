@@ -1,5 +1,6 @@
 #include "object_releaser.h"
 #include "text_service.h"
+#include "../ime/ipc_stateful_im_proxy.h"
 #include "ui.h"
 
 namespace senn {
@@ -8,8 +9,8 @@ namespace text_service {
 
 EditSession::EditSession(ITfCompositionSink *composition_sink,
                          ITfContext *context,
-                         const std::wstring& text,
                          ITfComposition **composition,
+                         const std::wstring& text,
                          TfGuidAtom editing_atom)
     : composition_sink_(composition_sink),
       context_(context),
@@ -73,11 +74,16 @@ HRESULT TextService::Activate(ITfThreadMgr *thread_mgr, TfClientId client_id) {
 
   client_id_ = client_id;
 
+  // Create a stateful IM to process user input keys.
+  stateful_im_ = new ::senn::senn_win::ime::IPCStatefulIMProxy(kNamedPipePath);
+
+
   HRESULT result;
+  // Advice key event sink to receive key input notifications.
   {
     ITfKeystrokeMgr *keystroke_mgr;
-    if (thread_mgr->QueryInterface(IID_ITfKeystrokeMgr, (void **)&keystroke_mgr) != 
-        S_OK) {
+    if (thread_mgr->QueryInterface(
+            IID_ITfKeystrokeMgr, (void **)&keystroke_mgr) !=  S_OK) {
       return FALSE;
     }
 
@@ -91,10 +97,12 @@ HRESULT TextService::Activate(ITfThreadMgr *thread_mgr, TfClientId client_id) {
     }
   }
 
+  // Register guids for display attribute to decorate composing texts.
   {
     ITfCategoryMgr *category_mgr;
-    result = CoCreateInstance(CLSID_TF_CategoryMgr, nullptr, CLSCTX_INPROC_SERVER,
-                              IID_ITfCategoryMgr, (void**)&category_mgr);
+    result = CoCreateInstance(
+        CLSID_TF_CategoryMgr, nullptr, CLSCTX_INPROC_SERVER,
+        IID_ITfCategoryMgr, (void**)&category_mgr);
     if (FAILED(result)) {
       return FALSE;
     }
@@ -113,8 +121,8 @@ HRESULT TextService::Activate(ITfThreadMgr *thread_mgr, TfClientId client_id) {
 HRESULT TextService::Deactivate() {
   {
     ITfKeystrokeMgr *keystroke_mgr;
-    if (thread_mgr_->QueryInterface(IID_ITfKeystrokeMgr, (void **)&keystroke_mgr) !=
-        S_OK) {
+    if (thread_mgr_->QueryInterface(
+            IID_ITfKeystrokeMgr, (void **)&keystroke_mgr) != S_OK) {
       return S_OK;
     }
     keystroke_mgr->UnadviseKeyEventSink(client_id_);
@@ -168,25 +176,31 @@ HRESULT __stdcall TextService::OnSetFocus(BOOL fForeground) {
   return S_OK;
 }
 
-HRESULT __stdcall TextService::OnTestKeyDown(ITfContext *pic, WPARAM wParam, LPARAM lParam, BOOL *pfEaten) {
+HRESULT __stdcall TextService::OnTestKeyDown(
+    ITfContext *context, WPARAM wParam, LPARAM lParam, BOOL *pfEaten) {
   *pfEaten = true;
   return S_OK;
 }
 
-HRESULT __stdcall TextService::OnKeyDown(ITfContext *pic, WPARAM wParam, LPARAM lParam, BOOL *pfEaten) {
-  *pfEaten = true;
-  text_ += L"a";
+HRESULT __stdcall TextService::OnKeyDown(
+    ITfContext *context, WPARAM wParam, LPARAM lParam, BOOL *pfEaten) {
+  EditSession *edit_session = nullptr;
 
-  EditSession *edit_session = new EditSession(
-      this,
-      pic,
-      text_,
-      &composition_,
-      display_attribute_vals_.editing_atom);
+  *pfEaten = stateful_im_->Input(wParam,
+      [&](const std::wstring *text) {
+        edit_session = new EditSession(
+            this, context, &composition_,
+            *text,           
+            display_attribute_vals_.editing_atom);
+      });
+  
+  if (edit_session == nullptr) {
+    return E_FAIL;
+  }
   ObjectReleaser<EditSession> edit_session_releaser(edit_session);
 
   HRESULT result;
-  if (pic->RequestEditSession(
+  if (context->RequestEditSession(
           client_id_, edit_session, TF_ES_SYNC | TF_ES_READWRITE, &result) ==
       S_OK) {
     return S_OK;
@@ -195,17 +209,20 @@ HRESULT __stdcall TextService::OnKeyDown(ITfContext *pic, WPARAM wParam, LPARAM 
   }
 }
 
-HRESULT __stdcall TextService::OnTestKeyUp(ITfContext *pic, WPARAM wParam, LPARAM lParam, BOOL *pfEaten) {
+HRESULT __stdcall TextService::OnTestKeyUp(
+    ITfContext *context, WPARAM wParam, LPARAM lParam, BOOL *pfEaten) {
   *pfEaten = false;
   return S_OK;
 }
 
-HRESULT __stdcall TextService::OnKeyUp(ITfContext *pic, WPARAM wParam, LPARAM lParam, BOOL *pfEaten) {
+HRESULT __stdcall TextService::OnKeyUp(
+    ITfContext *context, WPARAM wParam, LPARAM lParam, BOOL *pfEaten) {
   *pfEaten = false;
   return S_OK;
 }
 
-HRESULT __stdcall TextService::OnPreservedKey(ITfContext *pic, REFGUID rguid, BOOL *pfEaten) {
+HRESULT __stdcall TextService::OnPreservedKey(
+    ITfContext *context, REFGUID rguid, BOOL *pfEaten) {
   *pfEaten = false;
   return S_OK;
 }
