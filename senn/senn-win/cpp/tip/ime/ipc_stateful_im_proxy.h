@@ -9,16 +9,19 @@ namespace ime {
 
 class IPCStatefulIMProxy : public StatefulIMProxy {
 public:
-  IPCStatefulIMProxy(const WCHAR* const named_pipe_path);
-
   bool Input(
       uint64_t keycode,
       std::function<void(const std::wstring* const text)>) override;
 
-private:
-  const WCHAR* const named_pipe_path_;
+  ~IPCStatefulIMProxy() override;
 
-  std::wstring text_ = L"";
+private:
+  IPCStatefulIMProxy(HANDLE);
+
+  const HANDLE pipe_;
+
+public:
+  static IPCStatefulIMProxy *Create(const WCHAR* const named_pipe_path);
 };
 
 }  // ime

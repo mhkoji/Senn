@@ -74,8 +74,12 @@ HRESULT TextService::Activate(ITfThreadMgr *thread_mgr, TfClientId client_id) {
 
   client_id_ = client_id;
 
-  // Create a stateful IM to process user input keys.
-  stateful_im_ = new ::senn::senn_win::ime::IPCStatefulIMProxy(kNamedPipePath);
+  // Create a stateful IM to process user inputs of keys.
+  stateful_im_ =
+      ::senn::senn_win::ime::IPCStatefulIMProxy::Create(kNamedPipePath);
+  if (stateful_im_ == nullptr) {
+    return E_FAIL;
+  }
 
 
   HRESULT result;
@@ -84,7 +88,7 @@ HRESULT TextService::Activate(ITfThreadMgr *thread_mgr, TfClientId client_id) {
     ITfKeystrokeMgr *keystroke_mgr;
     if (thread_mgr->QueryInterface(
             IID_ITfKeystrokeMgr, (void **)&keystroke_mgr) !=  S_OK) {
-      return FALSE;
+      return E_FAIL;
     }
 
     result = keystroke_mgr->AdviseKeyEventSink(
@@ -104,7 +108,7 @@ HRESULT TextService::Activate(ITfThreadMgr *thread_mgr, TfClientId client_id) {
         CLSID_TF_CategoryMgr, nullptr, CLSCTX_INPROC_SERVER,
         IID_ITfCategoryMgr, (void**)&category_mgr);
     if (FAILED(result)) {
-      return FALSE;
+      return result;
     }
     ObjectReleaser<ITfCategoryMgr> category_mgr_releaser(category_mgr);
 
