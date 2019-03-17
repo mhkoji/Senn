@@ -10,7 +10,7 @@ namespace fcitx {
 
 class StatefulIMProxy {
 public:
-  virtual ~StatefulIMProxy() {};
+  virtual ~StatefulIMProxy() {}
 
   virtual INPUT_RETURN_VALUE Input(
       FcitxKeySym, uint32_t, uint32_t,

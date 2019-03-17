@@ -130,6 +130,7 @@ IPCStatefulIMProxy::Create(senn::ipc::Connection *conn) {
 IPCStatefulIMProxy::~IPCStatefulIMProxy() {
   if (connection_) {
     connection_->Close();
+    delete connection_;
   }
 }
 

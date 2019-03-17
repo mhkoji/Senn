@@ -20,8 +20,13 @@ typedef struct _FcitxSenn {
 
 static void FcitxSennDestroy(void *arg) {
   FcitxSenn *senn = (FcitxSenn *)arg;
-  delete senn->im;
+  if (senn->im) {
+    delete senn->im;
+  }
   free(senn);
+  // std::cout << "senn-fcitx: destroyed:"
+  //           << " [" << std::hex << arg << "]"
+  //           << std::endl;
 }
 
 static boolean FcitxSennInit(void *arg) {
