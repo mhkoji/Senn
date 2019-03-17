@@ -8,9 +8,9 @@
 namespace senn {
 namespace fcitx {
 
-class StatefulIMProxy {
+class StatefulIM {
 public:
-  virtual ~StatefulIMProxy() {}
+  virtual ~StatefulIM() {}
 
   virtual INPUT_RETURN_VALUE Input(
       FcitxKeySym, uint32_t, uint32_t,

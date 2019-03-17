@@ -1,13 +1,13 @@
 #pragma once
-#include "stateful_im_proxy.h"
+#include "stateful_im.h"
 #include "ipc.h"
 
 namespace senn {
 namespace fcitx {
 
-class IPCStatefulIMProxy : public StatefulIMProxy {
+class StatefulIMProxyIPC : public StatefulIM {
 public:
-  ~IPCStatefulIMProxy();
+  ~StatefulIMProxyIPC();
 
   INPUT_RETURN_VALUE Input(
       FcitxKeySym, uint32_t, uint32_t,
@@ -16,10 +16,10 @@ public:
       std::function<void(const senn::fcitx::views::Editing*)>);
 
 
-  static IPCStatefulIMProxy* Create(senn::ipc::Connection*);
+  static StatefulIMProxyIPC* Create(senn::ipc::Connection*);
 
 private:
-  IPCStatefulIMProxy(senn::ipc::Connection*);
+  StatefulIMProxyIPC(senn::ipc::Connection*);
 
   senn::ipc::Connection *connection_;
 };

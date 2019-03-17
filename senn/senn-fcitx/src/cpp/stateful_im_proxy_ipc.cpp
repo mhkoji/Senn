@@ -2,7 +2,7 @@
 #include <sstream>
 #include <picojson/picojson.h>
 
-#include "ipc_stateful_im_proxy.h"
+#include "stateful_im_proxy_ipc.h"
 
 namespace senn {
 namespace fcitx {
@@ -69,12 +69,12 @@ INPUT_RETURN_VALUE ParseInputReturnValue(const std::string &s) {
 } // namespace
 
 
-IPCStatefulIMProxy::IPCStatefulIMProxy(senn::ipc::Connection* conn)
+StatefulIMProxyIPC::StatefulIMProxyIPC(senn::ipc::Connection* conn)
   : connection_(conn) {}
 
 
 INPUT_RETURN_VALUE
-IPCStatefulIMProxy::Input(
+StatefulIMProxyIPC::Input(
     FcitxKeySym sym, uint32_t keycode, uint32_t state,
     std::function<void(const senn::fcitx::views::Committed*)> on_committed,
     std::function<void(const senn::fcitx::views::Converting*)> on_converting,
@@ -121,13 +121,13 @@ IPCStatefulIMProxy::Input(
   return ParseInputReturnValue(input_return_value);
 }
 
-IPCStatefulIMProxy*
-IPCStatefulIMProxy::Create(senn::ipc::Connection *conn) {
-  return new IPCStatefulIMProxy(conn);
+StatefulIMProxyIPC*
+StatefulIMProxyIPC::Create(senn::ipc::Connection *conn) {
+  return new StatefulIMProxyIPC(conn);
 }
 
 
-IPCStatefulIMProxy::~IPCStatefulIMProxy() {
+StatefulIMProxyIPC::~StatefulIMProxyIPC() {
   if (connection_) {
     connection_->Close();
     delete connection_;

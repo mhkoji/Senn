@@ -6,15 +6,15 @@
 #include <iostream>
 
 #include "ui.h"
-#include "ipc_stateful_im_proxy.h"
-#include "ipc_stateful_im_proxy_server.h"
+#include "stateful_im_proxy_ipc.h"
+#include "stateful_im_proxy_ipc_server.h"
 
 const std::string SOCKET_PATH = "/tmp/senn-server-socket";
 
 
 typedef struct _FcitxSenn {
   FcitxInstance *fcitx;
-  senn::fcitx::StatefulIMProxy *im;
+  senn::fcitx::StatefulIM *im;
 } FcitxSenn;
 
 
@@ -75,7 +75,7 @@ INPUT_RETURN_VALUE FcitxSennDoInput(void *arg,
   // std::cout << sym << " " << keycode << " " << state << std::endl;
 
   if (!senn->im) {
-    senn->im = senn::fcitx::IPCStatefulIMProxy::Create(
+    senn->im = senn::fcitx::StatefulIMProxyIPC::Create(
         senn::ipc::Connection::ConnectAbstractTo(SOCKET_PATH));
   }
 

@@ -3,7 +3,7 @@
 #include <unistd.h>
 #include <iostream>
 
-#include "ipc_stateful_im_proxy_server.h"
+#include "stateful_im_proxy_ipc_server.h"
 
 extern "C" {
 
