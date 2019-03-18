@@ -12,7 +12,9 @@
 (defgeneric send-response (c resp))
 
 (defun make-response (s)
-  (senn.buffer:buffer-string s))
+  (format nil "~A ~A~%"
+          (symbol-name (type-of s))
+          (senn.win.states:to-view s)))
 
 (defun handle-request (expr state im client)
   (case (expr-op expr)

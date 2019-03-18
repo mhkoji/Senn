@@ -1,5 +1,5 @@
 (defpackage :senn.win.im
-  (:use :cl)
+  (:use :cl :senn.win.states)
   (:export :make-im
            :input))
 (in-package :senn.win.im)
@@ -13,13 +13,14 @@
       (senn.win.keys:key-code k)
       (char-code #\Z)))
 
-(defmethod input ((im im) buffer (key senn.win.keys:key))
+(defmethod input ((im im) (s editing) (key senn.win.keys:key))
   (cond ((char-p key)
          (let ((char-lower-case
                 (code-char (+ #x20 ;; to lower case
                               (senn.win.keys:key-code key)))))
-           (setf buffer
-                 (senn.buffer:insert-char buffer
-                                          char-lower-case))))
+           (setf (editing-buffer s)
+                 (senn.buffer:insert-char (editing-buffer s)
+                                          char-lower-case)))
+         s)
         (t
-         buffer)))
+         s)))

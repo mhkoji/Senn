@@ -40,7 +40,7 @@
         (log/info client "New client")
         (unwind-protect
              (senn.win.server:loop-handling-request
-              (senn.buffer:make-buffer)
+              (senn.win.states:make-editing)
               (senn.win.im:make-im :kkc kkc)
               client)
           (hachee.ipc.named-pipe:disconnect-and-close pipe))
