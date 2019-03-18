@@ -11,7 +11,8 @@ class StatefulIMProxyIPC : public StatefulIM {
 public:
   void Input(
       uint64_t keycode,
-      std::function<void(const std::wstring* const text)>) override;
+      std::function<void(const views::Editing&)>,
+      std::function<void(const views::Committed&)>) override;
 
   ~StatefulIMProxyIPC() override;
 

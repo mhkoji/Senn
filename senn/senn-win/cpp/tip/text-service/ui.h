@@ -172,6 +172,11 @@ void SetDisplayAttribute(
     ITfRange*,
     TfGuidAtom attribute_atom);
 
+void RemoveDisplayAttributes(
+    TfEditCookie ec,
+    ITfContext *context,
+    ITfComposition *composition);
+
 namespace editing {
 
 // {BEE1A1BF-30E0-4D26-9F56-B7D7207EB2D5}

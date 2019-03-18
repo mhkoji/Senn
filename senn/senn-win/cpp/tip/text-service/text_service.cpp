@@ -7,38 +7,39 @@ namespace senn {
 namespace senn_win {
 namespace text_service {
 
-EditSession::EditSession(std::wstring text,
-                         ITfContext *context,
-                         TfGuidAtom display_attribute_atom,
-                         ITfCompositionSink *composition_sink,
-                         CompositionHolder *composition_holder)
-    : text_(text),
-      context_(context),
-      display_attribute_atom_(display_attribute_atom),
-      composition_sink_(composition_sink),
-      composition_holder_(composition_holder) {
+EditSessionEditing::EditSessionEditing(
+    const senn::senn_win::ime::views::Editing& view,
+    ITfContext *context,
+    TfGuidAtom display_attribute_atom,
+    ITfCompositionSink *composition_sink,
+    CompositionHolder *composition_holder)
+  : view_(view),
+    context_(context),
+    display_attribute_atom_(display_attribute_atom),
+    composition_sink_(composition_sink),
+    composition_holder_(composition_holder) {
   context_->AddRef();
 }
 
-EditSession::~EditSession() {
+EditSessionEditing::~EditSessionEditing() {
   context_->Release();
 }
 
-HRESULT __stdcall EditSession::DoEditSession(TfEditCookie ec) {
+HRESULT __stdcall EditSessionEditing::DoEditSession(TfEditCookie ec) {
   // Draw the text on the screen.
   // If it is the first time to draw, we have to create a composition as well.
   ITfRange *range;
   if (composition_holder_->Get() == nullptr) {
     ITfComposition *composition;
     range = ui::InsertTextAndStartComposition(
-      text_, ec, context_, composition_sink_, &composition);
+        view_.input, ec, context_, composition_sink_, &composition);
     if (composition == nullptr || range == nullptr) {
       return S_OK;
     }
     composition_holder_->Set(composition);
-  }
-  else {
-    range = ui::ReplaceTextInComposition(text_, ec, composition_holder_->Get());
+  } else {
+    range = ui::ReplaceTextInComposition(
+        view_.input, ec, composition_holder_->Get());
     if (range == nullptr) {
       return S_OK;
     }
@@ -68,6 +69,35 @@ HRESULT __stdcall EditSession::DoEditSession(TfEditCookie ec) {
   return S_OK;
 }
 
+EditSessionCommitted::EditSessionCommitted(
+    const senn::senn_win::ime::views::Committed& view,
+    ITfContext *context,
+    CompositionHolder *composition_holder)
+  : view_(view),
+    context_(context),
+    composition_holder_(composition_holder) {
+  context_->AddRef();
+}
+
+EditSessionCommitted::~EditSessionCommitted() {
+  context_->Release();
+}
+
+HRESULT __stdcall EditSessionCommitted::DoEditSession(TfEditCookie ec) {
+  if (composition_holder_->Get() != nullptr) {
+    ITfComposition *composition = composition_holder_->Get();
+    ui::ReplaceTextInComposition(view_.input, ec, composition);
+    ui::RemoveDisplayAttributes(ec, context_, composition);
+
+    composition->EndComposition(ec);
+    composition->Release();
+    composition_holder_->Set(nullptr);
+  }
+  context_->Release();
+  return S_OK;
+}
+
+
 // ITfTextInputProcessor
 
 HRESULT TextService::Activate(ITfThreadMgr *thread_mgr, TfClientId client_id) {
@@ -78,7 +108,7 @@ HRESULT TextService::Activate(ITfThreadMgr *thread_mgr, TfClientId client_id) {
 
   // Create a stateful IM to process user inputs of keys.
   stateful_im_ =
-      ::senn::senn_win::ime::StatefulIMProxyIPC::Create(kNamedPipePath);
+      senn::senn_win::ime::StatefulIMProxyIPC::Create(kNamedPipePath);
   if (stateful_im_ == nullptr) {
     return E_FAIL;
   }
@@ -192,17 +222,21 @@ HRESULT __stdcall TextService::OnKeyDown(
     ITfContext *context, WPARAM wParam, LPARAM lParam, BOOL *pfEaten) {
   *pfEaten = true;
 
-  EditSession *edit_session = nullptr;
+  ITfEditSession *edit_session = nullptr;
   stateful_im_->Input(wParam,
-    [&](const std::wstring *text) {
-      edit_session = new EditSession(
-          *text, context, editing_display_attribute_atom_, 
-          this, &composition_holder_);
-  });
+      [&](const senn::senn_win::ime::views::Editing& view) {
+        edit_session = new EditSessionEditing(
+            view, context, editing_display_attribute_atom_, 
+            this, &composition_holder_);
+      },
+      [&](const senn::senn_win::ime::views::Committed& view) {
+        edit_session = new EditSessionCommitted(
+            view, context, &composition_holder_);
+      });
   if (edit_session == nullptr) {
     return E_FAIL;
   }
-  ObjectReleaser<EditSession> edit_session_releaser(edit_session);
+  ObjectReleaser<ITfEditSession> edit_session_releaser(edit_session);
 
   HRESULT result;
   if (context->RequestEditSession(

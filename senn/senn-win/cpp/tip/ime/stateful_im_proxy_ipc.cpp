@@ -1,5 +1,3 @@
-#pragma once
-
 #include <sstream>
 #include "stateful_im_proxy_ipc.h"
 
@@ -16,7 +14,8 @@ StatefulIMProxyIPC::~StatefulIMProxyIPC() {
 
 void StatefulIMProxyIPC::Input(
     uint64_t keycode,
-    std::function<void(const std::wstring* const text)> on_editing) {
+    std::function<void(const views::Editing&)> on_editing,
+    std::function<void(const views::Committed&)> on_committed) {
   {
     std::stringstream ss;
     ss << "{"
@@ -47,6 +46,7 @@ void StatefulIMProxyIPC::Input(
   iss >> type;
 
   if (type == "EDITING") {
+    views::Editing editing;
     std::string char_text;
     iss >> char_text;
     WCHAR text_buf[1024] = { '\0' };
@@ -56,8 +56,25 @@ void StatefulIMProxyIPC::Input(
                         static_cast<int>(char_text.length()),
                         text_buf,
                         static_cast<int>(sizeof(text_buf)));
-    std::wstring text = text_buf;
-    on_editing(&text);
+    editing.input = text_buf;
+    on_editing(editing);
+    return;
+  }
+
+  if (type == "COMMITTED") {
+    views::Committed committed;
+    std::string char_text;
+    iss >> char_text;
+    WCHAR text_buf[1024] = { '\0' };
+    MultiByteToWideChar(CP_UTF8,
+                        0,
+                        char_text.c_str(),
+                        static_cast<int>(char_text.length()),
+                        text_buf,
+                        static_cast<int>(sizeof(text_buf)));
+                        committed.input = text_buf;
+    on_committed(committed);
+    return;
   }
 };
 

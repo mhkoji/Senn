@@ -122,6 +122,27 @@ void SetDisplayAttribute(
   display_attribute->SetValue(ec, range, &var);
 }
 
+void RemoveDisplayAttributes(
+    TfEditCookie ec,
+    ITfContext *context,
+    ITfComposition *composition) {
+  ITfRange *range;
+  if (composition->GetRange(&range) != S_OK) {
+    return;
+  }
+  ObjectReleaser<ITfRange> range_releaser(range);
+
+  ITfProperty *display_attribute;
+  if (context->GetProperty(GUID_PROP_ATTRIBUTE, &display_attribute) !=
+      S_OK) {
+    return;
+  }
+  ObjectReleaser<ITfProperty> releaser(display_attribute);
+
+  display_attribute->Clear(ec, range);
+}
+
+
 } // ui
 } // text_service
 } // win

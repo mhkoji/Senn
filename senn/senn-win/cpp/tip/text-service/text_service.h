@@ -30,15 +30,9 @@ private:
   ITfComposition *composition_;
 };
 
-class EditSession : public ITfEditSession {
-public:
-  EditSession(std::wstring text,
-              ITfContext*,
-              TfGuidAtom,
-              ITfCompositionSink*,
-              CompositionHolder*);
-  ~EditSession();
 
+class EditSessionImplementingIUnknown : public ITfEditSession {
+public:
   // IUnknow
   HRESULT __stdcall QueryInterface(REFIID riid, void **ppvObject) {
     if (ppvObject == NULL) {
@@ -47,7 +41,8 @@ public:
     if (IsEqualIID(riid, IID_IUnknown) ||
         IsEqualIID(riid, IID_ITfEditSession)) {
       *ppvObject = (ITfLangBarItem *)this;
-    } else {
+    }
+    else {
       *ppvObject = NULL;
       return E_NOINTERFACE;
     }
@@ -71,12 +66,31 @@ public:
     return count;
   }
 
+  virtual HRESULT __stdcall DoEditSession(TfEditCookie ec) = 0;
+
+  virtual ~EditSessionImplementingIUnknown() {}
+
+private:
+
+  ULONG ref_count_ = 1;
+};
+
+class EditSessionEditing : public EditSessionImplementingIUnknown {
+public:
+  EditSessionEditing(
+      const senn::senn_win::ime::views::Editing&,
+      ITfContext*,
+      TfGuidAtom,
+      ITfCompositionSink*,
+      CompositionHolder*);
+  ~EditSessionEditing() override;
+ 
 private:
   // ITfEditSession
-  HRESULT __stdcall DoEditSession(TfEditCookie ec);
+  HRESULT __stdcall DoEditSession(TfEditCookie ec) override;
 
-  const std::wstring text_;
-  
+  const senn::senn_win::ime::views::Editing view_;
+
   ITfContext* const context_;
 
   const TfGuidAtom display_attribute_atom_;
@@ -84,8 +98,25 @@ private:
   ITfCompositionSink *composition_sink_;
 
   CompositionHolder* const composition_holder_;
+};
 
-  ULONG ref_count_ = 1;
+class EditSessionCommitted : public EditSessionImplementingIUnknown {
+public:
+  EditSessionCommitted(
+      const senn::senn_win::ime::views::Committed&,
+      ITfContext*,
+      CompositionHolder*);
+  ~EditSessionCommitted() override;
+
+private:
+  // ITfEditSession
+  HRESULT __stdcall DoEditSession(TfEditCookie ec) override;
+
+  const senn::senn_win::ime::views::Committed view_;
+
+  ITfContext* const context_;
+
+  CompositionHolder* const composition_holder_;
 };
 
 

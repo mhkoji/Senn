@@ -1,6 +1,7 @@
 #pragma once
 
 #include <functional>
+#include "views.h"
 
 namespace senn {
 namespace senn_win {
@@ -12,7 +13,8 @@ public:
 
   virtual void Input(
       uint64_t keycode,
-      std::function<void(const std::wstring* const text)>) = 0;
+      std::function<void(const views::Editing&)>,
+      std::function<void(const views::Committed&)>) = 0;
 };
 
 }  // ime

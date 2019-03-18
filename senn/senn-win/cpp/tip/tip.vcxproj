@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -152,6 +152,7 @@
   <ItemGroup>
     <ClInclude Include="ime\stateful_im_proxy_ipc.h" />
     <ClInclude Include="ime\stateful_im.h" />
+    <ClInclude Include="ime\views.h" />
     <ClInclude Include="registration.h" />
     <ClInclude Include="senn.h" />
     <ClInclude Include="stdafx.h" />
