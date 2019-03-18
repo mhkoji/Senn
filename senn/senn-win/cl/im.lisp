@@ -8,6 +8,10 @@
 
 (defgeneric input (im state key))
 
+(defmethod input ((im im) (s committed) key)
+  (input im (make-editing) key))
+
+
 (defun char-p (k)
   (<= (char-code #\A)
       (senn.win.keys:key-code k)
