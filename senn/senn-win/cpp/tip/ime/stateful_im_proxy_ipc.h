@@ -9,7 +9,7 @@ namespace ime {
 
 class StatefulIMProxyIPC : public StatefulIM {
 public:
-  bool Input(
+  void Input(
       uint64_t keycode,
       std::function<void(const std::wstring* const text)>) override;
 

@@ -10,7 +10,7 @@ class StatefulIM {
 public:
   virtual ~StatefulIM() {}
 
-  virtual bool Input(
+  virtual void Input(
       uint64_t keycode,
       std::function<void(const std::wstring* const text)>) = 0;
 };

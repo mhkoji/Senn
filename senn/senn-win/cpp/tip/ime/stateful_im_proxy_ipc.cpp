@@ -14,7 +14,7 @@ StatefulIMProxyIPC::~StatefulIMProxyIPC() {
   CloseHandle(pipe_);
 }
 
-bool StatefulIMProxyIPC::Input(
+void StatefulIMProxyIPC::Input(
     uint64_t keycode,
     std::function<void(const std::wstring* const text)> on_editing) {
   {
@@ -28,26 +28,37 @@ bool StatefulIMProxyIPC::Input(
     DWORD bytes_written;
     if (!WriteFile(pipe_, req.c_str(), static_cast<DWORD>(req.size()),
                    &bytes_written, NULL)) {
-      return false;
+      return;
     }
   }
 
-  std::wstring text;
+  std::string response;
   {
     char buf[1024] = { '\0' };
     DWORD bytes_read;
     if (!ReadFile(pipe_, buf, sizeof(buf), &bytes_read, NULL)) {
-      return false;
+      return;
     }
-
-    WCHAR w_buf[1024] = { '\0' };
-    MultiByteToWideChar(CP_UTF8, 0, buf, bytes_read, w_buf, sizeof(w_buf));
-    text = w_buf;
+    response = buf;
   }
 
-  on_editing(&text);
-  
-  return true;
+  std::istringstream iss(response);
+  std::string type;
+  iss >> type;
+
+  if (type == "EDITING") {
+    std::string char_text;
+    iss >> char_text;
+    WCHAR text_buf[1024] = { '\0' };
+    MultiByteToWideChar(CP_UTF8,
+                        0,
+                        char_text.c_str(),
+                        static_cast<int>(char_text.length()),
+                        text_buf,
+                        static_cast<int>(sizeof(text_buf)));
+    std::wstring text = text_buf;
+    on_editing(&text);
+  }
 };
 
 StatefulIMProxyIPC *StatefulIMProxyIPC::Create(
