@@ -7,3 +7,11 @@
 
 (defstruct key
   code)
+
+(defmacro defkey (name code)
+  `(progn
+     (defun ,name (k)
+       (= (key-code k) ,code))
+     (export ',name)))
+
+(defkey enter-p 13)

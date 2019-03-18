@@ -22,5 +22,8 @@
                  (senn.buffer:insert-char (editing-buffer s)
                                           char-lower-case)))
          s)
+        ((senn.win.keys:enter-p key)
+         (make-committed :input (senn.buffer:buffer-string
+                                 (editing-buffer s))))
         (t
          s)))
