@@ -1,4 +1,5 @@
 #include <sstream>
+#include "../../third-party/picojson/picojson.h"
 #include "stateful_im_proxy_ipc.h"
 
 namespace senn {
@@ -12,14 +13,14 @@ StatefulIMProxyIPC::~StatefulIMProxyIPC() {
   CloseHandle(pipe_);
 }
 
-void StatefulIMProxyIPC::Input(
+void StatefulIMProxyIPC::Transit(
     uint64_t keycode,
     std::function<void(const views::Editing&)> on_editing,
     std::function<void(const views::Committed&)> on_committed) {
   {
     std::stringstream ss;
     ss << "{"
-       << "\"op\": \"input\","
+       << "\"op\": \"transit\","
        << "\"args\": {" << "\"keycode\": " << keycode
                         << "}"
        << "}";
@@ -62,17 +63,25 @@ void StatefulIMProxyIPC::Input(
   }
 
   if (type == "COMMITTED") {
+    std::string content;
+    std::getline(iss, content);
+
+    picojson::value v;
+    picojson::parse(v, content);
+
+    const std::string char_input = v
+        .get<picojson::object>()["input"]
+        .get<std::string>();
+
     views::Committed committed;
-    std::string char_text;
-    iss >> char_text;
     WCHAR text_buf[1024] = { '\0' };
     MultiByteToWideChar(CP_UTF8,
                         0,
-                        char_text.c_str(),
-                        static_cast<int>(char_text.length()),
+                        char_input.c_str(),
+                        static_cast<int>(char_input.length()),
                         text_buf,
                         static_cast<int>(sizeof(text_buf)));
-                        committed.input = text_buf;
+    committed.input = text_buf;
     on_committed(committed);
     return;
   }

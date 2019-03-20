@@ -89,7 +89,7 @@ HRESULT __stdcall EditSessionCommitted::DoEditSession(TfEditCookie ec) {
   if (composition_holder_->Get() == nullptr) {
     ITfComposition *composition;
     ITfRange *range = ui::InsertTextAndStartComposition(
-        L"\r\n", ec, context_, composition_sink_, &composition);
+        view_.input, ec, context_, composition_sink_, &composition);
     if (range != nullptr) {
       range->Release();
     }
@@ -241,7 +241,7 @@ HRESULT __stdcall TextService::OnKeyDown(
   *pfEaten = true;
 
   ITfEditSession *edit_session = nullptr;
-  stateful_im_->Input(wParam,
+  stateful_im_->Transit(wParam,
       [&](const senn::senn_win::ime::views::Editing& view) {
         edit_session = new EditSessionEditing(
             view, context, editing_display_attribute_atom_, 
