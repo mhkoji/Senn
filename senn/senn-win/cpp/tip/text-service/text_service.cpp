@@ -72,9 +72,11 @@ HRESULT __stdcall EditSessionEditing::DoEditSession(TfEditCookie ec) {
 EditSessionCommitted::EditSessionCommitted(
     const senn::senn_win::ime::views::Committed& view,
     ITfContext *context,
+    ITfCompositionSink* composition_sink,
     CompositionHolder *composition_holder)
   : view_(view),
     context_(context),
+    composition_sink_(composition_sink),
     composition_holder_(composition_holder) {
   context_->AddRef();
 }
@@ -84,16 +86,32 @@ EditSessionCommitted::~EditSessionCommitted() {
 }
 
 HRESULT __stdcall EditSessionCommitted::DoEditSession(TfEditCookie ec) {
-  if (composition_holder_->Get() != nullptr) {
+  if (composition_holder_->Get() == nullptr) {
+    ITfComposition *composition;
+    ITfRange *range = ui::InsertTextAndStartComposition(
+        L"\r\n", ec, context_, composition_sink_, &composition);
+    if (range != nullptr) {
+      range->Release();
+    }
+    if (composition != nullptr) {
+      composition->EndComposition(ec);
+      composition->Release();
+    }
+  } else {
     ITfComposition *composition = composition_holder_->Get();
-    ui::ReplaceTextInComposition(view_.input, ec, composition);
-    ui::RemoveDisplayAttributes(ec, context_, composition);
-
+    ITfRange *range = ui::ReplaceTextInComposition(
+        view_.input, ec, composition);
+    if (range != nullptr) {
+      ui::RemoveDisplayAttributes(ec, context_, range);
+      range->Release();
+    }
     composition->EndComposition(ec);
     composition->Release();
     composition_holder_->Set(nullptr);
   }
+
   context_->Release();
+ 
   return S_OK;
 }
 
@@ -231,7 +249,7 @@ HRESULT __stdcall TextService::OnKeyDown(
       },
       [&](const senn::senn_win::ime::views::Committed& view) {
         edit_session = new EditSessionCommitted(
-            view, context, &composition_holder_);
+            view, context, this, &composition_holder_);
       });
   if (edit_session == nullptr) {
     return E_FAIL;

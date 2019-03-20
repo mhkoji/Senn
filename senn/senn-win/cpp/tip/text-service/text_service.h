@@ -105,6 +105,7 @@ public:
   EditSessionCommitted(
       const senn::senn_win::ime::views::Committed&,
       ITfContext*,
+      ITfCompositionSink*,
       CompositionHolder*);
   ~EditSessionCommitted() override;
 
@@ -115,6 +116,8 @@ private:
   const senn::senn_win::ime::views::Committed view_;
 
   ITfContext* const context_;
+
+  ITfCompositionSink *composition_sink_;
 
   CompositionHolder* const composition_holder_;
 };

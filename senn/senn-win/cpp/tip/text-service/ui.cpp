@@ -125,13 +125,7 @@ void SetDisplayAttribute(
 void RemoveDisplayAttributes(
     TfEditCookie ec,
     ITfContext *context,
-    ITfComposition *composition) {
-  ITfRange *range;
-  if (composition->GetRange(&range) != S_OK) {
-    return;
-  }
-  ObjectReleaser<ITfRange> range_releaser(range);
-
+    ITfRange *range) {
   ITfProperty *display_attribute;
   if (context->GetProperty(GUID_PROP_ATTRIBUTE, &display_attribute) !=
       S_OK) {

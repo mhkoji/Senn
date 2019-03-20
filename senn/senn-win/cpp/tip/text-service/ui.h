@@ -175,7 +175,7 @@ void SetDisplayAttribute(
 void RemoveDisplayAttributes(
     TfEditCookie ec,
     ITfContext *context,
-    ITfComposition *composition);
+    ITfRange*);
 
 namespace editing {
 
