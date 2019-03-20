@@ -1,15 +1,15 @@
 (defpackage :senn.fcitx.im
   (:use :cl :senn.fcitx.states)
   (:export :make-im
-           :input))
+           :transit))
 (in-package :senn.fcitx.im)
 
 (defstruct im kkc)
 
-(defgeneric input (im state key))
+(defgeneric transit (im state key))
 
-(defmethod input ((im im) (s committed) key)
-  (input im (make-editing) key))
+(defmethod transit ((im im) (s committed) key)
+  (transit im (make-editing) key))
 
 
 (defun committed (input)
@@ -28,7 +28,7 @@
        (mapcar #'senn.kkc:word-form words))))
   (senn.segment:try-move-cursor-pos! seg diff))
 
-(defmethod input ((im im) (s converting) (key senn.fcitx.keys:key))
+(defmethod transit ((im im) (s converting) (key senn.fcitx.keys:key))
   (cond ((or (senn.fcitx.keys:space-p key)
              (senn.fcitx.keys:up-p key))
          (move-segment-form-index! (converting-current-segment s) +1 im)
@@ -69,7 +69,7 @@
       (senn.fcitx.keys:key-sym k)
       (char-code #\~)))
 
-(defmethod input ((im im) (s editing) (key senn.fcitx.keys:key))
+(defmethod transit ((im im) (s editing) (key senn.fcitx.keys:key))
   (cond ((char-p key)
          (if (/= (senn.fcitx.keys:key-state key) 0)
              ;; おそらく、Ctrl-pなどのキーが押された

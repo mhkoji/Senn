@@ -79,7 +79,7 @@ INPUT_RETURN_VALUE FcitxSennDoInput(void *arg,
         senn::ipc::Connection::ConnectAbstractTo(SOCKET_PATH));
   }
 
-  return senn->im->Input(sym, keycode, state,
+  return senn->im->Transit(sym, keycode, state,
     [&](const senn::fcitx::views::Committed *view) {
       senn::fcitx::ui::Draw(instance, view);
     },

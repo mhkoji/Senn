@@ -19,12 +19,12 @@
 
 (defun handle-request (expr state im client)
   (ecase (expr-op expr)
-    (:input
+    (:transit
      (let ((key (senn.fcitx.keys:make-key
                  :sym (expr-arg expr "sym")
                  :state (expr-arg expr "state"))))
        (destructuring-bind (new-state input-return-value)
-           (senn.fcitx.im:input im state key)
+           (senn.fcitx.im:transit im state key)
          (let ((resp (make-response new-state input-return-value)))
            (send-response client resp))
          new-state)))))

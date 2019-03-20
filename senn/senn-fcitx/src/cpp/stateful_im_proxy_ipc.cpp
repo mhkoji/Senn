@@ -74,7 +74,7 @@ StatefulIMProxyIPC::StatefulIMProxyIPC(senn::ipc::Connection* conn)
 
 
 INPUT_RETURN_VALUE
-StatefulIMProxyIPC::Input(
+StatefulIMProxyIPC::Transit(
     FcitxKeySym sym, uint32_t keycode, uint32_t state,
     std::function<void(const senn::fcitx::views::Committed*)> on_committed,
     std::function<void(const senn::fcitx::views::Converting*)> on_converting,
@@ -82,7 +82,7 @@ StatefulIMProxyIPC::Input(
   {
     std::stringstream ss;
     ss << "{"
-       << "\"op\": \"input\","
+       << "\"op\": \"transit\","
        << "\"args\": {" << "\"sym\": " << sym << ","
                         << "\"keycode\": " << keycode << ","
                         << "\"state\": " << state << "}"
