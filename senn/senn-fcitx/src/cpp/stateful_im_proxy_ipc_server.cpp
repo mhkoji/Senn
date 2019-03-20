@@ -18,7 +18,7 @@ const std::string SERVER_PROGRAM_PATH = "/usr/lib/senn/server";
 
 bool StartIPCServer(const std::string &socket_path) {
   pid_t pid;
-  char path[SERVER_PROGRAM_PATH.size()];
+  char path[SERVER_PROGRAM_PATH.size()+1] = {'\0'};
   SERVER_PROGRAM_PATH.copy(path, SERVER_PROGRAM_PATH.size());
   char *argv[] = {path, NULL};
   const int status = posix_spawn(
