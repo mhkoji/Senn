@@ -8,4 +8,5 @@
    (:file "im")
    (:file "server/server")
    (:file "server/ipc"))
-  :depends-on (:senn))
+  :depends-on (:senn
+               :jsown))

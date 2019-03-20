@@ -4,4 +4,6 @@
   (senn.buffer:buffer-string (editing-buffer s)))
 
 (defmethod to-view ((s committed))
-  (committed-input s))
+  (jsown:to-json
+   (jsown:new-js
+     ("input" (committed-input s)))))

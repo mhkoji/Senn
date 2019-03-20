@@ -18,10 +18,10 @@
 
 (defun handle-request (expr state im client)
   (case (expr-op expr)
-    (:input
+    (:transit
      (let ((key (senn.win.keys:make-key
                  :code (expr-arg expr "keycode"))))
-       (let ((new-state (senn.win.im:input im state key)))
+       (let ((new-state (senn.win.im:transit im state key)))
          (let ((resp (make-response new-state)))
            (send-response client resp))
          new-state)))))

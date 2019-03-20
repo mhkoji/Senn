@@ -1,15 +1,18 @@
 (defpackage :senn.win.im
   (:use :cl :senn.win.states)
   (:export :make-im
-           :input))
+           :transit))
 (in-package :senn.win.im)
+
+(defvar +crlf+
+  (format nil "~A~A" #\Return #\Newline))
 
 (defstruct im kkc)
 
-(defgeneric input (im state key))
+(defgeneric transit (im state key))
 
-(defmethod input ((im im) (s committed) key)
-  (input im (make-editing) key))
+(defmethod transit ((im im) (s committed) key)
+  (transit im (make-editing) key))
 
 
 (defun char-p (k)
@@ -17,7 +20,7 @@
       (senn.win.keys:key-code k)
       (char-code #\Z)))
 
-(defmethod input ((im im) (s editing) (key senn.win.keys:key))
+(defmethod transit ((im im) (s editing) (key senn.win.keys:key))
   (cond ((char-p key)
          (let ((char-lower-case
                 (code-char (+ #x20 ;; to lower case
@@ -27,7 +30,10 @@
                                           char-lower-case)))
          s)
         ((senn.win.keys:enter-p key)
-         (make-committed :input (senn.buffer:buffer-string
-                                 (editing-buffer s))))
+         (let ((input (senn.buffer:buffer-string (editing-buffer s))))
+           (make-committed :input
+                           (if (string= input "")
+                               +crlf+
+                               input))))
         (t
          s)))
