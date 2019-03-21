@@ -15,3 +15,4 @@
      (export ',name)))
 
 (defkey enter-p 13)
+(defkey space-p 32)

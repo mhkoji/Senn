@@ -6,6 +6,12 @@
            :make-editing
            :editing-buffer
 
+           :converting
+           :make-converting
+           :converting-pronunciation
+           :converting-segments
+           :converting-current-input
+
            :committed
            :make-committed
            :committed-input))
@@ -15,5 +21,15 @@
 
 (defstruct editing
   (buffer (senn.buffer:make-buffer)))
+
+
+(defstruct converting
+  segments
+  pronunciation)
+
+(defun converting-current-input (c)
+  (format nil "~{~A~}"
+          (mapcar #'senn.segment:segment-current-form
+                  (converting-segments c))))
 
 (defstruct committed input)
