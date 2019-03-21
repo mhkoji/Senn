@@ -12,14 +12,6 @@
   (transit im (make-editing) key))
 
 
-(defun committed (input)
-  (list (make-committed :input input)
-        (if (string= input "")
-            :IRV_TO_PROCESS
-            ;; 何らかの文字が確定された場合
-            ;; エンターキーによる改行は無効化させる
-            :IRV_DO_NOTHING)))
-
 (defun move-segment-form-index! (seg diff im)
   (senn.segment:append-forms!
    seg
@@ -55,7 +47,10 @@
                :IRV_TO_PROCESS))
 
         (t
-         (committed (converting-current-input s)))))
+         (let ((input (converting-current-input s)))
+           (list (make-committed :input input)
+                 ;; エンターキーによる改行は無効化させる
+                 :IRV_DO_NOTHING)))))
 
 
 (defun buffer-empty-p (buffer)
@@ -96,7 +91,13 @@
                      :IRV_TO_PROCESS)))))
 
         ((senn.fcitx.keys:enter-p key)
-         (committed (senn.buffer:buffer-string (editing-buffer s))))
+         (let ((input (senn.buffer:buffer-string (editing-buffer s))))
+           (list (make-committed :input input)
+                 (if (string= input "")
+                     :IRV_TO_PROCESS
+                     ;; 何らかの文字が確定された場合
+                     ;; エンターキーによる改行は無効化させる
+                     :IRV_DO_NOTHING))))
 
         ((senn.fcitx.keys:backspace-p key)
          (if (editing-buffer-empty-p s)
