@@ -69,6 +69,37 @@ HRESULT __stdcall EditSessionEditing::DoEditSession(TfEditCookie ec) {
   return S_OK;
 }
 
+
+EditSessionConverting::EditSessionConverting(
+    const senn::senn_win::ime::views::Converting& view,
+    ITfContext *context,
+    ITfComposition *composition)
+  : view_(view),
+    context_(context),
+    composition_(composition) {
+  context_->AddRef();
+}
+
+EditSessionConverting::~EditSessionConverting() {
+  context_->Release();
+}
+
+
+HRESULT __stdcall EditSessionConverting::DoEditSession(TfEditCookie ec) {
+  // Composition must have started by the previous EditSessionCommitted
+  if (composition_ == nullptr) {
+    return S_OK;
+  }
+
+  ITfRange *range = ui::ReplaceTextInComposition(
+      view_.forms[0], ec, composition_);
+  if (range == nullptr) {
+    return S_OK;
+  }
+  ObjectReleaser<ITfRange> range_releaser(range);
+}
+
+
 EditSessionCommitted::EditSessionCommitted(
     const senn::senn_win::ime::views::Committed& view,
     ITfContext *context,
@@ -246,6 +277,10 @@ HRESULT __stdcall TextService::OnKeyDown(
         edit_session = new EditSessionEditing(
             view, context, editing_display_attribute_atom_, 
             this, &composition_holder_);
+      },
+      [&](const senn::senn_win::ime::views::Converting& view) {
+        edit_session = new EditSessionConverting(
+            view, context, composition_holder_.Get());
       },
       [&](const senn::senn_win::ime::views::Committed& view) {
         edit_session = new EditSessionCommitted(

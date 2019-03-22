@@ -6,6 +6,21 @@ namespace senn {
 namespace senn_win {
 namespace ime {
 
+namespace {
+
+void ToWString(const std::string& char_string, std::wstring* output) {
+  WCHAR buf[1024] = { '\0' };
+  MultiByteToWideChar(CP_UTF8,
+                      0,
+                      char_string.c_str(),
+                      static_cast<int>(char_string.length()),
+                      buf,
+                      static_cast<int>(sizeof(buf)));
+  *output = buf;
+}
+
+} // namespace
+
 StatefulIMProxyIPC::StatefulIMProxyIPC(const HANDLE pipe) : pipe_(pipe) {
 }
 
@@ -16,6 +31,7 @@ StatefulIMProxyIPC::~StatefulIMProxyIPC() {
 void StatefulIMProxyIPC::Transit(
     uint64_t keycode,
     std::function<void(const views::Editing&)> on_editing,
+    std::function<void(const views::Converting&)> on_converting,
     std::function<void(const views::Committed&)> on_committed) {
   {
     std::stringstream ss;
@@ -50,21 +66,33 @@ void StatefulIMProxyIPC::Transit(
     views::Editing editing;
     std::string char_text;
     iss >> char_text;
-    WCHAR text_buf[1024] = { '\0' };
-    MultiByteToWideChar(CP_UTF8,
-                        0,
-                        char_text.c_str(),
-                        static_cast<int>(char_text.length()),
-                        text_buf,
-                        static_cast<int>(sizeof(text_buf)));
-    editing.input = text_buf;
+    ToWString(char_text, &editing.input);
     on_editing(editing);
-    return;
-  }
-
-  if (type == "COMMITTED") {
+  } else if (type == "CONVERTING") {
     std::string content;
     std::getline(iss, content);
+
+    views::Converting converting;
+
+    picojson::value v;
+    picojson::parse(v, content);
+
+    const picojson::array forms = v
+      .get<picojson::object>()["forms"]
+      .get<picojson::array>();
+    for (picojson::array::const_iterator it = forms.begin();
+      it != forms.end(); ++it) {
+      std::wstring form;
+      ToWString(it->get<std::string>(), &form);
+      converting.forms.push_back(form);
+    }
+
+    on_converting(converting);
+  } else if (type == "COMMITTED") {
+    std::string content;
+    std::getline(iss, content);
+
+    views::Committed committed;
 
     picojson::value v;
     picojson::parse(v, content);
@@ -72,18 +100,9 @@ void StatefulIMProxyIPC::Transit(
     const std::string char_input = v
         .get<picojson::object>()["input"]
         .get<std::string>();
+    ToWString(char_input, &committed.input);
 
-    views::Committed committed;
-    WCHAR text_buf[1024] = { '\0' };
-    MultiByteToWideChar(CP_UTF8,
-                        0,
-                        char_input.c_str(),
-                        static_cast<int>(char_input.length()),
-                        text_buf,
-                        static_cast<int>(sizeof(text_buf)));
-    committed.input = text_buf;
     on_committed(committed);
-    return;
   }
 };
 

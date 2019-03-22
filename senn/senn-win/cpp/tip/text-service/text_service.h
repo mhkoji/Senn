@@ -100,6 +100,25 @@ private:
   CompositionHolder* const composition_holder_;
 };
 
+class EditSessionConverting : public EditSessionImplementingIUnknown {
+public:
+  EditSessionConverting(
+    const senn::senn_win::ime::views::Converting&,
+    ITfContext*,
+    ITfComposition*);
+  ~EditSessionConverting() override;
+
+private:
+  // ITfEditSession
+  HRESULT __stdcall DoEditSession(TfEditCookie ec) override;
+
+  const senn::senn_win::ime::views::Converting view_;
+
+  ITfContext* const context_;
+
+  ITfComposition* const composition_;
+};
+
 class EditSessionCommitted : public EditSessionImplementingIUnknown {
 public:
   EditSessionCommitted(

@@ -14,6 +14,7 @@ public:
   virtual void Transit(
       uint64_t keycode,
       std::function<void(const views::Editing&)>,
+      std::function<void(const views::Converting&)>,
       std::function<void(const views::Committed&)>) = 0;
 };
 
