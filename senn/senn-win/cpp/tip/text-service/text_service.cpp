@@ -93,14 +93,51 @@ HRESULT __stdcall EditSessionConverting::DoEditSession(TfEditCookie ec) {
     return S_OK;
   }
 
-  ITfRange *range = ui::ReplaceTextInComposition(
-      view_.forms[0], ec, composition_);
+  // Draw the current converted text
+  std::wstring text = L"";
+  for (std::vector<std::wstring>::const_iterator it = view_.forms.begin();
+    it != view_.forms.end(); ++it) {
+    text += *it;
+  }
+
+  ITfRange *range = ui::ReplaceTextInComposition(text, ec, composition_); 
   if (range == nullptr) {
     return S_OK;
   }
   ObjectReleaser<ITfRange> range_releaser(range);
 
-  ui::SetDisplayAttribute(ec, context_, range, atoms_.focused);
+  // Decorate the text
+  {
+    ITfRange *segment_range;
+    range->Clone(&segment_range);
+    ObjectReleaser<ITfRange> segment_range_releaser(segment_range);
+
+    LONG start = 0;
+    for (size_t i = 0; i < view_.forms.size(); ++i) {
+      const std::wstring& form = view_.forms[i];
+
+      LONG end = start + form.length();
+      {
+        HRESULT result;
+        LONG shift;
+        result = segment_range->ShiftEnd(ec, end, &shift, nullptr);
+        if (FAILED(result)) {
+          return result;
+        }
+        result = segment_range->ShiftStart(ec, start, &shift, nullptr);
+        if (FAILED(result)) {
+          return result;
+        }
+      }
+      ui::SetDisplayAttribute(
+          ec, context_, segment_range,
+          i == 0 ? atoms_.focused : atoms_.non_focused);
+
+       start = end;
+    }
+  }
+
+  return S_OK;
 }
 
 
