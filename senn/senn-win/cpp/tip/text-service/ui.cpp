@@ -27,6 +27,10 @@ HRESULT __stdcall EnumDisplayAttributeInfo::Next(
     ITfDisplayAttributeInfo *attribute = nullptr;
     if (index_ == 0) {
       attribute = new editing::DisplayAttributeInfo();
+    } else if (index_ == 1) {
+      attribute = new converting::non_focused::DisplayAttributeInfo();
+    } else if (index_ == 2) {
+      attribute = new converting::focused::DisplayAttributeInfo();
     } else {
       break;
     }

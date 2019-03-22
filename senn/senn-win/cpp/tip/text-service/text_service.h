@@ -102,9 +102,14 @@ private:
 
 class EditSessionConverting : public EditSessionImplementingIUnknown {
 public:
+  struct DisplayAttributeAtoms {
+    TfGuidAtom non_focused, focused;
+  };
+
   EditSessionConverting(
     const senn::senn_win::ime::views::Converting&,
     ITfContext*,
+    const DisplayAttributeAtoms&,
     ITfComposition*);
   ~EditSessionConverting() override;
 
@@ -115,6 +120,8 @@ private:
   const senn::senn_win::ime::views::Converting view_;
 
   ITfContext* const context_;
+
+  const DisplayAttributeAtoms atoms_;
 
   ITfComposition* const composition_;
 };
@@ -226,7 +233,9 @@ private:
   CompositionHolder composition_holder_;
 
   TfGuidAtom editing_display_attribute_atom_;
- 
+
+  EditSessionConverting::DisplayAttributeAtoms converting_display_attribute_atoms_;
+
 
   ULONG ref_count_ = 1;
 };

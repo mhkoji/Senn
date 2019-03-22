@@ -204,6 +204,64 @@ public:
 
 } // editing
 
+namespace converting {
+
+namespace non_focused {
+
+// {738A3428-E9B3-431E-8FBD-56F9D5DB8AD9}
+static const GUID kDisplayAttributeGuid =
+    { 0x738a3428, 0xe9b3, 0x431e, { 0x8f, 0xbd, 0x56, 0xf9, 0xd5, 0xdb, 0x8a, 0xd9 } };
+
+static TF_DISPLAYATTRIBUTE kDisplayAttribute = {
+    { TF_CT_NONE, 0 },        // text color
+    { TF_CT_NONE, 0 },        // background color
+    TF_LS_SOLID,              // underline style
+    FALSE,                    // underline boldness
+    { TF_CT_NONE, 0 },        // underline color
+    TF_ATTR_INPUT             // attribute info
+};
+
+class DisplayAttributeInfo
+    : public senn::senn_win::text_service::ui::DisplayAttributeInfo {
+public:
+  DisplayAttributeInfo()
+    : senn::senn_win::text_service::ui::DisplayAttributeInfo (
+          kDisplayAttributeGuid,
+          kDisplayAttribute,
+          L"Display Attribute Converting Non Focused") {}
+};
+
+} // non_focused
+
+namespace focused {
+
+// {88711143-643D-4E1B-92A2-44B2C3F3574D}
+static const GUID kDisplayAttributeGuid =
+    { 0x88711143, 0x643d, 0x4e1b, { 0x92, 0xa2, 0x44, 0xb2, 0xc3, 0xf3, 0x57, 0x4d } };
+
+static TF_DISPLAYATTRIBUTE kDisplayAttribute = {
+    { TF_CT_NONE, 0 },        // text color
+    { TF_CT_NONE, 0 },        // background color
+    TF_LS_SOLID,              // underline style
+    TRUE,                     // underline boldness
+    { TF_CT_NONE, 0 },        // underline color
+    TF_ATTR_INPUT             // attribute info
+};
+
+class DisplayAttributeInfo
+    : public senn::senn_win::text_service::ui::DisplayAttributeInfo {
+public:
+  DisplayAttributeInfo()
+    : senn::senn_win::text_service::ui::DisplayAttributeInfo(
+      kDisplayAttributeGuid,
+      kDisplayAttribute,
+      L"Display Attribute Converting Focused") {}
+};
+
+} // focused
+
+} // converting
+
 } // ui
 } // text_service
 } // win

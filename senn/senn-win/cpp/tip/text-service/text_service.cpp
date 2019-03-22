@@ -73,9 +73,11 @@ HRESULT __stdcall EditSessionEditing::DoEditSession(TfEditCookie ec) {
 EditSessionConverting::EditSessionConverting(
     const senn::senn_win::ime::views::Converting& view,
     ITfContext *context,
+    const DisplayAttributeAtoms& atoms,
     ITfComposition *composition)
   : view_(view),
     context_(context),
+    atoms_(atoms),
     composition_(composition) {
   context_->AddRef();
 }
@@ -97,6 +99,8 @@ HRESULT __stdcall EditSessionConverting::DoEditSession(TfEditCookie ec) {
     return S_OK;
   }
   ObjectReleaser<ITfRange> range_releaser(range);
+
+  ui::SetDisplayAttribute(ec, context_, range, atoms_.focused);
 }
 
 
@@ -193,10 +197,30 @@ HRESULT TextService::Activate(ITfThreadMgr *thread_mgr, TfClientId client_id) {
     }
     ObjectReleaser<ITfCategoryMgr> category_mgr_releaser(category_mgr);
 
-    result = category_mgr->RegisterGUID(
-        ui::editing::kDisplayAttributeGuid, &editing_display_attribute_atom_);
-    if (FAILED(result)) {
-      return result;
+    struct {
+      const GUID& guid;
+      TfGuidAtom *output;
+    } settings[] = {
+      {
+        ui::editing::kDisplayAttributeGuid,
+        &editing_display_attribute_atom_
+      },
+      {
+        ui::converting::non_focused::kDisplayAttributeGuid,
+        &converting_display_attribute_atoms_.non_focused
+      },
+      {
+        ui::converting::focused::kDisplayAttributeGuid,
+        &converting_display_attribute_atoms_.focused
+      }
+    };
+
+    for (size_t i = 0; i < ARRAYSIZE(settings); i++) {
+      result = category_mgr->RegisterGUID(settings[i].guid,
+                                          settings[i].output);
+      if (FAILED(result)) {
+        return result;
+      }
     }
   }
 
@@ -280,7 +304,8 @@ HRESULT __stdcall TextService::OnKeyDown(
       },
       [&](const senn::senn_win::ime::views::Converting& view) {
         edit_session = new EditSessionConverting(
-            view, context, composition_holder_.Get());
+            view, context, converting_display_attribute_atoms_,
+            composition_holder_.Get());
       },
       [&](const senn::senn_win::ime::views::Committed& view) {
         edit_session = new EditSessionCommitted(
