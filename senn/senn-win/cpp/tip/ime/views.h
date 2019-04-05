@@ -14,6 +14,7 @@ struct Editing {
 
 struct Converting {
   std::vector<std::wstring> forms;
+  size_t cursor_form_index;
 };
 
 struct Committed {

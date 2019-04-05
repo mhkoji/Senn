@@ -16,8 +16,8 @@
 
 (defkey space-p 32)
 (defkey enter-p 13)
-(defkey backspace-p -1)
-(defkey left-p -1)
-(defkey down-p -1)
-(defkey right-p -1)
-(defkey up-p -1)
+(defkey backspace-p 8)
+(defkey left-p 37)
+(defkey down-p 40)
+(defkey right-p 39)
+(defkey up-p 38)

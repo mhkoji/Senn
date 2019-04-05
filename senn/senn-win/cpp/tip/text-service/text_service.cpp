@@ -95,9 +95,8 @@ HRESULT __stdcall EditSessionConverting::DoEditSession(TfEditCookie ec) {
 
   // Draw the current converted text
   std::wstring text = L"";
-  for (std::vector<std::wstring>::const_iterator it = view_.forms.begin();
-    it != view_.forms.end(); ++it) {
-    text += *it;
+  for (size_t i = 0; i < view_.forms.size(); ++i) {
+    text += view_.forms[i];
   }
 
   ITfRange *range = ui::ReplaceTextInComposition(text, ec, composition_); 
@@ -108,32 +107,32 @@ HRESULT __stdcall EditSessionConverting::DoEditSession(TfEditCookie ec) {
 
   // Decorate the text
   {
-    ITfRange *segment_range;
-    range->Clone(&segment_range);
-    ObjectReleaser<ITfRange> segment_range_releaser(segment_range);
-
     LONG start = 0;
     for (size_t i = 0; i < view_.forms.size(); ++i) {
-      const std::wstring& form = view_.forms[i];
+      ITfRange *segment_range;
+      range->Clone(&segment_range);
+      ObjectReleaser<ITfRange> segment_range_releaser(segment_range);
 
-      LONG end = start + form.length();
-      {
-        HRESULT result;
-        LONG shift;
-        result = segment_range->ShiftEnd(ec, end, &shift, nullptr);
-        if (FAILED(result)) {
-          return result;
-        }
-        result = segment_range->ShiftStart(ec, start, &shift, nullptr);
-        if (FAILED(result)) {
-          return result;
-        }
+      HRESULT result;
+      result = segment_range->Collapse(ec, TF_ANCHOR_START);
+
+      LONG end = start + view_.forms[i].length();
+      LONG shift = 0;
+      result = segment_range->ShiftEnd(ec, end, &shift, nullptr);
+      if (FAILED(result)) {
+        return result;
       }
-      ui::SetDisplayAttribute(
-          ec, context_, segment_range,
-          i == 0 ? atoms_.focused : atoms_.non_focused);
+      result = segment_range->ShiftStart(ec, start, &shift, nullptr);
+      if (FAILED(result)) {
+        return result;
+      }
 
-       start = end;
+      TfGuidAtom attr = (i == view_.cursor_form_index) ?
+          atoms_.focused :
+          atoms_.non_focused;
+      ui::SetDisplayAttribute(ec, context_, segment_range, attr);
+
+      start = end;
     }
   }
 

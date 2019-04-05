@@ -8,15 +8,16 @@ namespace ime {
 
 namespace {
 
-void ToWString(const std::string& char_string, std::wstring* output) {
+int ToWString(const std::string& char_string, std::wstring* output) {
   WCHAR buf[1024] = { '\0' };
-  MultiByteToWideChar(CP_UTF8,
-                      0,
-                      char_string.c_str(),
-                      static_cast<int>(char_string.length()),
-                      buf,
-                      static_cast<int>(sizeof(buf)));
+  int size = MultiByteToWideChar(
+      CP_UTF8, 0,
+      char_string.c_str(),
+      static_cast<int>(char_string.length()),
+      buf,
+      static_cast<int>(sizeof(buf)));
   *output = buf;
+  return size;
 }
 
 } // namespace
@@ -77,15 +78,19 @@ void StatefulIMProxyIPC::Transit(
     picojson::value v;
     picojson::parse(v, content);
 
-    const picojson::array forms = v
-      .get<picojson::object>()["forms"]
-      .get<picojson::array>();
+    const picojson::array forms =
+        v.get<picojson::object>()["forms"]
+         .get<picojson::array>();
     for (picojson::array::const_iterator it = forms.begin();
       it != forms.end(); ++it) {
       std::wstring form;
       ToWString(it->get<std::string>(), &form);
       converting.forms.push_back(form);
     }
+
+    converting.cursor_form_index =
+       v.get<picojson::object>()["cursor-form-index"]
+        .get<double>();
 
     on_converting(converting);
   } else if (type == "COMMITTED") {
@@ -97,9 +102,9 @@ void StatefulIMProxyIPC::Transit(
     picojson::value v;
     picojson::parse(v, content);
 
-    const std::string char_input = v
-        .get<picojson::object>()["input"]
-        .get<std::string>();
+    const std::string char_input =
+        v.get<picojson::object>()["input"]
+         .get<std::string>();
     ToWString(char_input, &committed.input);
 
     on_committed(committed);
