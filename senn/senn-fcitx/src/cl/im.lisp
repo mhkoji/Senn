@@ -1,33 +1,30 @@
 (defpackage :senn.fcitx.im
   (:use :cl :senn.fcitx.states)
-  (:export :make-im
-           :transit))
+  (:export :transit)
+  (:import-from :senn.im
+                :ime))
 (in-package :senn.fcitx.im)
 
-(defstruct im kkc)
+(defgeneric transit (ime state key))
 
-(defgeneric transit (im state key))
-
-(defmethod transit ((im im) (s committed) key)
-  (transit im (make-editing) key))
+(defmethod transit ((ime ime) (s committed) key)
+  (transit ime (make-editing) key))
 
 
-(defun move-segment-form-index! (seg diff im)
-  (senn.segment:append-forms!
-   seg
-   (lambda (pron)
-     (let ((words (senn.kkc:lookup (im-kkc im) pron)))
-       (mapcar #'senn.kkc:word-form words))))
+(defun move-segment-form-index! (seg diff ime)
+  (labels ((get-forms (pron)
+             (senn.im:lookup-forms ime pron)))
+    (senn.segment:append-forms! seg #'get-forms))
   (senn.segment:try-move-cursor-pos! seg diff))
 
-(defmethod transit ((im im) (s converting) (key senn.fcitx.keys:key))
+(defmethod transit ((ime ime) (s converting) (key senn.fcitx.keys:key))
   (cond ((or (senn.fcitx.keys:space-p key)
              (senn.fcitx.keys:up-p key))
-         (move-segment-form-index! (converting-current-segment s) +1 im)
+         (move-segment-form-index! (converting-current-segment s) +1 ime)
          (list s :IRV_TO_PROCESS))
 
         ((senn.fcitx.keys:down-p key)
-         (move-segment-form-index! (converting-current-segment s) -1 im)
+         (move-segment-form-index! (converting-current-segment s) -1 ime)
          (list s :IRV_TO_PROCESS))
 
         ((senn.fcitx.keys:backspace-p key)
@@ -64,7 +61,7 @@
       (senn.fcitx.keys:key-sym k)
       (char-code #\~)))
 
-(defmethod transit ((im im) (s editing) (key senn.fcitx.keys:key))
+(defmethod transit ((ime ime) (s editing) (key senn.fcitx.keys:key))
   (cond ((char-p key)
          (if (/= (senn.fcitx.keys:key-state key) 0)
              ;; おそらく、Ctrl-pなどのキーが押された
@@ -76,19 +73,11 @@
                (list s :IRV_TO_PROCESS))))
 
         ((senn.fcitx.keys:space-p key)
-         (let ((pronunciation (senn.buffer:buffer-string
-                               (editing-buffer s))))
-           (let ((words (senn.kkc:convert (im-kkc im) pronunciation)))
-             (let ((segments (mapcar (lambda (w)
-                                       (senn.segment:make-segment
-                                        :pron (senn.kkc:word-pron w)
-                                        :forms (list (senn.kkc:word-form w))
-                                        :has-more-forms-p t
-                                        :current-index 0))
-                                     words)))
-               (list (make-converting :segments segments
-                                      :pronunciation pronunciation)
-                     :IRV_TO_PROCESS)))))
+         (let ((pron (senn.buffer:buffer-string (editing-buffer s))))
+           (let ((segments (senn.im:convert ime pron)))
+             (list (make-converting :segments segments
+                                    :pronunciation pron)
+                   :IRV_TO_PROCESS))))
 
         ((senn.fcitx.keys:enter-p key)
          (let ((input (senn.buffer:buffer-string (editing-buffer s))))

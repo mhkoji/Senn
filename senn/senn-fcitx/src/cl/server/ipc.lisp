@@ -31,12 +31,12 @@
   (log/info client "Written: ~A" resp))
 
 
-(defun spawn-client-thread (client im)
+(defun spawn-client-thread (client ime)
   (log/info client "New client")
   (bordeaux-threads:make-thread
    (lambda ()
      (let ((initial-state (senn.fcitx.states:make-editing)))
-       (senn.fcitx.server:loop-handling-request initial-state im client))
+       (senn.fcitx.server:loop-handling-request initial-state ime client))
      (hachee.ipc.unix:socket-close (client-socket client))
      (log/info client "Disconnected"))))
 
@@ -49,13 +49,13 @@
   (when-let ((server-socket (hachee.ipc.unix:socket-listen
                              socket-name
                              :use-abstract use-abstract)))
-    (let ((im (senn.fcitx.im:make-im :kkc kkc))
+    (let ((ime (senn.im:make-ime :kkc kkc))
           (threads nil))
       (log:info "Wait for client...")
       (unwind-protect
            (loop for client-id from 1 do
              (let* ((socket (hachee.ipc.unix:socket-accept server-socket))
                     (client (make-client :id client-id :socket socket)))
-               (push (spawn-client-thread client im) threads)))
+               (push (spawn-client-thread client ime) threads)))
         (mapc #'bordeaux-threads:destroy-thread threads)
         (hachee.ipc.unix:socket-close server-socket)))))
