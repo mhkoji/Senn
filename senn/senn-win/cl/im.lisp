@@ -15,12 +15,32 @@
   (transit im (make-editing) key))
 
 
+(defun move-segment-form-index! (seg diff im)
+  (senn.segment:append-forms!
+   seg
+   (lambda (pron)
+     (let ((words (senn.kkc:lookup (im-kkc im) pron)))
+       (mapcar #'senn.kkc:word-form words))))
+  (senn.segment:try-move-cursor-pos! seg diff))
+
 (defmethod transit ((im im) (s converting) key)
   (cond ((senn.win.keys:enter-p key)
          (make-committed :input (converting-current-input s)))
+        ((or (senn.win.keys:space-p key)
+             (senn.win.keys:up-p key))
+         (move-segment-form-index! (converting-current-segment s) +1 im)
+         s)
+        ((senn.win.keys:down-p key)
+         (move-segment-form-index! (converting-current-segment s) -1 im)
+         s)
+        ((senn.win.keys:left-p key)
+         (converting-move-curret-segment s -1)
+         s)
+        ((senn.win.keys:right-p key)
+         (converting-move-curret-segment s +1)
+         s)
         (t
          s)))
-
 
 (defun char-p (k)
   (<= (char-code #\A)

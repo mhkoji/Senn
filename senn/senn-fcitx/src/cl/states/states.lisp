@@ -15,8 +15,6 @@
            :converting-current-segment-index
            :converting-move-curret-segment
 
-           :segment-current-form
-
            :committed
            :make-committed
            :committed-input))
