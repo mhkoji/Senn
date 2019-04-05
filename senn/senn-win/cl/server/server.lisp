@@ -16,17 +16,17 @@
           (symbol-name (type-of s))
           (senn.win.states:to-view s)))
 
-(defun handle-request (expr state im client)
+(defun handle-request (expr state ime client)
   (case (expr-op expr)
     (:transit
      (let ((key (senn.win.keys:make-key
                  :code (expr-arg expr "keycode"))))
-       (let ((new-state (senn.win.im:transit im state key)))
+       (let ((new-state (senn.win.im:transit ime state key)))
          (let ((resp (make-response new-state)))
            (send-response client resp))
          new-state)))))
 
-(defun loop-handling-request (state im client)
+(defun loop-handling-request (state ime client)
   (when-let ((expr (read-request client)))
-    (when-let ((new-state (handle-request expr state im client)))
-      (loop-handling-request new-state im client))))
+    (when-let ((new-state (handle-request expr state ime client)))
+      (loop-handling-request new-state ime client))))

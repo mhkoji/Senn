@@ -41,7 +41,7 @@
         (unwind-protect
              (senn.win.server:loop-handling-request
               (senn.win.states:make-editing)
-              (senn.win.im:make-im :kkc kkc)
+              (senn.im:make-ime :kkc kkc)
               client)
           (hachee.ipc.named-pipe:disconnect-and-close pipe))
         (log/info client "Disconnected")))

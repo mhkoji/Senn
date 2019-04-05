@@ -3,6 +3,7 @@
   :pathname "src"
   :components
   ((:file "kkc")
-   (:file "buffer")
-   (:file "segment"))
+   (:file "segment")
+   (:file "im")
+   (:file "buffer"))
   :depends-on (:hachee))
