@@ -19,7 +19,7 @@
                win32:+pipe-access-duplex+
                (logior win32:+pipe-type-byte+
                        win32:+pipe-wait+)
-               1
+               win32:+pipe-unlimited-instances+
                0
                0
                100

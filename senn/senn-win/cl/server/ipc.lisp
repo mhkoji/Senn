@@ -31,18 +31,29 @@
   (log/info client "Written: ~A" resp))
 
 
+(defun spawn-client-thread (client ime)
+  (log/info client "Connected")
+  (bordeaux-threads:make-thread
+   (lambda ()
+     (let ((initial-state (senn.win.states:make-editing)))
+       (senn.win.server:loop-handling-request initial-state ime client))
+     (log/info client "Disconnected"))))
+
 (defun enter-loop (kkc &key (pipe-name "\\\\.\\Pipe\\senn"))
-  (if-let ((pipe (hachee.ipc.named-pipe:create pipe-name)))
-    (progn
-      (log:info "Wait for client...")
-      (hachee.ipc.named-pipe:connect pipe)
-      (let ((client (make-client :id 0 :pipe pipe)))
-        (log/info client "New client")
-        (unwind-protect
-             (senn.win.server:loop-handling-request
-              (senn.win.states:make-editing)
-              (senn.im:make-ime :kkc kkc)
-              client)
-          (hachee.ipc.named-pipe:disconnect-and-close pipe))
-        (log/info client "Disconnected")))
-    (log:info "Could not create pipe")))
+  (let ((ime (senn.im:make-ime :kkc kkc))
+        (threads nil)
+        (clients nil))
+    (unwind-protect
+         (loop
+            for client-id from 1
+            for pipe = (hachee.ipc.named-pipe:create pipe-name)
+            while pipe
+            do (progn
+                 (log:info "Waiting for client...")
+                 (hachee.ipc.named-pipe:connect pipe)
+                 (let ((client (make-client :id client-id :pipe pipe)))
+                   (push client clients)
+                   (push (spawn-client-thread client ime) threads))))
+      (mapc #'hachee.ipc.named-pipe:disconnect-and-close
+            (mapcar #'client-pipe clients))
+      (mapc #'bordeaux-threads:destroy-thread threads))))

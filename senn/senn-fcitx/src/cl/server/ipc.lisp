@@ -32,7 +32,7 @@
 
 
 (defun spawn-client-thread (client ime)
-  (log/info client "New client")
+  (log/info client "Connected")
   (bordeaux-threads:make-thread
    (lambda ()
      (let ((initial-state (senn.fcitx.states:make-editing)))
@@ -51,7 +51,7 @@
                              :use-abstract use-abstract)))
     (let ((ime (senn.im:make-ime :kkc kkc))
           (threads nil))
-      (log:info "Wait for client...")
+      (log:info "Waiting for client...")
       (unwind-protect
            (loop for client-id from 1 do
              (let* ((socket (hachee.ipc.unix:socket-accept server-socket))
