@@ -6,7 +6,7 @@
    (:file "states/view")
    (:file "keys")
    (:file "im")
-   (:file "server/server")
-   (:file "server/ipc"))
+   (:file "stateful-im/stateful-im")
+   (:file "stateful-im/ipc"))
   :depends-on (:senn))
 

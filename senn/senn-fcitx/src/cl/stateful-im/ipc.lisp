@@ -1,9 +1,9 @@
-(defpackage :senn.fcitx.server.ipc
+(defpackage :senn.fcitx.stateful-im.ipc
   (:use :cl)
   (:export :enter-loop)
   (:import-from :alexandria
                 :when-let))
-(in-package :senn.fcitx.server.ipc)
+(in-package :senn.fcitx.stateful-im.ipc)
 
 (defstruct client id socket)
 
@@ -12,22 +12,22 @@
              (client-id ,client)
              ,@args))
 
-(defmethod senn.fcitx.server:read-request ((client client))
+(defmethod senn.fcitx.stateful-im:read-request ((client client))
   (let ((stream (hachee.ipc.unix:socket-stream (client-socket client))))
     (when-let ((line (read-line stream nil nil nil)))
       (hachee.ipc.op:as-expr line))))
 
-(defmethod senn.fcitx.server:send-response ((client client) resp)
+(defmethod senn.fcitx.stateful-im:send-response ((client client) resp)
   (let ((stream (hachee.ipc.unix:socket-stream (client-socket client))))
     (write-line resp stream)
     (force-output stream)))
 
-(defmethod senn.fcitx.server:read-request :around ((client client))
+(defmethod senn.fcitx.stateful-im:read-request :around ((client client))
   (let ((req (call-next-method)))
     (log/info client "Read: ~A" req)
     req))
 
-(defmethod senn.fcitx.server:send-response :after ((client client) resp)
+(defmethod senn.fcitx.stateful-im:send-response :after ((client client) resp)
   (log/info client "Written: ~A" resp))
 
 
@@ -36,7 +36,9 @@
   (bordeaux-threads:make-thread
    (lambda ()
      (let ((initial-state (senn.fcitx.states:make-editing)))
-       (senn.fcitx.server:loop-handling-request initial-state ime client))
+       (senn.fcitx.stateful-im:loop-handling-request initial-state
+                                                     ime
+                                                     client))
      (hachee.ipc.unix:socket-close (client-socket client))
      (log/info client "Disconnected"))))
 

@@ -1,4 +1,4 @@
-(defpackage :senn.fcitx.server
+(defpackage :senn.fcitx.stateful-im
   (:use :cl
         :hachee.ipc.op)
   (:export :loop-handling-request
@@ -6,7 +6,7 @@
            :send-response)
   (:import-from :alexandria
                 :when-let))
-(in-package :senn.fcitx.server)
+(in-package :senn.fcitx.stateful-im)
 
 (defgeneric read-request (c))
 (defgeneric send-response (c resp))
