@@ -11,6 +11,7 @@
 
 (defstruct stream-socket socket stream)
 
+#+sbcl
 (defun socket-listen (socket-name &key use-abstract)
   (let ((socket (make-instance (if use-abstract
                                    'sb-bsd-sockets:local-abstract-socket
@@ -25,15 +26,20 @@
         nil))))
 
 
+(defun socket-stream (stream-socket)
+  (stream-socket-stream stream-socket))
+
 (defgeneric socket-close (socket))
 
+#+sbcl
 (defmethod socket-close ((socket server-socket))
   (sb-bsd-sockets:socket-close (server-socket-socket socket)))
 
+#+sbcl
 (defmethod socket-close ((socket stream-socket))
   (sb-bsd-sockets:socket-close (stream-socket-socket socket)))
 
-
+#+sbcl
 (defun socket-accept (server-socket)
   (let ((socket (sb-bsd-sockets:socket-accept
                  (server-socket-socket server-socket))))
@@ -43,7 +49,3 @@
                    :output t
                    :buffering :full)))
       (make-stream-socket :socket socket :stream stream))))
-
-
-(defun socket-stream (stream-socket)
-  (stream-socket-stream stream-socket))

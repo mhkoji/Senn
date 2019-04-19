@@ -40,7 +40,7 @@
     (labels ((entry-as-string (name)
                (let ((octets (zip:zipfile-entry-contents
                               (zip:get-zipfile-entry name zip))))
-                 (sb-ext:octets-to-string octets :external-format :utf-8))))
+                 (babel:octets-to-string octets :encoding :utf-8))))
       (list
        :language-model
        (with-input-from-string (s (entry-as-string "language-model.txt"))

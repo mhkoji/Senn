@@ -1,11 +1,11 @@
 (in-package :senn.fcitx.states)
 
 (defun buffer-cursor-pos-in-utf-8 (buffer)
-  (length (sb-ext:string-to-octets
+  (length (babel:string-to-octets
            (subseq (senn.buffer:buffer-string buffer)
                    0
                    (senn.buffer:buffer-cursor-pos buffer))
-           :external-format :utf-8)))
+           :encoding :utf-8)))
 
 (defmethod to-view ((s editing))
   (format nil "~A ~A"
