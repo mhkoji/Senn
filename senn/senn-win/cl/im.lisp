@@ -53,6 +53,14 @@
                  (senn.buffer:insert-char (editing-buffer s)
                                           char-lower-case)))
          s)
+        ((senn.win.keys:backspace-p key)
+         (let ((pron (senn.buffer:buffer-string (editing-buffer s))))
+           (cond ((string= pron "") ;; Should not reach here
+                  s)
+                 (t
+                  (setf (editing-buffer s)
+                        (senn.buffer:delete-char (editing-buffer s)))
+                  s))))
         ((senn.win.keys:space-p key)
          (let ((pron (senn.buffer:buffer-string (editing-buffer s))))
            (let ((segments (senn.im:convert ime pron)))
