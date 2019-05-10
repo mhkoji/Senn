@@ -323,8 +323,9 @@ HRESULT __stdcall TextService::OnSetFocus(BOOL fForeground) {
 
 HRESULT __stdcall TextService::OnTestKeyDown(
     ITfContext *context, WPARAM wParam, LPARAM lParam, BOOL *pfEaten) {
-  if (wParam == VK_BACK) {
-    // Force the OS delete a character.
+  if (wParam == VK_BACK || wParam == VK_LEFT || wParam ==  VK_UP ||
+      wParam == VK_RIGHT || wParam == VK_DOWN) {
+    // Force the OS operate according to the key.
     *pfEaten = false;
   } else {
     *pfEaten = true;
