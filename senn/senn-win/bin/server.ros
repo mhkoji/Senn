@@ -1,0 +1,15 @@
+(progn ;;init forms
+  (ros:ensure-asdf)
+  ;;#+quicklisp(ql:quickload '() :silent t)
+  )
+
+(defpackage :ros.script.server.3768456414
+  (:use :cl))
+(in-package :ros.script.server.3768456414)
+(ql:quickload :senn-win)
+
+(defun main (&rest argv)
+  (declare (ignorable argv))
+  (senn.win.server.ipc:enter-loop
+   (senn.kkc:load-kkc)))
+;;; vim: set ft=lisp lisp:
