@@ -1,5 +1,6 @@
 #include "object_releaser.h"
 #include "text_service.h"
+#include "langbar.h"
 #include "../ime/stateful_im_proxy_ipc.h"
 #include "ui.h"
 
@@ -204,6 +205,20 @@ HRESULT TextService::Activate(ITfThreadMgr *thread_mgr, TfClientId client_id) {
 
 
   HRESULT result;
+  // Add language bar items.
+  {
+    ITfLangBarItemMgr *lang_bar_item_mgr;
+    if (thread_mgr->QueryInterface(
+            IID_ITfLangBarItemMgr, (void **)&lang_bar_item_mgr) != S_OK) {
+      return E_FAIL;
+    }
+    input_mode_menu_button_ =
+        new langbar::InputModeMenuButton(clsid_text_service_, 0);
+    lang_bar_item_mgr->AddItem(input_mode_menu_button_);
+
+    lang_bar_item_mgr->Release();
+  }
+
   // Advice key event sink to receive key input notifications.
   {
     ITfKeystrokeMgr *keystroke_mgr;
@@ -264,6 +279,25 @@ HRESULT TextService::Activate(ITfThreadMgr *thread_mgr, TfClientId client_id) {
 }
 
 HRESULT TextService::Deactivate() {
+  if (thread_mgr_ == nullptr) {
+    return S_OK;
+  }
+
+  // Remove language bar items.
+  {
+    ITfLangBarItemMgr *lang_bar_item_mgr;
+    if (thread_mgr_->QueryInterface(
+            IID_ITfLangBarItemMgr, (void **)&lang_bar_item_mgr) != S_OK) {
+      return S_OK;
+    }
+    if (input_mode_menu_button_ != nullptr) {
+      lang_bar_item_mgr->RemoveItem(input_mode_menu_button_);
+      input_mode_menu_button_ = nullptr;
+    }
+
+    lang_bar_item_mgr->Release();
+  }
+
   {
     ITfKeystrokeMgr *keystroke_mgr;
     if (thread_mgr_->QueryInterface(
@@ -274,10 +308,8 @@ HRESULT TextService::Deactivate() {
     keystroke_mgr->Release();
   }
 
-  if (thread_mgr_) {
-    thread_mgr_->Release();
-    thread_mgr_ = NULL;
-  }
+  thread_mgr_->Release();
+  thread_mgr_ = nullptr;
   return S_OK;
 }
 

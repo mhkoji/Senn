@@ -158,8 +158,10 @@ public:
 
   TextService()
     : stateful_im_(nullptr),
+      clsid_text_service_(kClsid),
       thread_mgr_(nullptr),
       client_id_(TF_CLIENTID_NULL),
+      input_mode_menu_button_(nullptr),
       composition_holder_(CompositionHolder()),
       editing_display_attribute_atom_(TF_INVALID_GUIDATOM) {}
 
@@ -224,16 +226,20 @@ private:
   // The input method that manages the states.
   ::senn::senn_win::ime::StatefulIM *stateful_im_;
 
+  CLSID clsid_text_service_;
 
   ITfThreadMgr *thread_mgr_;
 
   TfClientId client_id_;
 
+  ITfLangBarItem *input_mode_menu_button_;
 
   CompositionHolder composition_holder_;
 
+  // Value of the style for decorating a text when editing
   TfGuidAtom editing_display_attribute_atom_;
 
+  // Values of the style for decorating a text when converting
   EditSessionConverting::DisplayAttributeAtoms converting_display_attribute_atoms_;
 
 
