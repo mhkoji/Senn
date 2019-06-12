@@ -1,9 +1,10 @@
-#include "object_releaser.h"
+#include "../object_releaser.h"
 #include "ui.h"
 
 namespace senn {
 namespace senn_win {
 namespace text_service {
+namespace hiragana {
 namespace ui {
 
 HRESULT __stdcall EnumDisplayAttributeInfo::Clone(
@@ -142,6 +143,7 @@ void RemoveDisplayAttributes(
 
 
 } // ui
+} // hiragana
 } // text_service
 } // win
 } // senn

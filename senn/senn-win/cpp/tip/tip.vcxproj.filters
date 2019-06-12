@@ -36,9 +36,6 @@
     <ClInclude Include="win\text-service\registration.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="text-service\ui.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="text-service\object_releaser.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
@@ -61,6 +58,12 @@
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="text-service\langbar.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="text-service\hiragana\ui.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="text-service\hiragana\hiragana.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>
@@ -86,13 +89,16 @@
     <ClCompile Include="text-service\text_service.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="text-service\ui.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="ime\stateful_im_proxy_ipc.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="text-service\langbar.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="text-service\hiragana\ui.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="text-service\hiragana\hiragana.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>

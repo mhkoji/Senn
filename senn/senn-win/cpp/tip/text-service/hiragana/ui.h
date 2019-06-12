@@ -7,6 +7,7 @@
 namespace senn {
 namespace senn_win {
 namespace text_service {
+namespace hiragana {
 namespace ui {
 
 class DisplayAttributeInfo : public ITfDisplayAttributeInfo {
@@ -193,10 +194,10 @@ static TF_DISPLAYATTRIBUTE kDisplayAttribute = {
 };
 
 class DisplayAttributeInfo
-      : public senn::senn_win::text_service::ui::DisplayAttributeInfo {
+      : public senn::senn_win::text_service::hiragana::ui::DisplayAttributeInfo {
 public:
   DisplayAttributeInfo()
-    : senn::senn_win::text_service::ui::DisplayAttributeInfo (
+    : senn::senn_win::text_service::hiragana::ui::DisplayAttributeInfo (
           kDisplayAttributeGuid,
           kDisplayAttribute,
           L"Display Attribute Edit") {}
@@ -222,10 +223,10 @@ static TF_DISPLAYATTRIBUTE kDisplayAttribute = {
 };
 
 class DisplayAttributeInfo
-    : public senn::senn_win::text_service::ui::DisplayAttributeInfo {
+    : public senn::senn_win::text_service::hiragana::ui::DisplayAttributeInfo {
 public:
   DisplayAttributeInfo()
-    : senn::senn_win::text_service::ui::DisplayAttributeInfo (
+    : senn::senn_win::text_service::hiragana::ui::DisplayAttributeInfo (
           kDisplayAttributeGuid,
           kDisplayAttribute,
           L"Display Attribute Converting Non Focused") {}
@@ -249,10 +250,10 @@ static TF_DISPLAYATTRIBUTE kDisplayAttribute = {
 };
 
 class DisplayAttributeInfo
-    : public senn::senn_win::text_service::ui::DisplayAttributeInfo {
+    : public senn::senn_win::text_service::hiragana::ui::DisplayAttributeInfo {
 public:
   DisplayAttributeInfo()
-    : senn::senn_win::text_service::ui::DisplayAttributeInfo(
+    : senn::senn_win::text_service::hiragana::ui::DisplayAttributeInfo(
       kDisplayAttributeGuid,
       kDisplayAttribute,
       L"Display Attribute Converting Focused") {}
@@ -263,6 +264,7 @@ public:
 } // converting
 
 } // ui
+} // hiragana
 } // text_service
 } // win
 } // senn

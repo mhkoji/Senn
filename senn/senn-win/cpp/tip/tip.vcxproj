@@ -158,10 +158,11 @@
     <ClInclude Include="senn.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
+    <ClInclude Include="text-service\hiragana\hiragana.h" />
+    <ClInclude Include="text-service\hiragana\ui.h" />
     <ClInclude Include="text-service\langbar.h" />
     <ClInclude Include="text-service\object_releaser.h" />
     <ClInclude Include="text-service\text_service.h" />
-    <ClInclude Include="text-service\ui.h" />
     <ClInclude Include="variable.h" />
     <ClInclude Include="win\registry.h" />
     <ClInclude Include="win\text-service\class_factory.h" />
@@ -176,9 +177,10 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="text-service\hiragana\hiragana.cpp" />
+    <ClCompile Include="text-service\hiragana\ui.cpp" />
     <ClCompile Include="text-service\langbar.cpp" />
     <ClCompile Include="text-service\text_service.cpp" />
-    <ClCompile Include="text-service\ui.cpp" />
     <ClCompile Include="tip.cpp" />
     <ClCompile Include="variable.cpp" />
     <ClCompile Include="win\registry.cpp" />
