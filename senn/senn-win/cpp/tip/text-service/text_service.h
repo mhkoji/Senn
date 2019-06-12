@@ -161,7 +161,7 @@ public:
       clsid_text_service_(kClsid),
       thread_mgr_(nullptr),
       client_id_(TF_CLIENTID_NULL),
-      input_mode_menu_button_(nullptr),
+      input_mode_toggle_button_(nullptr),
       composition_holder_(CompositionHolder()),
       editing_display_attribute_atom_(TF_INVALID_GUIDATOM) {}
 
@@ -232,7 +232,7 @@ private:
 
   TfClientId client_id_;
 
-  ITfLangBarItem *input_mode_menu_button_;
+  ITfLangBarItem *input_mode_toggle_button_;
 
   CompositionHolder composition_holder_;
 

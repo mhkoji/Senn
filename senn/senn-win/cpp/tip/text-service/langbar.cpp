@@ -7,19 +7,20 @@ namespace senn_win {
 namespace text_service {
 namespace langbar {
 
-InputModeMenuButton::InputModeMenuButton(CLSID clsid, ULONG sort)
+InputModeToggleButton::InputModeToggleButton(CLSID clsid, ULONG sort)
   : ref_count_(1), clsid_(clsid), sort_(sort), lang_bar_item_sink_(nullptr) {
 }
 
-HRESULT __stdcall InputModeMenuButton::GetInfo(TF_LANGBARITEMINFO *pInfo) {
+HRESULT __stdcall InputModeToggleButton::GetInfo(TF_LANGBARITEMINFO *pInfo) {
   if (!pInfo) {
     return E_INVALIDARG;
   }
   pInfo->clsidService = clsid_;
   pInfo->guidItem = langbar::kItemId;
+  pInfo->dwStyle = TF_LBI_STYLE_BTN_BUTTON
   // TF_LBI_STYLE_SHOWNINTRAY seems to enable the item shown in the taskbar.
   // (But, this doesn't work...)
-  pInfo->dwStyle = TF_LBI_STYLE_BTN_MENU | TF_LBI_STYLE_SHOWNINTRAY;
+      | TF_LBI_STYLE_SHOWNINTRAY;
   pInfo->ulSort = sort_;
   StringCchCopy(pInfo->szDescription,
                 ARRAYSIZE(pInfo->szDescription),
@@ -27,7 +28,7 @@ HRESULT __stdcall InputModeMenuButton::GetInfo(TF_LANGBARITEMINFO *pInfo) {
   return S_OK;
 }
 
-HRESULT __stdcall InputModeMenuButton::GetStatus(DWORD *pdwStatus) {
+HRESULT __stdcall InputModeToggleButton::GetStatus(DWORD *pdwStatus) {
   if (!pdwStatus) {
     return E_INVALIDARG;
   }
@@ -35,11 +36,11 @@ HRESULT __stdcall InputModeMenuButton::GetStatus(DWORD *pdwStatus) {
   return S_OK;
 }
 
-HRESULT __stdcall InputModeMenuButton::Show(BOOL fShow) {
+HRESULT __stdcall InputModeToggleButton::Show(BOOL fShow) {
   return S_OK;
 }
 
-HRESULT __stdcall InputModeMenuButton::GetTooltipString(BSTR *pbstrToolTip) {
+HRESULT __stdcall InputModeToggleButton::GetTooltipString(BSTR *pbstrToolTip) {
   if (!pbstrToolTip) {
     return E_INVALIDARG;
   }
@@ -47,32 +48,20 @@ HRESULT __stdcall InputModeMenuButton::GetTooltipString(BSTR *pbstrToolTip) {
   return S_OK;
 }
 
-HRESULT __stdcall InputModeMenuButton::OnClick(
+HRESULT __stdcall InputModeToggleButton::OnClick(
     TfLBIClick click, POINT pt, const RECT *prcArea) {
   return S_OK;
 }
 
-HRESULT __stdcall InputModeMenuButton::InitMenu(ITfMenu *menu) {
-  const WCHAR *item_names[] = {
-     L"Direct input",
-     L"Latin-hiragana input"
-  };
-  for (size_t i = 0; i < ARRAYSIZE(item_names); i++) {
-    const WCHAR* item_name = item_names[i];
-    size_t item_name_len = wcslen(item_name);
-    menu->AddMenuItem(i,
-                      i == 0 ? TF_LBMENUF_CHECKED : 0,
-                      NULL, NULL,
-                      item_name, item_name_len, NULL);
-  }
+HRESULT __stdcall InputModeToggleButton::InitMenu(ITfMenu *menu) {
   return S_OK;
 }
 
-HRESULT __stdcall InputModeMenuButton::OnMenuSelect(UINT wID) {
+HRESULT __stdcall InputModeToggleButton::OnMenuSelect(UINT wID) {
   return S_OK;
 }
 
-HRESULT __stdcall InputModeMenuButton::GetIcon(HICON *phIcon) {
+HRESULT __stdcall InputModeToggleButton::GetIcon(HICON *phIcon) {
   if (!phIcon) {
     return E_INVALIDARG;
   }
@@ -81,7 +70,7 @@ HRESULT __stdcall InputModeMenuButton::GetIcon(HICON *phIcon) {
   return S_OK;
 }
 
-HRESULT __stdcall InputModeMenuButton::GetText(BSTR *pbstrText) {
+HRESULT __stdcall InputModeToggleButton::GetText(BSTR *pbstrText) {
   if (!pbstrText) {
     return E_INVALIDARG;
   }
@@ -89,7 +78,7 @@ HRESULT __stdcall InputModeMenuButton::GetText(BSTR *pbstrText) {
   return (*pbstrText ? S_OK : E_OUTOFMEMORY);
 }
 
-HRESULT __stdcall InputModeMenuButton::AdviseSink(REFIID riid, IUnknown *punk, DWORD *pdwCookie) {
+HRESULT __stdcall InputModeToggleButton::AdviseSink(REFIID riid, IUnknown *punk, DWORD *pdwCookie) {
   if (!IsEqualIID(IID_ITfLangBarItemSink, riid)) {
     return CONNECT_E_CANNOTCONNECT;
   }
@@ -111,7 +100,7 @@ HRESULT __stdcall InputModeMenuButton::AdviseSink(REFIID riid, IUnknown *punk, D
   return S_OK;
 }
 
-HRESULT __stdcall InputModeMenuButton::UnadviseSink(DWORD dwCookie) {
+HRESULT __stdcall InputModeToggleButton::UnadviseSink(DWORD dwCookie) {
   // Check the given cookie.                                                                                                                                  
   if (dwCookie != kCookie) {
     return CONNECT_E_NOCONNECTION;

@@ -212,9 +212,9 @@ HRESULT TextService::Activate(ITfThreadMgr *thread_mgr, TfClientId client_id) {
             IID_ITfLangBarItemMgr, (void **)&lang_bar_item_mgr) != S_OK) {
       return E_FAIL;
     }
-    input_mode_menu_button_ =
-        new langbar::InputModeMenuButton(clsid_text_service_, 0);
-    lang_bar_item_mgr->AddItem(input_mode_menu_button_);
+    input_mode_toggle_button_ =
+        new langbar::InputModeToggleButton(clsid_text_service_, 0);
+    lang_bar_item_mgr->AddItem(input_mode_toggle_button_);
 
     lang_bar_item_mgr->Release();
   }
@@ -290,9 +290,9 @@ HRESULT TextService::Deactivate() {
             IID_ITfLangBarItemMgr, (void **)&lang_bar_item_mgr) != S_OK) {
       return S_OK;
     }
-    if (input_mode_menu_button_ != nullptr) {
-      lang_bar_item_mgr->RemoveItem(input_mode_menu_button_);
-      input_mode_menu_button_ = nullptr;
+    if (input_mode_toggle_button_ != nullptr) {
+      lang_bar_item_mgr->RemoveItem(input_mode_toggle_button_);
+      input_mode_toggle_button_ = nullptr;
     }
 
     lang_bar_item_mgr->Release();

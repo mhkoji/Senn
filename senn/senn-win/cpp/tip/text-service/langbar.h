@@ -17,10 +17,12 @@ static const GUID kItemId =
 
 static const WCHAR kItemDescription[] = L"Input mode menu button";
 
-class InputModeMenuButton : public ITfLangBarItemButton, public ITfSource {
+// We have to implement both the ITfSource and one of the ITfLangBarItem.
+// https://docs.microsoft.com/ja-jp/windows/desktop/tsf/language-bar
+class InputModeToggleButton : public ITfLangBarItemButton, public ITfSource {
 public:
 
-  InputModeMenuButton(CLSID, ULONG);
+  InputModeToggleButton(CLSID, ULONG);
 
   HRESULT __stdcall QueryInterface(REFIID riid, void** ppvObject) {
     if (ppvObject == NULL) {
