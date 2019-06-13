@@ -147,9 +147,9 @@ private:
 };
 
 
-class HiraganaInputProcessor {
+class HiraganaKeyEventHandler {
 public:
-  HiraganaInputProcessor(
+  HiraganaKeyEventHandler(
       TfClientId,
       ITfCompositionSink*,
       ::senn::senn_win::ime::StatefulIM*,

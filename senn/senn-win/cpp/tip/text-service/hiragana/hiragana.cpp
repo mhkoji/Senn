@@ -116,7 +116,7 @@ HRESULT __stdcall EditSessionConverting::DoEditSession(TfEditCookie ec) {
       HRESULT result;
       result = segment_range->Collapse(ec, TF_ANCHOR_START);
 
-      LONG end = start + view_.forms[i].length();
+      LONG end = start + static_cast<LONG>(view_.forms[i].length());
       LONG shift = 0;
       result = segment_range->ShiftEnd(ec, end, &shift, nullptr);
       if (FAILED(result)) {
@@ -187,7 +187,7 @@ HRESULT __stdcall EditSessionCommitted::DoEditSession(TfEditCookie ec) {
 }
 
 
-HiraganaInputProcessor::HiraganaInputProcessor(
+HiraganaKeyEventHandler::HiraganaKeyEventHandler(
     TfClientId id,
     ITfCompositionSink *sink,
     ::senn::senn_win::ime::StatefulIM *im,
@@ -198,11 +198,11 @@ HiraganaInputProcessor::HiraganaInputProcessor(
     converting_display_attribute_atoms_(atoms_converting) {
 }
 
-HRESULT HiraganaInputProcessor::OnSetFocus(BOOL fForeground) {
+HRESULT HiraganaKeyEventHandler::OnSetFocus(BOOL fForeground) {
   return S_OK;
 }
 
-HRESULT HiraganaInputProcessor::OnTestKeyDown(
+HRESULT HiraganaKeyEventHandler::OnTestKeyDown(
     ITfContext *context, WPARAM wParam, LPARAM lParam, BOOL *pfEaten) {
   if (wParam == VK_BACK || wParam == VK_LEFT || wParam ==  VK_UP ||
       wParam == VK_RIGHT || wParam == VK_DOWN) {
@@ -214,7 +214,7 @@ HRESULT HiraganaInputProcessor::OnTestKeyDown(
   return S_OK;
 }
 
-HRESULT HiraganaInputProcessor::OnKeyDown(
+HRESULT HiraganaKeyEventHandler::OnKeyDown(
     ITfContext *context, WPARAM wParam, LPARAM lParam, BOOL *pfEaten) {
   *pfEaten = true;
 
@@ -249,19 +249,19 @@ HRESULT HiraganaInputProcessor::OnKeyDown(
   }
 }
 
-HRESULT HiraganaInputProcessor::OnTestKeyUp(
+HRESULT HiraganaKeyEventHandler::OnTestKeyUp(
     ITfContext *context, WPARAM wParam, LPARAM lParam, BOOL *pfEaten) {
   *pfEaten = false;
   return S_OK;
 }
 
-HRESULT HiraganaInputProcessor::OnKeyUp(
+HRESULT HiraganaKeyEventHandler::OnKeyUp(
     ITfContext *context, WPARAM wParam, LPARAM lParam, BOOL *pfEaten) {
   *pfEaten = false;
   return S_OK;
 }
 
-HRESULT HiraganaInputProcessor::OnPreservedKey(
+HRESULT HiraganaKeyEventHandler::OnPreservedKey(
     ITfContext *context, REFGUID rguid, BOOL *pfEaten) {
   *pfEaten = false;
   return S_OK;

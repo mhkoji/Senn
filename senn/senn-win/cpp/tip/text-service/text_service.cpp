@@ -1,6 +1,5 @@
 #include "object_releaser.h"
 #include "text_service.h"
-#include "langbar.h"
 #include "hiragana/ui.h"
 #include "../ime/stateful_im_proxy_ipc.h"
 
@@ -25,8 +24,10 @@ HRESULT TextService::Activate(ITfThreadMgr *thread_mgr, TfClientId client_id) {
             IID_ITfLangBarItemMgr, (void **)&lang_bar_item_mgr) != S_OK) {
       return E_FAIL;
     }
-    input_mode_toggle_button_ =
-        new langbar::InputModeToggleButton(clsid_text_service_, 0);
+    input_mode_toggle_button_ = new langbar::InputModeToggleButton(
+        clsid_text_service_,
+        0,
+        static_cast<langbar::InputModeToggleButton::State *>(this));
     lang_bar_item_mgr->AddItem(input_mode_toggle_button_);
 
     lang_bar_item_mgr->Release();
@@ -95,13 +96,15 @@ HRESULT TextService::Activate(ITfThreadMgr *thread_mgr, TfClientId client_id) {
     if (im == nullptr) {
       return E_FAIL;
     }
-    hiragana_input_processor_ = new hiragana::HiraganaInputProcessor(
+    hiragana_key_event_handler_ = new hiragana::HiraganaKeyEventHandler(
       client_id,
       static_cast<ITfCompositionSink*>(this),
       im,
       editing_display_attribute_atom_,
       &converting_display_attribute_atoms_);
   }
+
+  direct_key_event_handler_ = new direct::DirectKeyEventHandler();
 
   return result;
 }
@@ -178,33 +181,101 @@ HRESULT __stdcall TextService::OnCompositionTerminated(
 // ITfKeyEventSink
 
 HRESULT __stdcall TextService::OnSetFocus(BOOL fForeground) {
-  return hiragana_input_processor_->OnSetFocus(fForeground);
+  switch (input_mode_) {
+  case senn::senn_win::text_service::kDirect:
+    return direct_key_event_handler_->OnSetFocus(fForeground);
+  case senn::senn_win::text_service::kHiragana:
+    return hiragana_key_event_handler_->OnSetFocus(fForeground);
+  default:
+    break;
+  }
+  return E_FAIL;
 }
 
 HRESULT __stdcall TextService::OnTestKeyDown(
     ITfContext *context, WPARAM wParam, LPARAM lParam, BOOL *pfEaten) {
-  return hiragana_input_processor_->OnTestKeyDown(context, wParam, lParam, pfEaten);
+  switch (input_mode_) {
+  case senn::senn_win::text_service::kDirect:
+    return direct_key_event_handler_->OnTestKeyDown(
+        context, wParam, lParam, pfEaten);
+  case senn::senn_win::text_service::kHiragana:
+    return hiragana_key_event_handler_->OnTestKeyDown(
+        context, wParam, lParam, pfEaten);
+  default:
+    break;
+  }
+  return E_FAIL;
 }
 
 HRESULT __stdcall TextService::OnKeyDown(
     ITfContext *context, WPARAM wParam, LPARAM lParam, BOOL *pfEaten) {
-  return hiragana_input_processor_->OnKeyDown(context, wParam, lParam, pfEaten);
+  switch (input_mode_) {
+  case senn::senn_win::text_service::kDirect:
+    return direct_key_event_handler_->OnKeyDown(
+        context, wParam, lParam, pfEaten);
+  case senn::senn_win::text_service::kHiragana:
+    return hiragana_key_event_handler_->OnKeyDown(
+        context, wParam, lParam, pfEaten);
+  default:
+    break;
+  }
+  return E_FAIL;
 }
 
 HRESULT __stdcall TextService::OnTestKeyUp(
     ITfContext *context, WPARAM wParam, LPARAM lParam, BOOL *pfEaten) {
-  return hiragana_input_processor_->OnTestKeyUp(context, wParam, lParam, pfEaten);
+  switch (input_mode_) {
+  case senn::senn_win::text_service::kDirect:
+    return direct_key_event_handler_->OnTestKeyUp(
+        context, wParam, lParam, pfEaten);
+  case senn::senn_win::text_service::kHiragana:
+    return hiragana_key_event_handler_->OnTestKeyUp(
+        context, wParam, lParam, pfEaten);
+  default:
+    break;
+  }
+  return E_FAIL;
 }
 
 HRESULT __stdcall TextService::OnKeyUp(
     ITfContext *context, WPARAM wParam, LPARAM lParam, BOOL *pfEaten) {
-  return hiragana_input_processor_->OnKeyUp(context, wParam, lParam, pfEaten);
+  switch (input_mode_) {
+  case senn::senn_win::text_service::kDirect:
+    return direct_key_event_handler_->OnKeyUp(
+        context, wParam, lParam, pfEaten);
+  case senn::senn_win::text_service::kHiragana:
+    return hiragana_key_event_handler_->OnKeyUp(
+        context, wParam, lParam, pfEaten);
+  default:
+    break;
+  }
+  return E_FAIL;
 }
 
 HRESULT __stdcall TextService::OnPreservedKey(
     ITfContext *context, REFGUID rguid, BOOL *pfEaten) {
-  return hiragana_input_processor_->OnPreservedKey(context, rguid, pfEaten);
+  switch (input_mode_) {
+  case senn::senn_win::text_service::kDirect:
+    return direct_key_event_handler_->OnPreservedKey(context, rguid, pfEaten);
+  case senn::senn_win::text_service::kHiragana:
+    return hiragana_key_event_handler_->OnPreservedKey(context, rguid, pfEaten);
+  default:
+    break;
+  }
+  return E_FAIL;
 }
+
+
+// langbar::InputModeToggleButton::State
+
+InputMode TextService::GetInputMode() {
+  return input_mode_;
+}
+
+void TextService::SetInputMode(InputMode input_mode) {
+  input_mode_ = input_mode;
+}
+
 
 } // text_service
 } // win

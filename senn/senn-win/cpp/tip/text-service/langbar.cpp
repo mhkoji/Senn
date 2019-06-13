@@ -1,5 +1,6 @@
 #include <atlbase.h>
 #include <strsafe.h>
+
 #include "langbar.h"
 
 namespace senn {
@@ -7,8 +8,11 @@ namespace senn_win {
 namespace text_service {
 namespace langbar {
 
-InputModeToggleButton::InputModeToggleButton(CLSID clsid, ULONG sort)
-  : ref_count_(1), clsid_(clsid), sort_(sort), lang_bar_item_sink_(nullptr) {
+InputModeToggleButton::InputModeToggleButton(
+    CLSID clsid, ULONG sort, State *state)
+  : ref_count_(1), clsid_(clsid), sort_(sort),
+    lang_bar_item_sink_(nullptr),
+    state_(state) {
 }
 
 HRESULT __stdcall InputModeToggleButton::GetInfo(TF_LANGBARITEMINFO *pInfo) {
@@ -50,6 +54,14 @@ HRESULT __stdcall InputModeToggleButton::GetTooltipString(BSTR *pbstrToolTip) {
 
 HRESULT __stdcall InputModeToggleButton::OnClick(
     TfLBIClick click, POINT pt, const RECT *prcArea) {
+  if (state_->GetInputMode() == InputMode::kDirect) {
+    state_->SetInputMode(InputMode::kHiragana);
+  } else {
+    state_->SetInputMode(InputMode::kDirect);
+  }
+
+  lang_bar_item_sink_->OnUpdate(TF_LBI_ICON);
+
   return S_OK;
 }
 
@@ -66,7 +78,11 @@ HRESULT __stdcall InputModeToggleButton::GetIcon(HICON *phIcon) {
     return E_INVALIDARG;
   }
   // Use a built-in icon for a while...
-  *phIcon = LoadIcon(NULL, IDI_APPLICATION);
+  if (state_->GetInputMode() == InputMode::kDirect) {
+    *phIcon = LoadIcon(NULL, IDI_APPLICATION);
+  } else {
+    *phIcon = LoadIcon(NULL, IDI_ASTERISK);
+  }
   return S_OK;
 }
 

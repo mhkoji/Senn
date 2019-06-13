@@ -66,6 +66,12 @@
     <ClInclude Include="text-service\hiragana\hiragana.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
+    <ClInclude Include="text-service\direct.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="text-service\input_mode.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -99,6 +105,9 @@
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="text-service\hiragana\hiragana.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="text-service\direct.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>

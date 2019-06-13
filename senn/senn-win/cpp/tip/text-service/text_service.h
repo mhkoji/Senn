@@ -7,26 +7,30 @@
 #include "../senn.h"
 #include "../win/text-service/class_factory.h"
 #include "../ime/stateful_im.h"
+#include "input_mode.h"
+#include "langbar.h"
 #include "hiragana/ui.h"
 #include "hiragana/hiragana.h"
+#include "direct.h"
 
 namespace senn {
 namespace senn_win {
 namespace text_service {
 
-
 class TextService
     : public ITfKeyEventSink,
       public ITfDisplayAttributeProvider,
       public ITfCompositionSink,
-      public ITfTextInputProcessor {
+      public ITfTextInputProcessor,
+      public langbar::InputModeToggleButton::State {
 public:
 
   TextService()
     : clsid_text_service_(kClsid),
       thread_mgr_(nullptr),
       client_id_(TF_CLIENTID_NULL),
-      hiragana_input_processor_(nullptr),
+      input_mode_(InputMode::kDirect),
+      hiragana_key_event_handler_(nullptr),
       input_mode_toggle_button_(nullptr),
       editing_display_attribute_atom_(TF_INVALID_GUIDATOM) {}
 
@@ -87,6 +91,10 @@ public:
   HRESULT __stdcall EnumDisplayAttributeInfo(IEnumTfDisplayAttributeInfo**) override;
   HRESULT __stdcall GetDisplayAttributeInfo(REFGUID, ITfDisplayAttributeInfo**) override;
 
+  // langbar::InputModeToggleButton::State
+  InputMode GetInputMode() override;
+  void SetInputMode(InputMode) override;
+
 private:
 
   CLSID clsid_text_service_;
@@ -95,8 +103,15 @@ private:
 
   TfClientId client_id_;
 
-  hiragana::HiraganaInputProcessor *hiragana_input_processor_;
+  InputMode input_mode_;
 
+  // Component that handles inputs during the hiragana input mode.
+  hiragana::HiraganaKeyEventHandler *hiragana_key_event_handler_;
+
+  // Component that handles inputs during the direct input mode.
+  direct::DirectKeyEventHandler *direct_key_event_handler_;
+
+  // Button to switch the current input mode.
   ITfLangBarItem *input_mode_toggle_button_;
 
   // Value of the style for decorating a text when editing
@@ -108,6 +123,7 @@ private:
 
   ULONG ref_count_ = 1;
 };
+
 
 class TextServiceFactory
     : public senn::win::text_service::ClassFactory<TextService> {

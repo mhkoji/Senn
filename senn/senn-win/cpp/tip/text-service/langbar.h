@@ -3,8 +3,9 @@
 
 #include <msctf.h>
 
+#include <functional>
 #include <string>
-
+#include "input_mode.h"
 
 namespace senn {
 namespace senn_win {
@@ -21,8 +22,13 @@ static const WCHAR kItemDescription[] = L"Input mode menu button";
 // https://docs.microsoft.com/ja-jp/windows/desktop/tsf/language-bar
 class InputModeToggleButton : public ITfLangBarItemButton, public ITfSource {
 public:
+  class State {
+  public:
+    virtual InputMode GetInputMode() = 0;
+    virtual void SetInputMode(InputMode) = 0;
+  };
 
-  InputModeToggleButton(CLSID, ULONG);
+  InputModeToggleButton(CLSID, ULONG, State*);
 
   HRESULT __stdcall QueryInterface(REFIID riid, void** ppvObject) {
     if (ppvObject == NULL) {
@@ -81,6 +87,8 @@ private:
   const ULONG sort_;
 
   ITfLangBarItemSink *lang_bar_item_sink_;
+
+  State *state_;
 
   static const DWORD kCookie = 0;
 };
