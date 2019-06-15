@@ -22,7 +22,8 @@ class TextService
       public ITfDisplayAttributeProvider,
       public ITfCompositionSink,
       public ITfTextInputProcessor,
-      public langbar::InputModeToggleButton::State {
+      public langbar::InputModeToggleButton::State,
+      public langbar::InputModeToggleButton::Handlers {
 public:
 
   TextService()
@@ -92,8 +93,10 @@ public:
   HRESULT __stdcall GetDisplayAttributeInfo(REFGUID, ITfDisplayAttributeInfo**) override;
 
   // langbar::InputModeToggleButton::State
-  InputMode GetInputMode() override;
-  void SetInputMode(InputMode) override;
+  virtual InputMode input_mode() const override;
+
+  // langbar::InputModeToggleButton::Handlers
+  void ToggleInputMode() override;
 
 private:
 
@@ -112,7 +115,7 @@ private:
   direct::DirectKeyEventHandler *direct_key_event_handler_;
 
   // Button to switch the current input mode.
-  ITfLangBarItem *input_mode_toggle_button_;
+  langbar::InputModeToggleButton *input_mode_toggle_button_;
 
   // Value of the style for decorating a text when editing
   TfGuidAtom editing_display_attribute_atom_;

@@ -9,10 +9,13 @@ namespace text_service {
 namespace langbar {
 
 InputModeToggleButton::InputModeToggleButton(
-    CLSID clsid, ULONG sort, State *state)
+    CLSID clsid,
+    ULONG sort,
+    State* state,
+    Handlers* handlers)
   : ref_count_(1), clsid_(clsid), sort_(sort),
     lang_bar_item_sink_(nullptr),
-    state_(state) {
+    state_(state), handlers_(handlers) {
 }
 
 HRESULT __stdcall InputModeToggleButton::GetInfo(TF_LANGBARITEMINFO *pInfo) {
@@ -54,14 +57,7 @@ HRESULT __stdcall InputModeToggleButton::GetTooltipString(BSTR *pbstrToolTip) {
 
 HRESULT __stdcall InputModeToggleButton::OnClick(
     TfLBIClick click, POINT pt, const RECT *prcArea) {
-  if (state_->GetInputMode() == InputMode::kDirect) {
-    state_->SetInputMode(InputMode::kHiragana);
-  } else {
-    state_->SetInputMode(InputMode::kDirect);
-  }
-
-  lang_bar_item_sink_->OnUpdate(TF_LBI_ICON);
-
+  handlers_->ToggleInputMode();
   return S_OK;
 }
 
@@ -78,7 +74,7 @@ HRESULT __stdcall InputModeToggleButton::GetIcon(HICON *phIcon) {
     return E_INVALIDARG;
   }
   // Use a built-in icon for a while...
-  if (state_->GetInputMode() == InputMode::kDirect) {
+  if (state_->input_mode() == InputMode::kDirect) {
     *phIcon = LoadIcon(NULL, IDI_APPLICATION);
   } else {
     *phIcon = LoadIcon(NULL, IDI_ASTERISK);
@@ -130,6 +126,10 @@ HRESULT __stdcall InputModeToggleButton::UnadviseSink(DWORD dwCookie) {
   lang_bar_item_sink_->Release();
   lang_bar_item_sink_ = nullptr;
   return S_OK;
+}
+
+ITfLangBarItemSink *InputModeToggleButton::item_sink() {
+  return lang_bar_item_sink_;
 }
 
 

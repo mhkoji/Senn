@@ -24,11 +24,15 @@ class InputModeToggleButton : public ITfLangBarItemButton, public ITfSource {
 public:
   class State {
   public:
-    virtual InputMode GetInputMode() = 0;
-    virtual void SetInputMode(InputMode) = 0;
+    virtual InputMode input_mode() const = 0;
   };
 
-  InputModeToggleButton(CLSID, ULONG, State*);
+  class Handlers {
+  public:
+    virtual void ToggleInputMode() = 0;
+  };
+
+  InputModeToggleButton(CLSID, ULONG, State*, Handlers*);
 
   HRESULT __stdcall QueryInterface(REFIID riid, void** ppvObject) {
     if (ppvObject == NULL) {
@@ -79,6 +83,8 @@ public:
   virtual HRESULT __stdcall GetIcon(HICON * phIcon) override;
   virtual HRESULT __stdcall GetText(BSTR * pbstrText) override;
 
+  ITfLangBarItemSink *item_sink();
+
 private:
   ULONG ref_count_;
 
@@ -88,7 +94,9 @@ private:
 
   ITfLangBarItemSink *lang_bar_item_sink_;
 
-  State *state_;
+  const State* state_;
+
+  Handlers* handlers_;
 
   static const DWORD kCookie = 0;
 };

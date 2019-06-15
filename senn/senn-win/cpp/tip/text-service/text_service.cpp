@@ -25,9 +25,9 @@ HRESULT TextService::Activate(ITfThreadMgr *thread_mgr, TfClientId client_id) {
       return E_FAIL;
     }
     input_mode_toggle_button_ = new langbar::InputModeToggleButton(
-        clsid_text_service_,
-        0,
-        static_cast<langbar::InputModeToggleButton::State *>(this));
+        clsid_text_service_, 0,
+        static_cast<langbar::InputModeToggleButton::State*>(this),
+        static_cast<langbar::InputModeToggleButton::Handlers*>(this));
     lang_bar_item_mgr->AddItem(input_mode_toggle_button_);
 
     lang_bar_item_mgr->Release();
@@ -194,6 +194,13 @@ HRESULT __stdcall TextService::OnSetFocus(BOOL fForeground) {
 
 HRESULT __stdcall TextService::OnTestKeyDown(
     ITfContext *context, WPARAM wParam, LPARAM lParam, BOOL *pfEaten) {
+  if (wParam == 0xF3 || wParam == 0xF4) {
+    // hankaku/zenkaku key
+    ToggleInputMode();
+    *pfEaten = false;
+    return S_OK;
+  }
+
   switch (input_mode_) {
   case senn::senn_win::text_service::kDirect:
     return direct_key_event_handler_->OnTestKeyDown(
@@ -268,14 +275,22 @@ HRESULT __stdcall TextService::OnPreservedKey(
 
 // langbar::InputModeToggleButton::State
 
-InputMode TextService::GetInputMode() {
+InputMode TextService::input_mode() const {
   return input_mode_;
 }
 
-void TextService::SetInputMode(InputMode input_mode) {
-  input_mode_ = input_mode;
-}
 
+// langbar::InputModeToggleButton::Handlers
+
+void TextService::ToggleInputMode() {
+  if (input_mode_ == InputMode::kDirect) {
+    input_mode_ = InputMode::kHiragana;
+  } else {
+    input_mode_ = InputMode::kDirect;
+  }
+
+  input_mode_toggle_button_->item_sink()->OnUpdate(TF_LBI_ICON);
+}
 
 } // text_service
 } // win
