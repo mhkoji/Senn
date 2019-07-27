@@ -88,9 +88,8 @@ void StatefulIMProxyIPC::Transit(
       converting.forms.push_back(form);
     }
 
-    converting.cursor_form_index =
-       v.get<picojson::object>()["cursor-form-index"]
-        .get<double>();
+    converting.cursor_form_index = static_cast<size_t>
+        (v.get<picojson::object>()["cursor-form-index"].get<double>());
 
     on_converting(converting);
   } else if (type == "COMMITTED") {

@@ -2,6 +2,7 @@
 #include <combaseapi.h>
 
 #include <vector>
+#include <string>
 
 #include "registry.h"
 
