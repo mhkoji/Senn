@@ -44,7 +44,7 @@
           n-gram-model
           unknown-word-vocabulary
           unknown-word-n-gram-model
-          (probablity-for-extended-dictionary-words nil))
+          (probability-for-extended-dictionary-words 0))
   (let ((unk-token (to-int vocabulary +UNK+))
         (fail-safe-score -10000))
     (lambda (curr-word curr-word-from-extended-dictionary-p prev-words)
@@ -62,7 +62,7 @@
             (let ((p (transition-probability
                       n-gram-model unk-token prev-tokens)))
               (if (/= p 0)
-                  (let ((log-probablity-by-unknown-word-n-gram
+                  (let ((log-probability-by-unknown-word-n-gram
                          (sentence-log-probability
                           unknown-word-n-gram-model
                           (hachee.language-model:make-sentence
@@ -72,9 +72,9 @@
                           :BOS (to-int unknown-word-vocabulary +BOS+)
                           :EOS (to-int unknown-word-vocabulary +EOS+))))
                     (+ (log p)
-                       (if (and probablity-for-extended-dictionary-words
-                                curr-word-from-extended-dictionary-p)
-                           (log (+ (exp log-probablity-by-unknown-word-n-gram)
-                                   probablity-for-extended-dictionary-words))
-                           log-probablity-by-unknown-word-n-gram)))
+                       (if curr-word-from-extended-dictionary-p
+                           (log
+                            (+ (exp log-probability-by-unknown-word-n-gram)
+                               probability-for-extended-dictionary-words))
+                           log-probability-by-unknown-word-n-gram)))
                   fail-safe-score)))))))

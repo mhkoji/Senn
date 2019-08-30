@@ -216,7 +216,7 @@
    (unk-supported-kkc-unknown-word-vocabulary kkc)
    :unknown-word-n-gram-model
    (unk-supported-kkc-unknown-word-n-gram-model kkc)
-   :probablity-for-extended-dictionary-words
+   :probability-for-extended-dictionary-words
    (let ((extended-dictionary-size
           (hachee.kkc.word.dictionary:size (kkc-extended-dictionary kkc)))
          (sum-probabilities-of-vocabulary-words
