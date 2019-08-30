@@ -34,7 +34,6 @@
       ((:file "word")
        (:file "vocabulary")
        (:file "dictionary")))
-     (:file "models/unknown-word")
      (:file "file")
      (:module :kkc
       :pathname "kkc"

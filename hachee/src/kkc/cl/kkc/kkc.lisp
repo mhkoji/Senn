@@ -5,6 +5,7 @@
            :profile
            :make-kkc
            :create-kkc
+           :create-kkc-unk-supported
            :save-kkc
            :load-kkc
            :word-form
@@ -31,14 +32,6 @@
                                                   form-pron-list)))))
           (hachee.kkc.file:sentence-units sentence)))
 
-(defun build-dictionary (pathnames)
-  (let ((dict (hachee.kkc.word.dictionary:make-dictionary)))
-    (dolist (pathname pathnames dict)
-      (dolist (sentence (hachee.kkc.file:file->string-sentences pathname))
-        (dolist (word (sentence-words sentence))
-          (hachee.kkc.word.dictionary:add dict word))))
-    dict))
-
 (defun build-vocabulary (pathnames)
   (let ((vocab (hachee.kkc.word.vocabulary:make-vocabulary)))
     (dolist (pathname pathnames)
@@ -62,7 +55,17 @@
                  curr-words)))
     vocab))
 
-(defun build-language-model (pathnames &key vocabulary)
+(defun build-dictionary (pathnames vocabulary)
+  (let ((dict (hachee.kkc.word.dictionary:make-dictionary)))
+    (dolist (pathname pathnames dict)
+      (dolist (sentence (hachee.kkc.file:file->string-sentences pathname))
+        (dolist (word (sentence-words sentence))
+          (when (hachee.kkc.word.vocabulary:to-int-or-nil vocabulary word)
+            (hachee.kkc.word.dictionary:add dict word)))))
+    dict))
+
+
+(defun build-n-gram-model (pathnames vocabulary)
   (let ((to-int-or-unk (curry #'hachee.kkc.word.vocabulary:to-int-or-unk
                               vocabulary))
         (BOS (hachee.kkc.word.vocabulary:to-int
@@ -82,25 +85,114 @@
                                             :EOS EOS)))
     model))
 
-(defstruct kkc vocabulary language-model dictionary)
+(defun build-unknown-word-vocabulary (pathnames vocabulary &key (overlap 2))
+  (let ((key->freq (make-hash-table :test #'equal))
+        (char-vocab (hachee.kkc.word.vocabulary:make-vocabulary)))
+    (dolist (pathname pathnames)
+      (let ((curr-chars (make-hash-table :test #'equal)))
+        (dolist (sentence (hachee.kkc.file:file->string-sentences pathname))
+          (dolist (word (sentence-words sentence))
+            (when (not (hachee.kkc.word.vocabulary:to-int vocabulary word))
+              (loop for char across (word-pron word)
+                    do (let ((char-word (make-word :form (string char)
+                                                   :pron (string char))))
+                         (setf (gethash (word->key char-word) curr-chars)
+                               char-word))))))
+        (maphash (lambda (key char-word)
+                   (let ((freq (incf (gethash key key->freq 0))))
+                     (when (<= overlap freq)
+                       (hachee.kkc.word.vocabulary:add char-vocab
+                                                       char-word))))
+                 curr-chars)))
+    char-vocab))
+
+(defun build-unknown-word-n-gram-model (pathnames
+                                        vocabulary
+                                        unknown-word-vocabulary)
+  (let ((BOS (hachee.kkc.word.vocabulary:to-int-or-nil
+              unknown-word-vocabulary hachee.kkc.word.vocabulary:+BOS+))
+        (EOS (hachee.kkc.word.vocabulary:to-int-or-nil
+              unknown-word-vocabulary hachee.kkc.word.vocabulary:+EOS+))
+        (model (make-instance 'hachee.language-model.n-gram:model)))
+  (dolist (pathname pathnames)
+    (dolist (sentence (hachee.kkc.file:file->string-sentences pathname))
+      (dolist (word (sentence-words sentence))
+        (when (not (hachee.kkc.word.vocabulary:to-int-or-nil vocabulary word))
+          (let ((tokens
+                 (loop for char across (word-pron word)
+                       collect (hachee.kkc.word.vocabulary:to-int-or-unk
+                                unknown-word-vocabulary
+                                (make-word :form (string char)
+                                           :pron (string char))))))
+            (let ((sentences (list (hachee.language-model:make-sentence
+                                    :tokens tokens))))
+              (hachee.language-model.n-gram:train model sentences
+                                                  :BOS BOS
+                                                  :EOS EOS)))))))
+  model))
+
+(defstruct kkc
+  vocabulary
+  n-gram-model
+  dictionary)
+
+(defstruct (unk-supported-kkc (:include kkc))
+  unknown-word-vocabulary
+  unknown-word-n-gram-model)
 
 (defun create-kkc (pathnames)
-  (let* ((dictionary (build-dictionary pathnames))
-         (vocabulary (build-vocabulary pathnames))
-         (language-model (build-language-model
-                          pathnames :vocabulary vocabulary)))
+  (let* ((vocabulary (build-vocabulary pathnames))
+         (dictionary (build-dictionary pathnames vocabulary))
+         (n-gram-model (build-n-gram-model pathnames vocabulary)))
     (hachee.kkc:make-kkc :vocabulary vocabulary
-                         :language-model language-model
+                         :n-gram-model n-gram-model
                          :dictionary dictionary)))
 
+(defun create-kkc-unk-supported (pathnames)
+  (assert (<= 2 (length pathnames)))
+  (let* ((vocabulary (build-vocabulary-with-unk pathnames))
+         (dictionary (build-dictionary pathnames vocabulary))
+         (n-gram-model (build-n-gram-model pathnames vocabulary))
+         (unknown-word-vocabulary (build-unknown-word-vocabulary
+                                   pathnames
+                                   vocabulary))
+         (unknown-word-n-gram-model (build-unknown-word-n-gram-model
+                                     pathnames
+                                     vocabulary
+                                     unknown-word-vocabulary)))
+    (make-unk-supported-kkc
+     :vocabulary vocabulary
+     :n-gram-model n-gram-model
+     :dictionary dictionary
+     :unknown-word-vocabulary unknown-word-vocabulary
+     :unknown-word-n-gram-model unknown-word-n-gram-model)))
+
+(defgeneric get-score-fn (kkc))
+
+(defmethod get-score-fn ((kkc kkc))
+  (hachee.kkc.convert.score-fns:of-form-pron
+   :vocabulary (kkc-vocabulary kkc)
+   :n-gram-model (kkc-n-gram-model kkc)))
+
+(defmethod get-score-fn ((kkc unk-supported-kkc))
+  (hachee.kkc.convert.score-fns:of-form-pron-unk-supported
+   :vocabulary (kkc-vocabulary kkc)
+   :n-gram-model (kkc-n-gram-model kkc)
+   :unknown-word-vocabulary
+   (unk-supported-kkc-unknown-word-vocabulary kkc)
+   :unknown-word-n-gram-model
+   (unk-supported-kkc-unknown-word-n-gram-model kkc)))
 
 (defun convert (kkc pronunciation &key 1st-boundary-index)
-  (hachee.kkc.convert:execute pronunciation
-   :score-fn (hachee.kkc.convert.score-fns:of-form-pron
-              :vocabulary (kkc-vocabulary kkc)
-              :language-model (kkc-language-model kkc))
-   :dictionary (kkc-dictionary kkc)
-   :1st-boundary-index 1st-boundary-index))
+  (let ((nodes (hachee.kkc.convert:execute pronunciation
+                :score-fn (get-score-fn kkc)
+                :vocabulary (kkc-vocabulary kkc)
+                :dictionary (kkc-dictionary kkc)
+                :1st-boundary-index 1st-boundary-index)))
+    (mapcar (lambda (n)
+              (list (hachee.kkc.convert:node-word n)
+                    (hachee.kkc.convert:node-origin n)))
+            nodes)))
 
 
 (defun lookup (kkc pronunciation)
@@ -112,12 +204,12 @@
   (hachee.kkc.archive:save pathname
                            :vocabulary (kkc-vocabulary kkc)
                            :dictionary (kkc-dictionary kkc)
-                           :language-model (kkc-language-model)))
+                           :n-gram-model (kkc-n-gram-model kkc)))
 
 
 (defun load-kkc (pathname)
-  (destructuring-bind (&key vocabulary dictionary language-model)
+  (destructuring-bind (&key vocabulary dictionary n-gram-model)
       (hachee.kkc.archive:load pathname)
     (make-kkc :vocabulary vocabulary
               :dictionary dictionary
-              :language-model language-model)))
+              :n-gram-model n-gram-model)))

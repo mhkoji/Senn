@@ -2,6 +2,7 @@
   (:use :cl)
   (:export :add
            :to-int
+           :to-int-or-nil
            :to-int-or-unk
            :+UNK+ :+BOS+ :+EOS+
            :make-vocabulary
@@ -46,12 +47,14 @@
     (add vocab +EOS+)
     vocab))
 
-(defun to-int (vocab word)
+(defun to-int-or-nil (vocab word)
   (gethash (word->key word) (vocabulary-to-int-map vocab)))
 
 (defun to-int-or-unk (vocab word)
   (or (to-int vocab word) (to-int vocab +UNK+)))
 
+(defun to-int (vocab word)
+  (to-int-or-nil vocab word))
 
 (defun save-vocabulary (vocab stream)
   (print (list :to-int-map

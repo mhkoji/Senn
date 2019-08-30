@@ -12,6 +12,7 @@
            :class-model
            :train
            :transition-probability
+           :sentence-log-probability
            :save-model
            :load-model))
 (in-package :hachee.language-model.n-gram)
@@ -232,8 +233,9 @@
       (let ((tokens (append bos-tokens
                             (sentence-tokens sentence)
                             eos-tokens)))
-        (loop for curr-index from n to (1- (length tokens))
+        (loop for curr-index from (1- n) to (1- (length tokens))
               sum (log (transition-probability
                         model
                         (nth curr-index tokens)
-                        (subseq tokens (- curr-index n) n))))))))
+                        (subseq tokens
+                                (- curr-index (1- n)) curr-index))))))))

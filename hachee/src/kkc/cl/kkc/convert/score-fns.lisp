@@ -1,47 +1,71 @@
 (defpackage :hachee.kkc.convert.score-fns
   (:use :cl)
   (:import-from :alexandria
-                :if-let :curry)
+                :if-let)
   (:import-from :hachee.kkc.word.vocabulary
-                :to-int-or-unk :to-int :+UNK+)
-  (:export :of-form-pron :of-kana-kanji))
+                :to-int
+                :to-int-or-unk
+                :to-int-or-nil
+                :+UNK+ :+BOS+ :+EOS+)
+  (:export :of-form-pron
+           :of-form-pron-unk-supported))
 (in-package :hachee.kkc.convert.score-fns)
 
-(defun of-form-pron (&key vocabulary language-model)
-  (lambda (curr-word prev-words)
-    (let ((curr-token-or-nil (to-int vocabulary curr-word))
-          (prev-tokens (mapcar (lambda (w)
-                                 (to-int-or-unk vocabulary w))
-                               prev-words)))
-      (let ((p (hachee.language-model.n-gram:transition-probability
-                language-model
-                (or curr-token-or-nil
-                    (to-int-or-unk vocabulary +UNK+))
-                prev-tokens)))
-        (cond ((and curr-token-or-nil (/= p 0))
-               (log p))
-              ((/= p 0)
-               (+ (log p)
-                  (log (hachee.kkc.models.unknown-word:probability
-                        nil
-                        curr-word))))
-              (t -10000))))))
+(defun word->char-tokens (word unknown-word-vocabulary)
+  (let ((pron (hachee.kkc.word:word-pron word)))
+    (loop for char across pron
+          collect (to-int-or-unk unknown-word-vocabulary
+                                 (hachee.kkc.word:make-word
+                                  :form (string char)
+                                  :pron (string char))))))
 
-(defun of-kana-kanji (&key vocabulary language-model kana-kanji-model)
-  (lambda (curr-word prev-words)
-    (let ((curr-token (to-int-or-unk vocabulary curr-word))
-          (prev-tokens (mapcar (lambda (w)
-                                 (to-int-or-unk vocabulary w))
-                               prev-words)))
-      (let ((p (hachee.language-model.n-gram:transition-probability
-                language-model curr-token prev-tokens)))
-        (if (= p 0)
-            -100000
-            (let ((form-freq (gethash (hachee.kkc.word:word-form curr-word)
-                                      kana-kanji-model))
-                  (pron-freq (gethash (hachee.kkc.word:word-pron curr-word)
-                                      kana-kanji-model)))
-              (if (and form-freq pron-freq)
-                  (+ (log p)
-                     (log (/ form-freq pron-freq)))
-                  -100000)))))))
+(defun of-form-pron (&key vocabulary n-gram-model)
+  (let ((fail-safe-score -10000))
+    (lambda (curr-word prev-words)
+      (let ((prev-tokens (mapcar (lambda (w)
+                                   (to-int-or-unk vocabulary w))
+                                 prev-words)))
+        (if-let ((curr-token (to-int-or-nil vocabulary curr-word)))
+          (let ((p (hachee.language-model.n-gram:transition-probability
+                    n-gram-model
+                    curr-token
+                    prev-tokens)))
+            (if (/= p 0)
+                (log p)
+                fail-safe-score))
+          fail-safe-score)))))
+
+(defun of-form-pron-unk-supported (&key vocabulary
+                                        n-gram-model
+                                        unknown-word-vocabulary
+                                        unknown-word-n-gram-model)
+  (let ((unk-token (to-int vocabulary +UNK+))
+        (fail-safe-score -10000))
+    (lambda (curr-word prev-words)
+      (let ((prev-tokens (mapcar (lambda (w)
+                                   (to-int-or-unk vocabulary w))
+                                 prev-words)))
+        (if-let ((curr-token (to-int-or-nil vocabulary curr-word)))
+          (let ((p (hachee.language-model.n-gram:transition-probability
+                    n-gram-model
+                    curr-token
+                    prev-tokens)))
+            (if (/= p 0)
+                (log p)
+                fail-safe-score))
+          (let ((p (hachee.language-model.n-gram:transition-probability
+                    n-gram-model
+                    unk-token
+                    prev-tokens)))
+            (if (/= p 0)
+                (let ((unknown-word-prediction-log-p
+                       (hachee.language-model.n-gram:sentence-log-probability
+                        unknown-word-n-gram-model
+                        (hachee.language-model:make-sentence
+                         :tokens (word->char-tokens
+                                  curr-word
+                                  unknown-word-vocabulary))
+                        :BOS (to-int unknown-word-vocabulary +BOS+)
+                        :EOS (to-int unknown-word-vocabulary +EOS+))))
+                  (+ (log p) unknown-word-prediction-log-p))
+                fail-safe-score)))))))
