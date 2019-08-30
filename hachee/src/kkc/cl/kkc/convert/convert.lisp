@@ -2,6 +2,7 @@
   (:use :cl :hachee.kkc.word)
   (:export :execute
            :node-word
+           :node-word-origin
            :node-origin)
   (:import-from :hachee.kkc.word.dictionary
                 :lookup)
@@ -11,11 +12,7 @@
                 :when-let))
 (in-package :hachee.kkc.convert)
 
-(defun calculate-score (score-fn curr-word prev-words)
-  (funcall score-fn curr-word prev-words))
-
-
-(defstruct node origin word score-so-far prev-node)
+(defstruct node word word-origin score-so-far prev-node)
 
 (defun update-prev-node (node score-fn prev-nodes &key print-p)
   (dolist (prev-node prev-nodes)
@@ -23,14 +20,16 @@
       (error "Node without score: ~A" prev-node))
     (let ((score-so-far
            (+ (node-score-so-far prev-node)
-              (calculate-score score-fn
-                               (node-word node)
-                               (list (node-word prev-node))))))
+              (funcall score-fn
+                       (node-word node)
+                       (eql (node-word-origin node)
+                            :extended-dictionary)
+                       (list (node-word prev-node))))))
       (when print-p
         (print (list (list (node-word prev-node)
-                           (node-origin prev-node))
+                           (node-word-origin prev-node))
                      (list (node-word node)
-                           (node-origin node))
+                           (node-word-origin node))
                      score-so-far)))
       (when (or (null (node-score-so-far node))
                 (< (node-score-so-far node) score-so-far))
@@ -63,7 +62,8 @@
 
 (defun execute (pronunciation &key score-fn
                                    vocabulary
-                                   dictionary
+                                   vocabulary-dictionary
+                                   extended-dictionary
                                    1st-boundary-index)
   (when (and (numberp 1st-boundary-index)
              (<= 8 1st-boundary-index))
@@ -79,13 +79,16 @@
                   (and (= start 0)
                        (= end 1st-boundary-index))
                   (<= 1st-boundary-index start))
-          (let* ((sub-pron (subseq pronunciation start end))
-                 (in-vocab-words (lookup dictionary sub-pron))
-                 (nodes (append (mapcar (lambda (w)
-                                          (make-node
-                                           :word w
-                                           :origin :vocabulary))
-                                        in-vocab-words))))
+          (let ((sub-pron (subseq pronunciation start end))
+                (nodes nil))
+            (dolist (w (lookup vocabulary-dictionary sub-pron))
+              (push (make-node :word w
+                               :word-origin :vocabulary)
+                    nodes))
+            (dolist (w (lookup extended-dictionary sub-pron))
+              (push (make-node :word w
+                               :word-origin :extended-dictionary)
+                    nodes))
             ;; Add unknown word node if necessary
             (when (< (- end start) 8) ;; Length up to 8
               (let ((unknown-word (make-unknown-word sub-pron)))
@@ -93,7 +96,7 @@
                              vocabulary
                              unknown-word))
                   (push (make-node :word unknown-word
-                                   :origin :unknown-word)
+                                   :word-origin :unknown-word)
                         nodes))))
             (let ((prev-entries (get-entries table start)))
               (add-entries table end prev-entries nodes))))))

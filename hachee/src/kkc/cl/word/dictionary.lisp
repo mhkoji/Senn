@@ -2,6 +2,8 @@
   (:use :cl)
   (:export :add
            :lookup
+           :size
+           :list-all-words
            :make-dictionary
            :save-dictionary
            :load-dictionary))
@@ -18,6 +20,14 @@
 
 (defun lookup (dictionary pron)
   (gethash pron (dictionary-hash dictionary)))
+
+(defun list-all-words (dictionary)
+  (loop for words in (alexandria:hash-table-values
+                      (dictionary-hash dictionary))
+        nconc (copy-list words)))
+
+(defun size (dictionary)
+  (hash-table-size (dictionary-hash dictionary)))
 
 (defun save-dictionary (dict stream)
   (print (list :hash
