@@ -18,13 +18,10 @@
   (dolist (prev-node prev-nodes)
     (when (null (node-score-so-far prev-node))
       (error "Node without score: ~A" prev-node))
-    (let ((score-so-far
-           (+ (node-score-so-far prev-node)
-              (funcall score-fn
-                       (node-word node)
-                       (eql (node-word-origin node)
-                            :extended-dictionary)
-                       (list (node-word prev-node))))))
+    (let ((score-so-far (+ (node-score-so-far prev-node)
+                           (funcall score-fn
+                                    node
+                                    prev-node))))
       (when print-p
         (print (list (list (node-word prev-node)
                            (node-word-origin prev-node))
