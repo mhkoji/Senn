@@ -9,7 +9,9 @@
            :save-kkc
            :load-kkc
            :word-form
-           :word-pron)
+           :word-pron
+
+           :build-tankan-dictionary)
   (:import-from :alexandria
                 :curry))
 (in-package :hachee.kkc)
@@ -117,7 +119,8 @@
   (dolist (pathname pathnames)
     (dolist (sentence (hachee.kkc.file:file->string-sentences pathname))
       (dolist (word (sentence-words sentence))
-        (when (not (hachee.kkc.word.vocabulary:to-int-or-nil vocabulary word))
+        (when (not (hachee.kkc.word.vocabulary:to-int-or-nil vocabulary
+                                                             word))
           (let ((tokens
                  (loop for char across (word-pron word)
                        collect (hachee.kkc.word.vocabulary:to-int-or-unk
@@ -131,18 +134,30 @@
                                                   :EOS EOS)))))))
   model))
 
+(defun build-tankan-dictionary (pathnames)
+  (let ((dict (hachee.kkc.word.dictionary:make-dictionary)))
+    (dolist (pathname pathnames)
+      (with-open-file (in pathname)
+        (loop for line = (read-line in nil nil) while line do
+          (destructuring-bind (form part pron) (cl-ppcre:split "/" line)
+            (declare (ignore part))
+            (let ((word (hachee.kkc.word:make-word :form form :pron pron)))
+              (hachee.kkc.word.dictionary:add dict word))))))
+    dict))
+
 (defstruct kkc
   n-gram-model
   vocabulary
   vocabulary-dictionary
-  extended-dictionary)
+  extended-dictionary
+  tankan-dictionary)
 
 (defstruct (unk-supported-kkc (:include kkc))
   sum-probabilities-of-vocabulary-words
   unknown-word-vocabulary
   unknown-word-n-gram-model)
 
-(defun create-kkc (pathnames)
+(defun create-kkc (pathnames &key tankan-dictionary)
   (let* ((vocabulary (build-vocabulary pathnames))
          (dictionary (build-dictionary pathnames vocabulary))
          (n-gram-model (build-n-gram-model pathnames vocabulary)))
@@ -150,7 +165,8 @@
      :n-gram-model n-gram-model
      :vocabulary vocabulary
      :vocabulary-dictionary dictionary
-     :extended-dictionary (hachee.kkc.word.dictionary:make-dictionary))))
+     :extended-dictionary (hachee.kkc.word.dictionary:make-dictionary)
+     :tankan-dictionary tankan-dictionary)))
 
 (defun word->char-tokens (word unknown-word-vocabulary)
   (let ((pron (hachee.kkc.word:word-pron word)))
@@ -161,7 +177,7 @@
                                               :pron (string char))))))
 
 (defun sum-probabilities-of-words (unknown-word-vocabulary
-                                  unknown-word-n-gram-model
+                                   unknown-word-n-gram-model
                                    words)
   (loop
     for word in words
@@ -176,7 +192,8 @@
                     unknown-word-vocabulary
                     hachee.kkc.word.vocabulary:+EOS+)))))
 
-(defun create-kkc-unk-supported (pathnames &key extended-dictionary)
+(defun create-kkc-unk-supported (pathnames &key tankan-dictionary
+                                                extended-dictionary)
   (assert (<= 2 (length pathnames)))
   (let* ((vocabulary (build-vocabulary-with-unk pathnames))
          (dictionary (build-dictionary pathnames vocabulary))
@@ -193,6 +210,7 @@
      :n-gram-model n-gram-model
      :vocabulary-dictionary dictionary
      :extended-dictionary extended-dictionary
+     :tankan-dictionary tankan-dictionary
      :unknown-word-vocabulary unknown-word-vocabulary
      :unknown-word-n-gram-model unknown-word-n-gram-model
      :sum-probabilities-of-vocabulary-words
@@ -240,8 +258,8 @@
 
 (defun lookup (kkc pronunciation)
   (hachee.kkc.lookup:execute pronunciation
-   :dictionary (kkc-vocabulary-dictionary kkc)))
-
+   :dictionaries (list (kkc-vocabulary-dictionary kkc)
+                       (kkc-tankan-dictionary kkc))))
 
 (defun save-kkc (kkc pathname)
   (hachee.kkc.archive:save pathname
