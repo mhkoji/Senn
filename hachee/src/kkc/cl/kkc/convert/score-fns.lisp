@@ -13,8 +13,8 @@
                 :to-int-or-unk
                 :to-int-or-nil
                 :+UNK+ :+BOS+ :+EOS+)
-  (:export :of-form-pron
-           :of-form-pron-unk-supported))
+  (:export :of-form-pron-simple
+           :of-form-pron))
 (in-package :hachee.kkc.convert.score-fns)
 
 (defun node-word-from-extended-dictionary-p (node)
@@ -28,7 +28,7 @@
                                   :form (string char)
                                   :pron (string char))))))
 
-(defun of-form-pron (&key vocabulary n-gram-model)
+(defun of-form-pron-simple (&key vocabulary n-gram-model)
   (let ((fail-safe-score -10000))
     (lambda (curr-node prev-node)
       (let ((curr-token (to-int-or-nil vocabulary (node-word curr-node)))
@@ -41,12 +41,11 @@
                   fail-safe-score))
             fail-safe-score)))))
 
-(defun of-form-pron-unk-supported
-    (&key vocabulary
-          n-gram-model
-          unknown-word-vocabulary
-          unknown-word-n-gram-model
-          (probability-for-extended-dictionary-words 0))
+(defun of-form-pron (&key vocabulary
+                          n-gram-model
+                          unknown-word-vocabulary
+                          unknown-word-n-gram-model
+                          (probability-for-extended-dictionary-words 0))
   (let ((unk-token (to-int vocabulary +UNK+))
         (fail-safe-score -10000))
     (lambda (curr-node prev-node)

@@ -5,6 +5,7 @@
            :to-int-or-nil
            :to-int-or-unk
            :+UNK+ :+BOS+ :+EOS+
+           :vocabulary
            :make-vocabulary
            :save-vocabulary
            :load-vocabulary)

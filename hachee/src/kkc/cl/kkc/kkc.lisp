@@ -8,8 +8,8 @@
 
            :profile
            :make-kkc
+           :create-simple-kkc
            :create-kkc
-           :create-kkc-unk-supported
            :save-kkc
            :load-kkc
            :word-form
@@ -149,28 +149,29 @@
               (hachee.kkc.word.dictionary:add dict word))))))
     dict))
 
-(defstruct kkc
+(defstruct simple-kkc
   n-gram-model
   vocabulary
   vocabulary-dictionary
   extended-dictionary
   tankan-dictionary)
 
-(defstruct (unk-supported-kkc (:include kkc))
+(defstruct (kkc (:include simple-kkc))
   sum-probabilities-of-vocabulary-words
   unknown-word-vocabulary
   unknown-word-n-gram-model)
 
-(defun create-kkc (pathnames &key tankan-dictionary)
+(defun create-simple-kkc (pathnames &key tankan-dictionary)
   (let* ((vocabulary (build-vocabulary pathnames))
          (dictionary (build-dictionary pathnames vocabulary))
          (n-gram-model (build-n-gram-model pathnames vocabulary)))
-    (hachee.kkc:make-kkc
+    (make-simple-kkc
      :n-gram-model n-gram-model
      :vocabulary vocabulary
      :vocabulary-dictionary dictionary
      :extended-dictionary (hachee.kkc.word.dictionary:make-dictionary)
-     :tankan-dictionary tankan-dictionary)))
+     :tankan-dictionary (or tankan-dictionary
+                            (hachee.kkc.word.dictionary:make-dictionary)))))
 
 (defun word->char-tokens (word unknown-word-vocabulary)
   (let ((pron (hachee.kkc.word:word-pron word)))
@@ -196,8 +197,8 @@
                     unknown-word-vocabulary
                     hachee.kkc.word.vocabulary:+EOS+)))))
 
-(defun create-kkc-unk-supported (pathnames &key tankan-dictionary
-                                                extended-dictionary)
+(defun create-kkc (pathnames &key tankan-dictionary
+                                  extended-dictionary)
   (assert (<= 2 (length pathnames)))
   (let* ((vocabulary (build-vocabulary-with-unk pathnames))
          (dictionary (build-dictionary pathnames vocabulary))
@@ -209,12 +210,14 @@
                                      pathnames
                                      vocabulary
                                      unknown-word-vocabulary)))
-    (make-unk-supported-kkc
+    (make-kkc
      :vocabulary vocabulary
      :n-gram-model n-gram-model
      :vocabulary-dictionary dictionary
-     :extended-dictionary extended-dictionary
-     :tankan-dictionary tankan-dictionary
+     :extended-dictionary (or extended-dictionary
+                              (hachee.kkc.word.dictionary:make-dictionary))
+     :tankan-dictionary (or tankan-dictionary
+                            (hachee.kkc.word.dictionary:make-dictionary))
      :unknown-word-vocabulary unknown-word-vocabulary
      :unknown-word-n-gram-model unknown-word-n-gram-model
      :sum-probabilities-of-vocabulary-words
@@ -223,63 +226,83 @@
       unknown-word-n-gram-model
       (hachee.kkc.word.dictionary:list-all-words dictionary)))))
 
-(defgeneric get-score-fn (kkc))
+(defgeneric get-score-fn (abstract-kkc))
+
+(defmethod get-score-fn ((kkc simple-kkc))
+  (hachee.kkc.convert.score-fns:of-form-pron-simple
+   :vocabulary (simple-kkc-vocabulary kkc)
+   :n-gram-model (simple-kkc-n-gram-model kkc)))
 
 (defmethod get-score-fn ((kkc kkc))
   (hachee.kkc.convert.score-fns:of-form-pron
    :vocabulary (kkc-vocabulary kkc)
-   :n-gram-model (kkc-n-gram-model kkc)))
-
-(defmethod get-score-fn ((kkc unk-supported-kkc))
-  (hachee.kkc.convert.score-fns:of-form-pron-unk-supported
-   :vocabulary (kkc-vocabulary kkc)
    :n-gram-model (kkc-n-gram-model kkc)
-   :unknown-word-vocabulary
-   (unk-supported-kkc-unknown-word-vocabulary kkc)
-   :unknown-word-n-gram-model
-   (unk-supported-kkc-unknown-word-n-gram-model kkc)
+   :unknown-word-vocabulary (kkc-unknown-word-vocabulary kkc)
+   :unknown-word-n-gram-model (kkc-unknown-word-n-gram-model kkc)
    :probability-for-extended-dictionary-words
    (let ((extended-dictionary-size
           (hachee.kkc.word.dictionary:size (kkc-extended-dictionary kkc)))
          (sum-probabilities-of-vocabulary-words
-          (unk-supported-kkc-sum-probabilities-of-vocabulary-words kkc)))
-     (if (= extended-dictionary-size 0)
-         0
+          (kkc-sum-probabilities-of-vocabulary-words kkc)))
+     (if (< extended-dictionary-size 0)
          (/ sum-probabilities-of-vocabulary-words
-            extended-dictionary-size)))))
+            extended-dictionary-size)
+         0))))
 
-(defun convert-to-nodes (kkc pronunciation &key 1st-boundary-index)
+(defun convert-to-nodes (abstract-kkc pronunciation &key 1st-boundary-index)
   (hachee.kkc.convert:execute pronunciation
-   :score-fn (get-score-fn kkc)
-   :vocabulary (kkc-vocabulary kkc)
-   :vocabulary-dictionary (kkc-vocabulary-dictionary kkc)
-   :extended-dictionary (kkc-extended-dictionary kkc)
+   :score-fn (get-score-fn abstract-kkc)
+   :vocabulary (kkc-vocabulary abstract-kkc)
+   :vocabulary-dictionary (kkc-vocabulary-dictionary abstract-kkc)
+   :extended-dictionary (kkc-extended-dictionary abstract-kkc)
    :1st-boundary-index 1st-boundary-index))
 
-(defun convert (kkc pronunciation &key 1st-boundary-index)
-  (mapcar #'node-word (convert-to-nodes
-                       kkc pronunciation
-                       :1st-boundary-index 1st-boundary-index)))
+(defun convert (abstract-kkc pronunciation &key 1st-boundary-index)
+  (mapcar #'hachee.kkc.convert:node-word
+          (convert-to-nodes abstract-kkc pronunciation
+                            :1st-boundary-index 1st-boundary-index)))
 
-(defun lookup-items (kkc pronunciation)
+(defun lookup-items (abstract-kkc pronunciation)
   (hachee.kkc.lookup:execute pronunciation
-   :vocabulary-dictionary (kkc-vocabulary-dictionary kkc)
-   :tankan-dictionary (kkc-tankan-dictionary kkc)))
+   :vocabulary-dictionary (kkc-vocabulary-dictionary abstract-kkc)
+   :tankan-dictionary (kkc-tankan-dictionary abstract-kkc)))
 
-(defun lookup (kkc pronunciation)
-  (mapcar #'hachee.kkc.lookup:item-word (lookup-items kkc pronunciation)))
+(defun lookup (abstract-kkc pronunciation)
+  (mapcar #'hachee.kkc.lookup:item-word
+          (lookup-items abstract-kkc pronunciation)))
 
 
 (defun save-kkc (kkc pathname)
-  (hachee.kkc.archive:save pathname
-                           :vocabulary (kkc-vocabulary kkc)
-                           :dictionary (kkc-vocabulary-dictionary kkc)
-                           :n-gram-model (kkc-n-gram-model kkc)))
+  (hachee.kkc.archive:save
+   pathname
+   :n-gram-model (kkc-n-gram-model kkc)
+   :vocabulary (kkc-vocabulary kkc)
+   :vocabulary-dictionary (kkc-vocabulary-dictionary kkc)
+   :extended-dictionary (kkc-extended-dictionary kkc)
+   :tankan-dictionary (kkc-tankan-dictionary kkc)
+   :unknown-word-vocabulary (kkc-unknown-word-vocabulary kkc)
+   :unknown-word-n-gram-model (kkc-unknown-word-n-gram-model kkc)))
 
 
 (defun load-kkc (pathname)
-  (destructuring-bind (&key vocabulary dictionary n-gram-model)
+  (destructuring-bind (&key n-gram-model
+                            vocabulary
+                            vocabulary-dictionary
+                            extended-dictionary
+                            tankan-dictionary
+                            unknown-word-vocabulary
+                            unknown-word-n-gram-model)
       (hachee.kkc.archive:load pathname)
-    (make-kkc :vocabulary vocabulary
-              :vocabulary-dictionary dictionary
-              :n-gram-model n-gram-model)))
+    (make-kkc
+     :n-gram-model n-gram-model
+     :vocabulary vocabulary
+     :vocabulary-dictionary vocabulary-dictionary
+     :extended-dictionary extended-dictionary
+     :tankan-dictionary tankan-dictionary
+     :unknown-word-vocabulary unknown-word-vocabulary
+     :unknown-word-n-gram-model unknown-word-n-gram-model
+     :sum-probabilities-of-vocabulary-words
+     (sum-probabilities-of-words
+      unknown-word-vocabulary
+      unknown-word-n-gram-model
+      (hachee.kkc.word.dictionary:list-all-words vocabulary-dictionary)))))

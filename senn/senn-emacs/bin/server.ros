@@ -13,7 +13,8 @@ exec ros -Q -- $0 "$@"
 (in-package :ros.script.run.3749247322)
 (ql:quickload :senn-emacs :silent t)
 
-(defvar *kkc* (senn.kkc:load-kkc (user-homedir-pathname)))
+(defvar *kkc*
+  (senn.kkc:load-kkc (user-homedir-pathname)))
 
 (defun main (&rest argv)
   (declare (ignore argv))

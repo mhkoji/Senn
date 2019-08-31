@@ -3,6 +3,7 @@
   (:export :add
            :lookup
            :size
+           :dictionary
            :list-all-words
            :make-dictionary
            :save-dictionary
