@@ -8,7 +8,7 @@
                          system-pathname)))
 
 (defmacro build-and-convert-pronunciations (pathnames &key test)
-  `(let ((kkc (hachee.kkc:create-kkc ,pathnames)))
+  `(let ((kkc (hachee.kkc:create-simple-kkc ,pathnames)))
      (,test
       (equal (mapcar #'hachee.kkc.word:word->key
                      (hachee.kkc:convert kkc "わたくしのせんせい"))

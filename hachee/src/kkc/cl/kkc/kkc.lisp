@@ -252,9 +252,9 @@
 (defun convert-to-nodes (abstract-kkc pronunciation &key 1st-boundary-index)
   (hachee.kkc.convert:execute pronunciation
    :score-fn (get-score-fn abstract-kkc)
-   :vocabulary (kkc-vocabulary abstract-kkc)
-   :vocabulary-dictionary (kkc-vocabulary-dictionary abstract-kkc)
-   :extended-dictionary (kkc-extended-dictionary abstract-kkc)
+   :vocabulary (simple-kkc-vocabulary abstract-kkc)
+   :vocabulary-dictionary (simple-kkc-vocabulary-dictionary abstract-kkc)
+   :extended-dictionary (simple-kkc-extended-dictionary abstract-kkc)
    :1st-boundary-index 1st-boundary-index))
 
 (defun convert (abstract-kkc pronunciation &key 1st-boundary-index)
@@ -264,8 +264,8 @@
 
 (defun lookup-items (abstract-kkc pronunciation)
   (hachee.kkc.lookup:execute pronunciation
-   :vocabulary-dictionary (kkc-vocabulary-dictionary abstract-kkc)
-   :tankan-dictionary (kkc-tankan-dictionary abstract-kkc)))
+   :vocabulary-dictionary (simple-kkc-vocabulary-dictionary abstract-kkc)
+   :tankan-dictionary (simple-kkc-tankan-dictionary abstract-kkc)))
 
 (defun lookup (abstract-kkc pronunciation)
   (mapcar #'hachee.kkc.lookup:item-word
