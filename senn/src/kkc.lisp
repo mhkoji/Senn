@@ -2,7 +2,9 @@
 (defpackage :senn.kkc
   (:use :cl :hachee.kkc)
   (:export :convert
+           :convert-to-nodes
            :lookup
+           :lookup-items
            :word-pron
            :word-form
            :load-kkc)

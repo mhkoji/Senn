@@ -128,12 +128,12 @@
 
 (defun senn-api-convert (string 1st-boundary-index)
   (senn-api-call "convert"
-                   `(("text" . ,string)
-                     ("1st-boundary-index" . ,1st-boundary-index))))
+                 `(("text" . ,string)
+                   ("1st-boundary-index" . ,1st-boundary-index))))
 
 (defun senn-api-lookup-words (string)
   (senn-api-call "lookup"
-                   `(("text" . ,string))))
+                 `(("text" . ,string))))
 
 (defun senn-api-quit ()
   (senn-api-call "quit" nil))
@@ -143,8 +143,12 @@
 
 (defun senn-word->option (word-alist)
   (make-senn-option :form (senn-assoc-get 'form word-alist)
-                      :origin 'IV
-                      :logP 0))
+                    :origin
+                    (let ((origin-string
+                           (senn-assoc-get 'origin word-alist)))
+                      (when (not (string= "" origin-string))
+                        (car (read-from-string origin-string))))
+                    :logP 0))
 
 
 (defun senn-word->select (word-alist)

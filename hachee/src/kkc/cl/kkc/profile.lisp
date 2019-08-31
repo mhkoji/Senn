@@ -6,7 +6,8 @@
 
 (defun profile (kkc)
   (sb-profile:profile . #.(mapcar #'string
-                                  (list :hachee.kkc
+                                  (list :cl
+                                        :hachee.kkc
                                         :hachee.kkc.convert
                                         :hachee.kkc.convert.score-fns
                                         :hachee.kkc.word

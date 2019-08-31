@@ -1,7 +1,11 @@
 (defpackage :hachee.kkc
   (:use :cl :hachee.kkc.word)
   (:export :convert
+           :convert-to-nodes
+
            :lookup
+           :lookup-items
+
            :profile
            :make-kkc
            :create-kkc
@@ -244,22 +248,27 @@
          (/ sum-probabilities-of-vocabulary-words
             extended-dictionary-size)))))
 
-(defun convert (kkc pronunciation &key 1st-boundary-index)
-  (let ((nodes (hachee.kkc.convert:execute pronunciation
-                :score-fn (get-score-fn kkc)
-                :vocabulary (kkc-vocabulary kkc)
-                :vocabulary-dictionary (kkc-vocabulary-dictionary kkc)
-                :extended-dictionary (kkc-extended-dictionary kkc)
-                :1st-boundary-index 1st-boundary-index)))
-    (mapcar (lambda (n)
-              (hachee.kkc.convert:node-word n))
-            nodes)))
+(defun convert-to-nodes (kkc pronunciation &key 1st-boundary-index)
+  (hachee.kkc.convert:execute pronunciation
+   :score-fn (get-score-fn kkc)
+   :vocabulary (kkc-vocabulary kkc)
+   :vocabulary-dictionary (kkc-vocabulary-dictionary kkc)
+   :extended-dictionary (kkc-extended-dictionary kkc)
+   :1st-boundary-index 1st-boundary-index))
 
+(defun convert (kkc pronunciation &key 1st-boundary-index)
+  (mapcar #'node-word (convert-to-nodes
+                       kkc pronunciation
+                       :1st-boundary-index 1st-boundary-index)))
+
+(defun lookup-items (kkc pronunciation)
+  (hachee.kkc.lookup:execute pronunciation
+   :vocabulary-dictionary (kkc-vocabulary-dictionary kkc)
+   :tankan-dictionary (kkc-tankan-dictionary kkc)))
 
 (defun lookup (kkc pronunciation)
-  (hachee.kkc.lookup:execute pronunciation
-   :dictionaries (list (kkc-vocabulary-dictionary kkc)
-                       (kkc-tankan-dictionary kkc))))
+  (mapcar #'hachee.kkc.lookup:item-word (lookup-items kkc pronunciation)))
+
 
 (defun save-kkc (kkc pathname)
   (hachee.kkc.archive:save pathname
