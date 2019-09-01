@@ -244,7 +244,7 @@
           (hachee.kkc.word.dictionary:size (kkc-extended-dictionary kkc)))
          (sum-probabilities-of-vocabulary-words
           (kkc-sum-probabilities-of-vocabulary-words kkc)))
-     (if (< extended-dictionary-size 0)
+     (if (< 0 extended-dictionary-size)
          (/ sum-probabilities-of-vocabulary-words
             extended-dictionary-size)
          0))))
