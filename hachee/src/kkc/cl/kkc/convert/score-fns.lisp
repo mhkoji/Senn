@@ -20,11 +20,6 @@
 (defun node-word-from-extended-dictionary-p (node)
   (eql (node-word-origin node) :extended-dictionary))
 
-(defun word->pron-char-tokens (word unknown-word-vocabulary)
-  (mapcar (lambda (char)
-            (to-int-or-unk unknown-word-vocabulary char))
-          (hachee.kkc.word:word->pron-chars word)))
-
 (defun of-form-pron-simple (&key word-vocabulary word-n-gram-model)
   (let ((fail-safe-score -10000))
     (lambda (curr-node prev-node)
@@ -64,17 +59,14 @@
                       word-n-gram-model word-unk-token (list prev-token))))
               (if (/= p 0)
                   (+ (log p)
-                     (let* ((word-sentence
-                             (hachee.language-model:make-sentence
-                              :tokens (word->pron-char-tokens
-                                       (node-word curr-node)
-                                       unknown-word-char-vocabulary)))
-                            (log-prob-by-unknown-word-n-gram
-                             (sentence-log-probability
-                              unknown-word-char-n-gram-model
-                              word-sentence
-                              :BOS char-bos-token
-                              :EOS char-eos-token)))
+                     (let ((log-prob-by-unknown-word-n-gram
+                            (sentence-log-probability
+                             unknown-word-char-n-gram-model
+                             (hachee.kkc.util:word->sentence
+                              (node-word curr-node)
+                              unknown-word-char-vocabulary)
+                             :BOS char-bos-token
+                             :EOS char-eos-token)))
                        (if (node-word-from-extended-dictionary-p curr-node)
                            (log
                             (+ (exp log-prob-by-unknown-word-n-gram)

@@ -40,7 +40,8 @@
      (:module :kkc
       :pathname "kkc"
       :components
-      ((:file "convert/convert")
+      ((:file "util")
+       (:file "convert/convert")
        (:file "convert/score-fns")
        (:file "lookup")
        (:file "archive")

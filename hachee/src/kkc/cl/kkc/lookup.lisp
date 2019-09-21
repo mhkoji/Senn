@@ -15,7 +15,7 @@
   (mapcar #'hachee.kkc.word:char-form
           (hachee.kkc.word.dictionary:lookup dict pron)))
 
-(defun execute (pronunciation &key word-dicts char-dicts )
+(defun execute (pronunciation &key word-dicts char-dicts)
   (let ((result-items nil))
     (labels ((push-forms (forms origin)
                (dolist (form forms)

@@ -112,17 +112,15 @@
                      hachee.language-model.vocabulary:+EOS+))
         (model (make-instance 'hachee.language-model.n-gram:model)))
   (dolist (pathname pathnames)
-    (dolist (sentence (hachee.kkc.file:file->sentences pathname))
-      (dolist (word (hachee.kkc.file:sentence-words sentence))
+    (dolist (file-sentence (hachee.kkc.file:file->sentences pathname))
+      (dolist (word (hachee.kkc.file:sentence-words file-sentence))
         (when (not (to-int-or-nil vocabulary (word->key word)))
-          (let ((tokens (loop for char in (word->pron-chars word)
-                              collect (to-int-or-unk unknown-word-vocabulary
-                                                     (char->key char)))))
-            (let ((sentences (list (hachee.language-model:make-sentence
-                                    :tokens tokens))))
-              (hachee.language-model.n-gram:train model sentences
-                                                  :BOS BOS
-                                                  :EOS EOS)))))))
+          (let ((sentence (hachee.kkc.util:word->sentence
+                           word
+                           unknown-word-vocabulary)))
+            (hachee.language-model.n-gram:train model (list sentence)
+                                                :BOS BOS
+                                                :EOS EOS))))))
   model))
 
 (defun build-word-dictionary (pathnames)
@@ -173,26 +171,22 @@
      :tankan-dictionary (or tankan-dictionary
                             (hachee.kkc.word.dictionary:make-dictionary)))))
 
-(defun word->char-tokens (word unknown-word-vocabulary)
-  (let ((pron (hachee.kkc.word:word-pron word)))
-    (loop for char across pron
-          collect (to-int-or-unk unknown-word-vocabulary
-                                 (make-word :form (string char)
-                                            :pron (string char))))))
-
 (defun sum-probabilities-of-words (unknown-word-vocabulary
                                    unknown-word-n-gram-model
                                    words)
-  (loop
-    for word in words
-    sum (exp (hachee.language-model.n-gram:sentence-log-probability
-              unknown-word-n-gram-model
-              (hachee.language-model:make-sentence
-               :tokens (word->char-tokens word unknown-word-vocabulary))
-              :BOS (to-int unknown-word-vocabulary
-                           hachee.language-model.vocabulary:+BOS+)
-              :EOS (to-int unknown-word-vocabulary
-                           hachee.language-model.vocabulary:+EOS+)))))
+  (let ((bos-token (to-int unknown-word-vocabulary
+                           hachee.language-model.vocabulary:+BOS+))
+        (eos-token (to-int unknown-word-vocabulary
+                           hachee.language-model.vocabulary:+EOS+)))
+    (loop
+      for word in words
+      sum (exp (hachee.language-model.n-gram:sentence-log-probability
+                unknown-word-n-gram-model
+                (hachee.kkc.util:word->sentence
+                 word
+                 unknown-word-vocabulary)
+                :BOS bos-token
+                :EOS eos-token)))))
 
 (defun create-kkc (pathnames &key word-dictionary
                                   tankan-dictionary

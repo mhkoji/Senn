@@ -12,7 +12,7 @@
                                         :hachee.kkc.convert.score-fns
                                         :hachee.kkc.word
                                         :hachee.kkc.word.dictionary
-                                        :hachee.kkc.word.vocabulary
+                                        :hachee.language-mdoel.vocabulary
                                         :hachee.language-model.freq
                                         :hachee.language-model.n-gram)))
   (hachee.kkc:convert kkc "あおぞらぶんこ")
