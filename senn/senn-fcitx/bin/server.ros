@@ -13,9 +13,10 @@ exec ros -Q -- $0 "$@"
 (in-package :ros.script.server.3755635753)
 (ql:quickload :senn-fcitx :silent t)
 
-(defvar *kkc* (senn.kkc:load-kkc))
+(defvar *kkc*
+  (senn.kkc:load-kkc (user-homedir-pathname)))
 
 (defun main (&rest argv)
   (declare (ignorable argv))
-  (senn.fcitx.server.ipc:enter-loop *kkc*))
+  (senn.fcitx.stateful-im.ipc:enter-loop *kkc*))
 ;;; vim: set ft=lisp lisp:

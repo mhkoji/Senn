@@ -22,10 +22,10 @@
 
 (defun append-forms! (segment get-forms)
   (when (segment-has-more-forms-p segment)
-    (let* ((all-forms (funcall get-forms (segment-pron segment)))
-           (new-forms (set-difference all-forms
-                                      (segment-forms segment)
-                                      :test #'string=)))
+    (let ((new-forms (remove-if (lambda (f)
+                                  (member f (segment-forms segment)
+                                          :test #'string=))
+                                (funcall get-forms (segment-pron segment)))))
       (setf (segment-forms segment)
             (append (segment-forms segment) new-forms))
       (setf (segment-has-more-forms-p segment)
