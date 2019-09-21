@@ -2,8 +2,7 @@
   (:use :cl)
   (:export :execute
            :node-word
-           :node-word-origin
-           :node-origin)
+           :node-word-origin)
   (:import-from :hachee.kkc.word.dictionary
                 :lookup)
   (:import-from :hachee.ja

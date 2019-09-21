@@ -2,9 +2,9 @@
 (defpackage :senn.kkc
   (:use :cl :hachee.kkc)
   (:export :convert
-           :convert-to-nodes
+           :convert-into-words
+           :lookup
            :lookup-forms
-           :lookup-items
            :word-pron
            :word-form
            :load-kkc)
@@ -30,3 +30,16 @@
 (defun load-kkc (&optional user-homedir-pathname)
   (or (load-user-kkc user-homedir-pathname)
       (create-system-kkc)))
+
+
+(defpackage :senn.kkc.convert
+  (:use :hachee.kkc.convert)
+  (:export :node
+           :node-word
+           :node-word-origin))
+
+(defpackage :senn.kkc.lookup
+  (:use :hachee.kkc.lookup)
+  (:export :item
+           :item-form
+           :item-origin))

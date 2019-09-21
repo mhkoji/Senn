@@ -11,7 +11,7 @@
 (defstruct ime kkc)
 
 (defun convert (ime pron)
-  (let ((words (senn.kkc:convert (ime-kkc ime) pron)))
+  (let ((words (senn.kkc:convert-into-words (ime-kkc ime) pron)))
     (mapcar (lambda (w)
               (make-segment :pron (senn.kkc:word-pron w)
                             :forms (list (senn.kkc:word-form w))

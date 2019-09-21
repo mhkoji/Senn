@@ -11,11 +11,13 @@
   `(let ((kkc (hachee.kkc:create-simple-kkc ,pathnames)))
      (,test
       (equal (mapcar #'hachee.kkc.word:word->key
-                     (hachee.kkc:convert kkc "わたくしのせんせい"))
+                     (mapcar #'hachee.kkc.convert:node-word
+                             (hachee.kkc:convert kkc "わたくしのせんせい")))
              (list "私/わたくし" "の/の" "先生/せんせい")))
      (,test
       (equal (mapcar #'hachee.kkc.word:word->key
-                     (hachee.kkc:convert
-                      kkc "おとといとうきょうまでうかがいました"))
+                     (mapcar #'hachee.kkc.convert:node-word
+                             (hachee.kkc:convert
+                              kkc "おとといとうきょうまでうかがいました")))
              (list "おととい/おととい" "東京/とうきょう" "まで/まで"
                    "伺/うかが" "い/い" "ま/ま" "し/し" "た/た")))))

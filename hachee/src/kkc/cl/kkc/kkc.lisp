@@ -1,21 +1,20 @@
 (defpackage :hachee.kkc
   (:use :cl)
   (:export :convert
-           :convert-to-nodes
-
-           :lookup-forms
-           :lookup-items
-
-           :profile
-           :make-kkc
-           :create-simple-kkc
-           :create-kkc
-           :save-kkc
-           :load-kkc
-
+           :convert-into-words
            :word-form
            :word-pron
 
+           :lookup
+           :lookup-forms
+
+           :profile
+
+           :make-kkc
+           :save-kkc
+           :load-kkc
+           :create-simple-kkc
+           :create-kkc
            :build-word-dictionary
            :build-tankan-dictionary)
   (:import-from :hachee.language-model.vocabulary
@@ -182,9 +181,7 @@
       for word in words
       sum (exp (hachee.language-model.n-gram:sentence-log-probability
                 unknown-word-n-gram-model
-                (hachee.kkc.util:word->sentence
-                 word
-                 unknown-word-vocabulary)
+                (hachee.kkc.util:word->sentence word unknown-word-vocabulary)
                 :BOS bos-token
                 :EOS eos-token)))))
 
@@ -243,7 +240,7 @@
             extended-dictionary-size)
          0))))
 
-(defun convert-to-nodes (abstract-kkc pronunciation &key 1st-boundary-index)
+(defun convert (abstract-kkc pronunciation &key 1st-boundary-index)
   (hachee.kkc.convert:execute pronunciation
    :score-fn (get-score-fn abstract-kkc)
    :vocabulary (simple-kkc-vocabulary abstract-kkc)
@@ -251,12 +248,13 @@
    :extended-dictionary (simple-kkc-extended-dictionary abstract-kkc)
    :1st-boundary-index 1st-boundary-index))
 
-(defun convert (abstract-kkc pronunciation &key 1st-boundary-index)
+(defun convert-into-words (abstract-kkc pronunciation &key 1st-boundary-index)
   (mapcar #'hachee.kkc.convert:node-word
-          (convert-to-nodes abstract-kkc pronunciation
-                            :1st-boundary-index 1st-boundary-index)))
+          (convert abstract-kkc pronunciation
+                   :1st-boundary-index 1st-boundary-index)))
 
-(defun lookup-items (abstract-kkc pronunciation)
+
+(defun lookup (abstract-kkc pronunciation)
   (hachee.kkc.lookup:execute pronunciation
    :word-dicts
    (list (list :vocabulary
@@ -271,7 +269,7 @@
 
 (defun lookup-forms (abstract-kkc pronunciation)
   (mapcar #'hachee.kkc.lookup:item-form
-          (lookup-items abstract-kkc pronunciation)))
+          (lookup abstract-kkc pronunciation)))
 
 
 (defun save-kkc (kkc pathname)
@@ -302,8 +300,8 @@
      :vocabulary vocabulary
      :vocabulary-dictionary vocabulary-dictionary
      :extended-dictionary extended-dictionary
-     :tankan-dictionary tankan-dictionary
      :word-dictionary word-dictionary
+     :tankan-dictionary tankan-dictionary
      :unknown-word-vocabulary unknown-word-vocabulary
      :unknown-word-n-gram-model unknown-word-n-gram-model
      :sum-probabilities-of-vocabulary-words
