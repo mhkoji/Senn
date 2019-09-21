@@ -18,6 +18,12 @@
   np-count
   )
 
+(defun senn-hiragana->katakana (hiragana-string)
+  (apply #'concat
+         (mapcar #'char-to-string
+                 (mapcar #'japanese-katakana
+                         (senn-vector->list hiragana-string)))))
+
 (defun senn-get-curr-option (select)
   (let ((options (senn-select-options select))
         (curr-index (senn-select-curr-option-idx select)))
@@ -25,16 +31,16 @@
         (aref options curr-index)
       nil)))
 
-(defun senn-get-option-form (select)
+(defun senn-get-curr-form (select)
   (let ((option (senn-get-curr-option select)))
     (if option
         ;; 通常の場合
         (senn-option-form option)
-      (case (senn-select-curr-option-idx option)
+      (case (senn-select-curr-option-idx select)
         ;; ひらがなの場合
-        (-1 (senn-select-pron option))
+        (-1  (senn-select-pron select))
         ;; カタカナの場合
-        (-2 (hiragana->katakana (senn-select-pron option)))))))
+        (-2 (senn-hiragana->katakana (senn-select-pron select)))))))
 
 ;; 変換に関わるすべての変数を保持する構造。
 ;; 日本語列は単語に区切られて、senn-selectという形になっている。
@@ -45,9 +51,6 @@
 ;; -1のときは、全てひらがな表示。バックスぺースキーが押されたときなど。
 (defstruct senn-conversion
   pron
-  ;; kana-kanji, hiragana or katakana
-  mode
-  ;; used when mode is kana-kanji
   logP
   selects
   select-count

@@ -164,7 +164,6 @@
   (let ((words (senn-api-convert pron nil)))
     (let ((selects (mapcar #'senn-word->select words)))
       (make-senn-conversion :pron pron
-                            :mode 'kana-kanji
                             :logP 0
                             :selects (apply #'vector selects)
                             :select-count (length selects)
@@ -187,7 +186,6 @@
       (let ((new-selects (vconcat selects1 selects2)))
         (make-senn-conversion
          :pron (senn-conv-pron conversion)
-         :mode 'kana-kanji
          :logP 0
          :selects new-selects
          :select-count (length new-selects)
@@ -261,14 +259,12 @@
 ;;; キーが押されたら呼ばれるコマンド
 (defun senn-move-top-of-options ()
   (interactive)
-  (setf (senn-conversion-mode senn-conversion-data) 'kana-kanji)
   (senn-with-current-select curr-select senn-conversion-data
     (setf (senn-select-curr-option-idx curr-select) 0)
     (senn-message-select curr-select)))
 
 (defun senn-move-bottom-of-options ()
   (interactive)
-  (setf (senn-conversion-mode senn-conversion-data) 'kana-kanji)
   (senn-with-current-select curr-select senn-conversion-data
     (setf (senn-select-curr-option-idx curr-select)
           (1- (senn-select-option-count curr-select)))
@@ -296,12 +292,11 @@
         (setf (senn-select-more-options-p select) nil)
         (setf (senn-select-selectors select)
               (senn-build-selectors (senn-vector->list new-options)
-                                      senn-option-output-size))
+                                    senn-option-output-size))
         (setf (senn-select-np-count select) 0)))))
 
 (defun senn-next-option ()
   (interactive)
-  (setf (senn-conversion-mode senn-conversion-data) 'kana-kanji)
   (senn-with-current-select curr-select senn-conversion-data
     (senn-ensure-more-options-looked-up curr-select)
     (let ((count (senn-select-option-count curr-select))
@@ -318,7 +313,6 @@
 
 (defun senn-prev-option ()
   (interactive)
-  (setf (senn-conversion-mode senn-conversion-data) 'kana-kanji)
   (senn-with-current-select curr-select senn-conversion-data
     (senn-ensure-more-options-looked-up curr-select)
     (let ((count (senn-select-option-count curr-select))
@@ -334,12 +328,10 @@
 
 (defun senn-move-beginning-of-selects ()
   (interactive)
-  (setf (senn-conversion-mode senn-conversion-data) 'kana-kanji)
   (setf (senn-conv-curr-select-idx senn-conversion-data) 0))
 
 (defun senn-move-end-of-selects ()
   (interactive)
-  (setf (senn-conversion-mode senn-conversion-data) 'kana-kanji)
   (setf (senn-conv-curr-select-idx senn-conversion-data)
         (1- (senn-conv-select-count senn-conversion-data))))
 
@@ -351,7 +343,6 @@
 ;; wordを短くする。
 (defun senn-make-word-shorter ()
   (interactive)
-  (setf (senn-conversion-mode senn-conversion-data) 'kana-kanji)
   (when (senn-can-be-shorter-p senn-conversion-data)
     (setq senn-conversion-data (senn-reconvert-with-boundary
                                 senn-conversion-data #'1-))))
@@ -365,21 +356,20 @@
 ;; wordを長くする。
 (defun senn-make-word-longer ()
   (interactive)
-  (setf (senn-conversion-mode senn-conversion-data) 'kana-kanji)
   (when (senn-can-be-longer-p senn-conversion-data)
     (setq senn-conversion-data (senn-reconvert-with-boundary
                                 senn-conversion-data #'1+))))
 
-    ;; a,s,dなどが押されたときに呼ばれる。
+;; a,s,dなどが押されたときに呼ばれる。
 ;; 現在のフレーズの候補のインデックスを選ばれたものにする。
 ;; まちがって範囲外のものが押された可能性もあるので、そこら辺も考慮する。
 (defun senn-select-from-chars ()
   (interactive)
-  (setf (senn-conversion-mode senn-conversion-data) 'kana-kanji)
   (let ((selector-char last-input-event))
     (senn-with-current-select curr-select senn-conversion-data
       ;; まず、selectorがあるかを確認
-      (when (senn-select-selectors curr-select)
+      (when (and (<= 0 (senn-select-curr-option-idx curr-select))
+                 (senn-select-selectors curr-select))
         (let ((region (senn-selector-region
                        (senn-find-selector
                         (senn-select-curr-option-idx curr-select)
@@ -397,7 +387,6 @@
 
 (defun senn-next-select ()
   (interactive)
-  (setf (senn-conversion-mode senn-conversion-data) 'kana-kanji)
   (let ((index (senn-conv-curr-select-idx senn-conversion-data))
         (count (senn-conv-select-count senn-conversion-data)))
     (when (< index (1- count))
@@ -405,18 +394,22 @@
 
 (defun senn-prev-select ()
   (interactive)
-  (setf (senn-conversion-mode senn-conversion-data) 'kana-kanji)
   (let ((index (senn-conv-curr-select-idx senn-conversion-data)))
     (when (< 0 index)
       (decf (senn-conv-curr-select-idx senn-conversion-data)))))
 
 (defun senn-to-hiragana ()
   (interactive)
-  (setf (senn-conversion-mode senn-conversion-data) 'hiragana))
+  (senn-with-current-select curr-select senn-conversion-data
+    ;; -1 -> ひらがな
+    (setf (senn-select-curr-option-idx curr-select) -1)))
+
 
 (defun senn-to-katakana ()
   (interactive)
-  (setf (senn-conversion-mode senn-conversion-data) 'katakana))
+  (senn-with-current-select curr-select senn-conversion-data
+    ;; -2 -> カタカナの場合
+    (setf (senn-select-curr-option-idx curr-select) -2)))
 
 (defun senn-accept ()
   (interactive)
@@ -424,27 +417,19 @@
 
 
 (defun senn-insert-select (select from delim focusedp)
-  (let ((curr-option (senn-get-curr-option select))
-        (option-form (senn-get-option-form select)))
-    (insert (concat delim option-form))
-    (cond (focusedp
-           (senn-put-and-register-overlay from (point) 'face 'highlight))
-          ; 普通の変換候補か
-;          (curr-option
-;           ;; 候補のoriginによってオーバーレイをつける。
-;           (let* ((dict (senn-option-dict curr-option))
-;                  (overlay (cdr (assoc origin senn-origin-overlay-alist))))
-;             (when overlay
-;               (senn-put-and-register-overlay from (point)
-;                                                'face overlay)))))))
-          )))
+  (insert (concat delim (senn-get-curr-form select)))
+  (cond (focusedp
+         (senn-put-and-register-overlay from (point) 'face 'highlight))
+         ; 普通の変換候補か
+;        (curr-option
+;        ;; 候補のoriginによってオーバーレイをつける。
+;         (let* ((dict (senn-option-dict curr-option))
+;                (overlay (cdr (assoc origin senn-origin-overlay-alist))))
+;            (when overlay
+;              (senn-put-and-register-overlay from (point)
+;                                               'face overlay)))))))
+         ))
 
-
-(defun senn-hiragana->katakana (hiragana-string)
-  (apply #'concat
-         (mapcar #'char-to-string
-                 (mapcar #'japanese-katakana
-                         (senn-vector->list hiragana-string)))))
 
 ;; conversion-dataを表示させる間数。
 ;; 変換の終わりのポインタ値を返す。
@@ -452,39 +437,25 @@
   (goto-char begin)
   (delete-region begin end)
   (senn-delete-all-overlays)
-  (let ((mode (senn-conversion-mode senn-conversion-data)))
-    (cond ((eq mode 'hiragana)
-           (insert (senn-conversion-pron senn-conversion-data))
-           (when delim-p
-             ;; アンダーラインだけ表示
-             (senn-put-and-register-overlay begin (point)
-                                            'face 'underline)))
-          ((eq mode 'katakana)
-           (insert (senn-hiragana->katakana
-                    (senn-conversion-pron senn-conversion-data)))
-           (when delim-p
-             (senn-put-and-register-overlay begin (point)
-                                            'face 'underline)))
-          (t ;; 通常の場合
-           (let ((delim
-                  (if delim-p senn-preedit-delim-mark ""))
-                 (begin-mark
-                  (if delim-p senn-preedit-begin-mark ""))
-                 (curr-select-idx
-                  (senn-conversion-curr-select-idx senn-conversion-data))
-                 (selects
-                  (senn-conversion-selects senn-conversion-data)))
-             (loop for select across selects
-                   for i from 0
-                   ;; begin-mark, delimのハイライトはしない
-                   for from      = (1+ (point))
-                   for separator = (if (= i 0) begin-mark delim)
-                   for focusedp  = (= i curr-select-idx)
-                   do (senn-insert-select select from separator focusedp)
-                   finally (senn-with-current-select curr-select
-                                                     senn-conversion-data
-                             (senn-put-and-register-overlay
-                              begin (point) 'face 'underline)))))))
+  (let ((delim
+         (if delim-p senn-preedit-delim-mark ""))
+        (begin-mark
+         (if delim-p senn-preedit-begin-mark ""))
+        (curr-select-idx
+         (senn-conversion-curr-select-idx senn-conversion-data))
+        (selects
+         (senn-conversion-selects senn-conversion-data)))
+    (loop for select across selects
+          for i from 0
+          ;; begin-mark, delimのハイライトはしない
+          for from      = (1+ (point))
+          for separator = (if (= i 0) begin-mark delim)
+          for focusedp  = (= i curr-select-idx)
+          do (senn-insert-select select from separator focusedp)
+          finally (senn-with-current-select curr-select
+                                            senn-conversion-data
+                    (senn-put-and-register-overlay
+                     begin (point) 'face 'underline))))
   (point))
 
 
