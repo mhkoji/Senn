@@ -5,7 +5,8 @@
   ((:module :language-model
     :pathname "language-model"
     :components
-    ((:file "language-model")
+    ((:file "vocabulary")
+     (:file "language-model")
      (:file "freq")
      (:file "n-gram")))
 
@@ -32,9 +33,10 @@
       :pathname "word"
       :components
       ((:file "word")
-       (:file "vocabulary")
        (:file "dictionary")))
+
      (:file "file")
+
      (:module :kkc
       :pathname "kkc"
       :components

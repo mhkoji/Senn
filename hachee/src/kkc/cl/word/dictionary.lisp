@@ -1,31 +1,26 @@
 (defpackage :hachee.kkc.word.dictionary
   (:use :cl)
-  (:export :add
-           :lookup
+  (:export :lookup
+           :list-all
            :size
            :dictionary
-           :list-all-words
            :make-dictionary
            :save-dictionary
-           :load-dictionary))
+           :load-dictionary
+           :add-word
+           :add-char))
 (in-package :hachee.kkc.word.dictionary)
 
 (defstruct dictionary
   (hash (make-hash-table :test #'equal)))
 
-(defun add (dictionary word)
-  (let ((pron (hachee.kkc.word:word-pron word)))
-    (when (string/= pron "")
-      (pushnew word (gethash pron (dictionary-hash dictionary))
-               :test #'equal))))
-
 (defun lookup (dictionary pron)
   (gethash pron (dictionary-hash dictionary)))
 
-(defun list-all-words (dictionary)
-  (loop for words in (alexandria:hash-table-values
+(defun list-all (dictionary)
+  (loop for items in (alexandria:hash-table-values
                       (dictionary-hash dictionary))
-        nconc (copy-list words)))
+        nconc (copy-list items)))
 
 (defun size (dictionary)
   (hash-table-size (dictionary-hash dictionary)))
@@ -41,3 +36,15 @@
     (make-dictionary :hash
                      (alexandria:alist-hash-table
                       (getf list :hash) :test #'equal))))
+
+(defun add-new (dictionary key item test)
+  (pushnew item (gethash key (dictionary-hash dictionary))
+           :test test))
+
+(defun add-word (dictionary word)
+  (let ((key (hachee.kkc.word:word-pron word)))
+    (add-new dictionary key word #'hachee.kkc.word:word=)))
+
+(defun add-char (dictionary char)
+  (let ((key (hachee.kkc.word:char-pron char)))
+    (add-new dictionary key char #'hachee.kkc.word:char=)))

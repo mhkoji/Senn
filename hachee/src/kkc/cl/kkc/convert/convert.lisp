@@ -1,5 +1,5 @@
 (defpackage :hachee.kkc.convert
-  (:use :cl :hachee.kkc.word)
+  (:use :cl)
   (:export :execute
            :node-word
            :node-word-origin
@@ -42,12 +42,13 @@
 
 
 (defvar *BOS-node*
-  (make-node :word hachee.kkc.word.vocabulary:+BOS+
+  (make-node :word hachee.language-model.vocabulary:+BOS+
              :prev-node nil
              :score-so-far 0))
 
 (defun make-unknown-word (pron)
-  (make-word :pron pron :form (hiragana->katakana pron)))
+  (hachee.kkc.word:make-word :pron pron
+                             :form (hiragana->katakana pron)))
 
 
 (defun add-entries (table end prev-entries nodes)
@@ -89,7 +90,7 @@
             ;; Add unknown word node if necessary
             (when (< (- end start) 8) ;; Length up to 8
               (let ((unknown-word (make-unknown-word sub-pron)))
-                (when (null (hachee.kkc.word.vocabulary:to-int-or-nil
+                (when (null (hachee.language-model.vocabulary:to-int-or-nil
                              vocabulary
                              unknown-word))
                   (push (make-node :word unknown-word
@@ -104,7 +105,7 @@
           (when-let ((prev-nodes (second prev-entry)))
             (dolist (node nodes)
               (update-prev-node node score-fn prev-nodes :print-p nil))))))
-    (let ((EOS (make-node :word hachee.kkc.word.vocabulary:+EOS+)))
+    (let ((EOS (make-node :word hachee.language-model.vocabulary:+EOS+)))
       (loop for (prev-entries nodes) in (get-entries table length)
             do (update-prev-node EOS score-fn nodes :print-p nil))
       ;; skip EOS
