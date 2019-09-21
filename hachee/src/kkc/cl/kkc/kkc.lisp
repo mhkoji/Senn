@@ -12,9 +12,11 @@
            :create-kkc
            :save-kkc
            :load-kkc
+
            :word-form
            :word-pron
 
+           :build-word-dictionary
            :build-tankan-dictionary)
   (:import-from :hachee.language-model.vocabulary
                 :add-new
@@ -25,6 +27,8 @@
                 :make-char
                 :char->key
                 :make-word
+                :word-form
+                :word-pron
                 :word->pron-chars
                 :word->key)
   (:import-from :alexandria
@@ -89,7 +93,7 @@
       (let ((curr-chars (make-hash-table :test #'equal)))
         (dolist (sentence (hachee.kkc.file:file->sentences pathname))
           (dolist (word (hachee.kkc.file:sentence-words sentence))
-            (when (not (to-int vocabulary (word->key word)))
+            (when (not (to-int-or-nil vocabulary (word->key word)))
               (dolist (char (word->pron-chars word))
                 (setf (gethash (char->key char) curr-chars) char)))))
         (maphash (lambda (key char)
@@ -121,13 +125,23 @@
                                                   :EOS EOS)))))))
   model))
 
-(defun build-tankan-dictionary (pathnames)
+(defun build-word-dictionary (pathnames)
   (let ((dict (hachee.kkc.word.dictionary:make-dictionary)))
     (dolist (pathname pathnames)
       (with-open-file (in pathname)
         (loop for line = (read-line in nil nil) while line do
           (destructuring-bind (form part pron) (cl-ppcre:split "/" line)
             (declare (ignore part))
+            (let ((word (make-word :form form :pron pron)))
+              (hachee.kkc.word.dictionary:add-word dict word))))))
+    dict))
+
+(defun build-tankan-dictionary (pathnames)
+  (let ((dict (hachee.kkc.word.dictionary:make-dictionary)))
+    (dolist (pathname pathnames)
+      (with-open-file (in pathname)
+        (loop for line = (read-line in nil nil) while line do
+          (destructuring-bind (form pron) (cl-ppcre:split "/" line)
             (let ((char (make-char :form form :pron pron)))
               (hachee.kkc.word.dictionary:add-char dict char))))))
     dict))
@@ -251,7 +265,7 @@
 (defun lookup-items (abstract-kkc pronunciation)
   (hachee.kkc.lookup:execute pronunciation
    :word-dicts
-   (list (list :vocabulary-dictionary
+   (list (list :vocabulary
                (simple-kkc-vocabulary-dictionary abstract-kkc)
                :extended-dictionary
                (simple-kkc-extended-dictionary abstract-kkc)

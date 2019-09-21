@@ -63,21 +63,21 @@
             (let ((p (transition-probability
                       word-n-gram-model word-unk-token (list prev-token))))
               (if (/= p 0)
-                  (let ((word-sentence
-                         (hachee.language-model:make-sentence
-                          :tokens (word->pron-char-tokens
-                                   (node-word curr-node)
-                                   unknown-word-char-vocabulary))))
-                    (let ((log-prob-by-unknown-word-n-gram
-                           (sentence-log-probability
-                            unknown-word-char-n-gram-model
-                            word-sentence
-                            :BOS char-bos-token
-                            :EOS char-eos-token)))
-                      (if (node-word-from-extended-dictionary-p curr-node)
-                          (+ (log p)
-                             (log
-                              (+ (exp log-prob-by-unknown-word-n-gram)
-                                 probability-for-extended-dictionary-words))
-                             log-prob-by-unknown-word-n-gram))))
+                  (+ (log p)
+                     (let* ((word-sentence
+                             (hachee.language-model:make-sentence
+                              :tokens (word->pron-char-tokens
+                                       (node-word curr-node)
+                                       unknown-word-char-vocabulary)))
+                            (log-prob-by-unknown-word-n-gram
+                             (sentence-log-probability
+                              unknown-word-char-n-gram-model
+                              word-sentence
+                              :BOS char-bos-token
+                              :EOS char-eos-token)))
+                       (if (node-word-from-extended-dictionary-p curr-node)
+                           (log
+                            (+ (exp log-prob-by-unknown-word-n-gram)
+                               probability-for-extended-dictionary-words))
+                           log-prob-by-unknown-word-n-gram)))
                   fail-safe-score)))))))

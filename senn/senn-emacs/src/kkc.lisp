@@ -7,7 +7,8 @@
   (case origin
     (:extended-dictionary "EX")
     (:tankan-dictionary "TK")
-    (:unknown-word "UW")))
+    (:unknown-word "UW")
+    (t "")))
 
 (defun kkc-eval (kkc expr)
   (ecase (expr-op expr)
