@@ -37,6 +37,7 @@
                      (alexandria:alist-hash-table
                       (getf list :hash) :test #'equal))))
 
+
 (defun add-new (dictionary key item test)
   (pushnew item (gethash key (dictionary-hash dictionary))
            :test test))

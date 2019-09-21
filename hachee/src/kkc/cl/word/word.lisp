@@ -15,6 +15,7 @@
 (in-package :hachee.kkc.word)
 
 (defun make-char (&key form pron)
+  (assert (= (length form) 1))
   (concatenate 'string form "/" pron))
 
 (defun char-form (char)

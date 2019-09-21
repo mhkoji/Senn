@@ -4,11 +4,10 @@
 (in-package :senn.emacs.kkc)
 
 (defun convert-origin (origin)
-  (ecase origin
-    (:vocabulary "IV")
+  (case origin
     (:extended-dictionary "EX")
-    (:unknown-word "UW")
-    (:tankan-dictionary "TK")))
+    (:tankan-dictionary "TK")
+    (:unknown-word "UW")))
 
 (defun kkc-eval (kkc expr)
   (ecase (expr-op expr)
@@ -31,9 +30,8 @@
      (let ((items (senn.kkc:lookup-items kkc (expr-arg expr "text"))))
        (jsown:to-json
         (mapcar (lambda (item)
-                  (let ((word (hachee.kkc.lookup:item-word item))
-                        (origin (hachee.kkc.lookup:item-origin item)))
-                    (jsown:new-js
-                      ("form" (senn.kkc:word-form word))
-                      ("origin" (convert-origin origin)))))
+                  (jsown:new-js
+                    ("form" (hachee.kkc.lookup:item-form item))
+                    ("origin" (convert-origin
+                               (hachee.kkc.lookup:item-origin item)))))
                 items))))))

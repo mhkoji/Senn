@@ -31,6 +31,7 @@
                            vocabulary
                            vocabulary-dictionary
                            extended-dictionary
+                           word-dictionary
                            tankan-dictionary
                            unknown-word-vocabulary
                            unknown-word-n-gram-model)
@@ -52,6 +53,8 @@
                                             vocabulary-dictionary)
                                       (list "extended-dictionary.txt"
                                             extended-dictionary)
+                                      (list "word-dictionary.txt"
+                                            word-dictionary)
                                       (list "tankan-dictionary.txt"
                                             tankan-dictionary)
                                       (list "unknown-word-vocabulary.txt"
@@ -101,6 +104,9 @@
                            'hachee.kkc.word.dictionary:dictionary)
                      (list :extended-dictionary
                            "extended-dictionary.txt"
+                           'hachee.kkc.word.dictionary:dictionary)
+                     (list :word-dictionary
+                           "word-dictionary.txt"
                            'hachee.kkc.word.dictionary:dictionary)
                      (list :tankan-dictionary
                            "tankan-dictionary.txt"

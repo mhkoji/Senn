@@ -3,7 +3,7 @@
   (:use :cl :hachee.kkc)
   (:export :convert
            :convert-to-nodes
-           :lookup
+           :lookup-forms
            :lookup-items
            :word-pron
            :word-form

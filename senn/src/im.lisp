@@ -20,5 +20,4 @@
             words)))
 
 (defun lookup-forms (ime pron)
-  (let ((words (senn.kkc:lookup (ime-kkc ime) pron)))
-    (mapcar #'senn.kkc:word-form words)))
+  (senn.kkc:lookup-forms (ime-kkc ime) pron))

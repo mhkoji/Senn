@@ -1,27 +1,30 @@
 (defpackage :hachee.kkc.lookup
   (:use :cl)
   (:export :execute
-           :item-word
+           :item-form
            :item-origin))
 (in-package :hachee.kkc.lookup)
 
-(defstruct item word origin)
+(defstruct item form origin)
 
-(defun execute (pronunciation &key vocabulary-dictionary
-                                   tankan-dictionary)
+(defun lookup-word-forms (dict pron)
+  (mapcar #'hachee.kkc.word:word-form
+          (hachee.kkc.word.dictionary:lookup dict pron)))
+
+(defun lookup-char-forms (dict pron)
+  (mapcar #'hachee.kkc.word:char-form
+          (hachee.kkc.word.dictionary:lookup dict pron)))
+
+(defun execute (pronunciation &key word-dicts char-dicts )
   (let ((result-items nil))
-    (loop
-      for (dict origin) in (list
-                            (list vocabulary-dictionary :vocabulary)
-                            (list tankan-dictionary :tankan-dictionary))
-      do (progn
-           (dolist (word (hachee.kkc.word.dictionary:lookup
-                          dict
-                          pronunciation))
-             (let ((item (make-item :word word :origin origin)))
-               (pushnew item result-items
-                        :test #'equal
-                        :key (lambda (item)
-                               (hachee.kkc.word:word->key
-                                (item-word item))))))))
+    (labels ((push-forms (forms origin)
+               (dolist (form forms)
+                 (let ((item (make-item :form form :origin origin)))
+                   (pushnew item result-items
+                            :test #'string=
+                            :key #'item-form)))))
+      (loop for (origin dict) in word-dicts do
+        (push-forms (lookup-word-forms dict pronunciation) origin))
+      (loop for (origin dict) in char-dicts do
+        (push-forms (lookup-char-forms dict pronunciation) origin)))
     (nreverse result-items)))

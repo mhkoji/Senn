@@ -2,13 +2,13 @@
   (:use :cl)
   (:import-from :alexandria
                 :with-gensyms)
-  (:export :sentence-units
-           :file->string-sentences))
+  (:export :file->sentences
+           :sentence-words))
 (in-package :hachee.kkc.file)
 
 (defvar +external-format+ :utf-8)
 
-(defstruct sentence units)
+(defstruct sentence line)
 
 (defmacro with-each-line ((line filename) &body body)
   (with-gensyms (in line-count)
@@ -18,9 +18,26 @@
              for ,line-count from 1
              while ,line do (progn ,@body)))))
 
-(defun file->string-sentences (pathname)
+(defun file->sentences (pathname)
   (let ((sentences nil))
     (with-each-line (line pathname)
-      (let ((unit-strs (cl-ppcre:split " " line)))
-        (push (make-sentence :units unit-strs) sentences)))
+      (push (make-sentence :line line) sentences))
     (nreverse sentences)))
+
+(defun sentence-words (sentence)
+  (mapcar (lambda (form-pron-str)
+            ;; A/a-/B/b => AB/ab
+            (let ((form-pron-list
+                   (mapcar (lambda (form-pron-part-str)
+                             (let ((split (cl-ppcre:split
+                                           "/"
+                                           form-pron-part-str)))
+                               (list (or (first split) "")
+                                     (or (second split) ""))))
+                           (cl-ppcre:split "-" form-pron-str))))
+              (hachee.kkc.word:make-word
+               :form (format nil "~{~A~}" (mapcar #'first
+                                                  form-pron-list))
+               :pron (format nil "~{~A~}" (mapcar #'second
+                                                  form-pron-list)))))
+          (cl-ppcre:split " " (sentence-line sentence))))
