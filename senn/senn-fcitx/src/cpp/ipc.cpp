@@ -79,7 +79,7 @@ void Connection::ReadLine(std::string *output) {
   char buffer[1024];
 
   while (1) {
-    int bytes_read = read(socket_fd_, buffer, sizeof(buffer) - 1);
+    int bytes_read = read(socket_fd_, buffer, sizeof(buffer));
 
     if (bytes_read == -1) {
       std::cerr << "Failed to read" << std::endl;
@@ -91,6 +91,7 @@ void Connection::ReadLine(std::string *output) {
     }
 
     *output += std::string(buffer, size_t(bytes_read));
+
     if (buffer[bytes_read - 1] == '\n') {
       output->erase(std::find_if(
                         output->rbegin(),
@@ -99,9 +100,10 @@ void Connection::ReadLine(std::string *output) {
                     ).base(),
                     output->end());
       return;
+    } else if (bytes_read == sizeof(buffer)) {
+      continue;
     }
-
-    return;
+    // Should not reach here
   }
 }
 

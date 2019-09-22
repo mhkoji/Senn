@@ -93,6 +93,8 @@ StatefulIMProxyIPC::Transit(
   std::string result;
   connection_->ReadLine(&result);
 
+  // std::cout << result << std::endl;
+
   std::string input_return_value, type;
   std::istringstream iss(result);
   iss >> input_return_value;
