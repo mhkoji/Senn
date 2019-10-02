@@ -241,12 +241,12 @@ HRESULT HiraganaKeyEventHandler::OnKeyDown(
 
   HRESULT result;
   if (context->RequestEditSession(
-          client_id_, edit_session, TF_ES_SYNC | TF_ES_READWRITE, &result) ==
-      S_OK) {
-    return S_OK;
-  } else {
+          client_id_, edit_session, TF_ES_SYNC | TF_ES_READWRITE, &result)
+      != S_OK) {
     return E_FAIL;
   }
+  return S_OK;
+
 }
 
 HRESULT HiraganaKeyEventHandler::OnTestKeyUp(
