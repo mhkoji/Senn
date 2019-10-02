@@ -24,23 +24,21 @@ private:
 
 
 namespace text_service {
-
-namespace {
+namespace registration {
 
 BOOL RegisterLanguageProfile(ITfInputProcessorProfiles *profiles,
                              const GUID &clsid,
-                             const GUID &profile_guid,
-                             const WCHAR *profile_description,
-                             const ULONG profile_description_len) {
+                             const Settings &settings) {
   HRESULT result = profiles->AddLanguageProfile(
-    clsid,
-    MAKELANGID(LANG_JAPANESE, SUBLANG_DEFAULT),
-    profile_guid,
-    profile_description,
-    profile_description_len,
-    NULL, 0, 0
+      clsid,
+      settings.langid,
+      settings.profile.guid,
+      settings.profile.description,
+      -1, // If this contains -1, pchDesc is assumed to be a NULL-terminated string.
+      settings.icon.file,
+      -1, // If this contains -1, pchIconFile is assumed to be a NULL-terminated string.
+      0
   );
-
   return result == S_OK;
 }
 
@@ -92,18 +90,15 @@ BOOL UnregisterCategories(const GUID &clsid,
 }
 
 
-} // namespace
-
-
-namespace registration {
-
 // https://docs.microsoft.com/en-us/windows/desktop/tsf/text-service-registration
 BOOL Register(const GUID& clsid, const Settings &settings) {
   ITfInputProcessorProfiles *profiles;
   {
-    HRESULT result = CoCreateInstance(
-        CLSID_TF_InputProcessorProfiles, nullptr, CLSCTX_INPROC_SERVER,
-        IID_ITfInputProcessorProfiles, (void**)&profiles);
+    HRESULT result = CoCreateInstance(CLSID_TF_InputProcessorProfiles,
+                                      nullptr,
+                                      CLSCTX_INPROC_SERVER,
+                                      IID_ITfInputProcessorProfiles,
+                                      (void**)&profiles);
     if (result != S_OK) {
       return FALSE;
     }
@@ -114,19 +109,11 @@ BOOL Register(const GUID& clsid, const Settings &settings) {
     return FALSE;
   }
 
-  if (!RegisterLanguageProfile(
-           profiles,
-           clsid,
-           settings.profile_guid,
-           settings.profile_description,
-           -1)) {
+  if (!RegisterLanguageProfile(profiles, clsid, settings)) {
     return FALSE;
   }
 
-
-  if (!RegisterCategories(
-           clsid,
-           settings.categories)) {
+  if (!RegisterCategories(clsid, settings.categories)) {
     return FALSE;
   }
 
@@ -138,9 +125,11 @@ void Unregister(const GUID& clsid, const Settings &settings) {
 
   ITfInputProcessorProfiles *profiles;
   {
-    HRESULT result = CoCreateInstance(
-        CLSID_TF_InputProcessorProfiles, nullptr, CLSCTX_INPROC_SERVER,
-        IID_ITfInputProcessorProfiles, (void**)&profiles);
+    HRESULT result = CoCreateInstance(CLSID_TF_InputProcessorProfiles,
+                                      nullptr,
+                                      CLSCTX_INPROC_SERVER,
+                                      IID_ITfInputProcessorProfiles,
+                                      (void**)&profiles);
     if (result != S_OK) {
       return;
     }

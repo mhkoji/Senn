@@ -45,8 +45,12 @@ class TextServiceSettingsProvider
   : public ::senn::win::text_service::registration::SettingsProvider {
 public:
   void Get(::senn::win::text_service::registration::Settings *output) const override {
-    output->profile_guid = kProfileGuid;
-    output->profile_description = kProfileDescription;
+    output->langid = MAKELANGID(LANG_JAPANESE, SUBLANG_JAPANESE_JAPAN);
+
+    output->profile.guid = kProfileGuid;
+    output->profile.description = kProfileDescription;
+
+    output->icon.file = NULL;
 
     size_t category_count =
         static_cast<size_t>(sizeof(kCategories) / sizeof(kCategories[0]));

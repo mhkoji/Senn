@@ -13,8 +13,16 @@ namespace text_service {
 namespace registration {
 
 struct Settings {
-  GUID         profile_guid;
-  const WCHAR* profile_description;
+  LANGID langid;
+
+  struct {
+    GUID         guid;
+    const WCHAR* description;
+  } profile;
+
+  struct {
+    WCHAR *file;
+  } icon;
 
   std::vector<GUID> categories;
 };
