@@ -63,9 +63,11 @@
                   s))))
         ((senn.win.keys:space-p key)
          (let ((pron (senn.buffer:buffer-string (editing-buffer s))))
-           (let ((segments (senn.im:convert ime pron)))
-             (make-converting :segments segments
-                              :pronunciation pron))))
+           (if (string= pron "")
+               s
+               (let ((segments (senn.im:convert ime pron)))
+                 (make-converting :segments segments
+                                  :pronunciation pron)))))
         ((senn.win.keys:enter-p key)
          (let ((input (senn.buffer:buffer-string (editing-buffer s))))
            (make-committed :input
