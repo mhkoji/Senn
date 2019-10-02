@@ -179,10 +179,7 @@ HRESULT __stdcall EditSessionCommitted::DoEditSession(TfEditCookie ec) {
     composition->EndComposition(ec);
     composition->Release();
     composition_holder_->Set(nullptr);
-  }
-
-  context_->Release();
- 
+  } 
   return S_OK;
 }
 
