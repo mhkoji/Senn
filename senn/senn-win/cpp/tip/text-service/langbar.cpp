@@ -28,9 +28,7 @@ HRESULT __stdcall InputModeToggleButton::GetInfo(TF_LANGBARITEMINFO *pInfo) {
   pInfo->dwStyle = TF_LBI_STYLE_BTN_BUTTON | TF_LBI_STYLE_SHOWNINTRAY;
   pInfo->guidItem = GUID_LBI_INPUTMODE;
   pInfo->ulSort = sort_;
-  StringCchCopy(pInfo->szDescription,
-                ARRAYSIZE(pInfo->szDescription),
-                kItemDescription);
+  pInfo->szDescription[0] = L'\0';
   return S_OK;
 }
 
@@ -43,7 +41,7 @@ HRESULT __stdcall InputModeToggleButton::GetStatus(DWORD *pdwStatus) {
 }
 
 HRESULT __stdcall InputModeToggleButton::Show(BOOL fShow) {
-  return S_OK;
+  return E_NOTIMPL;
 }
 
 HRESULT __stdcall InputModeToggleButton::GetTooltipString(BSTR *pbstrToolTip) {

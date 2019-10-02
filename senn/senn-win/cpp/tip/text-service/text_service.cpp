@@ -25,7 +25,8 @@ HRESULT TextService::Activate(ITfThreadMgr *thread_mgr, TfClientId client_id) {
       return E_FAIL;
     }
     input_mode_toggle_button_ = new langbar::InputModeToggleButton(
-        clsid_text_service_, 0,
+        clsid_text_service_,
+        0,
         static_cast<langbar::InputModeToggleButton::State*>(this),
         static_cast<langbar::InputModeToggleButton::Handlers*>(this));
     lang_bar_item_mgr->AddItem(input_mode_toggle_button_);
