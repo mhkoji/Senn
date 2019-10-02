@@ -23,11 +23,10 @@ HRESULT __stdcall InputModeToggleButton::GetInfo(TF_LANGBARITEMINFO *pInfo) {
     return E_INVALIDARG;
   }
   pInfo->clsidService = clsid_;
-  pInfo->guidItem = langbar::kItemId;
-  pInfo->dwStyle = TF_LBI_STYLE_BTN_BUTTON
-  // TF_LBI_STYLE_SHOWNINTRAY seems to enable the item shown in the taskbar.
-  // (But, this doesn't work...)
-      | TF_LBI_STYLE_SHOWNINTRAY;
+  // Both TF_LBI_STYLE_SHOWNINTRAY and GUID_LBI_INPUTMODE
+  // seems to be required to make the item shown in the notification tray.
+  pInfo->dwStyle = TF_LBI_STYLE_BTN_BUTTON | TF_LBI_STYLE_SHOWNINTRAY;
+  pInfo->guidItem = GUID_LBI_INPUTMODE;
   pInfo->ulSort = sort_;
   StringCchCopy(pInfo->szDescription,
                 ARRAYSIZE(pInfo->szDescription),

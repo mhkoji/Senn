@@ -12,9 +12,9 @@ namespace senn_win {
 namespace text_service {
 namespace langbar {
 
-  // {AE431567-8E4E-4A58-895D-2E6EE7D25AD1}
-static const GUID kItemId =
-  { 0xae431567, 0x8e4e, 0x4a58, { 0x89, 0x5d, 0x2e, 0x6e, 0xe7, 0xd2, 0x5a, 0xd1 } };
+// This GUID is required to show an item in the notification tray.
+static const GUID GUID_LBI_INPUTMODE =
+  { 0x2C77A81E, 0x41CC, 0x4178, {0xA3, 0xA7, 0x5F, 0x8A, 0x98, 0x75, 0x68, 0xE6} };
 
 static const WCHAR kItemDescription[] = L"Input mode menu button";
 

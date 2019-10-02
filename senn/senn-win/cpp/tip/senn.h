@@ -26,6 +26,9 @@ static const GUID kCategories[] = {
   // The text service implments ITfDisplayAttributeProvider
   // in order to decorate composing texts using display attribute utilities.
   GUID_TFCAT_DISPLAYATTRIBUTEPROVIDER,
+
+  // Probably needed to show an language bar item in the notification tray.
+  GUID_TFCAT_TIPCAP_SYSTRAYSUPPORT,
 };
 
 
