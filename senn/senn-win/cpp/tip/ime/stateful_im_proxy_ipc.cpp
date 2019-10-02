@@ -52,11 +52,18 @@ void StatefulIMProxyIPC::Transit(
   std::string response;
   {
     char buf[1024] = { '\0' };
-    DWORD bytes_read;
-    if (!ReadFile(pipe_, buf, sizeof(buf), &bytes_read, NULL)) {
-      return;
+    while (1) {
+      DWORD bytes_read;
+      if (!ReadFile(pipe_, buf, sizeof(buf), &bytes_read, NULL)) {
+        return;
+      }
+
+      response += std::string(buf, bytes_read);
+
+      if (buf[bytes_read - 1] == '\n') {
+        break;
+      }
     }
-    response = buf;
   }
 
   std::istringstream iss(response);
