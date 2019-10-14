@@ -43,26 +43,29 @@
                         (senn.buffer:buffer-cursor-pos buffer))))
     (length-utf8 subseq)))
 
+(defun make-editing-view (input-return-value
+                          cursor-pos input commited-input)
+  (let ((json-string (jsown:to-json
+                      (jsown:new-js
+                       ("cursor-pos"      cursor-pos)
+                       ("input"           input)
+                       ("committed-input" commited-input)))))
+    (format nil "~A EDITING ~A" input-return-value json-string)))
+
 (defun editing->editing-view (input-return-value editing-state
                               &key committed-input)
   (let ((buffer (editing-buffer editing-state)))
-    (let ((json-string
-           (jsown:to-json
-            (jsown:new-js
-              ("cursor-pos"      (buffer-cursor-pos-in-utf-8 buffer))
-              ("input"           (senn.buffer:buffer-string buffer))
-              ("committed-input" (or committed-input ""))))))
-      (format nil "~A EDITING ~A" input-return-value json-string))))
+    (make-editing-view input-return-value
+                       (buffer-cursor-pos-in-utf-8 buffer)
+                       (senn.buffer:buffer-string buffer)
+                       (or committed-input ""))))
 
 (defun katakana->editing-view (input-return-value katakana-state)
   (let ((katakana-input (katakana-input katakana-state)))
-    (let ((json-string
-           (jsown:to-json
-            (jsown:new-js
-              ("cursor-pos"     (length-utf8 katakana-input))
-              ("input"           katakana-input)
-              ("committed-input" "")))))
-      (format nil "~A EDITING ~A" input-return-value json-string))))
+    (make-editing-view input-return-value
+                       (length-utf8 katakana-input)
+                       katakana-input
+                       "")))
 
 (defun converting->converting-view (input-return-value converting-state)
   (let ((json-string
