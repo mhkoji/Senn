@@ -102,6 +102,15 @@
              (list editing-state
                    (editing->view-update +IRV-DO-NOTHING+ editing-state)))))
 
+        ((char-p key)
+         (let* ((char (code-char (senn.fcitx.transit.keys:key-sym key)))
+                (editing-state (make-editing
+                                :buffer (senn.buffer:insert-char
+                                         (senn.buffer:make-buffer) char)))
+                (commited-input (converting-current-input s)))
+           (list editing-state
+                 (editing->view-update +IRV-TO-PROCESS+ editing-state
+                                       :committed-input commited-input))))
         (t
          (let ((commited-input (converting-current-input s))
                (editing-state (make-editing)))
