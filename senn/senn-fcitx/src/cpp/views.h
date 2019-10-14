@@ -9,6 +9,7 @@ namespace views {
 struct Editing {
   std::string input;
   int cursor_pos;
+  std::string committed_input;
 };
 
 
@@ -17,11 +18,6 @@ struct Converting {
   int cursor_form_index;
   std::vector<std::string> cursor_form_candidates;
   int cursor_form_candidate_index;
-};
-
-
-struct Committed {
-  std::string input;
 };
 
 } // views

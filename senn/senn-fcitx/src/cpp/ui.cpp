@@ -9,19 +9,6 @@ namespace senn {
 namespace fcitx {
 namespace ui {
 
-void Draw(FcitxInstance *instance,
-          const senn::fcitx::views::Committed *committed) {
-  // 入力を確定
-  FcitxInputContext *ic = FcitxInstanceGetCurrentIC(instance);
-  FcitxInstanceCommitString(instance, ic, committed->input.c_str());
-
-  // 表示している文字列を削除
-  FcitxInstanceCleanInputWindow(instance);
-
-  FcitxUIUpdateInputWindow(instance);
-};
-
-
 INPUT_RETURN_VALUE
 get_candidate(void* arg, FcitxCandidateWord* word) {
   return IRV_DO_NOTHING;
@@ -83,6 +70,12 @@ void Draw(FcitxInstance *instance,
 
 void Draw(FcitxInstance *instance,
           const senn::fcitx::views::Editing *editing) {
+  if (editing->committed_input != "") {
+    // 入力を確定
+    FcitxInputContext *ic = FcitxInstanceGetCurrentIC(instance);
+    FcitxInstanceCommitString(instance, ic, editing->committed_input.c_str());
+  }
+
   // 表示している文字列を削除
   FcitxInstanceCleanInputWindow(instance);
 

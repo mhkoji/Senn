@@ -1,10 +1,10 @@
-(defpackage :senn.fcitx.keys
+(defpackage :senn.fcitx.transit.keys
   (:use :cl)
   (:export :make-key
            :key
            :key-sym
            :key-state))
-(in-package :senn.fcitx.keys)
+(in-package :senn.fcitx.transit.keys)
 
 (defstruct key sym state)
 

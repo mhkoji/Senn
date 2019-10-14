@@ -1,8 +1,6 @@
-(defpackage :senn.fcitx.states
+(defpackage :senn.fcitx.transit.states
   (:use :cl)
-  (:export :to-view
-
-           :editing
+  (:export :editing
            :make-editing
            :editing-buffer
 
@@ -13,14 +11,8 @@
            :converting-current-segment
            :converting-current-input
            :converting-current-segment-index
-           :converting-move-curret-segment
-
-           :committed
-           :make-committed
-           :committed-input))
-(in-package :senn.fcitx.states)
-
-(defgeneric to-view (s))
+           :converting-move-curret-segment))
+(in-package :senn.fcitx.transit.states)
 
 (defstruct editing
   (buffer (senn.buffer:make-buffer)))
@@ -45,6 +37,3 @@
   (format nil "~{~A~}"
           (mapcar #'senn.segment:segment-current-form
                   (converting-segments c))))
-
-
-(defstruct committed input)

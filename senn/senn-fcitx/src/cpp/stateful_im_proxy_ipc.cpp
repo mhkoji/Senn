@@ -9,13 +9,6 @@ namespace fcitx {
 
 namespace {
 
-void ParseCommitted(std::istringstream &content,
-                    senn::fcitx::views::Committed *output) {
-  std::string input;
-  content >> input;
-  output->input = input;
-}
-
 void ParseConverting(picojson::value &content,
                      senn::fcitx::views::Converting *output) {
   const picojson::array forms = content
@@ -45,14 +38,14 @@ void ParseConverting(picojson::value &content,
     .get<double>();
 }
 
-void ParseEditing(std::istringstream &content,
+void ParseEditing(picojson::value &content,
                   senn::fcitx::views::Editing *output) {
-  int cursor_pos;
-  std::string input;
-  content >> cursor_pos;
-  content >> input;
-  output->cursor_pos = cursor_pos;
-  output->input = input;
+  output->cursor_pos = content
+    .get<picojson::object>()["cursor-pos"].get<double>();
+  output->input = content
+    .get<picojson::object>()["input"].get<std::string>();
+  output->committed_input = content
+    .get<picojson::object>()["committed-input"].get<std::string>();
 }
 
 INPUT_RETURN_VALUE ParseInputReturnValue(const std::string &s) {
@@ -76,7 +69,6 @@ StatefulIMProxyIPC::StatefulIMProxyIPC(senn::ipc::Connection* conn)
 INPUT_RETURN_VALUE
 StatefulIMProxyIPC::Transit(
     FcitxKeySym sym, uint32_t keycode, uint32_t state,
-    std::function<void(const senn::fcitx::views::Committed*)> on_committed,
     std::function<void(const senn::fcitx::views::Converting*)> on_converting,
     std::function<void(const senn::fcitx::views::Editing*)> on_editing) {
   {
@@ -100,11 +92,7 @@ StatefulIMProxyIPC::Transit(
   iss >> input_return_value;
   iss >> type;
 
-  if (type == "COMMITTED") {
-    senn::fcitx::views::Committed committed;
-    ParseCommitted(iss, &committed);
-    on_committed(&committed);
-  } else if (type == "CONVERTING") {
+  if (type == "CONVERTING") {
     std::string content;
     std::getline(iss, content);
 
@@ -115,8 +103,14 @@ StatefulIMProxyIPC::Transit(
     ParseConverting(v, &converting);
     on_converting(&converting);
   } else {
+    std::string content;
+    std::getline(iss, content);
+
+    picojson::value v;
+    picojson::parse(v, content);
+
     senn::fcitx::views::Editing editing;
-    ParseEditing(iss, &editing);
+    ParseEditing(v, &editing);
     on_editing(&editing);
   }
 

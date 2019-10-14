@@ -14,7 +14,6 @@ public:
 
   virtual INPUT_RETURN_VALUE Transit(
       FcitxKeySym, uint32_t, uint32_t,
-      std::function<void(const senn::fcitx::views::Committed*)>,
       std::function<void(const senn::fcitx::views::Converting*)>,
       std::function<void(const senn::fcitx::views::Editing*)>) = 0;
 };

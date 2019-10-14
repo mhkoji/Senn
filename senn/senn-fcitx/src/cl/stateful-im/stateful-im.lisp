@@ -11,22 +11,15 @@
 (defgeneric read-request (c))
 (defgeneric send-response (c resp))
 
-(defun make-response (s input-return-value)
-  (format nil "~A ~A ~A~%"
-          input-return-value
-          (symbol-name (type-of s))
-          (senn.fcitx.states:to-view s)))
-
 (defun handle-request (expr state ime client)
   (ecase (expr-op expr)
     (:transit
-     (let ((key (senn.fcitx.keys:make-key
+     (let ((key (senn.fcitx.transit.keys:make-key
                  :sym (expr-arg expr "sym")
                  :state (expr-arg expr "state"))))
-       (destructuring-bind (new-state input-return-value)
-           (senn.fcitx.im:transit ime state key)
-         (let ((resp (make-response new-state input-return-value)))
-           (send-response client resp))
+       (destructuring-bind (new-state view-update)
+           (senn.fcitx.transit:transit ime state key)
+         (send-response client view-update)
          new-state)))))
 
 (defun loop-handling-request (state ime client)
