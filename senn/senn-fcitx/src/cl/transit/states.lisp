@@ -4,6 +4,10 @@
            :make-editing
            :editing-buffer
 
+           :katakana
+           :make-katakana
+           :katakana-input
+
            :converting
            :make-converting
            :converting-pronunciation
@@ -16,6 +20,13 @@
 
 (defstruct editing
   (buffer (senn.buffer:make-buffer)))
+
+
+(defstruct (katakana (:constructor %make-katakana))
+  (input ""))
+
+(defun make-katakana (&key input)
+  (%make-katakana :input (hachee.ja:hiragana->katakana input)))
 
 
 (defstruct converting
