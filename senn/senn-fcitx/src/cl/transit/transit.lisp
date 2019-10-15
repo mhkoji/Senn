@@ -118,13 +118,15 @@
          (let ((curr-seg (converting-current-segment s)))
            (setf (senn.segment:segment-shows-katakana-p curr-seg) nil)
            (move-segment-form-index! curr-seg  +1 ime))
-         (list s (converting->converting-view +IRV-TO-PROCESS+ s)))
+         ;; +IRV-DO-NOTHING+ because the OS may move the current corsor in the candidate window.
+         (list s (converting->converting-view +IRV-DO-NOTHING+ s)))
 
         ((senn.fcitx.transit.keys:down-p key)
          (let ((curr-seg (converting-current-segment s)))
            (setf (senn.segment:segment-shows-katakana-p curr-seg) nil)
            (move-segment-form-index! curr-seg -1 ime))
-         (list s (converting->converting-view +IRV-TO-PROCESS+ s)))
+         ;; +IRV-DO-NOTHING+ because the OS may move the current corsor in the candidate window.
+         (list s (converting->converting-view +IRV-DO-NOTHING+ s)))
 
         ((senn.fcitx.transit.keys:f7-p key)
          (let ((curr-seg (converting-current-segment s)))
