@@ -159,15 +159,23 @@
 
 (defmethod transit ((ime ime) (s editing)
                     (key senn.fcitx.transit.keys:key))
-  (cond ((char-p key)
-         (if (/= (senn.fcitx.transit.keys:key-state key) 0)
-             ;; おそらく、Ctrl-pなどのキーが押された
-             ;;     -> カーソルが動くような処理を抑制
-             (list s (editing->editing-view +IRV-DO-NOTHING+ s))
-             (let ((char (code-char (senn.fcitx.transit.keys:key-sym key))))
-               (setf (editing-buffer s)
-                     (senn.buffer:insert-char (editing-buffer s) char))
-               (list s (editing->editing-view +IRV-TO-PROCESS+ s)))))
+  (cond ((/= (senn.fcitx.transit.keys:key-state key) 0)
+         ;; Case when a modifier key such as ctrl is pressed.
+         (list s (editing->editing-view
+                  (if (buffer-empty-p (editing-buffer s))
+                      ;; Let the OS process the key.
+                      ;; For example, if the key is ctrl-p, then the OS may move the cursor up.
+                      +IRV-TO-PROCESS+
+                      ;; Do not let the OS process the key.
+                      ;; If the key is ctrl-p, the OS may move the current input up without this, which is very annoying.
+                      +IRV-DO-NOTHING+)
+                  s)))
+
+        ((char-p key)
+         (let ((char (code-char (senn.fcitx.transit.keys:key-sym key))))
+           (setf (editing-buffer s)
+                 (senn.buffer:insert-char (editing-buffer s) char))
+           (list s (editing->editing-view +IRV-TO-PROCESS+ s))))
 
         ((and (senn.fcitx.transit.keys:f7-p key)
               (not (buffer-empty-p (editing-buffer s))))
