@@ -5,6 +5,7 @@
            :segment-has-more-forms-p
            :segment-current-form
            :segment-current-index
+           :segment-shows-katakana-p
            :append-forms!
            :try-move-cursor-pos!))
 (in-package :senn.segment)
@@ -13,11 +14,14 @@
   pron
   forms
   current-index
-  has-more-forms-p)
+  has-more-forms-p
+  shows-katakana-p)
 
 
 (defun segment-current-form (s)
-  (elt (segment-forms s) (segment-current-index s)))
+  (if (segment-shows-katakana-p s)
+      (hachee.ja:hiragana->katakana (segment-pron s))
+      (elt (segment-forms s) (segment-current-index s))))
 
 
 (defun append-forms! (segment get-forms)

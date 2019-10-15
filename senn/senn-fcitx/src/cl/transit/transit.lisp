@@ -37,7 +37,7 @@
 (defun length-utf8 (string)
   (length (babel:string-to-octets string :encoding :utf-8)))
 
-(defun buffer-cursor-pos-in-utf-8 (buffer)
+(defun buffer-cursor-pos-utf8 (buffer)
   (let ((subseq (subseq (senn.buffer:buffer-string buffer)
                         0
                         (senn.buffer:buffer-cursor-pos buffer))))
@@ -56,7 +56,7 @@
                               &key committed-input)
   (let ((buffer (editing-buffer editing-state)))
     (make-editing-view input-return-value
-                       (buffer-cursor-pos-in-utf-8 buffer)
+                       (buffer-cursor-pos-utf8 buffer)
                        (senn.buffer:buffer-string buffer)
                        (or committed-input ""))))
 
@@ -78,13 +78,17 @@
              (converting-current-segment-index converting-state))
             ("cursor-form"
              (let ((segment (converting-current-segment converting-state)))
-               (jsown:new-js
-                 ("candidates"
-                  (if (senn.segment:segment-has-more-forms-p segment)
-                      nil
-                      (senn.segment:segment-forms segment)))
-                 ("candidate-index"
-                  (senn.segment:segment-current-index segment)))))))))
+               (if (senn.segment:segment-shows-katakana-p segment)
+                   (jsown:new-js
+                     ("candidates"      nil)
+                     ("candidate-index" -1))
+                   (jsown:new-js
+                     ("candidates"
+                      (if (senn.segment:segment-has-more-forms-p segment)
+                          nil
+                          (senn.segment:segment-forms segment)))
+                     ("candidate-index"
+                      (senn.segment:segment-current-index segment))))))))))
     (format nil "~A CONVERTING ~A" input-return-value json-string)))
 
 (defmethod transit ((ime ime) (s katakana)
@@ -101,21 +105,30 @@
 
 (defmethod transit ((ime ime) (s converting)
                     (key senn.fcitx.transit.keys:key))
-  (cond ((or (senn.fcitx.transit.keys:space-p key)
-             (senn.fcitx.transit.keys:up-p key))
-         (move-segment-form-index! (converting-current-segment s) +1 ime)
-         (list s (converting->converting-view +IRV-TO-PROCESS+ s)))
-
-        ((senn.fcitx.transit.keys:down-p key)
-         (move-segment-form-index! (converting-current-segment s) -1 ime)
-         (list s (converting->converting-view +IRV-TO-PROCESS+ s)))
-
-        ((senn.fcitx.transit.keys:left-p key)
+  (cond ((senn.fcitx.transit.keys:left-p key)
          (converting-move-curret-segment s -1)
          (list s (converting->converting-view +IRV-TO-PROCESS+ s)))
 
         ((senn.fcitx.transit.keys:right-p key)
          (converting-move-curret-segment s +1)
+         (list s (converting->converting-view +IRV-TO-PROCESS+ s)))
+
+        ((or (senn.fcitx.transit.keys:space-p key)
+             (senn.fcitx.transit.keys:up-p key))
+         (let ((curr-seg (converting-current-segment s)))
+           (setf (senn.segment:segment-shows-katakana-p curr-seg) nil)
+           (move-segment-form-index! curr-seg  +1 ime))
+         (list s (converting->converting-view +IRV-TO-PROCESS+ s)))
+
+        ((senn.fcitx.transit.keys:down-p key)
+         (let ((curr-seg (converting-current-segment s)))
+           (setf (senn.segment:segment-shows-katakana-p curr-seg) nil)
+           (move-segment-form-index! curr-seg -1 ime))
+         (list s (converting->converting-view +IRV-TO-PROCESS+ s)))
+
+        ((senn.fcitx.transit.keys:f7-p key)
+         (let ((curr-seg (converting-current-segment s)))
+           (setf (senn.segment:segment-shows-katakana-p curr-seg) t))
          (list s (converting->converting-view +IRV-TO-PROCESS+ s)))
 
         ((senn.fcitx.transit.keys:backspace-p key)
