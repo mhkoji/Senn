@@ -188,14 +188,21 @@
                  (katakana->editing-view +IRV-DO-NOTHING+ katakana-state))))
 
         ((senn.fcitx.transit.keys:space-p key)
-         (let ((pron (senn.buffer:buffer-string (editing-buffer s))))
-           (let ((segments (senn.im:convert ime pron)))
-             (let ((converting-state (make-converting
-                                      :segments segments
-                                      :pronunciation pron)))
-               (list converting-state
-                     (converting->converting-view
-                      +IRV-TO-PROCESS+ converting-state))))))
+         (let ((buffer (editing-buffer s)))
+           (if (buffer-empty-p buffer)
+               (let ((editing-state (make-editing)))
+                 (list editing-state
+                       (editing->editing-view +IRV-TO-PROCESS+
+                                              editing-state
+                                              :committed-input "　")))
+               (let ((pron (senn.buffer:buffer-string (editing-buffer s))))
+                 (let ((segments (senn.im:convert ime pron)))
+                   (let ((converting-state (make-converting
+                                            :segments segments
+                                            :pronunciation pron)))
+                     (list converting-state
+                           (converting->converting-view
+                             +IRV-TO-PROCESS+ converting-state))))))))
 
         ((senn.fcitx.transit.keys:enter-p key)
          (let ((input (senn.buffer:buffer-string (editing-buffer s)))
