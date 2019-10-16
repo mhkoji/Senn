@@ -39,9 +39,8 @@
        (senn.win.server:loop-handling-request initial-state ime client))
      (log/info client "Disconnected"))))
 
-(defun enter-loop (kkc &key (pipe-name "\\\\.\\Pipe\\senn"))
-  (let ((ime (senn.im:make-ime :kkc kkc))
-        (threads nil)
+(defun enter-loop (ime &key (pipe-name "\\\\.\\Pipe\\senn"))
+  (let ((threads nil)
         (clients nil))
     (unwind-protect
          (loop

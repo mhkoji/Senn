@@ -43,7 +43,7 @@
      (log/info client "Disconnected"))))
 
 
-(defun enter-loop (kkc &key (socket-name "/tmp/senn-server-socket")
+(defun enter-loop (ime &key (socket-name "/tmp/senn-server-socket")
                             (use-abstract t))
   (when (and (not use-abstract)
              (cl-fad:file-exists-p socket-name))
@@ -51,8 +51,7 @@
   (when-let ((server-socket (hachee.ipc.unix:socket-listen
                              socket-name
                              :use-abstract use-abstract)))
-    (let ((ime (senn.im:make-ime :kkc kkc))
-          (threads nil))
+    (let ((threads nil))
       (log:info "Waiting for client...")
       (unwind-protect
            (loop for client-id from 1 do

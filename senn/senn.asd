@@ -2,8 +2,8 @@
   :serial t
   :pathname "src"
   :components
-  ((:file "kkc")
+  ((:file "buffer")
    (:file "segment")
-   (:file "im")
-   (:file "buffer"))
+   (:file "im/im")
+   (:file "im/kkc"))
   :depends-on (:hachee))

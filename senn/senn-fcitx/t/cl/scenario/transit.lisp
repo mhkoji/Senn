@@ -4,7 +4,7 @@
 (in-package :senn.fcitx.t.scenario.transit)
 
 (defmacro assert-ops (ops &key test)
-  `(let ((ime (senn.im:make-ime :kkc nil)))
+  `(let ((ime (make-instance 'senn.im:ime)))
      (loop for (sym expected-view) in ,ops
            for state = (senn.fcitx.transit.states:make-editing)
            do (destructuring-bind (new-state actual-view)
