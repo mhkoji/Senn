@@ -26,15 +26,10 @@
 
 (defgeneric transit (ime state key))
 
-(defun ->editing-view (editing &key committed-input)
-  (let ((json-string
-           (jsown:to-json
-            (jsown:new-js
-             ("input"
-              (senn.buffer:buffer-string (editing-buffer editing)))
-             ("committed-input"
-              (or committed-input ""))))))
-    (format nil "EDITING ~A~%" json-string)))
+
+(defun ->editing-view (editing)
+  (format nil "EDITING ~A~%" (senn.buffer:buffer-string
+                              (editing-buffer editing))))
 
 (defun ->converting-view (converting)
   (let ((json-string
@@ -56,14 +51,18 @@
                 (senn.segment:segment-current-index segment)))))))))
     (format nil "CONVERTING ~A~%" json-string)))
 
+(defun ->committed-view (input)
+  (let ((json-string
+         (jsown:to-json
+          (jsown:new-js
+            ("input" input)))))
+    (format nil "COMMITTED ~A~%" json-string)))
+
 
 (defmethod transit ((ime ime) (s converting) key)
   (cond ((senn.win.transit.keys:enter-p key)
-         (let ((editing (make-editing))
-               (committed-input (converting-current-input s)))
-           (list editing (->editing-view
-                          editing
-                          :committed-input committed-input))))
+         (let ((editing (make-editing)))
+           (list editing (->committed-view (converting-current-input s)))))
 
         ((or (senn.win.transit.keys:space-p key)
              (senn.win.transit.keys:up-p key))
@@ -95,6 +94,7 @@
                  (senn.buffer:insert-char (editing-buffer s)
                                           char-lower-case)))
          (list s (->editing-view s)))
+
         ((senn.win.transit.keys:backspace-p key)
          (let ((pron (senn.buffer:buffer-string (editing-buffer s))))
            (cond ((string= pron "") ;; Should not reach here
@@ -103,6 +103,7 @@
                   (setf (editing-buffer s)
                         (senn.buffer:delete-char (editing-buffer s)))
                   (list s (->editing-view s))))))
+
         ((senn.win.transit.keys:space-p key)
          (let ((pron (senn.buffer:buffer-string (editing-buffer s))))
            (if (string= pron "")
@@ -111,14 +112,14 @@
                  (let ((converting (make-converting :segments segments
                                                     :pronunciation pron)))
                    (list converting (->converting-view converting)))))))
+
         ((senn.win.transit.keys:enter-p key)
          (let ((buffer (editing-buffer s))
                (editing (make-editing)))
-           (list editing (->editing-view
-                          editing
-                          :committed-input
+           (list editing (->committed-view
                           (if (buffer-empty-p buffer)
                               +crlf+
                               (senn.buffer:buffer-string buffer))))))
+
         (t
          (list s (->editing-view s)))))
