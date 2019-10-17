@@ -2,11 +2,10 @@
   :serial t
   :pathname "cl"
   :components
-  ((:file "states/states")
-   (:file "states/view")
-   (:file "keys")
-   (:file "im")
-   (:file "server/server")
-   (:file "server/ipc"))
+  ((:file "transit/keys")
+   (:file "transit/states")
+   (:file "transit/transit")
+   (:file "stateful-im/stateful-im")
+   (:file "stateful-im/ipc"))
   :depends-on (:senn
                :jsown))

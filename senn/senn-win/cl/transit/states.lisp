@@ -1,4 +1,4 @@
-(defpackage :senn.win.states
+(defpackage :senn.win.transit.states
   (:use :cl)
   (:export :to-view
 
@@ -13,12 +13,8 @@
            :converting-current-segment
            :converting-current-input
            :converting-current-segment-index
-           :converting-move-curret-segment
-
-           :committed
-           :make-committed
-           :committed-input))
-(in-package :senn.win.states)
+           :converting-move-curret-segment))
+(in-package :senn.win.transit.states)
 
 (defgeneric to-view (s))
 
@@ -46,4 +42,3 @@
           (mapcar #'senn.segment:segment-current-form
                   (converting-segments c))))
 
-(defstruct committed input)

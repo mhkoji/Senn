@@ -1,9 +1,9 @@
-(defpackage :senn.win.keys
+(defpackage :senn.win.transit.keys
   (:use :cl)
   (:export :key
            :make-key
            :key-code))
-(in-package :senn.win.keys)
+(in-package :senn.win.transit.keys)
 
 (defstruct key
   code)
