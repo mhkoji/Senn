@@ -70,24 +70,33 @@ void Draw(FcitxInstance *instance,
 
 void Draw(FcitxInstance *instance,
           const senn::fcitx::views::Editing *editing) {
+  FcitxInputContext *ic = FcitxInstanceGetCurrentIC(instance);
+
   if (editing->committed_input != "") {
     // 入力を確定
-    FcitxInputContext *ic = FcitxInstanceGetCurrentIC(instance);
     FcitxInstanceCommitString(instance, ic, editing->committed_input.c_str());
   }
 
   // 表示している文字列を削除
   FcitxInstanceCleanInputWindow(instance);
 
-  // 下線付きの文字列を表示
   FcitxInputState *input = FcitxInstanceGetInputState(instance);
+  FcitxMessages *preedit = FcitxInputStateGetPreedit(input);
   FcitxMessages *client_preedit = FcitxInputStateGetClientPreedit(input);
-  FcitxMessagesAddMessageAtLast(client_preedit,
-                                MSG_INPUT,
-                                "%s",
-                                editing->input.c_str());
+  boolean support_preedit = FcitxInstanceICSupportPreedit(instance, ic);
+
+  // 下線付きの文字列を表示
+  if (!support_preedit) {
+    FcitxMessagesAddMessageAtLast(
+        preedit, MSG_INPUT, "%s", editing->input.c_str());
+  }
+  FcitxMessagesAddMessageAtLast(
+      client_preedit, MSG_INPUT, "%s", editing->input.c_str());
 
   // カーソルの表示
+  if (!support_preedit) {
+    FcitxInputStateSetCursorPos(input, editing->cursor_pos);
+  }
   FcitxInputStateSetClientCursorPos(input, editing->cursor_pos);
 
   FcitxUIUpdateInputWindow(instance);
