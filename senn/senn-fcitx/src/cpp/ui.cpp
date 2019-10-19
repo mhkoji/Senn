@@ -19,8 +19,13 @@ void Draw(FcitxInstance *instance,
   // 表示している文字列を削除
   FcitxInstanceCleanInputWindow(instance);
 
+  FcitxInputContext *ic = FcitxInstanceGetCurrentIC(instance);
   FcitxInputState *input = FcitxInstanceGetInputState(instance);
+  FcitxMessages *preedit = FcitxInputStateGetPreedit(input);
   FcitxMessages *client_preedit = FcitxInputStateGetClientPreedit(input);
+  boolean support_preedit = FcitxInstanceICSupportPreedit(instance, ic);
+
+  // 下線付きの文字列を表示
   {
     int i = 0, cursor_form_index = converting->cursor_form_index;
     std::vector<std::string>::const_iterator it = converting->forms.begin();
@@ -28,6 +33,9 @@ void Draw(FcitxInstance *instance,
       FcitxMessageType type = (i == cursor_form_index) ?
         (FcitxMessageType) (MSG_HIGHLIGHT | MSG_CANDIATE_CURSOR) :
         (FcitxMessageType) (MSG_INPUT);
+      if (!support_preedit) {
+        FcitxMessagesAddMessageAtLast(preedit, type, "%s", it->c_str());
+      }
       FcitxMessagesAddMessageAtLast(client_preedit, type, "%s", it->c_str());
     }
   }
