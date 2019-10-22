@@ -14,7 +14,9 @@
                 (,test (string= expected-view actual-view))
                 (setq state new-state)))))
 
-(defmacro def-ops-test (name ops)
+(defvar *ops-tests* nil)
+
+(defmacro def-keys-test (name ops)
   `(progn
      (defmacro ,name (&key test)
        `(assert-ops ,',ops :test ,test))
@@ -30,70 +32,66 @@
                        ("committed-input" committed-input)))))
     (format nil "~A EDITING ~A" input-return-value-string json-string)))
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (defvar *ops-tests* nil)
-
   #+nil
-  (progn
-    (defmacro when-space-key-is-first-inputted-then-full-width-space (&key test)
-      `(assert-ops '((32 "<expected-view>")) :test ,test))
-    (pushnew 'when-space-key-is-first-inputted-then-full-width-space
-             *ops-tests*))
+(progn
+  (defmacro when-space-key-is-first-inputted-then-full-width-space (&key test)
+    `(assert-ops '((32 "<expected-view>")) :test ,test))
+  (pushnew 'when-space-key-is-first-inputted-then-full-width-space
+           *ops-tests*))
 
-  (def-ops-test when-space-key-is-first-inputted-then-full-width-space-is-inserted
-      `((32 ,(editing-view "IRV_TO_PROCESS"
-                           :cursor-pos 0
-                           :input ""
-                           :committed-input "　"))))
+(def-keys-test
+    when-space-key-is-first-inputted-then-full-width-space-is-inserted
+    `((32 ,(editing-view "IRV_TO_PROCESS"
+                         :cursor-pos 0
+                         :input ""
+                         :committed-input "　"))))
 
-  (def-ops-test cursor-can-move-around-in-the-buffer
-      `((97 ,(editing-view "IRV_TO_PROCESS"
-                           :cursor-pos 3
-                           :input "あ"
-                           :committed-input ""))
-        (97 ,(editing-view "IRV_TO_PROCESS"
-                           :cursor-pos 6
-                           :input "ああ"
-                           :committed-input ""))
-        (65361 ,(editing-view "IRV_TO_PROCESS"
-                              :cursor-pos 3
-                              :input "ああ"
-                              :committed-input ""))
-        (65361 ,(editing-view "IRV_TO_PROCESS"
-                              :cursor-pos 0
-                              :input "ああ"
-                              :committed-input ""))
-        (65363 ,(editing-view "IRV_TO_PROCESS"
-                              :cursor-pos 3
-                              :input "ああ"
-                              :committed-input ""))
-        (65363 ,(editing-view "IRV_TO_PROCESS"
-                              :cursor-pos 6
-                              :input "ああ"
-                              :committed-input ""))))
+(def-keys-test cursor-can-move-around-in-the-buffer
+    `((97 ,(editing-view "IRV_TO_PROCESS"
+                         :cursor-pos 3
+                         :input "あ"
+                         :committed-input ""))
+      (97 ,(editing-view "IRV_TO_PROCESS"
+                         :cursor-pos 6
+                         :input "ああ"
+                         :committed-input ""))
+      (65361 ,(editing-view "IRV_TO_PROCESS"
+                            :cursor-pos 3
+                            :input "ああ"
+                            :committed-input ""))
+      (65361 ,(editing-view "IRV_TO_PROCESS"
+                            :cursor-pos 0
+                            :input "ああ"
+                            :committed-input ""))
+      (65363 ,(editing-view "IRV_TO_PROCESS"
+                            :cursor-pos 3
+                            :input "ああ"
+                            :committed-input ""))
+      (65363 ,(editing-view "IRV_TO_PROCESS"
+                            :cursor-pos 6
+                            :input "ああ"
+                            :committed-input ""))))
 
-  (def-ops-test cursor-does-not-go-beyond-the-left-end
-      `((97 ,(editing-view "IRV_TO_PROCESS"
-                           :cursor-pos 3
-                           :input "あ"
-                           :committed-input ""))
-        (65361 ,(editing-view "IRV_TO_PROCESS"
-                              :cursor-pos 0
-                              :input "あ"
-                              :committed-input ""))
-        (65361 ,(editing-view "IRV_TO_PROCESS"
-                              :cursor-pos 0
-                              :input "あ"
-                              :committed-input ""))))
+(def-keys-test cursor-does-not-go-beyond-the-left-end
+    `((97 ,(editing-view "IRV_TO_PROCESS"
+                         :cursor-pos 3
+                         :input "あ"
+                         :committed-input ""))
+      (65361 ,(editing-view "IRV_TO_PROCESS"
+                            :cursor-pos 0
+                            :input "あ"
+                            :committed-input ""))
+      (65361 ,(editing-view "IRV_TO_PROCESS"
+                            :cursor-pos 0
+                            :input "あ"
+                            :committed-input ""))))
 
-  (def-ops-test cursor-does-not-go-beyond-the-right-end
-      `((97 ,(editing-view "IRV_TO_PROCESS"
-                           :cursor-pos 3
-                           :input "あ"
-                           :committed-input ""))
-        (65363 ,(editing-view "IRV_TO_PROCESS"
-                              :cursor-pos 3
-                              :input "あ"
-                              :committed-input ""))))
-
-  )
+(def-keys-test cursor-does-not-go-beyond-the-right-end
+    `((97 ,(editing-view "IRV_TO_PROCESS"
+                         :cursor-pos 3
+                         :input "あ"
+                         :committed-input ""))
+      (65363 ,(editing-view "IRV_TO_PROCESS"
+                            :cursor-pos 3
+                            :input "あ"
+                            :committed-input ""))))
