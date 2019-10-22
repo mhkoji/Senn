@@ -4,9 +4,9 @@
 (in-package :senn.fcitx.t.scenario.transit)
 
 (defmacro assert-ops (ops &key test)
-  `(let ((ime (make-instance 'senn.im:ime)))
+  `(let ((ime (make-instance 'senn.im:ime))
+         (state (senn.fcitx.transit.states:make-editing)))
      (loop for (sym expected-view) in ,ops
-           for state = (senn.fcitx.transit.states:make-editing)
            do (destructuring-bind (new-state actual-view)
                   (let ((key (senn.fcitx.transit.keys:make-key
                               :sym sym :state 0)))
@@ -45,4 +45,55 @@
                            :cursor-pos 0
                            :input ""
                            :committed-input "　"))))
+
+  (def-ops-test cursor-can-move-around-in-the-buffer
+      `((97 ,(editing-view "IRV_TO_PROCESS"
+                           :cursor-pos 3
+                           :input "あ"
+                           :committed-input ""))
+        (97 ,(editing-view "IRV_TO_PROCESS"
+                           :cursor-pos 6
+                           :input "ああ"
+                           :committed-input ""))
+        (65361 ,(editing-view "IRV_TO_PROCESS"
+                              :cursor-pos 3
+                              :input "ああ"
+                              :committed-input ""))
+        (65361 ,(editing-view "IRV_TO_PROCESS"
+                              :cursor-pos 0
+                              :input "ああ"
+                              :committed-input ""))
+        (65363 ,(editing-view "IRV_TO_PROCESS"
+                              :cursor-pos 3
+                              :input "ああ"
+                              :committed-input ""))
+        (65363 ,(editing-view "IRV_TO_PROCESS"
+                              :cursor-pos 6
+                              :input "ああ"
+                              :committed-input ""))))
+
+  (def-ops-test cursor-does-not-go-beyond-the-left-end
+      `((97 ,(editing-view "IRV_TO_PROCESS"
+                           :cursor-pos 3
+                           :input "あ"
+                           :committed-input ""))
+        (65361 ,(editing-view "IRV_TO_PROCESS"
+                              :cursor-pos 0
+                              :input "あ"
+                              :committed-input ""))
+        (65361 ,(editing-view "IRV_TO_PROCESS"
+                              :cursor-pos 0
+                              :input "あ"
+                              :committed-input ""))))
+
+  (def-ops-test cursor-does-not-go-beyond-the-right-end
+      `((97 ,(editing-view "IRV_TO_PROCESS"
+                           :cursor-pos 3
+                           :input "あ"
+                           :committed-input ""))
+        (65363 ,(editing-view "IRV_TO_PROCESS"
+                              :cursor-pos 3
+                              :input "あ"
+                              :committed-input ""))))
+
   )
