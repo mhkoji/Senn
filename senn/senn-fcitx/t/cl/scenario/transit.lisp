@@ -20,6 +20,16 @@
        `(assert-ops ,',ops :test ,test))
      (pushnew ',name *ops-tests*)))
 
+
+(defun editing-view (input-return-value-string
+                     &key cursor-pos input committed-input)
+  (let ((json-string (jsown:to-json
+                      (jsown:new-js
+                       ("cursor-pos"      cursor-pos)
+                       ("input"           input)
+                       ("committed-input" committed-input)))))
+    (format nil "~A EDITING ~A" input-return-value-string json-string)))
+
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (defvar *ops-tests* nil)
 
@@ -31,4 +41,8 @@
              *ops-tests*))
 
   (def-ops-test when-space-key-is-first-inputted-then-full-width-space-is-inserted
-      '((32 "IRV_TO_PROCESS EDITING {\"cursor-pos\":0,\"input\":\"\",\"committed-input\":\"\\u3000\"}"))))
+      `((32 ,(editing-view "IRV_TO_PROCESS"
+                           :cursor-pos 0
+                           :input ""
+                           :committed-input "　"))))
+  )
