@@ -32,7 +32,7 @@
                        ("committed-input" committed-input)))))
     (format nil "~A EDITING ~A" input-return-value-string json-string)))
 
-  #+nil
+#+nil
 (progn
   (defmacro when-space-key-is-first-inputted-then-full-width-space (&key test)
     `(assert-ops '((32 "<expected-view>")) :test ,test))
