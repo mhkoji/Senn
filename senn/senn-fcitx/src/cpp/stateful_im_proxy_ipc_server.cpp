@@ -14,16 +14,32 @@ extern char **environ;
 namespace senn {
 namespace fcitx {
 
-const std::string SERVER_PROGRAM_PATH = "/usr/lib/senn/server";
+namespace {
 
-bool StartIPCServer(const std::string &socket_path) {
+bool SpawnIPCServerProcess(const std::string &server_program_path) {
   pid_t pid;
-  char path[SERVER_PROGRAM_PATH.size()+1] = {'\0'};
-  SERVER_PROGRAM_PATH.copy(path, SERVER_PROGRAM_PATH.size());
+  char path[server_program_path.size()+1] = {'\0'};
+  server_program_path.copy(path, server_program_path.size());
   char *argv[] = {path, NULL};
   const int status = posix_spawn(
-      &pid, SERVER_PROGRAM_PATH.c_str(), NULL, NULL, argv, environ);
+      &pid, server_program_path.c_str(), NULL, NULL, argv, environ);
   return status == 0;
+}
+
+} // namespace
+
+StatefulIMProxyIPCServerLauncher::StatefulIMProxyIPCServerLauncher()
+  : server_program_path_("/usr/lib/senn/server"),
+    socket_path_("/tmp/senn-server-socket") {
+}
+
+void StatefulIMProxyIPCServerLauncher::Spawn() const {
+  SpawnIPCServerProcess(server_program_path_);
+}
+
+senn::ipc::Connection*
+StatefulIMProxyIPCServerLauncher::GetConnection() const {
+  return senn::ipc::Connection::ConnectAbstractTo(socket_path_);
 }
 
 } // fcitx

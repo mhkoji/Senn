@@ -9,12 +9,10 @@
 #include "stateful_im_proxy_ipc.h"
 #include "stateful_im_proxy_ipc_server.h"
 
-const std::string SOCKET_PATH = "/tmp/senn-server-socket";
-
-
 typedef struct _FcitxSenn {
   FcitxInstance *fcitx;
   senn::fcitx::StatefulIM *im;
+  senn::fcitx::StatefulIMProxyIPCServerLauncher *launcher;
 } FcitxSenn;
 
 
@@ -75,8 +73,7 @@ INPUT_RETURN_VALUE FcitxSennDoInput(void *arg,
   // std::cout << sym << " " << keycode << " " << state << std::endl;
 
   if (!senn->im) {
-    senn->im = senn::fcitx::StatefulIMProxyIPC::Create(
-        senn::ipc::Connection::ConnectAbstractTo(SOCKET_PATH));
+    senn->im = senn::fcitx::StatefulIMProxyIPC::Create(senn->launcher);
   }
 
   return senn->im->Transit(sym, keycode, state,
@@ -102,6 +99,9 @@ static void* FcitxSennCreate(FcitxInstance *fcitx) {
   FcitxSenn *senn = (FcitxSenn*) fcitx_utils_malloc0(sizeof(FcitxSenn));
   senn->fcitx = fcitx;
   senn->im = nullptr;
+  senn->launcher = new senn::fcitx::StatefulIMProxyIPCServerLauncher();
+
+  senn->launcher->Spawn();
 
   FcitxIMIFace iface;
   memset(&iface, 0, sizeof(FcitxIMIFace));
@@ -110,8 +110,6 @@ static void* FcitxSennCreate(FcitxInstance *fcitx) {
   iface.DoInput = FcitxSennDoInput;
   iface.DoReleaseInput = FcitxSennDoReleaseInput;
   iface.ReloadConfig = FcitxSennReloadConfig;
-
-  senn::fcitx::StartIPCServer(SOCKET_PATH);
 
   FcitxInstanceRegisterIMv2(
       fcitx,

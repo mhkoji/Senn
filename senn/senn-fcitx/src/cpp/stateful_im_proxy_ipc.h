@@ -1,6 +1,6 @@
 #pragma once
 #include "stateful_im.h"
-#include "ipc.h"
+#include "stateful_im_proxy_ipc_server.h"
 
 namespace senn {
 namespace fcitx {
@@ -14,13 +14,17 @@ public:
       std::function<void(const senn::fcitx::views::Converting*)>,
       std::function<void(const senn::fcitx::views::Editing*)>);
 
-
-  static StatefulIMProxyIPC* Create(senn::ipc::Connection*);
-
 private:
-  StatefulIMProxyIPC(senn::ipc::Connection*);
+  StatefulIMProxyIPC(senn::ipc::Connection*,
+                     senn::fcitx::StatefulIMProxyIPCServerLauncher*);
 
   senn::ipc::Connection *connection_;
+
+  const StatefulIMProxyIPCServerLauncher *launcher_;
+
+public:
+  static StatefulIMProxyIPC* Create(
+      senn::fcitx::StatefulIMProxyIPCServerLauncher*);
 };
 
 

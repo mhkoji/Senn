@@ -11,7 +11,7 @@ public:
 
   void Write(const std::string&);
 
-  void ReadLine(std::string*);
+  bool ReadLine(int, std::string*);
 
   void Close();
 

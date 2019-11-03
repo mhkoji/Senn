@@ -6,7 +6,7 @@
 #include <iostream>
 #include <algorithm>
 
-#include "ipc.h"
+#include "stateful_im_proxy_ipc_server.h"
 
 namespace senn {
 namespace ipc {
@@ -23,15 +23,13 @@ int MakeLocalStreamSocketOrDie(void) {
   return socket_fd;
 }
 
-bool IsReadTimeout(int socket) {
-  int TIMEOUT_MSEC = 1000;
-
+bool IsReadTimeout(int socket, int timeout_msec) {
   fd_set fds;
   struct timeval tv;
   FD_ZERO(&fds);
   FD_SET(socket, &fds);
-  tv.tv_sec = TIMEOUT_MSEC / 1000;
-  tv.tv_usec = 1000 * (TIMEOUT_MSEC % 1000);
+  tv.tv_sec = timeout_msec / 1000;
+  tv.tv_usec = 1000 * (timeout_msec % 1000);
   if (select(socket + 1, &fds, NULL, NULL, &tv) < 0) {
     return true;
   }
@@ -93,14 +91,12 @@ void Connection::Write(const std::string &content) {
 }
 
 
-void Connection::ReadLine(std::string *output) {
+bool Connection::ReadLine(int timeout_msec, std::string *output) {
   char buffer[1024];
 
   while (1) {
-    if (IsReadTimeout(socket_fd_)) {
-      // TODO: handle timeout (maybe restart the server)
-      *output = "IRV_TO_PROCESS EDITING {\"cursor-pos\":0,\"input\":\"\",\"committed-input\":\"c\"}";
-      return;
+    if (IsReadTimeout(socket_fd_, timeout_msec)) {
+      return false;
     }
 
     int bytes_read = read(socket_fd_, buffer, sizeof(buffer));
@@ -111,7 +107,7 @@ void Connection::ReadLine(std::string *output) {
     }
 
     if (bytes_read == 0) {
-      return;
+      return false;
     }
 
     *output += std::string(buffer, size_t(bytes_read));
@@ -123,7 +119,7 @@ void Connection::ReadLine(std::string *output) {
                         [](int ch) { return !std::isspace(ch); }
                     ).base(),
                     output->end());
-      return;
+      return true;
     } else if (bytes_read == sizeof(buffer)) {
       continue;
     }
@@ -135,6 +131,7 @@ void Connection::ReadLine(std::string *output) {
 void Connection::Close() {
   close(socket_fd_);
 }
+
 
 } // ipc
 } // senn

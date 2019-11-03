@@ -59,11 +59,84 @@ INPUT_RETURN_VALUE ParseInputReturnValue(const std::string &s) {
   return IRV_TO_PROCESS;
 }
 
+
+std::string MakeRequest(FcitxKeySym sym,
+                        uint32_t keycode,
+                        uint32_t state) {
+  std::stringstream ss;
+  ss << "{"
+     << "\"op\": \"transit\","
+     << "\"args\": {" << "\"sym\": " << sym << ","
+     << "\"keycode\": " << keycode << ","
+     << "\"state\": " << state << "}"
+     << "}\n";
+  return ss.str();
+}
+
+
+// NOTE: This program essentially done not depends on the implementation of the launcher.
+class RequestToServer {
+public:
+  RequestToServer(
+      const senn::fcitx::StatefulIMProxyIPCServerLauncher* const launcher,
+      senn::ipc::Connection **server_conn)
+    : launcher_(launcher),
+      server_conn_(server_conn) {
+  }
+
+  void Execute(const std::string &request, std::string *response) {
+    TryExecuting(0, request, response);
+  }
+
+private:
+  void TryExecuting(int try_count,
+                    const std::string &request,
+                    std::string *response) {
+    (*server_conn_)->Write(request);
+
+    if ((*server_conn_)->ReadLine(kReadTimeoutMsec, response)) {
+      return;
+    }
+
+    if (try_count < 2) {
+      (*server_conn_)->Close();
+      *server_conn_ = ReconnectOnFailure();
+      TryExecuting(1 + try_count, request, response);
+      return;
+    }
+
+    // Because there seems to be nothing we can do, die.
+    std::cerr << "Failed to request" << std::endl;
+    std::exit(1);
+  }
+
+  senn::ipc::Connection *ReconnectOnFailure() {
+    // Ensure that the server is started because the failure may be
+    // due to an unexpected stop of the server.
+    launcher_->Spawn();
+    // Wait for the server start for a while
+    usleep(kWaitIntervalForServerMsec * 1000);
+    return launcher_->GetConnection();
+  }
+
+  const senn::fcitx::StatefulIMProxyIPCServerLauncher* const launcher_;
+
+  senn::ipc::Connection **server_conn_;
+
+  static const int kReadTimeoutMsec = 1000;
+
+  static const int kWaitIntervalForServerMsec = 1000;
+};
+
 } // namespace
 
 
-StatefulIMProxyIPC::StatefulIMProxyIPC(senn::ipc::Connection* conn)
-  : connection_(conn) {}
+StatefulIMProxyIPC::StatefulIMProxyIPC(
+    senn::ipc::Connection* conn,
+    senn::fcitx::StatefulIMProxyIPCServerLauncher* launcher)
+  : connection_(conn),
+    launcher_(launcher) {
+}
 
 
 INPUT_RETURN_VALUE
@@ -72,22 +145,15 @@ StatefulIMProxyIPC::Transit(
     std::function<void(const senn::fcitx::views::Converting*)> on_converting,
     std::function<void(const senn::fcitx::views::Editing*)> on_editing) {
 
-  std::string result = "";
+  std::string response = "";
   {
-    std::stringstream ss;
-    ss << "{"
-       << "\"op\": \"transit\","
-       << "\"args\": {" << "\"sym\": " << sym << ","
-                        << "\"keycode\": " << keycode << ","
-                        << "\"state\": " << state << "}"
-       << "}\n";
-    connection_->Write(ss.str());
-    connection_->ReadLine(&result);
-    // std::cout << result << std::endl;
+    std::string request = MakeRequest(sym, keycode, state);
+    RequestToServer *req = new RequestToServer(launcher_, &connection_);
+    req->Execute(request, &response);
   }
 
+  std::istringstream iss(response);
   std::string input_return_value, type;
-  std::istringstream iss(result);
   iss >> input_return_value;
   iss >> type;
 
@@ -116,9 +182,9 @@ StatefulIMProxyIPC::Transit(
   return ParseInputReturnValue(input_return_value);
 }
 
-StatefulIMProxyIPC*
-StatefulIMProxyIPC::Create(senn::ipc::Connection *conn) {
-  return new StatefulIMProxyIPC(conn);
+StatefulIMProxyIPC* StatefulIMProxyIPC::Create(
+    senn::fcitx::StatefulIMProxyIPCServerLauncher *launcher) {
+  return new StatefulIMProxyIPC(launcher->GetConnection(), launcher);
 }
 
 
