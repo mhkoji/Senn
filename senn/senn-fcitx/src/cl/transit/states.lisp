@@ -1,8 +1,8 @@
 (defpackage :senn.fcitx.transit.states
   (:use :cl)
-  (:export :editing
-           :make-editing
-           :editing-buffer
+  (:export :inputting
+           :make-inputting
+           :inputting-buffer
 
            :katakana
            :make-katakana
@@ -18,7 +18,7 @@
            :converting-move-curret-segment))
 (in-package :senn.fcitx.transit.states)
 
-(defstruct editing
+(defstruct inputting
   (buffer (senn.buffer:make-buffer)))
 
 

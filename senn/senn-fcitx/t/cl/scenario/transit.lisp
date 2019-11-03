@@ -5,7 +5,7 @@
 
 (defmacro assert-ops (ops &key test)
   `(let ((ime (make-instance 'senn.im:ime))
-         (state (senn.fcitx.transit.states:make-editing)))
+         (state (senn.fcitx.transit.states:make-inputting)))
      (loop for (sym expected-view) in ,ops
            do (destructuring-bind (new-state actual-view)
                   (let ((key (senn.fcitx.transit.keys:make-key

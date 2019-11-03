@@ -35,7 +35,7 @@
   (log/info client "Connected")
   (bordeaux-threads:make-thread
    (lambda ()
-     (let ((initial-state (senn.fcitx.transit.states:make-editing)))
+     (let ((initial-state (senn.fcitx.transit.states:make-inputting)))
        (senn.fcitx.stateful-im:loop-handling-request initial-state
                                                      ime
                                                      client))

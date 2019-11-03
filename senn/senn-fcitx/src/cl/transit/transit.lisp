@@ -17,8 +17,8 @@
 (defun buffer-empty-p (buffer)
   (string= (senn.buffer:buffer-string buffer) ""))
 
-(defun editing-buffer-empty-p (editing)
-  (buffer-empty-p (editing-buffer editing)))
+(defun inputting-buffer-empty-p (inputting)
+  (buffer-empty-p (inputting-buffer inputting)))
 
 
 (defun char-p (k)
@@ -44,21 +44,21 @@
     (length-utf8 subseq)))
 
 (defun make-editing-view (input-return-value
-                          cursor-pos input commited-input)
+                          cursor-pos input committed-string)
   (let ((json-string (jsown:to-json
                       (jsown:new-js
                        ("cursor-pos"      cursor-pos)
                        ("input"           input)
-                       ("committed-input" commited-input)))))
+                       ("committed-input" committed-string)))))
     (format nil "~A EDITING ~A" input-return-value json-string)))
 
-(defun editing->editing-view (input-return-value editing-state
-                              &key committed-input)
-  (let ((buffer (editing-buffer editing-state)))
+(defun inputting->editing-view (input-return-value inputting-state
+                              &key committed-string)
+  (let ((buffer (inputting-buffer inputting-state)))
     (make-editing-view input-return-value
                        (buffer-cursor-pos-utf8 buffer)
                        (senn.buffer:buffer-string buffer)
-                       (or committed-input ""))))
+                       (or committed-string ""))))
 
 (defun katakana->editing-view (input-return-value katakana-state)
   (let ((katakana-input (katakana-input katakana-state)))
@@ -94,12 +94,12 @@
 (defmethod transit ((ime ime) (s katakana)
                     (key senn.fcitx.transit.keys:key))
   (cond ((senn.fcitx.transit.keys:enter-p key)
-         (let ((input (katakana-input s))
-               (editing-state (make-editing)))
-           (list editing-state
-                 (editing->editing-view
-                  +IRV-DO-NOTHING+ editing-state
-                  :committed-input input))))
+         (let ((inputting-state (make-inputting))
+               (committed-string (katakana-input s)))
+           (list inputting-state
+                 (inputting->editing-view
+                  +IRV-DO-NOTHING+ inputting-state
+                  :committed-string committed-string))))
         (t
          (list s (katakana->editing-view +IRV-DO-NOTHING+ s)))))
 
@@ -135,36 +135,39 @@
 
         ((senn.fcitx.transit.keys:backspace-p key)
          (let ((pron (converting-pronunciation s)))
-           (let ((editing-state (make-editing
-                                 :buffer (senn.buffer:make-buffer
-                                          :string pron
-                                          :cursor-pos (length pron)))))
-             (list editing-state
-                   (editing->editing-view +IRV-DO-NOTHING+ editing-state)))))
+           (let ((inputting-state (make-inputting
+                                   :buffer (senn.buffer:make-buffer
+                                            :string pron
+                                            :cursor-pos (length pron)))))
+             (list inputting-state
+                   (inputting->editing-view
+                    +IRV-DO-NOTHING+ inputting-state)))))
 
         ((char-p key)
          (let* ((char (code-char (senn.fcitx.transit.keys:key-sym key)))
-                (editing-state (make-editing
-                                :buffer (senn.buffer:insert-char
-                                         (senn.buffer:make-buffer) char)))
-                (commited-input (converting-current-input s)))
-           (list editing-state
-                 (editing->editing-view +IRV-TO-PROCESS+ editing-state
-                                       :committed-input commited-input))))
+                (inputting-state (make-inputting
+                                  :buffer (senn.buffer:insert-char
+                                           (senn.buffer:make-buffer) char)))
+                (committed-string (converting-current-input s)))
+           (list inputting-state
+                 (inputting->editing-view
+                  +IRV-TO-PROCESS+ inputting-state
+                  :committed-string committed-string))))
         (t
-         (let ((commited-input (converting-current-input s))
-               (editing-state (make-editing)))
-           (list editing-state
+         (let ((committed-string (converting-current-input s))
+               (inputting-state (make-inputting)))
+           (list inputting-state
                  ;; Disable inserting a new line by the return key
-                 (editing->editing-view +IRV-DO-NOTHING+ editing-state
-                                       :committed-input commited-input))))))
+                 (inputting->editing-view
+                  +IRV-DO-NOTHING+ inputting-state
+                  :committed-string committed-string))))))
 
-(defmethod transit ((ime ime) (s editing)
+(defmethod transit ((ime ime) (s inputting)
                     (key senn.fcitx.transit.keys:key))
   (cond ((/= (senn.fcitx.transit.keys:key-state key) 0)
          ;; Case when a modifier key such as ctrl is pressed.
-         (list s (editing->editing-view
-                  (if (buffer-empty-p (editing-buffer s))
+         (list s (inputting->editing-view
+                  (if (buffer-empty-p (inputting-buffer s))
                       ;; Let the OS process the key.
                       ;; For example, if the key is ctrl-p, then the OS may move the cursor up.
                       +IRV-TO-PROCESS+
@@ -175,74 +178,75 @@
 
         ((char-p key)
          (let ((char (code-char (senn.fcitx.transit.keys:key-sym key))))
-           (setf (editing-buffer s)
-                 (senn.buffer:insert-char (editing-buffer s) char))
-           (list s (editing->editing-view +IRV-TO-PROCESS+ s))))
+           (setf (inputting-buffer s)
+                 (senn.buffer:insert-char (inputting-buffer s) char))
+           (list s (inputting->editing-view +IRV-TO-PROCESS+ s))))
 
         ((and (senn.fcitx.transit.keys:f7-p key)
-              (not (buffer-empty-p (editing-buffer s))))
+              (not (inputting-buffer-empty-p s)))
          (let ((katakana-state (make-katakana
                                 :input (senn.buffer:buffer-string
-                                        (editing-buffer s)))))
+                                        (inputting-buffer s)))))
            (list katakana-state
                  (katakana->editing-view +IRV-DO-NOTHING+ katakana-state))))
 
         ((senn.fcitx.transit.keys:space-p key)
-         (let ((buffer (editing-buffer s)))
+         (let ((buffer (inputting-buffer s)))
            (if (buffer-empty-p buffer)
-               (let ((editing-state (make-editing)))
-                 (list editing-state
-                       (editing->editing-view +IRV-TO-PROCESS+
-                                              editing-state
-                                              :committed-input "　")))
-               (let ((pron (senn.buffer:buffer-string (editing-buffer s))))
+               (let ((inputting-state (make-inputting)))
+                 (list inputting-state
+                       (inputting->editing-view
+                        +IRV-TO-PROCESS+ inputting-state
+                        :committed-string "　")))
+               (let ((pron (senn.buffer:buffer-string (inputting-buffer s))))
                  (let ((segments (senn.im:convert ime pron)))
                    (let ((converting-state (make-converting
                                             :segments segments
                                             :pronunciation pron)))
                      (list converting-state
                            (converting->converting-view
-                             +IRV-TO-PROCESS+ converting-state))))))))
+                            +IRV-TO-PROCESS+ converting-state))))))))
 
         ((senn.fcitx.transit.keys:enter-p key)
-         (let ((input (senn.buffer:buffer-string (editing-buffer s)))
-               (editing-state (make-editing)))
-           (list editing-state
-                 (editing->editing-view
-                  (if (string= input "")
-                      +IRV-TO-PROCESS+
+         (let ((inputting-state (make-inputting))
+               (committed-string
+                (senn.buffer:buffer-string (inputting-buffer s))))
+           (list inputting-state
+                 (if (string= committed-string "")
+                     (inputting->editing-view
+                      +IRV-TO-PROCESS+ inputting-state)
+                     (inputting->editing-view
                       ;; 何らかの文字が確定された場合
                       ;; エンターキーによる改行は無効化させる
-                      +IRV-DO-NOTHING+)
-                  editing-state
-                  :committed-input input))))
+                      +IRV-DO-NOTHING+ inputting-state
+                      :committed-string committed-string)))))
 
         ((senn.fcitx.transit.keys:backspace-p key)
-         (if (editing-buffer-empty-p s)
+         (if (inputting-buffer-empty-p s)
              ;; IMEが文字を削除していない -> OSに文字を削除してもらう
-             (list s (editing->editing-view +IRV-TO-PROCESS+ s))
+             (list s (inputting->editing-view +IRV-TO-PROCESS+ s))
              (progn
-               (setf (editing-buffer s)
-                     (senn.buffer:delete-char (editing-buffer s)))
+               (setf (inputting-buffer s)
+                     (senn.buffer:delete-char (inputting-buffer s)))
                ;; IMEが文字を削除した -> OSが文字が削除するのを抑制
-               (list s (editing->editing-view +IRV-DO-NOTHING+ s)))))
+               (list s (inputting->editing-view +IRV-DO-NOTHING+ s)))))
 
         ((and (senn.fcitx.transit.keys:left-p key)
-              (not (editing-buffer-empty-p s)))
-         (setf (editing-buffer s)
-               (senn.buffer:move-cursor-pos (editing-buffer s) -1))
-         (list s (editing->editing-view +IRV-TO-PROCESS+ s)))
+              (not (inputting-buffer-empty-p s)))
+         (setf (inputting-buffer s)
+               (senn.buffer:move-cursor-pos (inputting-buffer s) -1))
+         (list s (inputting->editing-view +IRV-TO-PROCESS+ s)))
 
         ((and (senn.fcitx.transit.keys:right-p key)
-              (not (editing-buffer-empty-p s)))
-         (setf (editing-buffer s)
-               (senn.buffer:move-cursor-pos (editing-buffer s) +1))
-         (list s (editing->editing-view +IRV-TO-PROCESS+ s)))
+              (not (inputting-buffer-empty-p s)))
+         (setf (inputting-buffer s)
+               (senn.buffer:move-cursor-pos (inputting-buffer s) +1))
+         (list s (inputting->editing-view +IRV-TO-PROCESS+ s)))
 
-        ((editing-buffer-empty-p s)
+        ((inputting-buffer-empty-p s)
          ;; バッファが空の状態での、上下左右の矢印キー対応
          ;; とりあえずこれで動くか様子見
-         (list s (editing->editing-view +IRV-FLAG-FORWARD-KEY+ s)))
+         (list s (inputting->editing-view +IRV-FLAG-FORWARD-KEY+ s)))
 
         (t
-         (list s (editing->editing-view +IRV-DO-NOTHING+ s)))))
+         (list s (inputting->editing-view +IRV-DO-NOTHING+ s)))))
