@@ -71,6 +71,8 @@ StatefulIMProxyIPC::Transit(
     FcitxKeySym sym, uint32_t keycode, uint32_t state,
     std::function<void(const senn::fcitx::views::Converting*)> on_converting,
     std::function<void(const senn::fcitx::views::Editing*)> on_editing) {
+
+  std::string result = "";
   {
     std::stringstream ss;
     ss << "{"
@@ -80,12 +82,9 @@ StatefulIMProxyIPC::Transit(
                         << "\"state\": " << state << "}"
        << "}\n";
     connection_->Write(ss.str());
+    connection_->ReadLine(&result);
+    // std::cout << result << std::endl;
   }
-
-  std::string result;
-  connection_->ReadLine(&result);
-
-  // std::cout << result << std::endl;
 
   std::string input_return_value, type;
   std::istringstream iss(result);
