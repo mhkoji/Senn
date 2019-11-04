@@ -19,5 +19,13 @@ if(NOT DEFINED LOCALEDIR)
   set(LOCALEDIR ${CMAKE_INSTALL_PREFIX}/share/locale)
 endif()
 
-
 add_subdirectory(src/cpp)
+
+
+## configuration of CPack for generating deb
+set(CPACK_GENERATOR "DEB")
+set(CPACK_PACKAGE_VERSION_MAJOR "0")
+set(CPACK_PACKAGE_VERSION_MINOR "0")
+set(CPACK_PACKAGE_VERSION_PATCH "1")
+set(CPACK_DEBIAN_PACKAGE_MAINTAINER "mkoji")
+include(CPack)
