@@ -33,14 +33,22 @@ Add the code below to your .emacs file.
 % mkdir <path/to/Hachee>/senn/senn-fcitx/build
 % cd <path/to/Hachee>/senn/senn-fcitx/build
 % cmake ..
-% make && sudo make install
+% make && make package
+% sudo dpkg -i fcitx-senn-0.0.1-Linux.deb ## or sudo make install
 ```
 
 ### Uninstall
 
-To uninstall all the objects, you manually delete them.
-Delete `/usr/lib/senn`, which you created explicitly.
-The paths of the objects installed by `sudo make install` are found in the log messages.
+```
+% sudo rm -rf /usr/lib/senn
+% sudo dpkg -P fcitx-senn
+```
+
+#### When Installed by `make install`
+
+Manually delete the objects installed by `sudo make install` as well as `/usr/lib/senn`, which you created explicitly.
+The paths of the installed objects are found in the log messages.
+
 ```
 ...
 Install the project...
