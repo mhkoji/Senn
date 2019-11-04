@@ -22,10 +22,17 @@ endif()
 add_subdirectory(src/cpp)
 
 
+install(
+  FILES ${CMAKE_CURRENT_BINARY_DIR}/../bin/server
+  CONFIGURATIONS Release
+  RUNTIME DESTINATION "/usr/lib/senn")
+
+
 ## configuration of CPack for generating deb
 set(CPACK_GENERATOR "DEB")
 set(CPACK_PACKAGE_VERSION_MAJOR "0")
 set(CPACK_PACKAGE_VERSION_MINOR "0")
 set(CPACK_PACKAGE_VERSION_PATCH "1")
 set(CPACK_DEBIAN_PACKAGE_MAINTAINER "mkoji")
+
 include(CPack)
