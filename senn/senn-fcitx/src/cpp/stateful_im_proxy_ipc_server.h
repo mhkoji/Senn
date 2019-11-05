@@ -5,7 +5,8 @@
 namespace senn {
 namespace fcitx {
 
-class StatefulIMProxyIPCServerLauncher {
+class StatefulIMProxyIPCServerLauncher
+  : public senn::ipc::ServerLauncher<StatefulIMProxyIPCServerLauncher> {
 public:
   StatefulIMProxyIPCServerLauncher();
 

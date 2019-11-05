@@ -73,61 +73,6 @@ std::string MakeRequest(FcitxKeySym sym,
   return ss.str();
 }
 
-
-// NOTE: This program essentially done not depends on the implementation of the launcher.
-class RequestToServer {
-public:
-  RequestToServer(
-      const senn::fcitx::StatefulIMProxyIPCServerLauncher* const launcher,
-      senn::ipc::Connection **server_conn)
-    : launcher_(launcher),
-      server_conn_(server_conn) {
-  }
-
-  void Execute(const std::string &request, std::string *response) {
-    TryExecuting(0, request, response);
-  }
-
-private:
-  void TryExecuting(int try_count,
-                    const std::string &request,
-                    std::string *response) {
-    (*server_conn_)->Write(request);
-
-    if ((*server_conn_)->ReadLine(kReadTimeoutMsec, response)) {
-      return;
-    }
-
-    if (try_count < 2) {
-      (*server_conn_)->Close();
-      *server_conn_ = ReconnectOnFailure();
-      TryExecuting(1 + try_count, request, response);
-      return;
-    }
-
-    // Because there seems to be nothing we can do, die.
-    std::cerr << "Failed to request" << std::endl;
-    std::exit(1);
-  }
-
-  senn::ipc::Connection *ReconnectOnFailure() {
-    // Ensure that the server is started because the failure may be
-    // due to an unexpected stop of the server.
-    launcher_->Spawn();
-    // Wait for the server start for a while
-    usleep(kWaitIntervalForServerMsec * 1000);
-    return launcher_->GetConnection();
-  }
-
-  const senn::fcitx::StatefulIMProxyIPCServerLauncher* const launcher_;
-
-  senn::ipc::Connection **server_conn_;
-
-  static const int kReadTimeoutMsec = 1000;
-
-  static const int kWaitIntervalForServerMsec = 1000;
-};
-
 } // namespace
 
 
@@ -148,8 +93,9 @@ StatefulIMProxyIPC::Transit(
   std::string response = "";
   {
     std::string request = MakeRequest(sym, keycode, state);
-    RequestToServer *req = new RequestToServer(launcher_, &connection_);
-    req->Execute(request, &response);
+    (new senn::ipc::ReconnectableServerRequest
+      <StatefulIMProxyIPCServerLauncher>(launcher_, &connection_))
+      ->Execute(request, &response);
   }
 
   std::istringstream iss(response);
