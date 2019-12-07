@@ -26,25 +26,20 @@ Add the code below to your .emacs file.
 ```
 % cd <path/to/Hachee>/senn-fcitx
 % ros dump executable bin/server.ros -o bin/server
+% chmod +x bin/server
 % sudo mkdir /usr/lib/senn
 % sudo mv bin/server /usr/lib/senn
 
 % sudo apt install fcitx-libs-dev
 % mkdir <path/to/Hachee>/senn/senn-fcitx/build
 % cd <path/to/Hachee>/senn/senn-fcitx/build
-% cmake ..
-% make && make package
-% sudo dpkg -i fcitx-senn-0.0.1-Linux.deb ## or sudo make install
+% sudo make install
+
+% /usr/lib/senn/server
+% fcitx restart
 ```
 
-### Uninstall
-
-```
-% sudo rm -rf /usr/lib/senn
-% sudo dpkg -P fcitx-senn
-```
-
-#### When Installed by `make install`
+#### Uninstall
 
 Manually delete the objects installed by `sudo make install` as well as `/usr/lib/senn`, which you created explicitly.
 The paths of the installed objects are found in the log messages.
@@ -65,6 +60,26 @@ Thus, you can uninstall senn-fcitx by the following commands:
 % sudo rm -rf /usr/share/fcitx/addon/fcitx-senn.conf
 % sudo rm -rf /usr/share/fcitx/inputmethod/senn.conf
 % sudo rm -rf /usr/lib/x86_64-linux-gnu/fcitx/fcitx-senn.so
+```
+
+### (TODO) Install via dpkg
+
+```
+% ros dump executable bin/server.ros -o bin/server
+% mkdir <path/to/Hachee>/senn/senn-fcitx/build
+% cd <path/to/Hachee>/senn/senn-fcitx/build
+% cmake -DCMAKE_BUILD_TYPE=Release ..
+% make && make package
+% sudo dpkg -i fcitx-senn-0.0.1-Linux.deb
+
+% fcitx restart
+```
+
+#### Uninstall
+
+```
+% sudo rm -rf /usr/lib/senn
+% sudo dpkg -P fcitx-senn
 ```
 
 ## Windows (WIP)
