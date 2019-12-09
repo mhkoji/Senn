@@ -8,7 +8,7 @@ Add the code below to your .emacs file.
 
 ```lisp
 (defvar senn-elisp-dir
-  "<path/to/Hachee>/senn/senn-emacs/elisp/")
+  "<path/to/Hachee>/senn/dists/emacs/elisp/")
 (push senn-elisp-dir load-path)
 (load (expand-file-name "./leim-list.el" senn-elisp-dir))
 ```
@@ -16,7 +16,7 @@ Add the code below to your .emacs file.
 ### Dump the Server (optional)
 
 ```
-% cd <path/to/Hachee>/senn/senn-emacs/
+% cd <path/to/Hachee>/senn/dists/emacs/
 % ros dump executable bin/server.ros -o bin/server
 ```
 
@@ -24,15 +24,15 @@ Add the code below to your .emacs file.
 
 ### Install
 ```
-% cd <path/to/Hachee>/senn-fcitx
+% cd <path/to/Hachee>/dists/fcitx
 % ros dump executable bin/server.ros -o bin/server
 % chmod +x bin/server
 % sudo mkdir /usr/lib/senn
 % sudo mv bin/server /usr/lib/senn
 
 % sudo apt install fcitx-libs-dev
-% mkdir <path/to/Hachee>/senn/senn-fcitx/build
-% cd <path/to/Hachee>/senn/senn-fcitx/build
+% mkdir <path/to/Hachee>/senn/dists/fcitx/build
+% cd <path/to/Hachee>/senn/dists/fcitx/build
 % sudo make install
 
 % /usr/lib/senn/server
@@ -53,7 +53,7 @@ Install the project...
 -- Installing: /usr/lib/x86_64-linux-gnu/fcitx/fcitx-senn.so
 ```
 
-Thus, you can uninstall senn-fcitx by the following commands:
+Thus, you can uninstall fcitx-senn by the following commands:
 
 ```
 % sudo rm -rf /usr/lib/senn
@@ -66,8 +66,8 @@ Thus, you can uninstall senn-fcitx by the following commands:
 
 ```
 % ros dump executable bin/server.ros -o bin/server
-% mkdir <path/to/Hachee>/senn/senn-fcitx/build
-% cd <path/to/Hachee>/senn/senn-fcitx/build
+% mkdir <path/to/Hachee>/senn/dists/fcitx/build
+% cd <path/to/Hachee>/senn/dists/fcitx/build
 % cmake -DCMAKE_BUILD_TYPE=Release ..
 % make && make package
 % sudo dpkg -i fcitx-senn-0.0.1-Linux.deb
