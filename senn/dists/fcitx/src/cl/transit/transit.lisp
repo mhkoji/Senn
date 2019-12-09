@@ -8,9 +8,7 @@
 
 ;;; Utilities
 (defun move-segment-form-index! (seg diff ime)
-  (labels ((get-forms (pron)
-             (senn.im:lookup-forms ime pron)))
-    (senn.segment:append-forms! seg #'get-forms))
+  (senn.im:append-candidates ime seg)
   (senn.segment:try-move-cursor-pos! seg diff))
 
 
@@ -84,7 +82,7 @@
                      ("candidate-index" -1))
                    (jsown:new-js
                      ("candidates"
-                      (if (senn.segment:segment-has-more-forms-p segment)
+                      (if (senn.segment:segment-has-more-candidates-p segment)
                           nil
                           (senn.segment:segment-forms segment)))
                      ("candidate-index"
