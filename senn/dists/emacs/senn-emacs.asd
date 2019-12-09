@@ -2,6 +2,6 @@
   :serial t
   :pathname "src"
   :components
-  ((:file "kkc")
+  ((:file "ime")
    (:file "stdio-server"))
   :depends-on (:senn))
