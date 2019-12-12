@@ -15,7 +15,7 @@
   unknown-word-n-gram-model)
 
 ;;; Convert
-(defmethod hachee.kkc:get-score-fn ((kkc kkc))
+(defmethod hachee.kkc:get-convert-score-fn ((kkc kkc))
   (hachee.kkc.full.score-fns:get-for-conv
    :word-vocabulary (kkc-vocabulary kkc)
    :word-n-gram-model (kkc-n-gram-model kkc)

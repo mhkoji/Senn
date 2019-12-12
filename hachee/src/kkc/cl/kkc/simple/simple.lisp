@@ -11,7 +11,7 @@
 (defstruct (kkc (:include hachee.kkc:kkc)))
 
 ;;; Convert
-(defmethod hachee.kkc:get-score-fn ((kkc kkc))
+(defmethod hachee.kkc:get-convert-score-fn ((kkc kkc))
   (hachee.kkc.simple.convert:get-score-fn
    :word-vocabulary (kkc-vocabulary kkc)
    :word-n-gram-model (kkc-n-gram-model kkc)))

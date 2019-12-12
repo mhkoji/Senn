@@ -3,8 +3,6 @@
   (:export :execute
            :node-word
            :node-word-origin)
-  (:import-from :hachee.kkc.word.dictionary
-                :lookup)
   (:import-from :alexandria
                 :when-let))
 (in-package :hachee.kkc.convert)
@@ -43,12 +41,6 @@
              :prev-node nil
              :score-so-far 0))
 
-(defun make-unknown-word (pron)
-  (hachee.kkc.word:make-word
-   :pron pron
-   :form (hachee.ja:hiragana->katakana pron)))
-
-
 (defun add-entries (table end prev-entries nodes)
   (push (list prev-entries nodes)
         (gethash end table)))
@@ -57,9 +49,7 @@
   (gethash end table))
 
 (defun execute (pronunciation &key score-fn
-                                   vocabulary
-                                   vocabulary-dictionary
-                                   extended-dictionary
+                                   list-words-fn
                                    1st-boundary-index)
   (when (and (numberp 1st-boundary-index)
              (<= 8 1st-boundary-index))
@@ -75,25 +65,16 @@
                   (and (= start 0)
                        (= end 1st-boundary-index))
                   (<= 1st-boundary-index start))
-          (let ((sub-pron (subseq pronunciation start end))
-                (nodes nil))
-            (dolist (w (lookup vocabulary-dictionary sub-pron))
-              (push (make-node :word w
-                               :word-origin :vocabulary)
-                    nodes))
-            (dolist (w (lookup extended-dictionary sub-pron))
-              (push (make-node :word w
-                               :word-origin :extended-dictionary)
-                    nodes))
-            ;; Add unknown word node if necessary
-            (when (< (- end start) 8) ;; Length up to 8
-              (let ((unknown-word (make-unknown-word sub-pron)))
-                (when (null (hachee.language-model.vocabulary:to-int-or-nil
-                             vocabulary
-                             unknown-word))
-                  (push (make-node :word unknown-word
-                                   :word-origin :unknown-word)
-                        nodes))))
+          (let ((nodes nil)
+                (sub-pron (subseq pronunciation start end)))
+            ;; Collect nodes for sub-pron
+            (let ((origin-words-alist (funcall list-words-fn sub-pron)))
+              (dolist (origin-words origin-words-alist)
+                (destructuring-bind (origin . words) origin-words
+                  (dolist (word words)
+                    (push (make-node :word word :word-origin origin)
+                          nodes)))))
+            ;; Add the nodes to the table
             (let ((prev-entries (get-entries table start)))
               (add-entries table end prev-entries nodes))))))
     ;; DP
