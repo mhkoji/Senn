@@ -46,7 +46,7 @@
        (:file "archive")
        (:file "build")
        (:file "kkc/kkc")
-       (:file "kkc/full/convert")
+       (:file "kkc/full/score-fns")
        (:file "kkc/full/full")
        (:file "kkc/full/factory")
        (:file "kkc/simple/convert")

@@ -10,7 +10,7 @@
 
 (defgeneric convert (ime pron &key 1st-boundary-index))
 
-(defgeneric lookup (ime pron))
+(defgeneric lookup (ime pron &key prev next))
 
 (defun append-candidates (ime segment)
   (when (senn.segment:segment-has-more-candidates-p segment)

@@ -74,6 +74,17 @@
                          (senn-conv-curr-select-idx ,g))))
 	 ,@body))))
 
+(defun senn-get-prev-select-or-nil (conv)
+  (when (< 0 (senn-conv-curr-select-idx conv))
+    (aref (senn-conv-selects conv)
+          (1- (senn-conv-curr-select-idx conv)))))
+
+(defun senn-get-next-select-or-nil (conv)
+  (when (< (senn-conv-curr-select-idx conv)
+           (1- (senn-conv-select-count conv)))
+    (aref (senn-conv-selects conv)
+          (1+ (senn-conv-curr-select-idx conv)))))
+
 ;; selectorは、ミニバッファに候補を見せるための構造。
 ;; まず、全候補をリストにして、何個かに分ける。
 ;; 何個で分けるかは、senn-option-output-sizeとフレーム幅で決まる。

@@ -131,9 +131,16 @@
                  `(("text" . ,string)
                    ("1st-boundary-index" . ,1st-boundary-index))))
 
-(defun senn-api-lookup-words (string)
-  (senn-api-call "lookup"
-                 `(("text" . ,string))))
+(defun senn-api-lookup-words (string prev-word next-word)
+  (labels ((word-alist->arg-object (word-alist)
+             (list (cons "form" (senn-assoc-get 'form word-alist))
+                   (cons "pron" (senn-assoc-get 'pron word-alist)))))
+    (let ((arg-plist (list (cons "text" string))))
+      (when prev-word
+        (push (cons "prev" (word-alist->arg-object prev-word)) arg-plist))
+      (when next-word
+        (push (cons "next" (word-alist->arg-object next-word)) arg-plist))
+      (senn-api-call "lookup" arg-plist))))
 
 (defun senn-api-quit ()
   (senn-api-call "quit" nil))
@@ -191,8 +198,9 @@
          :select-count (length new-selects)
          :curr-select-idx curr-select-idx)))))
 
-(defun senn-lookup-options (pron)
-  (mapcar #'senn-word->option (senn-api-lookup-words pron)))
+(defun senn-lookup-options (pron prev-word next-word)
+  (mapcar #'senn-word->option
+          (senn-api-lookup-words pron prev-word next-word)))
 
 
 ;;; オーバーレイに関する関数。
@@ -279,13 +287,24 @@
                   #'(lambda (o) (string= form (senn-option-form o)))
                   other-options)))))
 
-(defun senn-ensure-more-options-looked-up (select)
+(defun senn-select->word (select)
+  (list (cons 'form (senn-option-form (senn-get-curr-option select)))
+        (cons 'pron (senn-select-pron select))))
+
+(defun senn-ensure-more-options-looked-up (select
+                                           &optional prev-select
+                                                     next-select)
   (when (senn-select-more-options-p select)
     (let ((pron (senn-select-pron select))
           (option (senn-get-curr-option select)))
-      (let ((new-options (senn-adjoin-options
-                          option
-                          (senn-lookup-options pron))))
+      (let ((new-options
+             (senn-adjoin-options
+              option
+              (senn-lookup-options pron
+                                   (when prev-select
+                                     (senn-select->word prev-select))
+                                   (when next-select
+                                     (senn-select->word next-select))))))
         (setf (senn-select-options select) new-options)
         (setf (senn-select-option-count select) (length new-options))
         ;; 今増やしたので、これ以上増やせない
@@ -298,7 +317,10 @@
 (defun senn-next-option ()
   (interactive)
   (senn-with-current-select curr-select senn-conversion-data
-    (senn-ensure-more-options-looked-up curr-select)
+    (senn-ensure-more-options-looked-up
+     curr-select
+     (senn-get-prev-select-or-nil senn-conversion-data)
+     (senn-get-next-select-or-nil senn-conversion-data))
     (let ((count (senn-select-option-count curr-select))
           (index (senn-select-curr-option-idx curr-select)))
       (setf (senn-select-curr-option-idx curr-select)
@@ -314,7 +336,10 @@
 (defun senn-prev-option ()
   (interactive)
   (senn-with-current-select curr-select senn-conversion-data
-    (senn-ensure-more-options-looked-up curr-select)
+    (senn-ensure-more-options-looked-up
+     curr-select
+     (senn-get-prev-select-or-nil senn-conversion-data)
+     (senn-get-next-select-or-nil senn-conversion-data))
     (let ((count (senn-select-option-count curr-select))
           (index (senn-select-curr-option-idx curr-select)))
       (setf (senn-select-curr-option-idx curr-select)

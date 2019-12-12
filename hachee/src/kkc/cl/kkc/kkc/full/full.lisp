@@ -16,7 +16,7 @@
 
 ;;; Convert
 (defmethod hachee.kkc:get-score-fn ((kkc kkc))
-  (hachee.kkc.full.convert:get-score-fn
+  (hachee.kkc.full.score-fns:get-for-conv
    :word-vocabulary (kkc-vocabulary kkc)
    :word-n-gram-model (kkc-n-gram-model kkc)
    :unknown-word-char-vocabulary (kkc-unknown-word-vocabulary kkc)
@@ -31,6 +31,23 @@
             extended-dictionary-size)
          0))))
 
+
+;;; Lookup
+(defmethod hachee.kkc:get-lookup-score-fn ((kkc kkc) prev-word next-word)
+  (hachee.kkc.full.score-fns:get-for-lookup prev-word next-word
+   :word-vocabulary (kkc-vocabulary kkc)
+   :word-n-gram-model (kkc-n-gram-model kkc)
+   :unknown-word-char-vocabulary (kkc-unknown-word-vocabulary kkc)
+   :unknown-word-char-n-gram-model (kkc-unknown-word-n-gram-model kkc)
+   :probability-for-extended-dictionary-words
+   (let ((extended-dictionary-size
+          (hachee.kkc.word.dictionary:size (kkc-extended-dictionary kkc)))
+         (sum-probabilities-of-vocabulary-words
+          (kkc-sum-probabilities-of-vocabulary-words kkc)))
+     (if (< 0 extended-dictionary-size)
+         (/ sum-probabilities-of-vocabulary-words
+            extended-dictionary-size)
+         0))))
 
 ;;; Save
 (defun save-kkc (kkc pathname)

@@ -10,6 +10,11 @@
     (:unknown-word "UW")
     (t "")))
 
+(defun expr->word (expr)
+  (hachee.kkc.word:make-word
+   :pron (jsown:val expr "pron")
+   :form (jsown:val expr "form")))
+
 (defun process (ime expr)
   (ecase (expr-op expr)
     (:convert
@@ -30,7 +35,11 @@
     (:lookup
      ;; {"op": "lookup", "args": {"text": "あお"}}
      (let ((candidates
-            (senn.im:lookup ime (expr-arg expr "text"))))
+            (senn.im:lookup ime (expr-arg expr "text")
+             :prev (let ((prev (expr-arg expr "prev")))
+                     (when prev (expr->word prev)))
+             :next (let ((next (expr-arg expr "next")))
+                     (when next (expr->word next))))))
        (jsown:to-json
         (mapcar (lambda (cand)
                   (jsown:new-js

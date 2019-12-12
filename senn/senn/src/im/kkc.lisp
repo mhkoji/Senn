@@ -22,12 +22,13 @@
           (hachee.kkc:convert (ime-kkc ime) pron
                               :1st-boundary-index 1st-boundary-index)))
 
-(defmethod senn.im:lookup ((ime ime) (pron string))
+(defmethod senn.im:lookup ((ime ime) (pron string)
+                           &key prev next)
   (mapcar (lambda (item)
             (senn.segment:make-candidate
              :form (hachee.kkc.lookup:item-form item)
              :origin (hachee.kkc.lookup:item-origin item)))
-          (hachee.kkc:lookup (ime-kkc ime) pron)))
+          (hachee.kkc:lookup (ime-kkc ime) pron :prev prev :next next)))
 
 
 (defun load-user-kkc (user-homedir-pathname)

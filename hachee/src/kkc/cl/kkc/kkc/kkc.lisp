@@ -9,6 +9,7 @@
            :get-score-fn
            :lookup
            :lookup-forms
+           :get-lookup-score-fn
            :profile)
   (:import-from :hachee.kkc.word
                 :word-form
@@ -43,8 +44,17 @@
 
 
 ;;; Lookup
-(defun lookup (kkc pronunciation)
+(defgeneric get-lookup-score-fn (kkc prev-word next-word)
+  (:documentation "Returns a score function for lookup"))
+
+(defmethod get-lookup-score-fn ((kkc kkc) prev-word next-word)
+  nil)
+
+(defun lookup (kkc pronunciation &key prev next)
   (hachee.kkc.lookup:execute pronunciation
+   :score-fn
+   (when (and next prev)
+     (get-lookup-score-fn kkc prev next))
    :word-dicts
    (list (list :vocabulary
                (kkc-vocabulary-dictionary kkc)
