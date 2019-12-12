@@ -1,10 +1,10 @@
-(defpackage :hachee.kkc.file
+(defpackage :hachee.kkc.build.file
   (:use :cl)
   (:import-from :alexandria
                 :with-gensyms)
   (:export :file->sentences
            :sentence-words))
-(in-package :hachee.kkc.file)
+(in-package :hachee.kkc.build.file)
 
 (defvar +external-format+ :utf-8)
 

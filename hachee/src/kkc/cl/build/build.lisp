@@ -28,13 +28,13 @@
   (hachee.language-model:make-sentence
    :tokens (mapcar (lambda (w)
                      (to-int-or-unk vocabulary (word->key w)))
-                   (hachee.kkc.file:sentence-words file-sentence))))
+                   (hachee.kkc.build.file:sentence-words file-sentence))))
 
 (defun build-vocabulary (pathnames)
   (let ((vocab (hachee.language-model.vocabulary:make-vocabulary)))
     (dolist (pathname pathnames)
-      (dolist (sentence (hachee.kkc.file:file->sentences pathname))
-        (dolist (word (hachee.kkc.file:sentence-words sentence))
+      (dolist (sentence (hachee.kkc.build.file:file->sentences pathname))
+        (dolist (word (hachee.kkc.build.file:sentence-words sentence))
           (add-new vocab (word->key word)))))
     vocab))
 
@@ -45,8 +45,8 @@
         (word-key->freq (make-hash-table :test #'equal)))
     (dolist (pathname pathnames)
       (let ((curr-words (make-hash-table :test #'equal)))
-        (dolist (sentence (hachee.kkc.file:file->sentences pathname))
-          (dolist (word (hachee.kkc.file:sentence-words sentence))
+        (dolist (sentence (hachee.kkc.build.file:file->sentences pathname))
+          (dolist (word (hachee.kkc.build.file:sentence-words sentence))
             (setf (gethash (word->key word) curr-words) word)))
         (maphash (lambda (word-key word)
                    (let ((freq (incf (gethash word-key word-key->freq 0))))
@@ -60,8 +60,8 @@
                                    pathnames-inaccurately-segmented)
   (log:info "Extending vocabulary...")
   (dolist (pathname pathnames-inaccurately-segmented)
-    (dolist (sentence (hachee.kkc.file:file->sentences pathname))
-      (dolist (word (hachee.kkc.file:sentence-words sentence))
+    (dolist (sentence (hachee.kkc.build.file:file->sentences pathname))
+      (dolist (word (hachee.kkc.build.file:sentence-words sentence))
         (when (hachee.kkc.word.dictionary:contains-word-p
                trusted-word-dictionary
                word)
@@ -72,8 +72,8 @@
   (log:info "Building dictionary...")
   (let ((dict (hachee.kkc.word.dictionary:make-dictionary)))
     (dolist (pathname pathnames dict)
-      (dolist (sentence (hachee.kkc.file:file->sentences pathname))
-        (dolist (word (hachee.kkc.file:sentence-words sentence))
+      (dolist (sentence (hachee.kkc.build.file:file->sentences pathname))
+        (dolist (word (hachee.kkc.build.file:sentence-words sentence))
           (when (to-int-or-nil vocabulary (word->key word))
             (hachee.kkc.word.dictionary:add-word dict word)))))
     dict))
@@ -84,9 +84,10 @@
         (EOS (to-int vocabulary hachee.language-model.vocabulary:+EOS+))
         (model (make-instance 'hachee.language-model.n-gram:model)))
     (dolist (pathname pathnames)
-      (let ((sentences (mapcar (lambda (s)
-                                 (to-token-sentence s vocabulary))
-                               (hachee.kkc.file:file->sentences pathname))))
+      (let ((sentences
+             (mapcar (lambda (s)
+                       (to-token-sentence s vocabulary))
+                     (hachee.kkc.build.file:file->sentences pathname))))
         (hachee.language-model.n-gram:train model sentences
                                             :BOS BOS
                                             :EOS EOS)))
@@ -98,8 +99,8 @@
         (char-vocab (hachee.language-model.vocabulary:make-vocabulary)))
     (dolist (pathname pathnames)
       (let ((curr-chars (make-hash-table :test #'equal)))
-        (dolist (sentence (hachee.kkc.file:file->sentences pathname))
-          (dolist (word (hachee.kkc.file:sentence-words sentence))
+        (dolist (sentence (hachee.kkc.build.file:file->sentences pathname))
+          (dolist (word (hachee.kkc.build.file:sentence-words sentence))
             (when (not (to-int-or-nil vocabulary (word->key word)))
               (dolist (char (word->pron-chars word))
                 (setf (gethash (char->key char) curr-chars) char)))))
@@ -120,8 +121,8 @@
                      hachee.language-model.vocabulary:+EOS+))
         (model (make-instance 'hachee.language-model.n-gram:model)))
   (dolist (pathname pathnames)
-    (dolist (file-sentence (hachee.kkc.file:file->sentences pathname))
-      (dolist (word (hachee.kkc.file:sentence-words file-sentence))
+    (dolist (file-sentence (hachee.kkc.build.file:file->sentences pathname))
+      (dolist (word (hachee.kkc.build.file:sentence-words file-sentence))
         (when (not (to-int-or-nil vocabulary (word->key word)))
           (let ((sentence (hachee.kkc.util:word->sentence
                            word

@@ -29,29 +29,21 @@
    (:module :kkc
     :pathname "kkc/cl"
     :components
-    ((:module :word
-      :pathname "word"
-      :components
-      ((:file "word")
-       (:file "dictionary")))
-
-     (:file "file")
-
-     (:module :kkc
-      :pathname "kkc"
-      :components
-      ((:file "util")
-       (:file "convert")
-       (:file "lookup")
-       (:file "archive")
-       (:file "build")
-       (:file "kkc/kkc")
-       (:file "kkc/full/score-fns")
-       (:file "kkc/full/full")
-       (:file "kkc/full/factory")
-       (:file "kkc/simple/convert")
-       (:file "kkc/simple/simple")
-       (:file "profile")))))
+    ((:file "word/word")
+     (:file "word/dictionary")
+     (:file "util")
+     (:file "convert")
+     (:file "lookup")
+     (:file "archive")
+     (:file "build/file")
+     (:file "build/build")
+     (:file "kkc/kkc")
+     (:file "kkc/full/score-fns")
+     (:file "kkc/full/full")
+     (:file "kkc/full/factory")
+     (:file "kkc/simple/convert")
+     (:file "kkc/simple/simple")
+     (:file "profile")))
 
    (:module :algorithm
     :pathname "algorithm"
