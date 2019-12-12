@@ -1,7 +1,5 @@
-(defpackage :hachee.kkc.convert.score-fns
+(defpackage :hachee.kkc.full.convert
   (:use :cl)
-  (:import-from :alexandria
-                :if-let)
   (:import-from :hachee.kkc.convert
                 :node-word
                 :node-word-origin)
@@ -13,29 +11,13 @@
                 :to-int-or-unk
                 :to-int-or-nil
                 :+UNK+ :+BOS+ :+EOS+)
-  (:export :of-form-pron-simple
-           :of-form-pron))
-(in-package :hachee.kkc.convert.score-fns)
+  (:export :get-score-fn))
+(in-package :hachee.kkc.full.convert)
 
 (defun node-word-from-extended-dictionary-p (node)
   (eql (node-word-origin node) :extended-dictionary))
 
-(defun of-form-pron-simple (&key word-vocabulary word-n-gram-model)
-  (let ((fail-safe-score -10000))
-    (lambda (curr-node prev-node)
-      (let ((curr-token (to-int-or-nil word-vocabulary
-                                       (node-word curr-node)))
-            (prev-token (to-int-or-unk word-vocabulary
-                                       (node-word prev-node))))
-        (if curr-token
-            (let ((p (transition-probability
-                      word-n-gram-model curr-token (list prev-token))))
-              (if (/= p 0)
-                  (log p)
-                  fail-safe-score))
-            fail-safe-score)))))
-
-(defun of-form-pron (&key word-vocabulary
+(defun get-score-fn (&key word-vocabulary
                           word-n-gram-model
                           unknown-word-char-vocabulary
                           unknown-word-char-n-gram-model

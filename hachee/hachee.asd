@@ -41,11 +41,16 @@
       :pathname "kkc"
       :components
       ((:file "util")
-       (:file "convert/convert")
-       (:file "convert/score-fns")
+       (:file "convert")
        (:file "lookup")
        (:file "archive")
-       (:file "kkc")
+       (:file "build")
+       (:file "kkc/kkc")
+       (:file "kkc/full/convert")
+       (:file "kkc/full/full")
+       (:file "kkc/full/factory")
+       (:file "kkc/simple/convert")
+       (:file "kkc/simple/simple")
        (:file "profile")))))
 
    (:module :algorithm

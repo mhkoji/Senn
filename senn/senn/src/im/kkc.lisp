@@ -35,7 +35,7 @@
     (let ((kkc-path (merge-pathnames ".senn/kkc.zip"
                                      user-homedir-pathname)))
       (when (cl-fad:file-exists-p kkc-path)
-        (hachee.kkc:load-kkc kkc-path)))))
+        (hachee.kkc.full:load-kkc kkc-path)))))
 
 (defun create-system-kkc ()
   (let ((corpus-pathnames
@@ -44,7 +44,7 @@
            "src/kkc/data/aozora/word-pron-utf8/"
            (asdf:system-source-directory :hachee)))))
     (log:debug "Loading: ~A" corpus-pathnames)
-    (hachee.kkc:create-simple-kkc corpus-pathnames)))
+    (hachee.kkc.simple::create-kkc corpus-pathnames)))
 
 (defun load-kkc (&optional user-homedir-pathname)
   (or (load-user-kkc user-homedir-pathname)

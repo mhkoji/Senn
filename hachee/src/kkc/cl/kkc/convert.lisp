@@ -5,8 +5,6 @@
            :node-word-origin)
   (:import-from :hachee.kkc.word.dictionary
                 :lookup)
-  (:import-from :hachee.ja
-                :hiragana->katakana)
   (:import-from :alexandria
                 :when-let))
 (in-package :hachee.kkc.convert)
@@ -46,8 +44,9 @@
              :score-so-far 0))
 
 (defun make-unknown-word (pron)
-  (hachee.kkc.word:make-word :pron pron
-                             :form (hiragana->katakana pron)))
+  (hachee.kkc.word:make-word
+   :pron pron
+   :form (hachee.ja:hiragana->katakana pron)))
 
 
 (defun add-entries (table end prev-entries nodes)

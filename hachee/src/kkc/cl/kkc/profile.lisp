@@ -9,7 +9,8 @@
                                   (list :cl
                                         :hachee.kkc
                                         :hachee.kkc.convert
-                                        :hachee.kkc.convert.score-fns
+                                        :hachee.kkc.full.convert
+                                        :hachee.kkc.simple.convert
                                         :hachee.kkc.word
                                         :hachee.kkc.word.dictionary
                                         :hachee.language-mdoel.vocabulary
