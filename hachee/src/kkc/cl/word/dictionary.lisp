@@ -8,6 +8,7 @@
            :save-dictionary
            :load-dictionary
            :add-word
+           :contains-word-p
            :add-char))
 (in-package :hachee.kkc.word.dictionary)
 
@@ -45,6 +46,10 @@
 (defun add-word (dictionary word)
   (let ((key (hachee.kkc.word:word-pron word)))
     (add-new dictionary key word #'hachee.kkc.word:word=)))
+
+(defun contains-word-p (dictionary word)
+  (member word (lookup dictionary (hachee.kkc.word:word-pron word))
+          :test #'hachee.kkc.word:word=))
 
 (defun add-char (dictionary char)
   (let ((key (hachee.kkc.word:char-pron char)))

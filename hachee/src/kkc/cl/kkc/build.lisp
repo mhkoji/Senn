@@ -15,6 +15,7 @@
                 :word->key)
   (:export :build-vocabulary
            :build-vocabulary-with-unk
+           :extend-existing-vocabulary
            :build-dictionary
            :build-n-gram-model
            :build-unknown-word-vocabulary
@@ -38,6 +39,8 @@
     vocab))
 
 (defun build-vocabulary-with-unk (pathnames &key (overlap 2))
+  (assert (<= overlap (length pathnames)))
+  (log:info "Building initial vocabulary...")
   (let ((vocab (hachee.language-model.vocabulary:make-vocabulary))
         (word-key->freq (make-hash-table :test #'equal)))
     (dolist (pathname pathnames)
@@ -52,7 +55,21 @@
                  curr-words)))
     vocab))
 
+(defun extend-existing-vocabulary (vocabulary
+                                   trusted-word-dictionary
+                                   pathnames-inaccurately-segmented)
+  (log:info "Extending vocabulary...")
+  (dolist (pathname pathnames-inaccurately-segmented)
+    (dolist (sentence (hachee.kkc.file:file->sentences pathname))
+      (dolist (word (hachee.kkc.file:sentence-words sentence))
+        (when (hachee.kkc.word.dictionary:contains-word-p
+               trusted-word-dictionary
+               word)
+          (add-new vocabulary word)))))
+    vocabulary)
+
 (defun build-dictionary (pathnames vocabulary)
+  (log:info "Building dictionary...")
   (let ((dict (hachee.kkc.word.dictionary:make-dictionary)))
     (dolist (pathname pathnames dict)
       (dolist (sentence (hachee.kkc.file:file->sentences pathname))
@@ -62,6 +79,7 @@
     dict))
 
 (defun build-n-gram-model (pathnames vocabulary)
+  (log:info "Building n-gram model...")
   (let ((BOS (to-int vocabulary hachee.language-model.vocabulary:+BOS+))
         (EOS (to-int vocabulary hachee.language-model.vocabulary:+EOS+))
         (model (make-instance 'hachee.language-model.n-gram:model)))
@@ -75,6 +93,7 @@
     model))
 
 (defun build-unknown-word-vocabulary (pathnames vocabulary &key (overlap 2))
+  (log:info "Building...")
   (let ((key->freq (make-hash-table :test #'equal))
         (char-vocab (hachee.language-model.vocabulary:make-vocabulary)))
     (dolist (pathname pathnames)
@@ -94,6 +113,7 @@
 (defun build-unknown-word-n-gram-model (pathnames
                                         vocabulary
                                         unknown-word-vocabulary)
+  (log:info "Building...")
   (let ((BOS (to-int unknown-word-vocabulary
                      hachee.language-model.vocabulary:+BOS+))
         (EOS (to-int unknown-word-vocabulary
@@ -112,6 +132,7 @@
   model))
 
 (defun build-word-dictionary (pathnames)
+  (log:info "Building...")
   (let ((dict (hachee.kkc.word.dictionary:make-dictionary)))
     (dolist (pathname pathnames)
       (with-open-file (in pathname)
