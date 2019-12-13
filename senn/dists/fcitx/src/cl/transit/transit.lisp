@@ -197,6 +197,11 @@
                         +IRV-TO-PROCESS+ inputting-state
                         :committed-string "　")))
                (let ((pron (senn.buffer:buffer-string (inputting-buffer s))))
+                 ;; It is convenient to add an additional #\n to make "ん" if the pron ends with a single "n".
+                 (when (char= (alexandria:last-elt pron) #\n)
+                   (setq pron (senn.buffer:buffer-string
+                               (senn.buffer:insert-char (inputting-buffer s)
+                                                        #\n))))
                  (let ((segments (senn.im:convert ime pron)))
                    (let ((converting-state (make-converting
                                             :segments segments
