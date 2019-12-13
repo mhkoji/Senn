@@ -5,10 +5,8 @@
 
            :kkc
            :convert
-           :convert-into-words
            :get-convert-score-fn
            :lookup
-           :lookup-forms
            :get-lookup-score-fn
            :profile)
   (:import-from :hachee.kkc.word
@@ -59,11 +57,6 @@
    :list-words-fn (get-list-words-fn kkc)
    :1st-boundary-index 1st-boundary-index))
 
-(defun convert-into-words (kkc pronunciation &key 1st-boundary-index)
-  (mapcar #'hachee.kkc.convert:node-word
-          (convert kkc pronunciation
-                   :1st-boundary-index 1st-boundary-index)))
-
 
 ;;; Lookup
 (defgeneric get-lookup-score-fn (kkc prev-word next-word)
@@ -87,7 +80,3 @@
    :char-dicts
    (list (list :tankan-dictionary
                (kkc-tankan-dictionary kkc)))))
-
-(defun lookup-forms (kkc pronunciation)
-  (mapcar #'hachee.kkc.lookup:item-form
-          (lookup kkc pronunciation)))
