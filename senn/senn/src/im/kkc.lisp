@@ -30,6 +30,9 @@
              :origin (hachee.kkc.lookup:item-origin item)))
           (hachee.kkc:lookup (ime-kkc ime) pron :prev prev :next next)))
 
+(defmethod senn.im:predict ((ime ime) (string string))
+  ;; Supper simple behaviour. This needes to be improved.
+  (list (hachee.ja:hiragana->katakana string)))
 
 (defun load-user-kkc (user-homedir-pathname)
   (when user-homedir-pathname

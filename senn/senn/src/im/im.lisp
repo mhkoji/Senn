@@ -3,6 +3,7 @@
   (:export :ime
            :convert
            :lookup
+           :predict
            :append-candidates))
 (in-package :senn.im)
 
@@ -11,6 +12,11 @@
 (defgeneric convert (ime pron &key 1st-boundary-index))
 
 (defgeneric lookup (ime pron &key prev next))
+
+(defgeneric predict (ime string)
+  (:method ((ime t) (string t))
+    ;; returns no predictions
+    nil))
 
 (defun append-candidates (ime segment)
   (when (senn.segment:segment-has-more-candidates-p segment)
