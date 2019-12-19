@@ -101,35 +101,35 @@ void Draw(FcitxInstance *instance,
   FcitxMessagesAddMessageAtLast(
       client_preedit, MSG_INPUT, "%s", editing->input.c_str());
 
-  if (0 < editing->predictions.size()) {
-    FcitxCandidateWordList *word_list =
-        FcitxInputStateGetCandidateList(input);
-    FcitxCandidateWordReset(word_list);
-    FcitxCandidateWordSetLayoutHint(word_list, CLH_Vertical);
-    std::vector<std::string>::const_iterator it =
-      editing->predictions.begin();
-    for (int i = 0; it != editing->predictions.end(); ++it, ++i) {
-      FcitxCandidateWord word;
-      int *p = fcitx_utils_new(int);
-      *p = i;
-      word.callback = get_candidate;
-      word.extraType = MSG_OTHER;
-      word.owner = instance;
-      word.priv = (void*) p;
-      word.strExtra = NULL;
-      word.strWord = strdup(it->c_str());
-      word.wordType = MSG_OTHER; // MSG_CANDIATE_CURSOR
-      FcitxCandidateWordAppend(word_list, &word);
-    }
-    // Set page by index
-    // FcitxCandidateWordSetFocus(word_list, editing->prediction.index);
+  // if (0 < editing->predictions.size()) {
+  //   FcitxCandidateWordList *word_list =
+  //       FcitxInputStateGetCandidateList(input);
+  //   FcitxCandidateWordReset(word_list);
+  //   FcitxCandidateWordSetLayoutHint(word_list, CLH_Vertical);
+  //   std::vector<std::string>::const_iterator it =
+  //     editing->predictions.begin();
+  //   for (int i = 0; it != editing->predictions.end(); ++it, ++i) {
+  //     FcitxCandidateWord word;
+  //     int *p = fcitx_utils_new(int);
+  //     *p = i;
+  //     word.callback = get_candidate;
+  //     word.extraType = MSG_OTHER;
+  //     word.owner = instance;
+  //     word.priv = (void*) p;
+  //     word.strExtra = NULL;
+  //     word.strWord = strdup(it->c_str());
+  //     word.wordType = MSG_OTHER; // MSG_CANDIATE_CURSOR
+  //     FcitxCandidateWordAppend(word_list, &word);
+  //   }
+  //   // Set page by index
+  //   // FcitxCandidateWordSetFocus(word_list, editing->prediction.index);
 
-    FcitxMessages* aux = FcitxInputStateGetAuxUp(input);
-    FcitxMessagesSetMessageCount(aux, 0);
-    FcitxMessagesAddMessageAtLast(aux, MSG_TIPS, "(%d / %d)",
-                                  0, // editing->predictions.size,
-                                  editing->predictions.size());
-  }
+  //   FcitxMessages* aux = FcitxInputStateGetAuxUp(input);
+  //   FcitxMessagesSetMessageCount(aux, 0);
+  //   FcitxMessagesAddMessageAtLast(aux, MSG_TIPS, "(%d / %d)",
+  //                                 0, // editing->predictions.size,
+  //                                 editing->predictions.size());
+  // }
 
   // カーソルの表示
   if (!support_preedit) {
