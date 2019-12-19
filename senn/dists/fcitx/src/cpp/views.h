@@ -9,6 +9,7 @@ namespace views {
 struct Editing {
   std::string input;
   int cursor_pos;
+  std::vector<std::string> predictions;
   std::string committed_input;
 };
 

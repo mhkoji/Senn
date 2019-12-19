@@ -42,20 +42,23 @@
     (length-utf8 subseq)))
 
 (defun make-editing-view (input-return-value
-                          cursor-pos input committed-string)
+                          cursor-pos input predictions committed-string)
   (let ((json-string (jsown:to-json
                       (jsown:new-js
                        ("cursor-pos"      cursor-pos)
                        ("input"           input)
+                       ("predictions"     predictions)
                        ("committed-input" committed-string)))))
     (format nil "~A EDITING ~A" input-return-value json-string)))
 
 (defun inputting->editing-view (input-return-value inputting-state
-                              &key committed-string)
+                                &key predictions
+                                     committed-string)
   (let ((buffer (inputting-buffer inputting-state)))
     (make-editing-view input-return-value
                        (buffer-cursor-pos-utf8 buffer)
                        (senn.buffer:buffer-string buffer)
+                       predictions
                        (or committed-string ""))))
 
 (defun katakana->editing-view (input-return-value katakana-state)
@@ -63,6 +66,7 @@
     (make-editing-view input-return-value
                        (length-utf8 katakana-input)
                        katakana-input
+                       nil
                        "")))
 
 (defun converting->converting-view (input-return-value converting-state)
@@ -178,7 +182,11 @@
          (let ((char (code-char (senn.fcitx.transit.keys:key-sym key))))
            (setf (inputting-buffer s)
                  (senn.buffer:insert-char (inputting-buffer s) char))
-           (list s (inputting->editing-view +IRV-TO-PROCESS+ s))))
+           (let ((inputted-string
+                  (senn.buffer:buffer-string (inputting-buffer s))))
+             (let ((predictions (senn.im:predict ime inputted-string)))
+               (list s (inputting->editing-view
+                        +IRV-TO-PROCESS+ s :predictions predictions))))))
 
         ((and (senn.fcitx.transit.keys:f7-p key)
               (not (inputting-buffer-empty-p s)))

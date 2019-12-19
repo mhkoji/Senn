@@ -46,6 +46,14 @@ void ParseEditing(picojson::value &content,
     .get<picojson::object>()["input"].get<std::string>();
   output->committed_input = content
     .get<picojson::object>()["committed-input"].get<std::string>();
+
+  const picojson::array predictions = content
+    .get<picojson::object>()["predictions"]
+    .get<picojson::array>();
+  for (picojson::array::const_iterator it = predictions.begin();
+       it != predictions.end(); ++it) {
+    output->predictions.push_back(it->get<std::string>());
+  }
 }
 
 INPUT_RETURN_VALUE ParseInputReturnValue(const std::string &s) {
