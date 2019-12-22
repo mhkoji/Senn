@@ -14,7 +14,7 @@ get_candidate(void* arg, FcitxCandidateWord* word) {
   return IRV_DO_NOTHING;
 }
 
-void Draw(FcitxInstance *instance,
+void Show(FcitxInstance *instance,
           const senn::fcitx::views::Converting *converting) {
   // 表示している文字列を削除
   FcitxInstanceCleanInputWindow(instance);
@@ -76,7 +76,7 @@ void Draw(FcitxInstance *instance,
   FcitxUIUpdateInputWindow(instance);
 }
 
-void Draw(FcitxInstance *instance,
+void Show(FcitxInstance *instance,
           const senn::fcitx::views::Editing *editing) {
   FcitxInputContext *ic = FcitxInstanceGetCurrentIC(instance);
 

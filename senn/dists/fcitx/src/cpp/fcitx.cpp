@@ -57,7 +57,7 @@ static void FcitxSennReset(void *arg) {
   senn::fcitx::views::Editing editing_view;
   editing_view.input = "";
   editing_view.cursor_pos = 0;
-  senn::fcitx::ui::Draw(instance, &editing_view);
+  senn::fcitx::ui::Show(instance, &editing_view);
 }
 
 INPUT_RETURN_VALUE FcitxSennDoInput(void *arg,
@@ -78,11 +78,11 @@ INPUT_RETURN_VALUE FcitxSennDoInput(void *arg,
 
   return senn->im->Transit(sym, keycode, state,
     [&](const senn::fcitx::views::Converting *view) {
-      senn::fcitx::ui::Draw(instance, view);
+      senn::fcitx::ui::Show(instance, view);
     },
 
     [&](const senn::fcitx::views::Editing *view) {
-      senn::fcitx::ui::Draw(instance, view);
+      senn::fcitx::ui::Show(instance, view);
     });
 }
 

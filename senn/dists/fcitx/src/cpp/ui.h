@@ -9,9 +9,9 @@ namespace senn {
 namespace fcitx {
 namespace ui {
 
-void Draw(FcitxInstance*, const senn::fcitx::views::Converting*);
+void Show(FcitxInstance*, const senn::fcitx::views::Converting*);
 
-void Draw(FcitxInstance*, const senn::fcitx::views::Editing*);
+void Show(FcitxInstance*, const senn::fcitx::views::Editing*);
 
 } // ui
 } // fcitx
