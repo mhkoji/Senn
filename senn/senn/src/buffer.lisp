@@ -39,7 +39,7 @@
                             'string
                             (subseq string (- pos diff-from-pos) pos)
                             (string char))))
-                     (if-let ((hiragana (hachee.ja:romaji->hiragana
+                     (if-let ((hiragana (senn.ja:romaji->hiragana
                                          substr-ending-at-pos)))
                        (make-buffer
                         :string

@@ -1,3 +1,6 @@
+(defpackage :hachee.ja
+  (:use :cl)
+  (:export :hiragana->katakana))
 (in-package :hachee.ja)
 
 (defun htok (c)

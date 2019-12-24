@@ -1,4 +1,8 @@
-(in-package :hachee.ja)
+;; Process-input like names are more appropriate?
+(defpackage :senn.ja
+  (:use :cl)
+  (:export :romaji->hiragana))
+(in-package :senn.ja)
 
 (let ((rules
        '(("a" "あ") ("i" "い") ("u" "う") ("e" "え") ("o" "お")

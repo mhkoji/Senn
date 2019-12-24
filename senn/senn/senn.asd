@@ -2,7 +2,8 @@
   :serial t
   :pathname "src"
   :components
-  ((:file "buffer")
+  ((:file "ja")
+   (:file "buffer")
    (:file "segment")
    (:file "im/im")
    (:file "im/kkc"))

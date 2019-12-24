@@ -13,9 +13,7 @@
    (:module :ja
     :pathname "ja"
     :components
-    ((:file "packages")
-     (:file "hiragana")
-     (:file "romaji")))
+    ((:file "ja")))
 
    (:module :ipc
     :pathname "ipc"
