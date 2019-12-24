@@ -148,13 +148,19 @@
 (defun senn-assoc-get (key alist)
   (cdr (assoc key alist)))
 
+(defun senn-convert-origin (origin)
+  (cdr (assoc origin '(("EXTENDED-DICTIONARY" . EX)
+                       ("TANKAN-DICTIONARY"   . TK)
+                       ("UNKNOWN-WORD"        . UW)))))
+
+
 (defun senn-word->option (word-alist)
   (make-senn-option :form (senn-assoc-get 'form word-alist)
                     :origin
                     (let ((origin-string
                            (senn-assoc-get 'origin word-alist)))
                       (when (not (string= "" origin-string))
-                        (car (read-from-string origin-string))))
+                        (senn-convert-origin origin-string)))
                     :logP 0))
 
 

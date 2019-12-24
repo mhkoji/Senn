@@ -11,14 +11,14 @@ exec ros -Q -- $0 "$@"
 (defpackage :ros.script.run.3749247322
   (:use :cl))
 (in-package :ros.script.run.3749247322)
-(ql:quickload :senn-emacs :silent t)
+(ql:quickload :senn :silent t)
 
 (defvar *kkc*
   (senn.im.kkc:load-kkc (user-homedir-pathname)))
 
 (defun main (&rest argv)
   (declare (ignore argv))
-  (senn.emacs.stdio-server:enter-loop
+  (senn.im.net.stdio:start-server
    (make-instance 'senn.im.kkc:ime :kkc *kkc*)))
 
 ;;; vim: set ft=lisp lisp:
