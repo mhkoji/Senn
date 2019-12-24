@@ -4,7 +4,8 @@
   (:export :socket-listen
            :socket-accept
            :socket-close
-           :socket-stream))
+           :socket-stream
+           :connect-abstract-to))
 (in-package :hachee.ipc.unix)
 
 (defstruct server-socket socket)
@@ -49,3 +50,18 @@
                    :output t
                    :buffering :full)))
       (make-stream-socket :socket socket :stream stream))))
+
+
+#+sbcl
+(defun connect-abstract-to (socket-name &key timeout)
+  (let ((socket (make-instance 'sb-bsd-sockets:local-abstract-socket
+                               :type :stream)))
+    (sb-bsd-sockets:socket-connect socket socket-name)
+    (make-stream-socket
+     :socket socket
+     :stream (sb-bsd-sockets:socket-make-stream
+              socket
+              :input t
+              :output t
+              :timeout timeout ;; The unit seems to be sec.
+              :buffering :full))))
