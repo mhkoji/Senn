@@ -36,10 +36,15 @@
   (bordeaux-threads:make-thread
    (lambda ()
      (let ((initial-state (senn.fcitx.transit.states:make-inputting)))
-       (senn.fcitx.stateful-im:loop-handling-request initial-state
-                                                     ime
-                                                     client))
-     (hachee.ipc.unix:socket-close (client-socket client))
+       (handler-case
+           (senn.fcitx.stateful-im:loop-handling-request
+            initial-state
+            ime
+            client)
+         (error (c)
+           (log:warn "~A" c))))
+     (ignore-errors
+       (hachee.ipc.unix:socket-close (client-socket client)))
      (log/info client "Disconnected"))))
 
 
