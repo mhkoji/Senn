@@ -85,6 +85,17 @@
                :origin (jsown:val c "origin")))
             (jsown:parse response))))
 
+(defmethod senn.im:predict ((ime client-ime) (pron string))
+  (let ((response
+         (reconnectable-request
+          ime
+          (jsown:to-json
+           (jsown:new-js
+             ("op"   "predict")
+             ("args" (jsown:new-js ("text" pron)))))
+          (server-reconnect-fn ime))))
+    (when response
+      (jsown:parse response))))
 
 ;;; Server
 (defun expr->word (expr)
@@ -120,7 +131,11 @@
                   (jsown:new-js
                     ("form" (senn.segment:candidate-form cand))
                     ("origin" (senn.segment:candidate-origin cand))))
-                candidates))))))
+                candidates))))
+    (:predict
+     (let ((strings
+            (senn.im:predict ime (expr-arg expr "text"))))
+       (jsown:to-json strings)))))
 
 (defun loop-handling-request (ime client-conn)
   (when-let ((msg (read-message client-conn)))
