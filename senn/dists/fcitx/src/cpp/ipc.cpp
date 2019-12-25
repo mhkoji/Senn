@@ -53,7 +53,8 @@ Connection* Connection::ConnectTo(const std::string &path) {
       sizeof(addr));
   if (connect_return_value < 0) {
     close(socket_fd);
-    std::cerr << "Failed to connect: " << connect_return_value << std::endl;
+    std::cerr << "ConnectTo: Failed to connect: "
+              << connect_return_value << std::endl;
     std::exit(1);
   }
 
@@ -73,7 +74,8 @@ Connection* Connection::ConnectAbstractTo(const std::string &path) {
       sizeof(addr) - sizeof(addr.sun_path) + path.size() + 1);
   if (connect_return_value < 0) {
     close(socket_fd);
-    std::cerr << "Failed to connect: " << connect_return_value << std::endl;
+    std::cerr << "ConnectAbstractTo: Failed to connect: "
+              << connect_return_value << std::endl;
     std::exit(1);
   }
 
