@@ -21,12 +21,16 @@
              (let ((resp (read-message (connection conn-holder))))
                (cond (resp resp)
                      ((< try-count 2)
+                      (log:info "Reconnecting")
                       (setf (connection conn-holder) (funcall reconnect-fn))
+                      (log:info "Reconnected")
                       (request (1+ try-count)))
                      (t
                       (error "Failed to send request"))))))
-    (request 0)))
-
+    (log:info "Request: ~A" msg)
+    (let ((resp (request 0)))
+      (log:info "Response: ~A" resp)
+      resp)))
 
 ;;; Client
 (defclass client-ime (senn.im:ime
