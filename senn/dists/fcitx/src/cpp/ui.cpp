@@ -9,10 +9,45 @@ namespace senn {
 namespace fcitx {
 namespace ui {
 
+namespace {
+
 INPUT_RETURN_VALUE
 get_candidate(void* arg, FcitxCandidateWord* word) {
   return IRV_DO_NOTHING;
 }
+
+void ShowCandidateWordList(
+    FcitxInstance *instance,
+    FcitxInputState *input,
+    const std::vector<std::string> &word_strings,
+    const size_t index) {
+  FcitxCandidateWordList *word_list = FcitxInputStateGetCandidateList(input);
+  FcitxCandidateWordReset(word_list);
+  FcitxCandidateWordSetLayoutHint(word_list, CLH_Vertical);
+  std::vector<std::string>::const_iterator it = word_strings.begin();
+  for (int i = 0; it != word_strings.end(); ++it, ++i) {
+    FcitxCandidateWord word;
+    int *p = fcitx_utils_new(int);
+    *p = i;
+    word.callback = get_candidate;
+    word.extraType = MSG_OTHER;
+    word.owner = instance;
+    word.priv = (void*) p;
+    word.strExtra = NULL;
+    word.strWord = strdup(it->c_str());
+    word.wordType = (i == index) ? MSG_CANDIATE_CURSOR : MSG_OTHER;
+    FcitxCandidateWordAppend(word_list, &word);
+  }
+  // Set page by word index
+  FcitxCandidateWordSetFocus(word_list, index);
+
+  FcitxMessages* aux = FcitxInputStateGetAuxUp(input);
+  FcitxMessagesSetMessageCount(aux, 0);
+  FcitxMessagesAddMessageAtLast(aux, MSG_TIPS, "(%d / %d)",
+                                index + 1, word_strings.size());
+}
+
+} // namespace
 
 void Show(FcitxInstance *instance,
           const senn::fcitx::views::Converting *converting) {
@@ -41,36 +76,10 @@ void Show(FcitxInstance *instance,
   }
 
   if (0 < converting->cursor_form_candidates.size()) {
-    FcitxCandidateWordList *word_list =
-        FcitxInputStateGetCandidateList(input);
-    FcitxCandidateWordReset(word_list);
-    FcitxCandidateWordSetLayoutHint(word_list, CLH_Vertical);
-    std::vector<std::string>::const_iterator it =
-        converting->cursor_form_candidates.begin();
-    for (int i = 0; it != converting->cursor_form_candidates.end();
-         ++it, ++i) {
-      FcitxCandidateWord word;
-      int *p = fcitx_utils_new(int);
-      *p = i;
-      word.callback = get_candidate;
-      word.extraType = MSG_OTHER;
-      word.owner = instance;
-      word.priv = (void*) p;
-      word.strExtra = NULL;
-      word.strWord = strdup(it->c_str());
-      word.wordType = (i == converting->cursor_form_candidate_index) ?
-        MSG_CANDIATE_CURSOR : MSG_OTHER;
-      FcitxCandidateWordAppend(word_list, &word);
-    }
-    // Set page by word index
-    FcitxCandidateWordSetFocus(word_list,
-                               converting->cursor_form_candidate_index);
-
-    FcitxMessages* aux = FcitxInputStateGetAuxUp(input);
-    FcitxMessagesSetMessageCount(aux, 0);
-    FcitxMessagesAddMessageAtLast(aux, MSG_TIPS, "(%d / %d)",
-                                  converting->cursor_form_candidate_index + 1,
-                                  converting->cursor_form_candidates.size());
+    ShowCandidateWordList(instance,
+                          input,
+                          converting->cursor_form_candidates,
+                          converting->cursor_form_candidate_index);
   }
 
   FcitxUIUpdateInputWindow(instance);
@@ -102,33 +111,7 @@ void Show(FcitxInstance *instance,
       client_preedit, MSG_INPUT, "%s", editing->input.c_str());
 
   // if (0 < editing->predictions.size()) {
-  //   FcitxCandidateWordList *word_list =
-  //       FcitxInputStateGetCandidateList(input);
-  //   FcitxCandidateWordReset(word_list);
-  //   FcitxCandidateWordSetLayoutHint(word_list, CLH_Vertical);
-  //   std::vector<std::string>::const_iterator it =
-  //     editing->predictions.begin();
-  //   for (int i = 0; it != editing->predictions.end(); ++it, ++i) {
-  //     FcitxCandidateWord word;
-  //     int *p = fcitx_utils_new(int);
-  //     *p = i;
-  //     word.callback = get_candidate;
-  //     word.extraType = MSG_OTHER;
-  //     word.owner = instance;
-  //     word.priv = (void*) p;
-  //     word.strExtra = NULL;
-  //     word.strWord = strdup(it->c_str());
-  //     word.wordType = MSG_OTHER; // MSG_CANDIATE_CURSOR
-  //     FcitxCandidateWordAppend(word_list, &word);
-  //   }
-  //   // Set page by index
-  //   // FcitxCandidateWordSetFocus(word_list, editing->prediction.index);
-
-  //   FcitxMessages* aux = FcitxInputStateGetAuxUp(input);
-  //   FcitxMessagesSetMessageCount(aux, 0);
-  //   FcitxMessagesAddMessageAtLast(aux, MSG_TIPS, "(%d / %d)",
-  //                                 0, // editing->predictions.size,
-  //                                 editing->predictions.size());
+  //   ShowCandidateWordList(instance, input, editing->predictions, 0);
   // }
 
   // カーソルの表示
