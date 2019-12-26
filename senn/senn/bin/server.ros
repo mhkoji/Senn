@@ -1,0 +1,25 @@
+#!/bin/sh
+#|-*- mode:lisp -*-|#
+#|
+exec ros -Q -- $0 "$@"
+|#
+(progn ;;init forms
+  (ros:ensure-asdf)
+  ;;#+quicklisp(ql:quickload '() :silent t)
+  )
+
+(defpackage :ros.script.server.3786319478
+  (:use :cl))
+(in-package :ros.script.server.3786319478)
+
+(ql:quickload :senn :silent t)
+
+(defvar *kkc*
+  (senn.im.kkc:load-kkc (user-homedir-pathname)))
+
+(defun main (&rest argv)
+  (declare (ignorable argv))
+  (senn.im.net.ipc:start-server
+   (make-instance 'senn.im.kkc:ime :kkc *kkc*)))
+
+;;; vim: set ft=lisp lisp:
