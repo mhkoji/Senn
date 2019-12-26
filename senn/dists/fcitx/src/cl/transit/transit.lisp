@@ -186,7 +186,14 @@
                   (senn.buffer:buffer-string (inputting-buffer s))))
              (let ((predictions (senn.im:predict ime inputted-string)))
                (list s (inputting->editing-view
-                        +IRV-TO-PROCESS+ s :predictions predictions))))))
+                        ;; +IRV-DO-NOTHING+ must be returned when predictions exist.
+                        ;; Otherwise, the view is collapsed when the buffer string is ended with `ー',
+                        ;; where the char by the key is `-'.
+                        (if predictions
+                            +IRV-DO-NOTHING+
+                            +IRV-TO-PROCESS+)
+                        s
+                        :predictions predictions))))))
 
         ((and (senn.fcitx.transit.keys:f7-p key)
               (not (inputting-buffer-empty-p s)))
