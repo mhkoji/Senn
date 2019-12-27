@@ -8,6 +8,7 @@
    (:file "im/im")
    (:file "im/kkc")
    (:file "im/net/net")
+   #+linux
    (:file "im/net/ipc")
    (:file "im/net/stdio"))
   :depends-on (:hachee))
