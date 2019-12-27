@@ -18,6 +18,6 @@ exec ros -Q -- $0 "$@"
 
 (defun main (&rest argv)
   (declare (ignorable argv))
-  (senn.win.server.ipc:enter-loop
+  (senn.win.stateful-im.ipc:start-server
    (make-instance 'senn.im.kkc:ime :kkc *kkc*)))
 ;;; vim: set ft=lisp lisp:

@@ -1,6 +1,6 @@
 (defpackage :senn.win.stateful-im.ipc
   (:use :cl)
-  (:export :enter-loop)
+  (:export :start-server)
   (:import-from :alexandria
                 :if-let
                 :when-let))
@@ -39,7 +39,7 @@
        (senn.win.stateful-im:loop-handling-request initial-state ime client))
      (log/info client "Disconnected"))))
 
-(defun enter-loop (ime &key (pipe-name "\\\\.\\Pipe\\senn"))
+(defun start-server (ime &key (pipe-name "\\\\.\\Pipe\\senn"))
   (let ((threads nil)
         (clients nil))
     (unwind-protect
