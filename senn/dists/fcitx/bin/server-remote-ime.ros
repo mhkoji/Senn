@@ -16,6 +16,6 @@ exec ros -Q -- $0 "$@"
 (defun main (&rest argv)
   (declare (ignorable argv))
   (senn.fcitx.stateful-im.ipc:enter-loop
-   (senn.im.net:make-ime #'senn.im.net.ipc:connect)))
+   (senn.im.net.client:make-ime #'senn.im.net.ipc.unix:connect)))
 
 ;;; vim: set ft=lisp lisp:

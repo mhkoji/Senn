@@ -1,24 +1,31 @@
-(defpackage :senn.im.net.ipc
+(defpackage :senn.im.net.ipc.unix
   (:use :cl)
   (:export :start-server
            :connect)
   (:import-from :alexandria
                 :when-let))
-(in-package :senn.im.net.ipc)
+(in-package :senn.im.net.ipc.unix)
 
 (defstruct connection id socket)
 
-(defmethod senn.im.net:read-message ((conn connection))
+(defun read-message (conn)
   (let ((stream (hachee.ipc.unix:socket-stream (connection-socket conn))))
     (handler-case
         (read-line stream nil nil nil)
       (sb-sys:io-timeout ()
         nil))))
 
-(defmethod senn.im.net:send-message ((conn connection) (msg string))
+(defun send-message (conn string)
   (let ((stream (hachee.ipc.unix:socket-stream (connection-socket conn))))
     (write-line msg stream)
     (force-output stream)))
+
+;;; Server
+(defmethod senn.im.net.server:read-message ((conn connection))
+  (read-message conn))
+
+(defmethod senn.im.net.server:send-message ((conn connection) (msg string))
+  (send-message conn msg))
 
 (defmacro log/info (conn format-str &rest args)
   `(log:info ,(concatenate 'string "[~A]: " format-str)
@@ -29,7 +36,7 @@
   (log/info conn "Connected")
   (bordeaux-threads:make-thread
    (lambda ()
-     (senn.im.net:loop-handling-request ime conn)
+     (senn.im.net.server:loop-handling-request ime conn)
      (hachee.ipc.unix:socket-close (connection-socket conn))
      (log/info conn "Disconnected"))))
 
@@ -51,8 +58,16 @@
         (mapc #'bordeaux-threads:destroy-thread threads)
         (hachee.ipc.unix:socket-close server-socket)))))
 
+
+;;; Client
 (defun connect (&key (socket-name "/tmp/senn-ime-socket"))
   (let ((socket (hachee.ipc.unix:connect-abstract-to
                  socket-name
                  :timeout 1)))
     (make-connection :id 0 :socket socket)))
+
+(defmethod senn.im.net.client:read-message ((conn connection))
+  (read-message conn))
+
+(defmethod senn.im.net.client:send-message ((conn connection) (msg string))
+  (send-message conn msg))

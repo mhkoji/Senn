@@ -1,12 +1,9 @@
-(defpackage :senn.im.net
-  (:use :cl :hachee.ipc.op)
+(defpackage :senn.im.net.client
+  (:use :cl)
   (:export :make-ime
            :read-message
-           :send-message
-           :loop-handling-request)
-  (:import-from :alexandria
-                :when-let))
-(in-package :senn.im.net)
+           :send-message))
+(in-package :senn.im.net.client)
 
 (defgeneric read-message (conn))
 (defgeneric send-message (conn msg))
@@ -32,21 +29,19 @@
       (log:info "Response: ~A" resp)
       resp)))
 
-;;; Client
-(defclass client-ime (senn.im:ime
-                      connection-holder)
+(defclass ime (senn.im:ime
+               connection-holder)
   ((server-reconnect-fn
     :initarg :reconnect-fn
     :reader server-reconnect-fn)))
 
 (defun make-ime (reconnect-fn)
   (let ((conn (funcall reconnect-fn)))
-    (make-instance 'client-ime
+    (make-instance 'ime
      :connection conn
      :reconnect-fn reconnect-fn)))
 
-(defmethod senn.im:convert ((ime client-ime) (pron string)
-                            &key 1st-boundary-index)
+(defmethod senn.im:convert ((ime ime) (pron string) &key 1st-boundary-index)
   (let ((response
          (reconnectable-request
           ime
@@ -68,8 +63,7 @@
                :current-index 0))
             (jsown:parse response))))
 
-(defmethod senn.im:lookup ((ime client-ime) (pron string)
-                           &key prev next)
+(defmethod senn.im:lookup ((ime ime) (pron string) &key prev next)
   (declare (ignore next prev))
   (let ((response
          (reconnectable-request
@@ -85,7 +79,7 @@
                :origin (jsown:val c "origin")))
             (jsown:parse response))))
 
-(defmethod senn.im:predict ((ime client-ime) (pron string))
+(defmethod senn.im:predict ((ime ime) (pron string))
   (let ((response
          (reconnectable-request
           ime
@@ -96,49 +90,3 @@
           (server-reconnect-fn ime))))
     (when response
       (jsown:parse response))))
-
-;;; Server
-(defun expr->word (expr)
-  (hachee.kkc.word:make-word
-   :pron (jsown:val expr "pron")
-   :form (jsown:val expr "form")))
-
-(defun handle-request (expr ime)
-  (ecase (expr-op expr)
-    (:convert
-     ;; {"op": "convert", "args": {"text": "あおぞらぶんこ"}}
-     (let ((segments
-            (senn.im:convert ime (expr-arg expr "text")
-             :1st-boundary-index (expr-arg expr "1st-boundary-index"))))
-       (jsown:to-json
-        (mapcar (lambda (seg)
-                  (let ((cand (car (senn.segment:segment-candidates seg))))
-                    (jsown:new-js
-                      ("pron" (senn.segment:segment-pron seg))
-                      ("form" (senn.segment:candidate-form cand))
-                      ("origin" (senn.segment:candidate-origin cand)))))
-                segments))))
-    (:lookup
-     ;; {"op": "lookup", "args": {"text": "あお"}}
-     (let ((candidates
-            (senn.im:lookup ime (expr-arg expr "text")
-             :prev (let ((prev (expr-arg expr "prev")))
-                     (when prev (expr->word prev)))
-             :next (let ((next (expr-arg expr "next")))
-                     (when next (expr->word next))))))
-       (jsown:to-json
-        (mapcar (lambda (cand)
-                  (jsown:new-js
-                    ("form" (senn.segment:candidate-form cand))
-                    ("origin" (senn.segment:candidate-origin cand))))
-                candidates))))
-    (:predict
-     (let ((strings
-            (senn.im:predict ime (expr-arg expr "text"))))
-       (jsown:to-json strings)))))
-
-(defun loop-handling-request (ime client-conn)
-  (when-let ((msg (read-message client-conn)))
-    (let ((expr (hachee.ipc.op:as-expr msg)))
-      (send-message client-conn (handle-request expr ime)))
-    (loop-handling-request ime client-conn)))

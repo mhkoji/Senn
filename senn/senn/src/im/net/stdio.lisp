@@ -5,12 +5,12 @@
 
 (defstruct connection)
 
-(defmethod senn.im.net:read-message ((connection connection))
+(defmethod senn.im.net.server:read-message ((connection connection))
   (read-line *standard-input* nil nil))
 
-(defmethod senn.im.net:send-message ((connection connection) resp)
+(defmethod senn.im.net.server:send-message ((connection connection) resp)
   (format *standard-output* "~A~%" resp)
   (force-output *standard-output*))
 
 (defun start-server (ime)
-  (senn.im.net:loop-handling-request ime (make-connection)))
+  (senn.im.net.server:loop-handling-request ime (make-connection)))

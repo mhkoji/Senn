@@ -7,8 +7,9 @@
    (:file "segment")
    (:file "im/im")
    (:file "im/kkc")
-   (:file "im/net/net")
+   (:file "im/net/client")
+   (:file "im/net/server")
    #+linux
-   (:file "im/net/ipc")
+   (:file "im/net/ipc/unix")
    (:file "im/net/stdio"))
   :depends-on (:hachee))
