@@ -42,13 +42,17 @@
     (length-utf8 subseq)))
 
 (defun make-editing-view (input-return-value
-                          cursor-pos input predictions committed-string)
+                          cursor-pos input
+                          predictions
+                          prediction-index
+                          committed-string)
   (let ((json-string (jsown:to-json
                       (jsown:new-js
-                       ("cursor-pos"      cursor-pos)
-                       ("input"           input)
-                       ("predictions"     predictions)
-                       ("committed-input" committed-string)))))
+                       ("cursor-pos"       cursor-pos)
+                       ("input"            input)
+                       ("predictions"      predictions)
+                       ("prediction-index" (or prediction-index -1))
+                       ("committed-input"  committed-string)))))
     (format nil "~A EDITING ~A" input-return-value json-string)))
 
 (defun inputting->editing-view (input-return-value inputting-state
@@ -59,6 +63,7 @@
                        (buffer-cursor-pos-utf8 buffer)
                        (senn.buffer:buffer-string buffer)
                        predictions
+                       nil
                        (or committed-string ""))))
 
 (defun katakana->editing-view (input-return-value katakana-state)
@@ -66,7 +71,16 @@
     (make-editing-view input-return-value
                        (length-utf8 katakana-input)
                        katakana-input
-                       nil
+                       nil nil
+                       "")))
+
+(defun selecting-from-predictions->editing-view (s)
+  (let ((input (selecting-from-predictions-current-input s)))
+    (make-editing-view +IRV-DO-NOTHING+
+                       (length-utf8 input)
+                       input
+                       (selecting-from-predictions-predictions s)
+                       (selecting-from-predictions-current-index s)
                        "")))
 
 (defun converting->converting-view (input-return-value converting-state)
@@ -104,6 +118,28 @@
                   :committed-string committed-string))))
         (t
          (list s (katakana->editing-view +IRV-DO-NOTHING+ s)))))
+
+(defmethod transit ((ime ime) (s selecting-from-predictions)
+                    (key senn.fcitx.transit.keys:key))
+  (cond ((senn.fcitx.transit.keys:enter-p key)
+         (let ((inputting-state (make-inputting))
+               (committed-string
+                (selecting-from-predictions-current-input s)))
+           (list inputting-state
+                 (inputting->editing-view
+                  +IRV-DO-NOTHING+ inputting-state
+                  :committed-string committed-string))))
+        ((or (senn.fcitx.transit.keys:tab-p key)
+             (senn.fcitx.transit.keys:down-p key))
+         (selecting-from-predictions-move-prediction
+          s +1)
+         (list s (selecting-from-predictions->editing-view s)))
+        ((senn.fcitx.transit.keys:up-p key)
+         (selecting-from-predictions-move-prediction
+          s -1)
+         (list s (selecting-from-predictions->editing-view s)))
+        (t
+         (list s (selecting-from-predictions->editing-view s)))))
 
 (defmethod transit ((ime ime) (s converting)
                     (key senn.fcitx.transit.keys:key))
@@ -177,6 +213,21 @@
                       ;; If the key is ctrl-p, the OS may move the current input up without this, which is very annoying.
                       +IRV-DO-NOTHING+)
                   s)))
+
+        ((senn.fcitx.transit.keys:tab-p key)
+         (let ((inputted-string
+                (senn.buffer:buffer-string (inputting-buffer s))))
+           (let ((predictions (senn.im:predict ime inputted-string)))
+             (if (null predictions)
+                 ;;; Do nothing
+                 (list s (inputting->editing-view +IRV-TO-PROCESS+ s))
+                 (let ((selecting-from-predictions-state
+                        (make-selecting-from-predictions
+                         :predictions predictions
+                         :current-index 0)))
+                   (list selecting-from-predictions-state
+                         (selecting-from-predictions->editing-view
+                          selecting-from-predictions-state)))))))
 
         ((char-p key)
          (let ((char (code-char (senn.fcitx.transit.keys:key-sym key))))

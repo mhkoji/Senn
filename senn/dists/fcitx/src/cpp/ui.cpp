@@ -20,7 +20,7 @@ void ShowCandidateWordList(
     FcitxInstance *instance,
     FcitxInputState *input,
     const std::vector<std::string> &word_strings,
-    const size_t index) {
+    const int index) {
   FcitxCandidateWordList *word_list = FcitxInputStateGetCandidateList(input);
   FcitxCandidateWordReset(word_list);
   FcitxCandidateWordSetLayoutHint(word_list, CLH_Vertical);
@@ -38,13 +38,16 @@ void ShowCandidateWordList(
     word.wordType = (i == index) ? MSG_CANDIATE_CURSOR : MSG_OTHER;
     FcitxCandidateWordAppend(word_list, &word);
   }
-  // Set page by word index
-  FcitxCandidateWordSetFocus(word_list, index);
 
-  FcitxMessages* aux = FcitxInputStateGetAuxUp(input);
-  FcitxMessagesSetMessageCount(aux, 0);
-  FcitxMessagesAddMessageAtLast(aux, MSG_TIPS, "(%d / %d)",
-                                index + 1, word_strings.size());
+  if (0 <= index && index < word_strings.size()) {
+    // Set page by word index
+    FcitxCandidateWordSetFocus(word_list, index);
+
+    FcitxMessages* aux = FcitxInputStateGetAuxUp(input);
+    FcitxMessagesSetMessageCount(aux, 0);
+    FcitxMessagesAddMessageAtLast(aux, MSG_TIPS, "(%d / %d)",
+                                  index + 1, word_strings.size());
+  }
 }
 
 } // namespace
@@ -111,7 +114,9 @@ void Show(FcitxInstance *instance,
       client_preedit, MSG_INPUT, "%s", editing->input.c_str());
 
   if (0 < editing->predictions.size()) {
-    ShowCandidateWordList(instance, input, editing->predictions, 0);
+    ShowCandidateWordList(instance, input,
+                          editing->predictions,
+                          editing->prediction_index);
   }
 
   // カーソルの表示

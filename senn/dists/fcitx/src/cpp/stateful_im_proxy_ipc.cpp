@@ -54,6 +54,9 @@ void ParseEditing(picojson::value &content,
        it != predictions.end(); ++it) {
     output->predictions.push_back(it->get<std::string>());
   }
+
+  output->prediction_index = content
+    .get<picojson::object>()["prediction-index"].get<double>();
 }
 
 INPUT_RETURN_VALUE ParseInputReturnValue(const std::string &s) {

@@ -22,3 +22,4 @@
 (defkey right-p 65363)
 (defkey up-p 65364)
 (defkey f7-p 65476)
+(defkey tab-p 65289)

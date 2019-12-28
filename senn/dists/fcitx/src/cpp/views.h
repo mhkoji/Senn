@@ -10,6 +10,7 @@ struct Editing {
   std::string input;
   int cursor_pos;
   std::vector<std::string> predictions;
+  int prediction_index;
   std::string committed_input;
 };
 
