@@ -2,12 +2,16 @@
   :serial t
   :pathname "src/cl"
   :components
-  ((:file "transit/states")
-   (:file "transit/keys")
-   (:file "transit/transit")
+  ((:module :transit
+    :pathname "transit"
+    :components
+    ((:file "keys")
+     (:file "transit")
+     (:file "im/states")
+     (:file "im/im")))
+
    (:file "net/net")
    (:file "stateful/im")
 
    (:file "net/ipc"))
   :depends-on (:senn))
-

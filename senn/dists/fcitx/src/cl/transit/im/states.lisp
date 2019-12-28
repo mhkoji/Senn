@@ -1,4 +1,4 @@
-(defpackage :senn.fcitx.transit.states
+(defpackage :senn.fcitx.transit.im.states
   (:use :cl)
   (:export :inputting
            :make-inputting
@@ -23,7 +23,7 @@
            :converting-current-input
            :converting-current-segment-index
            :converting-move-curret-segment))
-(in-package :senn.fcitx.transit.states)
+(in-package :senn.fcitx.transit.im.states)
 
 (defstruct inputting
   (buffer (senn.buffer:make-buffer)))

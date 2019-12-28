@@ -5,11 +5,14 @@
   ((:file "ja")
    (:file "buffer")
    (:file "segment")
-   (:file "im/im")
-   (:file "im/kkc")
-   (:file "im/net/client")
-   (:file "im/net/server")
-   #+linux
-   (:file "im/net/ipc/unix")
-   (:file "im/net/stdio"))
+   (:module :im
+    :pathname "im/"
+    :components
+    ((:file "im")
+     (:file "kkc")
+     (:file "net/client")
+     (:file "net/server")
+     #+linux
+     (:file "net/ipc/unix")
+     (:file "net/stdio"))))
   :depends-on (:hachee))

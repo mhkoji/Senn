@@ -24,4 +24,4 @@
              (when-let ((expr (senn.fcitx.net:read-request client)))
                (let ((new-state (handle-request expr state ime client)))
                  (iter new-state)))))
-    (iter (senn.fcitx.transit.states:make-inputting))))
+    (iter (senn.fcitx.transit.im.states:make-inputting))))

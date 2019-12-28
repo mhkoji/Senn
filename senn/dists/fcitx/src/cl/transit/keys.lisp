@@ -3,7 +3,8 @@
   (:export :make-key
            :key
            :key-sym
-           :key-state))
+           :key-state
+           :char-p))
 (in-package :senn.fcitx.transit.keys)
 
 (defstruct key sym state)
@@ -23,3 +24,7 @@
 (defkey up-p 65364)
 (defkey f7-p 65476)
 (defkey tab-p 65289)
+
+
+(defun char-p (k)
+  (<= (char-code #\!) (key-sym k) (char-code #\~)))
