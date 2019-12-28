@@ -110,9 +110,9 @@ void Show(FcitxInstance *instance,
   FcitxMessagesAddMessageAtLast(
       client_preedit, MSG_INPUT, "%s", editing->input.c_str());
 
-  // if (0 < editing->predictions.size()) {
-  //   ShowCandidateWordList(instance, input, editing->predictions, 0);
-  // }
+  if (0 < editing->predictions.size()) {
+    ShowCandidateWordList(instance, input, editing->predictions, 0);
+  }
 
   // カーソルの表示
   if (!support_preedit) {
