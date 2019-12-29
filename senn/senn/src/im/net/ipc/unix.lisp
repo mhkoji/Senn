@@ -17,7 +17,7 @@
 
 (defun send-message (conn string)
   (let ((stream (hachee.ipc.unix:socket-stream (connection-socket conn))))
-    (write-line msg stream)
+    (write-line string stream)
     (force-output stream)))
 
 ;;; Server
