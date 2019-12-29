@@ -1,9 +1,9 @@
-(defpackage :senn.fcitx.stateful-im.ipc
+(defpackage :senn.fcitx.net.ipc
   (:use :cl)
-  (:export :enter-loop)
+  (:export :start-server)
   (:import-from :alexandria
                 :when-let))
-(in-package :senn.fcitx.stateful-im.ipc)
+(in-package :senn.fcitx.net.ipc)
 
 (defstruct client id socket)
 
@@ -12,44 +12,40 @@
              (client-id ,client)
              ,@args))
 
-(defmethod senn.fcitx.stateful-im:read-request ((client client))
+(defmethod senn.fcitx.net:read-request ((client client))
   (let ((stream (hachee.ipc.unix:socket-stream (client-socket client))))
     (when-let ((line (read-line stream nil nil nil)))
       (hachee.ipc.op:as-expr line))))
 
-(defmethod senn.fcitx.stateful-im:send-response ((client client) resp)
+(defmethod senn.fcitx.net:send-response ((client client) resp)
   (let ((stream (hachee.ipc.unix:socket-stream (client-socket client))))
     (write-line resp stream)
     (force-output stream)))
 
-(defmethod senn.fcitx.stateful-im:read-request :around ((client client))
+(defmethod senn.fcitx.net:read-request :around ((client client))
   (let ((req (call-next-method)))
     (log/info client "Read: ~A" req)
     req))
 
-(defmethod senn.fcitx.stateful-im:send-response :after ((client client) resp)
+(defmethod senn.fcitx.net:send-response :after ((client client) resp)
   (log/info client "Written: ~A" resp))
 
 
-(defun spawn-client-thread (client ime)
+(defun spawn-client-thread (ime handler-fn client)
   (log/info client "Connected")
   (bordeaux-threads:make-thread
    (lambda ()
-     (let ((initial-state (senn.fcitx.transit.states:make-inputting)))
-       (handler-case
-           (senn.fcitx.stateful-im:loop-handling-request
-            initial-state
-            ime
-            client)
-         (error (c)
-           (log:warn "~A" c))))
+     (handler-case (funcall handler-fn ime client)
+       (error (c)
+         (log:warn "~A" c)))
      (ignore-errors
        (hachee.ipc.unix:socket-close (client-socket client)))
      (log/info client "Disconnected"))))
 
 
-(defun enter-loop (ime &key (socket-name "/tmp/senn-server-socket")
-                            (use-abstract t))
+(defun start-server (ime handler-fn
+                     &key (socket-name "/tmp/senn-server-socket")
+                          (use-abstract t))
   (when (and (not use-abstract)
              (cl-fad:file-exists-p socket-name))
     (delete-file socket-name))
@@ -62,6 +58,7 @@
            (loop for client-id from 1 do
              (let* ((socket (hachee.ipc.unix:socket-accept server-socket))
                     (client (make-client :id client-id :socket socket)))
-               (push (spawn-client-thread client ime) threads)))
+               (push (spawn-client-thread ime handler-fn client)
+                     threads)))
         (mapc #'bordeaux-threads:destroy-thread threads)
         (hachee.ipc.unix:socket-close server-socket)))))
