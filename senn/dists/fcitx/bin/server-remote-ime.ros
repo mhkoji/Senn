@@ -17,6 +17,6 @@ exec ros -Q -- $0 "$@"
   (declare (ignorable argv))
   (senn.fcitx.net.ipc:start-server
    (senn.im.net.client:make-ime #'senn.im.net.ipc.unix:connect)
-   #'senn.fcitx.stateful.im:loop-handling-request))
+   #'senn.fcitx.stateful-im:loop-handling-request))
 
 ;;; vim: set ft=lisp lisp:

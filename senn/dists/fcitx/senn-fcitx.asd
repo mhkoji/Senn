@@ -11,7 +11,7 @@
      (:file "im/im")))
 
    (:file "net/net")
-   (:file "stateful/im")
+   (:file "stateful-im")
 
    (:file "net/ipc"))
   :depends-on (:senn))

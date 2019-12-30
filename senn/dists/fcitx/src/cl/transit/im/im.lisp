@@ -19,6 +19,11 @@
   (buffer-empty-p (inputting-buffer inputting)))
 
 
+;;; Initial state
+(defmethod make-initial-state ((ime ime))
+  (make-inputting))
+
+
 ;;; Views
 (defun length-utf8 (string)
   (length (babel:string-to-octets string :encoding :utf-8)))

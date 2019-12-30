@@ -1,12 +1,10 @@
-(defpackage :senn.fcitx.stateful.im
+(defpackage :senn.fcitx.stateful-im
   (:use :cl
         :hachee.ipc.op)
-  (:export :loop-handling-request
-           :read-request
-           :send-response)
+  (:export :loop-handling-request)
   (:import-from :alexandria
                 :when-let))
-(in-package :senn.fcitx.stateful.im)
+(in-package :senn.fcitx.stateful-im)
 
 (defun handle-request (expr state ime client)
   (ecase (expr-op expr)
@@ -24,4 +22,4 @@
              (when-let ((expr (senn.fcitx.net:read-request client)))
                (let ((new-state (handle-request expr state ime client)))
                  (iter new-state)))))
-    (iter (senn.fcitx.transit.im.states:make-inputting))))
+    (iter (senn.fcitx.transit:make-initial-state ime))))
