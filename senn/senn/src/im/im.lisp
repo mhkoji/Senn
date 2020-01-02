@@ -20,10 +20,18 @@
 
 (defun append-candidates (ime segment)
   (when (senn.segment:segment-has-more-candidates-p segment)
-    (let ((new-candidates (lookup ime (senn.segment:segment-pron segment))))
+    (let ((current-candidates
+           (senn.segment:segment-candidates segment))
+          (new-candidates
+           (lookup ime (senn.segment:segment-pron segment))))
       (setf (senn.segment:segment-candidates segment)
-            (append (senn.segment:segment-candidates segment)
-                    new-candidates))
+            (append current-candidates
+                    (remove-if (lambda (cand)
+                                 (member (senn.segment:candidate-form cand)
+                                         current-candidates
+                                         :key #'senn.segment:candidate-form
+                                         :test #'string=))
+                               new-candidates)))
       (setf (senn.segment:segment-has-more-candidates-p segment)
             nil)))
   segment)
