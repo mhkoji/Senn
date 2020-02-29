@@ -1,6 +1,6 @@
 (asdf:defsystem :senn-fcitx-test
   :serial t
-  :pathname "t/cl"
+  :pathname "t"
   :components
   ((:module :scenario
     :pathname "scenario"

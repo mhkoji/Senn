@@ -24,15 +24,15 @@ Add the code below to your .emacs file.
 
 ### Install
 ```
-% cd <path/to/Hachee>/dists/fcitx
+% cd <path/to/Hachee>/dists/fcitx/backend
 % ros dump executable bin/server.ros -o bin/server
 % chmod +x bin/server
 % sudo mkdir /usr/lib/senn
 % sudo mv bin/server /usr/lib/senn
 
 % sudo apt install fcitx-libs-dev
-% mkdir <path/to/Hachee>/senn/dists/fcitx/build
-% cd <path/to/Hachee>/senn/dists/fcitx/build
+% mkdir <path/to/Hachee>/senn/dists/fcitx/frontend/build
+% cd <path/to/Hachee>/senn/dists/fcitx/frontend/build
 % sudo make install
 
 % /usr/lib/senn/server

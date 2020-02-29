@@ -1,6 +1,6 @@
 (asdf:defsystem :senn-fcitx
   :serial t
-  :pathname "src/cl"
+  :pathname "src"
   :components
   ((:module :transit
     :pathname "transit"
