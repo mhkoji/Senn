@@ -16,6 +16,6 @@
      #+linux
      (:file "net/ipc/unix")
      (:file "net/stdio")
-     (:file "predict"))))
+     (:file "predictors"))))
   :depends-on (:hachee
                :cl-trie))

@@ -18,16 +18,16 @@ exec ros -Q -- $0 "$@"
   (senn.im.kkc:load-kkc (user-homedir-pathname)))
 
 (defvar *prefix-dictionary*
-  (senn.im.predict:load-prefix-dictionary (user-homedir-pathname)))
+  (senn.im.predictors:load-prefix-dictionary (user-homedir-pathname)))
 
-(defclass senn-ime (senn.im.predict:prefix-predictor
-                    senn.im.kkc:ime)
-  ())
+(defclass ime (senn.im.predictors:prefix
+               senn.im.predictors:katakana
+               senn.im.kkc:ime) ())
 
 (defun main (&rest argv)
   (declare (ignorable argv))
   (senn.im.net.ipc.unix:start-server
-   (make-instance 'senn-ime
+   (make-instance 'ime
                   :kkc *kkc*
                   :dictionary *prefix-dictionary*
                   )))

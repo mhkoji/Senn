@@ -1,17 +1,25 @@
-(defpackage :senn.im.predict
+(defpackage :senn.im.predictors
   (:use :cl)
-  (:export :prefix-predictor
+  (:export :katakana
+           :prefix
            :load-prefix-dictionary))
-(in-package :senn.im.predict)
+(in-package :senn.im.predictors)
 
-(defclass prefix-predictor ()
+(defclass katakana () ())
+
+(defmethod senn.im:predict append ((predictor katakana)
+                                   (string string))
+  (list (hachee.ja:hiragana->katakana string)))
+
+
+(defclass prefix ()
   ((dictionary
     :initarg :dictionary
-    :reader prefix-predictor-dictionary)))
+    :reader prefix-dictionary)))
 
-(defmethod senn.im:predict append ((predictor prefix-predictor)
+(defmethod senn.im:predict append ((predictor prefix)
                                    (string string))
-  (let ((dict (prefix-predictor-dictionary predictor)))
+  (let ((dict (prefix-dictionary predictor)))
     (let ((words (senn.prefix-dictionary:lookup dict string)))
       (mapcar #'hachee.kkc.word:word-form
               (subseq words 0 (min 10 (length words)))))))
