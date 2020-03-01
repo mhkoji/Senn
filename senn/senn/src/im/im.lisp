@@ -14,9 +14,10 @@
 (defgeneric lookup (ime pron &key prev next))
 
 (defgeneric predict (ime string)
-  (:method ((ime t) (string t))
+  (:method append ((ime t) (string t))
     ;; returns no predictions
-    nil))
+    nil)
+  (:method-combination append))
 
 (defun append-candidates (ime segment)
   (when (senn.segment:segment-has-more-candidates-p segment)

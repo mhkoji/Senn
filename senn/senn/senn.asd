@@ -15,4 +15,5 @@
      #+linux
      (:file "net/ipc/unix")
      (:file "net/stdio"))))
-  :depends-on (:hachee))
+  :depends-on (:hachee
+               :cl-trie))
