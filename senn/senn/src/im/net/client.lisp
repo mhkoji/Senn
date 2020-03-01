@@ -79,7 +79,7 @@
                :origin (jsown:val c "origin")))
             (jsown:parse response))))
 
-(defmethod senn.im:predict ((ime ime) (pron string))
+(defmethod senn.im:predict append ((ime ime) (pron string))
   (let ((response
          (reconnectable-request
           ime

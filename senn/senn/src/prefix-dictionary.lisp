@@ -23,7 +23,7 @@
 (defun load-dictionary (stream)
   (let ((trie (make-instance 'cl-trie:trie)))
     (let ((list (read stream)))
-      (loop for (key value) in (getf list :key-value-alist)
+      (loop for (key . value) in (getf list :key-value-alist)
             do (progn (setf (cl-trie:lookup trie key) value))))
     (make-dictionary :trie trie)))
 
@@ -36,7 +36,8 @@
           (let ((pron (hachee.kkc:word-pron word)))
             (loop for i from 1 below (length pron)
                   for prefix = (subseq pron 0 i)
-                  do (pushnew word (cl-trie:lookup trie prefix) :test #'hachee.kkc.word:word=))))))
+                  do (pushnew word (cl-trie:lookup trie prefix)
+                              :test #'hachee.kkc.word:word=))))))
     (make-dictionary :trie trie)))
 
 (defun lookup (dictionary prefix)

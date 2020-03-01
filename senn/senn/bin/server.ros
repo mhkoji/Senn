@@ -17,9 +17,19 @@ exec ros -Q -- $0 "$@"
 (defvar *kkc*
   (senn.im.kkc:load-kkc (user-homedir-pathname)))
 
+(defvar *prefix-dictionary*
+  (senn.im.predict:load-prefix-dictionary (user-homedir-pathname)))
+
+(defclass senn-ime (senn.im.predict:prefix-predictor
+                    senn.im.kkc:ime)
+  ())
+
 (defun main (&rest argv)
   (declare (ignorable argv))
   (senn.im.net.ipc.unix:start-server
-   (make-instance 'senn.im.kkc:ime :kkc *kkc*)))
+   (make-instance 'senn-ime
+                  :kkc *kkc*
+                  :dictionary *prefix-dictionary*
+                  )))
 
 ;;; vim: set ft=lisp lisp:

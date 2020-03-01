@@ -5,6 +5,7 @@
   ((:file "ja")
    (:file "buffer")
    (:file "segment")
+   (:file "prefix-dictionary")
    (:module :im
     :pathname "im/"
     :components
@@ -14,6 +15,7 @@
      (:file "net/server")
      #+linux
      (:file "net/ipc/unix")
-     (:file "net/stdio"))))
+     (:file "net/stdio")
+     (:file "predict"))))
   :depends-on (:hachee
                :cl-trie))
