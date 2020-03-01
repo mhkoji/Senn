@@ -19,7 +19,7 @@ if(NOT DEFINED LOCALEDIR)
   set(LOCALEDIR ${CMAKE_INSTALL_PREFIX}/share/locale)
 endif()
 
-add_subdirectory(src/cpp)
+add_subdirectory(src)
 
 
 install(
