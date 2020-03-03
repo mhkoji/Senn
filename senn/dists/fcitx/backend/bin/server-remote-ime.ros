@@ -14,9 +14,15 @@ exec ros -Q -- $0 "$@"
 (ql:quickload :senn-fcitx :silent t)
 
 (defun main (&rest argv)
-  (declare (ignorable argv))
-  (senn.fcitx.net.ipc:start-server
-   (senn.im.net.client:make-ime #'senn.im.net.ipc.unix:connect)
-   #'senn.fcitx.stateful-im:loop-handling-request))
+  (let ((start-server-fn
+         (let ((acceptance-protocol (car argv)))
+           (cond ((and (stringp acceptance-protocol)
+                       (string= acceptance-protocol "tcp"))
+                  #'senn.fcitx.net.tcp:start-server)
+                 (t
+                  #'senn.fcitx.net.ipc:start-server)))))
+    (funcall start-server-fn
+             (senn.im.net.client:make-ime #'senn.im.net.ipc.unix:connect)
+             #'senn.fcitx.stateful-im:loop-handling-request)))
 
 ;;; vim: set ft=lisp lisp:

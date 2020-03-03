@@ -10,8 +10,14 @@
      (:file "im/states")
      (:file "im/im")))
 
-   (:file "net/net")
-   (:file "stateful-im")
+   (:module :net
+    :pathname "net"
+    :components
+    ((:file "net")
+     (:file "ipc")
+     (:file "tcp")))
 
-   (:file "net/ipc"))
-  :depends-on (:senn))
+   (:file "stateful-im"))
+  :depends-on (:senn
+
+               :usocket))
