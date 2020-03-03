@@ -23,7 +23,7 @@ add_subdirectory(src)
 
 
 install(
-  FILES ${CMAKE_CURRENT_BINARY_DIR}/../bin/server
+  FILES ${CMAKE_CURRENT_BINARY_DIR}/../../backend/bin/server
   CONFIGURATIONS Release
   RUNTIME DESTINATION "/usr/lib/senn")
 

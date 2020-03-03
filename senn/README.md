@@ -65,9 +65,9 @@ Thus, you can uninstall fcitx-senn by the following commands:
 ### (TODO) Install via dpkg
 
 ```
-% ros dump executable bin/server.ros -o bin/server
-% mkdir <path/to/Hachee>/senn/dists/fcitx/build
-% cd <path/to/Hachee>/senn/dists/fcitx/build
+% ros dump executable backend/bin/server.ros -o backend/bin/server
+% mkdir frontned/build
+% cd frontned/build
 % cmake -DCMAKE_BUILD_TYPE=Release ..
 % make && make package
 % sudo dpkg -i fcitx-senn-0.0.1-Linux.deb
