@@ -1,6 +1,6 @@
 #pragma once
 #include <string>
-#include "ipc.h"
+#include "ipc/ipc.h"
 
 namespace senn {
 namespace fcitx {

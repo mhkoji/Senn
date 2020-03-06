@@ -5,9 +5,9 @@
 #include <string>
 #include <iostream>
 
-#include "ui.h"
-#include "stateful_im_proxy_ipc.h"
-#include "stateful_im_proxy_ipc_server.h"
+#include "senn_fcitx/ui.h"
+#include "senn_fcitx/stateful_im_proxy_ipc.h"
+#include "senn_fcitx/stateful_im_proxy_ipc_server.h"
 
 typedef struct _FcitxSenn {
   FcitxInstance *fcitx;
