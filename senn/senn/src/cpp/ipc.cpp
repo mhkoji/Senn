@@ -6,7 +6,7 @@
 #include <iostream>
 #include <algorithm>
 
-#include "stateful_im_proxy_ipc_server.h"
+#include "ipc.h"
 
 namespace senn {
 namespace ipc {

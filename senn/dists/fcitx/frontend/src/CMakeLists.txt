@@ -4,8 +4,9 @@ include_directories(${FCITX4_FCITX_CONFIG_INCLUDE_DIRS})
 include_directories(${FCITX4_FCITX_UTILS_INCLUDE_DIRS})
 
 include_directories(../../../../third-party/)
+include_directories(../../../../senn/src/cpp/)
 
-set(FCITX_SENN_SRC ipc.cpp stateful_im_proxy_ipc.cpp stateful_im_proxy_ipc_server.cpp ui.cpp fcitx_senn.cpp)
+set(FCITX_SENN_SRC stateful_im_proxy_ipc.cpp stateful_im_proxy_ipc_server.cpp ui.cpp fcitx_senn.cpp ../../../../senn/src/cpp/ipc.cpp)
 
 ## A macro for easy building of the shared object library.
 fcitx_add_addon_full(senn
