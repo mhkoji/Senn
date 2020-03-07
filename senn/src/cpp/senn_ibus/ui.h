@@ -6,8 +6,57 @@ namespace senn {
 namespace ibus {
 namespace ui {
 
-inline void Show(const senn::fcitx::views::Converting*) {
-  // TODO
+inline void Show(IBusEngine *engine,
+                 const senn::fcitx::views::Converting* converting) {
+  IBusText *text = nullptr;
+  {
+    std::string data;
+    std::vector<std::string>::const_iterator it = converting->forms.begin();
+    for (; it != converting->forms.end(); ++it) {
+      data.append(*it);
+    }
+    text = ibus_text_new_from_string(data.c_str());
+  }
+
+  {
+    int start = 0, end = 0;
+    int i = 0, cursor_form_index = converting->cursor_form_index;
+    std::vector<std::string>::const_iterator it = converting->forms.begin();
+    for (; it != converting->forms.end(); ++it, ++i) {
+      end += it->size();
+      ibus_text_append_attribute(text,
+                                 IBUS_ATTR_TYPE_UNDERLINE,
+                                 IBUS_ATTR_UNDERLINE_SINGLE,
+                                 start,
+                                 end);
+
+      if (i == cursor_form_index) {
+        const guint kBackgroundColor = 0xD1EAFF;
+        ibus_text_append_attribute(text,
+                                   IBUS_ATTR_TYPE_BACKGROUND,
+                                   kBackgroundColor,
+                                   start,
+                                   end);
+        // IBUS_ATTR_TYPE_FOREGROUND is necessary to highlight the segment on
+        // Firefox.
+        const guint kForegroundColor = 0x000000;
+        ibus_text_append_attribute(text,
+                                   IBUS_ATTR_TYPE_FOREGROUND,
+                                   kForegroundColor,
+                                   start,
+                                   end);
+      }
+
+      start += end;
+    }
+  }
+
+  ibus_engine_update_preedit_text_with_mode(
+      engine,
+      text,
+      1,
+      TRUE,
+      IBUS_ENGINE_PREEDIT_COMMIT);
 }
 
 inline void Show(IBusEngine *engine,
@@ -26,6 +75,7 @@ inline void Show(IBusEngine *engine,
       IBUS_ATTR_UNDERLINE_SINGLE,
       0,
       editing->input.size());
+
   ibus_engine_update_preedit_text_with_mode(
       engine,
       input,

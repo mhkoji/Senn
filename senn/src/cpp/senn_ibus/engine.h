@@ -34,7 +34,7 @@ inline gboolean ProcessKeyEvent(
 
   return engine->im->Transit(keyval, keycode, modifiers,
     [&](const senn::fcitx::views::Converting *view) {
-      senn::ibus::ui::Show(view);
+      senn::ibus::ui::Show(p, view);
     },
 
     [&](const senn::fcitx::views::Editing *view) {
