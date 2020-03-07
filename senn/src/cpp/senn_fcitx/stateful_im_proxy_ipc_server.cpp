@@ -39,7 +39,7 @@ void StatefulIMProxyIPCServerLauncher::Spawn() const {
 
 senn::ipc::Connection*
 StatefulIMProxyIPCServerLauncher::GetConnection() const {
-  return senn::ipc::Connection::ConnectAbstractTo(socket_path_);
+  return senn::ipc::Connection::ConnectLocalAbstractTo(socket_path_);
 }
 
 } // fcitx

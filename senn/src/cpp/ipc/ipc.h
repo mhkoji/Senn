@@ -8,8 +8,14 @@ namespace ipc {
 
 class Connection {
 public:
-  static Connection* ConnectTo(const std::string&);
-  static Connection* ConnectAbstractTo(const std::string&);
+  // Connection by a tcp socket
+  static Connection* ConnectTo(unsigned short port);
+
+  // Connection by a local domain socket (unix-domain socket)
+  static Connection* ConnectLocalTo(const std::string&);
+
+  // Connection by an abstract local domain socket
+  static Connection* ConnectLocalAbstractTo(const std::string&);
 
   void Write(const std::string&);
 

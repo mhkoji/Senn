@@ -1,5 +1,8 @@
 #include <sys/socket.h>
 #include <sys/un.h>
+#include <sys/types.h>
+#include <arpa/inet.h>
+#include <netinet/in.h>
 #include <cstdlib>
 
 #include <iostream>
@@ -12,8 +15,8 @@ namespace ipc {
 
 namespace {
 
-int MakeLocalStreamSocketOrDie(void) {
-  int socket_fd = socket(PF_LOCAL, SOCK_STREAM, 0);
+int MakeStreamSocketOrDie(int socket_family) {
+  int socket_fd = socket(socket_family, SOCK_STREAM, 0);
   if (socket_fd < 0) {
     std::cerr << "Failed to create socket: " << socket_fd << std::endl;
     std::exit(1);
@@ -40,8 +43,29 @@ bool IsReadTimeout(int socket, int timeout_msec) {
 
 } // namespace
 
-Connection* Connection::ConnectTo(const std::string &path) {
-  int socket_fd = MakeLocalStreamSocketOrDie();
+Connection* Connection::ConnectTo(unsigned short port) {
+  int socket_fd = MakeStreamSocketOrDie(PF_INET);
+
+  sockaddr_in addr;
+  addr.sin_family = AF_INET;
+  addr.sin_port = htons(port);
+  addr.sin_addr.s_addr = inet_addr("127.0.0.1");
+  int connect_return_value = connect(
+      socket_fd,
+      reinterpret_cast<const struct sockaddr*>(&addr),
+      sizeof(addr));
+  if (connect_return_value < 0) {
+    close(socket_fd);
+    std::cerr << "ConnectTo: Failed to connect: "
+              << connect_return_value << std::endl;
+    std::exit(1);
+  }
+
+  return new Connection(socket_fd);
+}
+
+Connection* Connection::ConnectLocalTo(const std::string &path) {
+  int socket_fd = MakeStreamSocketOrDie(PF_LOCAL);
 
   sockaddr_un addr;
   addr.sun_family = AF_LOCAL;
@@ -60,8 +84,8 @@ Connection* Connection::ConnectTo(const std::string &path) {
   return new Connection(socket_fd);
 }
 
-Connection* Connection::ConnectAbstractTo(const std::string &path) {
-  int socket_fd = MakeLocalStreamSocketOrDie();
+Connection* Connection::ConnectLocalAbstractTo(const std::string &path) {
+  int socket_fd = MakeStreamSocketOrDie(PF_LOCAL);
 
   sockaddr_un addr;
   addr.sun_family = AF_LOCAL;
