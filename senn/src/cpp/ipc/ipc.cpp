@@ -1,6 +1,5 @@
 #include <sys/socket.h>
 #include <sys/un.h>
-#include <unistd.h>
 #include <cstdlib>
 
 #include <iostream>
