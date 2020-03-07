@@ -27,6 +27,8 @@
     (log/info client "Read: ~A" req)
     req))
 
+(defmethod senn.fcitx.net:send-response :after ((client client) resp)
+  (log/info client "Written: ~A" resp))
 
 (defun spawn-client-thread (ime handler-fn client)
   (log/info client "Connected")
