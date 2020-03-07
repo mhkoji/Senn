@@ -1,0 +1,13 @@
+Makefile
+Makefile.in
+*.o
+.deps
+autom4te.cache
+config.h
+config.h.in
+config.log
+config.rpath
+config.status
+config.sub
+configure
+ibus-engine-senn

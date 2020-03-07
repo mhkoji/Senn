@@ -11,8 +11,8 @@ class StatefulIM {
 public:
   virtual ~StatefulIM() {}
 
-  virtual boolean Transit(
-      guint, guint, guint,
+  virtual bool Transit(
+      unsigned int, unsigned int, unsigned int,
       std::function<void(const senn::fcitx::views::Converting*)>,
       std::function<void(const senn::fcitx::views::Editing*)>) = 0;
 };

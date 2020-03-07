@@ -82,6 +82,20 @@ Thus, you can uninstall fcitx-senn by the following commands:
 % sudo dpkg -P fcitx-senn
 ```
 
+## iBus (TODO)
+
+### Install
+
+```
+% /usr/lib/senn/server
+
+% sudo apt install -y gnome-common libibus-1.0-dev
+% cd <path/to/Hachee>/dists/ibus-senn/frontend
+% ./autogen.sh
+% make && sudo make install
+% ibus-daemon -drx
+```
+
 ## Windows (WIP)
 
 - Build tip

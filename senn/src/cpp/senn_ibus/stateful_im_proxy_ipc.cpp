@@ -1,78 +1,28 @@
 #include <sstream>
-#include <picojson/picojson.h>
+#include <iostream>
 
 #include "stateful_im_proxy_ipc.h"
+#include "senn_fcitx/stateful_im_proxy_ipc_json.h"
 
 namespace senn {
-namespace fcitx {
+namespace ibus {
 
 namespace {
 
-void ParseConverting(picojson::value &content,
-                     senn::fcitx::views::Converting *output) {
-  const picojson::array forms = content
-    .get<picojson::object>()["forms"]
-    .get<picojson::array>();
-  for (picojson::array::const_iterator it = forms.begin();
-       it != forms.end(); ++it) {
-    output->forms.push_back(it->get<std::string>());
-  }
-
-  output->cursor_form_index = content
-    .get<picojson::object>()["cursor-form-index"]
-    .get<double>();
-
-  const picojson::array candidates = content
-    .get<picojson::object>()["cursor-form"]
-    .get<picojson::object>()["candidates"]
-    .get<picojson::array>();
-  for (picojson::array::const_iterator it = candidates.begin();
-       it != candidates.end(); ++it) {
-    output->cursor_form_candidates.push_back(it->get<std::string>());
-  }
-
-  output->cursor_form_candidate_index = content
-    .get<picojson::object>()["cursor-form"]
-    .get<picojson::object>()["candidate-index"]
-    .get<double>();
-}
-
-void ParseEditing(picojson::value &content,
-                  senn::fcitx::views::Editing *output) {
-  output->cursor_pos = content
-    .get<picojson::object>()["cursor-pos"].get<double>();
-  output->input = content
-    .get<picojson::object>()["input"].get<std::string>();
-  output->committed_input = content
-    .get<picojson::object>()["committed-input"].get<std::string>();
-
-  const picojson::array predictions = content
-    .get<picojson::object>()["predictions"]
-    .get<picojson::array>();
-  for (picojson::array::const_iterator it = predictions.begin();
-       it != predictions.end(); ++it) {
-    output->predictions.push_back(it->get<std::string>());
-  }
-
-  output->prediction_index = content
-    .get<picojson::object>()["prediction-index"].get<double>();
-}
-
-INPUT_RETURN_VALUE ParseInputReturnValue(const std::string &s) {
+bool ParseInputReturnValue(const std::string &s) {
   if (s == "IRV_TO_PROCESS") {
-    return IRV_TO_PROCESS;
+    return false;
   } else if (s == "IRV_DO_NOTHING") {
-    return IRV_DO_NOTHING;
+    return true;
   } else if (s == "IRV_FLAG_FORWARD_KEY") {
-    return IRV_FLAG_FORWARD_KEY;
+    return false;
   }
-  return IRV_TO_PROCESS;
+  return false;
 }
 
-
-std::string MakeRequest(FcitxKeySym sym,
-                        uint32_t keycode,
-                        uint32_t state) {
+std::string MakeRequest(unsigned int sym,
+                        unsigned int keycode,
+                        unsigned int state) {
   std::stringstream ss;
   ss << "{"
      << "\"op\": \"transit\","
@@ -87,25 +37,25 @@ std::string MakeRequest(FcitxKeySym sym,
 
 
 StatefulIMProxyIPC::StatefulIMProxyIPC(
-    senn::ipc::Connection* conn,
-    senn::fcitx::StatefulIMProxyIPCServerLauncher* launcher)
-  : connection_(conn),
-    launcher_(launcher) {
+    senn::ipc::Connection* conn)
+  : connection_(conn)  {
 }
 
 
-INPUT_RETURN_VALUE
+bool
 StatefulIMProxyIPC::Transit(
-    FcitxKeySym sym, uint32_t keycode, uint32_t state,
+    unsigned int sym, unsigned int  keycode, unsigned int state,
     std::function<void(const senn::fcitx::views::Converting*)> on_converting,
     std::function<void(const senn::fcitx::views::Editing*)> on_editing) {
 
   std::string response = "";
   {
     std::string request = MakeRequest(sym, keycode, state);
-    (new senn::ipc::ReconnectableServerRequest
-      <StatefulIMProxyIPCServerLauncher>(launcher_, &connection_))
-      ->Execute(request, &response);
+    connection_->Write(request);
+    if (!(connection_)->ReadLine(1000, &response)) {
+      std::cerr << "Failed to request" << std::endl;
+      std::exit(1);
+    }
   }
 
   std::istringstream iss(response);
@@ -117,21 +67,15 @@ StatefulIMProxyIPC::Transit(
     std::string content;
     std::getline(iss, content);
 
-    picojson::value v;
-    picojson::parse(v, content);
-
     senn::fcitx::views::Converting converting;
-    ParseConverting(v, &converting);
+    senn::fcitx::stateful_im_proxy_ipc_json::Parse(content, &converting);
     on_converting(&converting);
   } else {
     std::string content;
     std::getline(iss, content);
 
-    picojson::value v;
-    picojson::parse(v, content);
-
     senn::fcitx::views::Editing editing;
-    ParseEditing(v, &editing);
+    senn::fcitx::stateful_im_proxy_ipc_json::Parse(content, &editing);
     on_editing(&editing);
   }
 
@@ -139,8 +83,8 @@ StatefulIMProxyIPC::Transit(
 }
 
 StatefulIMProxyIPC* StatefulIMProxyIPC::Create(
-    senn::fcitx::StatefulIMProxyIPCServerLauncher *launcher) {
-  return new StatefulIMProxyIPC(launcher->GetConnection(), launcher);
+    senn::ipc::Connection* conn) {
+  return new StatefulIMProxyIPC(conn);
 }
 
 
@@ -151,5 +95,5 @@ StatefulIMProxyIPC::~StatefulIMProxyIPC() {
   }
 }
 
-} // fcitx
+} // ibus
 } // senn

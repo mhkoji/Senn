@@ -9,22 +9,18 @@ class StatefulIMProxyIPC : public StatefulIM {
 public:
   ~StatefulIMProxyIPC();
 
-  boolean Transit(
-      guint, guint, guint,
+  bool Transit(
+      unsigned int, unsigned int, unsigned int,
       std::function<void(const senn::fcitx::views::Converting*)>,
       std::function<void(const senn::fcitx::views::Editing*)>);
 
 private:
-  StatefulIMProxyIPC(senn::ipc::Connection*,
-                     senn::fcitx::StatefulIMProxyIPCServerLauncher*);
+  StatefulIMProxyIPC(senn::ipc::Connection*);
 
   senn::ipc::Connection *connection_;
 
-  const StatefulIMProxyIPCServerLauncher *launcher_;
-
 public:
-  static StatefulIMProxyIPC* Create(
-      senn::fcitx::StatefulIMProxyIPCServerLauncher*);
+  static StatefulIMProxyIPC* Create(senn::ipc::Connection*);
 };
 
 
