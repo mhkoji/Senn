@@ -12,6 +12,13 @@ inline void Show(const senn::fcitx::views::Converting*) {
 
 inline void Show(IBusEngine *engine,
                  const senn::fcitx::views::Editing* editing) {
+
+  if (editing->committed_input != "") {
+    IBusText *committed_text =
+      ibus_text_new_from_string(editing->committed_input.c_str());
+    ibus_engine_commit_text(engine, committed_text);
+  }
+
   IBusText *input = ibus_text_new_from_string(editing->input.c_str());
   ibus_text_append_attribute(
       input,
