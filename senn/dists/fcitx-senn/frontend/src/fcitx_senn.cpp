@@ -1,119 +1,29 @@
-#include <fcitx/instance.h>
 #include <fcitx/ime.h>
-#include <fcitx/context.h>
 #include <sys/stat.h>
-#include <string>
-#include <iostream>
+// #include <iostream>
 
-#include "senn_fcitx/ui.h"
-#include "senn_fcitx/stateful_im_proxy_ipc.h"
-#include "senn_fcitx/stateful_im_proxy_ipc_server.h"
-
-typedef struct _FcitxSenn {
-  FcitxInstance *fcitx;
-  senn::fcitx::StatefulIM *im;
-  senn::fcitx::StatefulIMProxyIPCServerLauncher *launcher;
-} FcitxSenn;
-
+#include "senn_fcitx/iface.h"
 
 static void FcitxSennDestroy(void *arg) {
-  FcitxSenn *senn = (FcitxSenn *)arg;
-  if (senn->im) {
-    delete senn->im;
-  }
-  free(senn);
+  senn::fcitx::iface::DestoryIM(arg);
   // std::cout << "senn-fcitx: destroyed:"
   //           << " [" << std::hex << arg << "]"
   //           << std::endl;
 }
 
-static boolean FcitxSennInit(void *arg) {
-  FcitxSenn *senn = (FcitxSenn *)arg;
-
-  boolean flag = true;
-  FcitxInstanceSetContext(senn->fcitx,
-                          CONTEXT_IM_KEYBOARD_LAYOUT,
-                          "jp");
-  FcitxInstanceSetContext(senn->fcitx,
-                          CONTEXT_DISABLE_AUTO_FIRST_CANDIDATE_HIGHTLIGHT,
-                          &flag);
-  FcitxInstanceSetContext(senn->fcitx,
-                          CONTEXT_DISABLE_AUTOENG,
-                          &flag);
-  FcitxInstanceSetContext(senn->fcitx,
-                          CONTEXT_DISABLE_QUICKPHRASE,
-                          &flag);
-
-  // std::cout << "senn-fcitx: initialized:"
-  //           << " [" << std::hex << arg << "]"
-  //           << std::endl;
-
-  return true;
-}
-
-static void FcitxSennReset(void *arg) {
-  FcitxSenn *senn = (FcitxSenn *)arg;
-  FcitxInstance *instance = senn->fcitx;
-  senn::fcitx::views::Editing editing_view;
-  editing_view.input = "";
-  editing_view.cursor_pos = 0;
-  senn::fcitx::ui::Show(instance, &editing_view);
-}
-
-INPUT_RETURN_VALUE FcitxSennDoInput(void *arg,
-                                    FcitxKeySym _sym,
-                                    uint32_t _state) {
-  FcitxSenn *senn = (FcitxSenn *)arg;
-  FcitxInstance *instance = senn->fcitx;
-  FcitxInputState *input = FcitxInstanceGetInputState(instance);
-
-  FcitxKeySym sym = (FcitxKeySym) FcitxInputStateGetKeySym(input);
-  uint32_t keycode = FcitxInputStateGetKeyCode(input);
-  uint32_t state = FcitxInputStateGetKeyState(input);
-  // std::cout << sym << " " << keycode << " " << state << std::endl;
-
-  if (!senn->im) {
-    senn->im = senn::fcitx::StatefulIMProxyIPC::Create(senn->launcher);
-  }
-
-  return senn->im->Transit(sym, keycode, state,
-    [&](const senn::fcitx::views::Converting *view) {
-      senn::fcitx::ui::Show(instance, view);
-    },
-
-    [&](const senn::fcitx::views::Editing *view) {
-      senn::fcitx::ui::Show(instance, view);
-    });
-}
-
-INPUT_RETURN_VALUE FcitxSennDoReleaseInput(void *arg,
-                                           FcitxKeySym sym,
-                                           uint32_t state) {
-  return IRV_TO_PROCESS;
-}
-
-void FcitxSennReloadConfig(void *arg) {
-}
-
 static void* FcitxSennCreate(FcitxInstance *fcitx) {
-  FcitxSenn *senn = (FcitxSenn*) fcitx_utils_malloc0(sizeof(FcitxSenn));
-  senn->fcitx = fcitx;
-  senn->im = nullptr;
-  senn->launcher = new senn::fcitx::StatefulIMProxyIPCServerLauncher();
-
-  senn->launcher->Spawn();
-
   FcitxIMIFace iface;
   memset(&iface, 0, sizeof(FcitxIMIFace));
-  iface.Init = FcitxSennInit;
-  iface.ResetIM = FcitxSennReset;
-  iface.DoInput = FcitxSennDoInput;
-  iface.DoReleaseInput = FcitxSennDoReleaseInput;
-  iface.ReloadConfig = FcitxSennReloadConfig;
+  iface.Init = senn::fcitx::iface::Init;
+  iface.ResetIM = senn::fcitx::iface::ResetIM;
+  iface.DoInput = senn::fcitx::iface::DoInput;
+  iface.DoReleaseInput = senn::fcitx::iface::DoReleaseInput;
+  iface.ReloadConfig = senn::fcitx::iface::ReloadConfig;
 
+  void *fcitx_im = senn::fcitx::iface::SetupIM(fcitx);
   FcitxInstanceRegisterIMv2(
       fcitx,
-      senn,
+      fcitx_im,
       "senn",
       "Senn",
       "senn",
@@ -126,7 +36,7 @@ static void* FcitxSennCreate(FcitxInstance *fcitx) {
   //           << " [" << std::hex << senn << "]"
   //           << std::endl;
 
-  return senn;
+  return fcitx_im;
 }
 
 extern "C" {
