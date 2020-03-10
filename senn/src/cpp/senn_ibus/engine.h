@@ -32,6 +32,11 @@ inline gboolean ProcessKeyEvent(
         senn::ipc::Connection::ConnectTo(5678));
   }
 
+  const bool is_key_up = ((modifiers & IBUS_RELEASE_MASK) != 0);
+  if (is_key_up) {
+    return FALSE;
+  }
+
   return engine->im->Transit(keyval, keycode, modifiers,
     [&](const senn::fcitx::views::Converting *view) {
       senn::ibus::ui::Show(p, view);
