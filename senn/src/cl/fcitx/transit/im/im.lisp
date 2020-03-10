@@ -269,7 +269,7 @@
                                             :pronunciation pron)))
                      (list converting-state
                            (converting->converting-view
-                            +IRV-TO-PROCESS+ converting-state))))))))
+                            +IRV-DO-NOTHING+ converting-state))))))))
 
         ((senn.fcitx.transit.keys:enter-p key)
          (let ((inputting-state (make-inputting))
