@@ -9,7 +9,7 @@ namespace engine {
 
 struct IBusSennEngine {
   IBusEngine parent;
-  senn::ibus::StatefulIMProxyIPC *im;
+  senn::ibus::StatefulIM *im;
 };
 
 

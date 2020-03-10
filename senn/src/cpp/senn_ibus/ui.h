@@ -23,7 +23,7 @@ inline void Show(IBusEngine *engine,
     int i = 0, cursor_form_index = converting->cursor_form_index;
     std::vector<std::string>::const_iterator it = converting->forms.begin();
     for (; it != converting->forms.end(); ++it, ++i) {
-      end += it->size();
+      end += g_utf8_strlen(it->c_str(), -1);
       ibus_text_append_attribute(text,
                                  IBUS_ATTR_TYPE_UNDERLINE,
                                  IBUS_ATTR_UNDERLINE_SINGLE,
@@ -68,18 +68,18 @@ inline void Show(IBusEngine *engine,
     ibus_engine_commit_text(engine, committed_text);
   }
 
-  IBusText *input = ibus_text_new_from_string(editing->input.c_str());
+  IBusText *input_text = ibus_text_new_from_string(editing->input.c_str());
   ibus_text_append_attribute(
-      input,
+      input_text,
       IBUS_ATTR_TYPE_UNDERLINE,
       IBUS_ATTR_UNDERLINE_SINGLE,
       0,
-      editing->input.size());
+      g_utf8_strlen(editing->input.c_str(), -1));
 
   ibus_engine_update_preedit_text_with_mode(
       engine,
-      input,
-      editing->cursor_pos,
+      input_text,
+      g_utf8_strlen(editing->input.c_str(), editing->cursor_pos),
       TRUE,
       IBUS_ENGINE_PREEDIT_COMMIT);
 }
