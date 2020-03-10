@@ -16,21 +16,23 @@ inline void Show(IBusEngine *engine,
       data.append(*it);
     }
     text = ibus_text_new_from_string(data.c_str());
+    ibus_text_append_attribute(
+        text,
+        IBUS_ATTR_TYPE_UNDERLINE,
+        IBUS_ATTR_UNDERLINE_SINGLE,
+        0,
+        g_utf8_strlen(data.c_str(), -1));
   }
 
+  int cursor_pos = 0;
   {
     int start = 0, end = 0;
     int i = 0, cursor_form_index = converting->cursor_form_index;
     std::vector<std::string>::const_iterator it = converting->forms.begin();
     for (; it != converting->forms.end(); ++it, ++i) {
       end += g_utf8_strlen(it->c_str(), -1);
-      ibus_text_append_attribute(text,
-                                 IBUS_ATTR_TYPE_UNDERLINE,
-                                 IBUS_ATTR_UNDERLINE_SINGLE,
-                                 start,
-                                 end);
-
       if (i == cursor_form_index) {
+        cursor_pos = start;
         const guint kBackgroundColor = 0xD1EAFF;
         ibus_text_append_attribute(text,
                                    IBUS_ATTR_TYPE_BACKGROUND,
@@ -46,15 +48,14 @@ inline void Show(IBusEngine *engine,
                                    start,
                                    end);
       }
-
-      start += end;
+      start = end;
     }
   }
 
   ibus_engine_update_preedit_text_with_mode(
       engine,
       text,
-      1,
+      cursor_pos,
       TRUE,
       IBUS_ENGINE_PREEDIT_COMMIT);
 }
