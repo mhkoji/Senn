@@ -140,11 +140,11 @@
                     (key senn.fcitx.transit.keys:key))
   (cond ((senn.fcitx.transit.keys:left-p key)
          (converting-move-curret-segment s -1)
-         (list s (converting->converting-view +IRV-TO-PROCESS+ s)))
+         (list s (converting->converting-view +IRV-DO-NOTHING+ s)))
 
         ((senn.fcitx.transit.keys:right-p key)
          (converting-move-curret-segment s +1)
-         (list s (converting->converting-view +IRV-TO-PROCESS+ s)))
+         (list s (converting->converting-view +IRV-DO-NOTHING+ s)))
 
         ((or (senn.fcitx.transit.keys:space-p key)
              (senn.fcitx.transit.keys:up-p key))
