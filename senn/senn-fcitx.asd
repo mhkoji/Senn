@@ -10,11 +10,11 @@
      (:file "im/states")
      (:file "im/im")))
 
-   (:module :net
-    :pathname "net"
+   (:module :ipc
+    :pathname "ipc"
     :components
-    ((:file "net")
-     (:file "ipc")
+    ((:file "ipc")
+     (:file "unix")
      (:file "tcp")))
 
    (:file "stateful-im"))

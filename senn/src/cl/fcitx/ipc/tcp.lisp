@@ -1,9 +1,9 @@
-(defpackage :senn.fcitx.net.tcp
+(defpackage :senn.fcitx.ipc.tcp
   (:use :cl)
   (:export :start-server)
   (:import-from :alexandria
                 :when-let))
-(in-package :senn.fcitx.net.tcp)
+(in-package :senn.fcitx.ipc.tcp)
 
 (defstruct client id usocket)
 
@@ -12,22 +12,22 @@
              (client-id ,client)
              ,@args))
 
-(defmethod senn.fcitx.net:read-request ((client client))
+(defmethod senn.fcitx.ipc:read-request ((client client))
   (let ((stream (usocket:socket-stream (client-usocket client))))
     (when-let ((line (read-line stream nil nil nil)))
       (hachee.ipc.op:as-expr line))))
 
-(defmethod senn.fcitx.net:send-response ((client client) resp)
+(defmethod senn.fcitx.ipc:send-response ((client client) resp)
   (let ((stream (usocket:socket-stream (client-usocket client))))
     (write-line resp stream)
     (force-output stream)))
 
-(defmethod senn.fcitx.net:read-request :around ((client client))
+(defmethod senn.fcitx.ipc:read-request :around ((client client))
   (let ((req (call-next-method)))
     (log/info client "Read: ~A" req)
     req))
 
-(defmethod senn.fcitx.net:send-response :after ((client client) resp)
+(defmethod senn.fcitx.ipc:send-response :after ((client client) resp)
   (log/info client "Written: ~A" resp))
 
 (defun spawn-client-thread (ime handler-fn client)

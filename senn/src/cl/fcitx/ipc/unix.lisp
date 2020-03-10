@@ -1,9 +1,9 @@
-(defpackage :senn.fcitx.net.ipc
+(defpackage :senn.fcitx.ipc.unix
   (:use :cl)
   (:export :start-server)
   (:import-from :alexandria
                 :when-let))
-(in-package :senn.fcitx.net.ipc)
+(in-package :senn.fcitx.ipc.unix)
 
 (defstruct client id socket)
 
@@ -12,22 +12,22 @@
              (client-id ,client)
              ,@args))
 
-(defmethod senn.fcitx.net:read-request ((client client))
+(defmethod senn.fcitx.ipc:read-request ((client client))
   (let ((stream (hachee.ipc.unix:socket-stream (client-socket client))))
     (when-let ((line (read-line stream nil nil nil)))
       (hachee.ipc.op:as-expr line))))
 
-(defmethod senn.fcitx.net:send-response ((client client) resp)
+(defmethod senn.fcitx.ipc:send-response ((client client) resp)
   (let ((stream (hachee.ipc.unix:socket-stream (client-socket client))))
     (write-line resp stream)
     (force-output stream)))
 
-(defmethod senn.fcitx.net:read-request :around ((client client))
+(defmethod senn.fcitx.ipc:read-request :around ((client client))
   (let ((req (call-next-method)))
     (log/info client "Read: ~A" req)
     req))
 
-(defmethod senn.fcitx.net:send-response :after ((client client) resp)
+(defmethod senn.fcitx.ipc:send-response :after ((client client) resp)
   (log/info client "Written: ~A" resp))
 
 

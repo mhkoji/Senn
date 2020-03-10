@@ -18,9 +18,9 @@ exec ros -Q -- $0 "$@"
          (let ((acceptance-protocol (car argv)))
            (cond ((and (stringp acceptance-protocol)
                        (string= acceptance-protocol "tcp"))
-                  #'senn.fcitx.net.tcp:start-server)
+                  #'senn.fcitx.ipc.tcp:start-server)
                  (t
-                  #'senn.fcitx.net.ipc:start-server)))))
+                  #'senn.fcitx.ipc.unix:start-server)))))
     (funcall start-server-fn
              (senn.im.net.client:make-ime #'senn.im.net.ipc.unix:connect)
              #'senn.fcitx.stateful-im:loop-handling-request)))
