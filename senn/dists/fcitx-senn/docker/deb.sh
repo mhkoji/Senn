@@ -11,9 +11,8 @@ sbcl --noinform \
               :executable t
               :toplevel #'senn.fcitx-senn.backend.bin:main)"
 
-cd /output-build && \
-    cmake -DCMAKE_BUILD_TYPE=Release \
-          /app/senn/dists/fcitx-senn/frontend
+cmake -DCMAKE_BUILD_TYPE=Release \
+      /app/senn/dists/fcitx-senn/frontend
 make
 make package
 cp *.deb /output/
