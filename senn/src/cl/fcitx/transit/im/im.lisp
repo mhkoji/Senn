@@ -299,13 +299,13 @@
               (not (inputting-buffer-empty-p s)))
          (setf (inputting-buffer s)
                (senn.buffer:move-cursor-pos (inputting-buffer s) -1))
-         (list s (inputting->editing-view +IRV-TO-PROCESS+ s)))
+         (list s (inputting->editing-view +IRV-DO-NOTHING+ s)))
 
         ((and (senn.fcitx.transit.keys:right-p key)
               (not (inputting-buffer-empty-p s)))
          (setf (inputting-buffer s)
                (senn.buffer:move-cursor-pos (inputting-buffer s) +1))
-         (list s (inputting->editing-view +IRV-TO-PROCESS+ s)))
+         (list s (inputting->editing-view +IRV-DO-NOTHING+ s)))
 
         ((inputting-buffer-empty-p s)
          ;; バッファが空の状態での、上下左右の矢印キー対応
