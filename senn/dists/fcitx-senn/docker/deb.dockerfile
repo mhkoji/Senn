@@ -1,8 +1,7 @@
 FROM debian:stretch
 
-RUN apt update
-
-RUN apt install -y \
+RUN apt update && apt install -y \
+    wget \
     build-essential \
     cmake \
     sbcl \
@@ -13,8 +12,6 @@ RUN mkdir \
     /build \
     /output \
     /output-build
-
-RUN apt install -y wget
 
 RUN cd /build && \
     wget https://beta.quicklisp.org/quicklisp.lisp && \
