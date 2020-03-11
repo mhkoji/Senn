@@ -69,6 +69,13 @@ inline void Show(IBusEngine *engine,
     ibus_engine_commit_text(engine, committed_text);
   }
 
+  if (editing->input == "") {
+    // Without this, the layout of the input console breaks
+    // (The cursor is not shown, for example)
+    ibus_engine_hide_preedit_text(engine);
+    return;
+  }
+
   IBusText *input_text = ibus_text_new_from_string(editing->input.c_str());
   ibus_text_append_attribute(
       input_text,
