@@ -64,6 +64,17 @@ Thus, you can uninstall fcitx-senn by the following commands:
 
 ### (TODO) Install via dpkg
 
+#### Docker
+
+```
+% cd <path/to/Hachee>
+% docker build . -t fcitx-deb -f senn/dists/fcitx-senn/docker/deb.dockerfile
+% docker run -v $PWD/output:/output -t fcitx-deb
+% ls output
+fcitx-senn-0.0.1-Linux.deb
+```
+
+#### Command Line
 ```
 % ros dump executable backend/bin/server.ros -o backend/bin/server
 % mkdir frontned/build
