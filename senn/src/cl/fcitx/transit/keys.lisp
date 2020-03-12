@@ -19,9 +19,9 @@
 (defkey backspace-p 65288)
 (defkey enter-p 65293)
 (defkey left-p  65361)
-(defkey down-p 65362)
+(defkey up-p 65362)
 (defkey right-p 65363)
-(defkey up-p 65364)
+(defkey down-p 65364)
 (defkey f7-p 65476)
 (defkey tab-p 65289)
 
