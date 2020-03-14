@@ -197,8 +197,11 @@
 
 (defmethod transit ((ime ime) (s inputting)
                     (key senn.fcitx.transit.keys:key))
-  (cond ((/= (logand (senn.fcitx.transit.keys:key-state key) #b100) 0)
-         ;; Case when a modifier key such as ctrl is pressed.
+  (cond ((/= (logand (senn.fcitx.transit.keys:key-state key) #b1000000) 0)
+         ;; When FcitxKeyState_Super is on. we cannot hanndle.
+         (list s (inputting->editing-view +IRV-TO-PROCESS+ s)))
+        ((/= (logand (senn.fcitx.transit.keys:key-state key) #b100) 0)
+         ;; When FcitxKeyState_Ctr is on.
          (list s (inputting->editing-view
                   (if (buffer-empty-p (inputting-buffer s))
                       ;; Let the OS process the key.
@@ -208,8 +211,6 @@
                       ;; If the key is ctrl-p, the OS may move the current input up without this, which is very annoying.
                       +IRV-DO-NOTHING+)
                   s)))
-        ((= (senn.fcitx.transit.keys:key-state key) #xffffffff)
-         (list s (inputting->editing-view +IRV-TO-PROCESS+ s)))
 
         ((senn.fcitx.transit.keys:tab-p key)
          (let ((inputted-string
