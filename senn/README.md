@@ -22,7 +22,46 @@ Add the code below to your .emacs file.
 
 ## Fcitx
 
-### Install
+### Install via dpkg
+
+#### Build the Deb file
+
+##### Docker
+
+```
+% cd <path/to/Hachee>
+% docker build . -t fcitx-deb -f senn/dists/fcitx-senn/docker/deb.dockerfile
+% docker run -v $PWD/output:/output -t fcitx-deb
+% ls output
+fcitx-senn-0.0.1-Linux.deb
+```
+
+##### Command Line
+
+```
+% cd <path/to/Hachee>/senn/dists/fcitx-senn/
+% ros dump executable backend/bin/server.ros -o backend/bin/server
+% mkdir frontned/build
+% cd frontned/build
+% cmake -DCMAKE_BUILD_TYPE=Release ..
+% make && make package
+```
+
+#### Install
+
+```
+% sudo dpkg -i fcitx-senn-0.0.1-Linux.deb
+```
+
+#### Uninstall
+
+```
+% sudo rm -rf /usr/lib/senn
+% sudo dpkg -P fcitx-senn
+```
+
+### Install from Command Line
+
 ```
 % cd <path/to/Hachee>/dists/fcitx-senn/backend
 % ros dump executable bin/server.ros -o bin/server
@@ -60,37 +99,6 @@ Thus, you can uninstall fcitx-senn by the following commands:
 % sudo rm -rf /usr/share/fcitx/addon/fcitx-senn.conf
 % sudo rm -rf /usr/share/fcitx/inputmethod/senn.conf
 % sudo rm -rf /usr/lib/x86_64-linux-gnu/fcitx/fcitx-senn.so
-```
-
-### (TODO) Install via dpkg
-
-#### Docker
-
-```
-% cd <path/to/Hachee>
-% docker build . -t fcitx-deb -f senn/dists/fcitx-senn/docker/deb.dockerfile
-% docker run -v $PWD/output:/output -t fcitx-deb
-% ls output
-fcitx-senn-0.0.1-Linux.deb
-```
-
-#### Command Line
-```
-% ros dump executable backend/bin/server.ros -o backend/bin/server
-% mkdir frontned/build
-% cd frontned/build
-% cmake -DCMAKE_BUILD_TYPE=Release ..
-% make && make package
-% sudo dpkg -i fcitx-senn-0.0.1-Linux.deb
-
-% fcitx restart
-```
-
-#### Uninstall
-
-```
-% sudo rm -rf /usr/lib/senn
-% sudo dpkg -P fcitx-senn
 ```
 
 ## iBus (TODO)
