@@ -1,7 +1,8 @@
 #!/usr/bin/make -f
 
 include /usr/share/cdbs/1/rules/debhelper.mk
+include /usr/share/cdbs/1/class/autotools.mk
 
-install::
-	install ./engine/ibus-engine-senn /usr/lib/ibus/ibus-engine-senn
-	install -m 644 ./engine/senn.xml /usr/share/ibus/component
+install/ibus-senn::
+	install -pd $(DEB_DESTDIR)/usr/lib/senn
+	install -p ../../fcitx-senn/backend/bin/server $(DEB_DESTDIR)/usr/lib/senn
