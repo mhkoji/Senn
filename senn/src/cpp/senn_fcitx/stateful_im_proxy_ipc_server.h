@@ -6,13 +6,16 @@ namespace senn {
 namespace fcitx {
 
 class StatefulIMProxyIPCServerLauncher
-  : public senn::ipc::ServerLauncher<StatefulIMProxyIPCServerLauncher> {
+  : public senn::ipc::ServerLauncher<StatefulIMProxyIPCServerLauncher>,
+    public senn::ipc::ConnectionFactory {
 public:
   StatefulIMProxyIPCServerLauncher();
 
   void Spawn() const;
 
   senn::ipc::Connection* GetConnection() const;
+
+  senn::ipc::Connection* Create();
 
 private:
   // The server must prevent the double startup by itself.
