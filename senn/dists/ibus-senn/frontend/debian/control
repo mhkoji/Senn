@@ -1,0 +1,8 @@
+Source: ibus-senn
+Maintainer: mhkoji
+Build-Depends: libibus-1.0-dev
+Standards-Version: 0.0.1
+
+Package: ibus-senn
+Architecture: all
+Description: Senn support for iBus
