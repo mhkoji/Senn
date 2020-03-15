@@ -5,6 +5,7 @@
 #include <config.h>
 #endif
 
+#include <cstring>
 #include <iostream>
 
 #include "senn_ibus/engine.h"
@@ -128,10 +129,13 @@ void StartEngine(bool exec_by_daemon) {
 namespace {
 
 gboolean g_option_ibus = FALSE;
+gchar *g_option_backend_init = NULL;
 
 const GOptionEntry g_option_entries[] = {
   { "ibus", 'i', 0, G_OPTION_ARG_NONE, &g_option_ibus,
-    "component is executed by ibus", NULL },
+    "Component is executed by ibus", NULL },
+  { "backend-init", 0, 0, G_OPTION_ARG_STRING, &g_option_backend_init,
+    "How to initialize the communication with the backend server", NULL },
   { NULL },
 };
 
@@ -153,6 +157,9 @@ private:
 } // namespace
 
 int main(gint argc, gchar **argv) {
+  // A global variable used during senn::ibus::engine::Init
+  senn::ibus::engine::g_backend_server_communication_initializer =
+    senn::ibus::engine::ServerLaunchInitializer;
   {
     GOptionContext *context =
       g_option_context_new("- ibus senn engine component");
@@ -163,6 +170,15 @@ int main(gint argc, gchar **argv) {
     if (!g_option_context_parse(context, &argc, &argv, &error)) {
       g_print("Option parsing failed: %s\n", error->message);
       std::exit(1);
+    }
+
+    if (g_option_backend_init) {
+      if (strcmp(g_option_backend_init, "connect") == 0) {
+        senn::ibus::engine::g_backend_server_communication_initializer =
+          senn::ibus::engine::ServerConnectInitializer;
+      }
+
+      g_free(g_option_backend_init);
     }
   }
 

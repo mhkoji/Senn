@@ -7,17 +7,36 @@ namespace senn {
 namespace ibus {
 namespace engine {
 
+// Global variables (TODO: Can we move these to member fields?)
+senn::ipc::ConnectionFactory*
+  (*g_backend_server_communication_initializer)();
+
+inline
+senn::ipc::ConnectionFactory* ServerLaunchInitializer() {
+  senn::fcitx::StatefulIMProxyIPCServerLauncher *launcher =
+    new senn::fcitx::StatefulIMProxyIPCServerLauncher();
+  launcher->Spawn();
+  return launcher;
+}
+
+inline
+senn::ipc::ConnectionFactory* ServerConnectInitializer() {
+  return new senn::ipc::TcpConnectionFactory(5678);
+}
+
+
 struct IBusSennEngine {
   IBusEngine parent;
+  senn::ipc::ConnectionFactory *connection_factory;
   senn::ibus::StatefulIM *im;
 };
-
 
 #define ENGINE(ptr) (reinterpret_cast<IBusSennEngine*>(ptr))
 
 inline void Init(GTypeInstance *p, gpointer klass) {
   IBusSennEngine *engine = ENGINE(p);
   engine->im = NULL;
+  engine->connection_factory = g_backend_server_communication_initializer();
 }
 
 inline gboolean ProcessKeyEvent(
@@ -29,7 +48,7 @@ inline gboolean ProcessKeyEvent(
 
   if (!engine->im) {
     engine->im = senn::ibus::StatefulIMProxyIPC::Create(
-        senn::ipc::Connection::ConnectTo(5678));
+        engine->connection_factory->Create());
   }
 
   const bool is_key_up = ((modifiers & IBUS_RELEASE_MASK) != 0);
