@@ -11,7 +11,9 @@ sbcl --noinform \
               :executable t
               :toplevel #'senn.fcitx-senn.backend.bin:main)"
 
-./autogen.sh && make
+./autogen.sh
 
-debuild -us -uc -b && cp ../*.deb /output/
+## Add nostrip because dh_strip removes the sbcl core of the server
+DEB_BUILD_OPTIONS=nostrip debuild -us -uc -b
 
+cp ../*.deb /output/
