@@ -7,9 +7,9 @@ namespace senn {
 namespace ibus {
 namespace engine {
 
-// Global variables (TODO: Can we move these to member fields?)
-senn::ipc::ConnectionFactory*
-  (*g_backend_server_communication_initializer)();
+
+typedef senn::ipc::ConnectionFactory*
+  (*InitCommunicationToBackendServer)();
 
 inline
 senn::ipc::ConnectionFactory* ServerLaunchInitializer() {
@@ -24,19 +24,27 @@ senn::ipc::ConnectionFactory* ServerConnectInitializer() {
   return new senn::ipc::TcpConnectionFactory(5678);
 }
 
+struct EngineClass {
+  IBusEngineClass parent;
+  InitCommunicationToBackendServer init_comm_fn;
+};
 
-struct IBusSennEngine {
+struct Engine {
   IBusEngine parent;
   senn::ipc::ConnectionFactory *connection_factory;
   senn::ibus::StatefulIM *im;
 };
 
-#define ENGINE(ptr) (reinterpret_cast<IBusSennEngine*>(ptr))
+
+#define ENGINE(ptr) (reinterpret_cast<Engine*>(ptr))
 
 inline void Init(GTypeInstance *p, gpointer klass) {
-  IBusSennEngine *engine = ENGINE(p);
+  Engine *engine = ENGINE(p);
+  EngineClass *engine_class = G_TYPE_CHECK_CLASS_CAST(klass,
+                                                      IBUS_TYPE_ENGINE,
+                                                      EngineClass);
   engine->im = NULL;
-  engine->connection_factory = g_backend_server_communication_initializer();
+  engine->connection_factory = engine_class->init_comm_fn();
 }
 
 inline gboolean ProcessKeyEvent(
@@ -44,7 +52,7 @@ inline gboolean ProcessKeyEvent(
     guint keyval,
     guint keycode,
     guint modifiers) {
-  IBusSennEngine *engine = ENGINE(p);
+  Engine *engine = ENGINE(p);
 
   if (!engine->im) {
     engine->im = senn::ibus::StatefulIMProxyIPC::Create(

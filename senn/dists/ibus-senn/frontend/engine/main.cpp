@@ -13,11 +13,9 @@
 
 namespace {
 
-struct IBusSennEngineClass {
-  IBusEngineClass parent;
-};
-
 IBusEngineClass *g_parent_class = NULL;
+
+senn::ibus::engine::InitCommunicationToBackendServer g_init_comm_fn = NULL;
 
 GObject *SennEngineClassConstructor(
     GType type,
@@ -34,8 +32,13 @@ void SennEngineClassDestroy(IBusObject *engine) {
 
 void SennEngineClassInit(gpointer klass, gpointer class_data) {
   IBusEngineClass *engine_class = IBUS_ENGINE_CLASS(klass);
-
   engine_class->process_key_event = senn::ibus::engine::ProcessKeyEvent;
+
+  senn::ibus::engine::EngineClass *senn_engine_class =
+    G_TYPE_CHECK_CLASS_CAST(klass,
+                            IBUS_TYPE_ENGINE,
+                            senn::ibus::engine::EngineClass);
+  senn_engine_class->init_comm_fn = g_init_comm_fn;
 
   g_parent_class = reinterpret_cast<IBusEngineClass*>(
       g_type_class_peek_parent(klass));
@@ -51,13 +54,13 @@ GType GetType() {
   static GType type = 0;
 
   static const GTypeInfo type_info = {
-    sizeof(IBusSennEngineClass),
+    sizeof(senn::ibus::engine::EngineClass),
     NULL,
     NULL,
     SennEngineClassInit,
     NULL,
     NULL,
-    sizeof(senn::ibus::engine::IBusSennEngine),
+    sizeof(senn::ibus::engine::Engine),
     0,
     senn::ibus::engine::Init,
   };
@@ -158,8 +161,7 @@ private:
 
 int main(gint argc, gchar **argv) {
   // A global variable used during senn::ibus::engine::Init
-  senn::ibus::engine::g_backend_server_communication_initializer =
-    senn::ibus::engine::ServerLaunchInitializer;
+  g_init_comm_fn = senn::ibus::engine::ServerLaunchInitializer;
   {
     GOptionContext *context =
       g_option_context_new("- ibus senn engine component");
@@ -174,8 +176,7 @@ int main(gint argc, gchar **argv) {
 
     if (g_option_backend_init) {
       if (strcmp(g_option_backend_init, "connect") == 0) {
-        senn::ibus::engine::g_backend_server_communication_initializer =
-          senn::ibus::engine::ServerConnectInitializer;
+        g_init_comm_fn = senn::ibus::engine::ServerConnectInitializer;
       }
 
       g_free(g_option_backend_init);
