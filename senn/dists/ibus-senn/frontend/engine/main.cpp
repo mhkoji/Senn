@@ -34,12 +34,6 @@ void SennEngineClassInit(gpointer klass, gpointer class_data) {
   IBusEngineClass *engine_class = IBUS_ENGINE_CLASS(klass);
   engine_class->process_key_event = senn::ibus::engine::ProcessKeyEvent;
 
-  senn::ibus::engine::EngineClass *senn_engine_class =
-    G_TYPE_CHECK_CLASS_CAST(klass,
-                            IBUS_TYPE_ENGINE,
-                            senn::ibus::engine::EngineClass);
-  senn_engine_class->init_comm_fn = g_init_comm_fn;
-
   g_parent_class = reinterpret_cast<IBusEngineClass*>(
       g_type_class_peek_parent(klass));
 
@@ -48,6 +42,13 @@ void SennEngineClassInit(gpointer klass, gpointer class_data) {
 
   IBusObjectClass *ibus_object_class = IBUS_OBJECT_CLASS(klass);
   ibus_object_class->destroy = SennEngineClassDestroy;
+
+  // Senn-related initialization
+  senn::ibus::engine::EngineClass *senn_engine_class =
+    G_TYPE_CHECK_CLASS_CAST(klass,
+                            IBUS_TYPE_ENGINE,
+                            senn::ibus::engine::EngineClass);
+  senn_engine_class->init_comm_fn = g_init_comm_fn;
 }
 
 GType GetType() {
