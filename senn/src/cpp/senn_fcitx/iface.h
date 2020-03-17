@@ -17,12 +17,19 @@ typedef struct _FcitxSennIM {
 } FcitxSennIM;
 
 
-inline FcitxSennIM *SetupIM(FcitxInstance *fcitx) {
+inline FcitxSennIM *SetupIM(FcitxInstance *fcitx,
+                            const std::string &server_program_path) {
   FcitxSennIM *senn = (FcitxSennIM*) fcitx_utils_malloc0(sizeof(FcitxSennIM));
   senn->fcitx = fcitx;
-  senn->im = nullptr;
-  senn->launcher = new senn::fcitx::StatefulIMProxyIPCServerLauncher();
+
+  senn->launcher = new senn::fcitx::StatefulIMProxyIPCServerLauncher(
+      server_program_path);
   senn->launcher->Spawn();
+
+  senn->im = new senn::fcitx::StatefulIMProxyIPC(
+    std::unique_ptr<senn::ipc::RequesterInterface>(
+      new senn::fcitx::ReconnectableStatefulIMRequester(senn->launcher)));
+
   return senn;
 }
 
@@ -31,6 +38,7 @@ inline void DestoryIM(void *arg) {
   if (senn->im) {
     delete senn->im;
   }
+  delete senn->launcher;
   free(senn);
 }
 
@@ -80,10 +88,6 @@ inline INPUT_RETURN_VALUE DoInput(void *arg,
   uint32_t keycode = FcitxInputStateGetKeyCode(input);
   uint32_t state = FcitxInputStateGetKeyState(input);
   // std::cout << sym << " " << keycode << " " << state << std::endl;
-
-  if (!senn->im) {
-    senn->im = senn::fcitx::StatefulIMProxyIPC::Create(senn->launcher);
-  }
 
   return senn->im->Transit(sym, keycode, state,
     [&](const senn::fcitx::views::Converting *view) {

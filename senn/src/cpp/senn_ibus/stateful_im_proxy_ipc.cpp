@@ -41,22 +41,13 @@ StatefulIMProxyIPC::StatefulIMProxyIPC(
   : connection_(conn)  {
 }
 
-
 bool
 StatefulIMProxyIPC::Transit(
     unsigned int sym, unsigned int  keycode, unsigned int state,
     std::function<void(const senn::fcitx::views::Converting*)> on_converting,
     std::function<void(const senn::fcitx::views::Editing*)> on_editing) {
-
   std::string response = "";
-  {
-    std::string request = MakeRequest(sym, keycode, state);
-    connection_->Write(request);
-    if (!(connection_)->ReadLine(1000, &response)) {
-      std::cerr << "Failed to request" << std::endl;
-      std::exit(1);
-    }
-  }
+  requester_->Request(MakeRequest(sym, keycode, state), &response);
 
   std::istringstream iss(response);
   std::string input_return_value, type;

@@ -20,7 +20,8 @@ static void* FcitxSennCreate(FcitxInstance *fcitx) {
   iface.DoReleaseInput = senn::fcitx::iface::DoReleaseInput;
   iface.ReloadConfig = senn::fcitx::iface::ReloadConfig;
 
-  void *fcitx_im = senn::fcitx::iface::SetupIM(fcitx);
+  void *fcitx_im = senn::fcitx::iface::SetupIM(fcitx,
+                                               "/usr/lib/senn/server");
   FcitxInstanceRegisterIMv2(
       fcitx,
       fcitx_im,

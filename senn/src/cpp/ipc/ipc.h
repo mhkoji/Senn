@@ -70,6 +70,8 @@ public:
     return self()->GetConnection();
   }
 
+  virtual Connection* GetConnection() const = 0;
+
 private:
   const ConcreteDerived* self() const {
     return static_cast<const ConcreteDerived*>(this);

@@ -38,26 +38,21 @@ std::string MakeRequest(FcitxKeySym sym,
 
 
 StatefulIMProxyIPC::StatefulIMProxyIPC(
-    senn::ipc::Connection* conn,
-    senn::fcitx::StatefulIMProxyIPCServerLauncher* launcher)
-  : connection_(conn),
-    launcher_(launcher) {
+    std::unique_ptr<senn::ipc::RequesterInterface> requester)
+  : requester_(std::move(requester)) {
 }
 
+StatefulIMProxyIPC::~StatefulIMProxyIPC() {
+  requester_.reset();
+}
 
 INPUT_RETURN_VALUE
 StatefulIMProxyIPC::Transit(
     FcitxKeySym sym, uint32_t keycode, uint32_t state,
     std::function<void(const senn::fcitx::views::Converting*)> on_converting,
     std::function<void(const senn::fcitx::views::Editing*)> on_editing) {
-
   std::string response = "";
-  {
-    std::string request = MakeRequest(sym, keycode, state);
-    (new senn::ipc::ReconnectableServerRequest
-      <StatefulIMProxyIPCServerLauncher>(launcher_, &connection_))
-      ->Execute(request, &response);
-  }
+  requester_->Request(MakeRequest(sym, keycode, state), &response);
 
   std::istringstream iss(response);
   std::string input_return_value, type;
@@ -81,19 +76,6 @@ StatefulIMProxyIPC::Transit(
   }
 
   return ParseInputReturnValue(input_return_value);
-}
-
-StatefulIMProxyIPC* StatefulIMProxyIPC::Create(
-    senn::fcitx::StatefulIMProxyIPCServerLauncher *launcher) {
-  return new StatefulIMProxyIPC(launcher->GetConnection(), launcher);
-}
-
-
-StatefulIMProxyIPC::~StatefulIMProxyIPC() {
-  if (connection_) {
-    connection_->Close();
-    delete connection_;
-  }
 }
 
 } // fcitx

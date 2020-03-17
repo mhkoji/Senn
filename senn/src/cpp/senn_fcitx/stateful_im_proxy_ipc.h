@@ -1,4 +1,7 @@
 #pragma once
+#include <memory>
+#include "ipc/ipc.h"
+#include "ipc/request.h"
 #include "stateful_im.h"
 #include "stateful_im_proxy_ipc_server.h"
 
@@ -7,6 +10,7 @@ namespace fcitx {
 
 class StatefulIMProxyIPC : public StatefulIM {
 public:
+  StatefulIMProxyIPC(std::unique_ptr<senn::ipc::RequesterInterface>);
   ~StatefulIMProxyIPC();
 
   INPUT_RETURN_VALUE Transit(
@@ -15,18 +19,8 @@ public:
       std::function<void(const senn::fcitx::views::Editing*)>);
 
 private:
-  StatefulIMProxyIPC(senn::ipc::Connection*,
-                     senn::fcitx::StatefulIMProxyIPCServerLauncher*);
-
-  senn::ipc::Connection *connection_;
-
-  const StatefulIMProxyIPCServerLauncher *launcher_;
-
-public:
-  static StatefulIMProxyIPC* Create(
-      senn::fcitx::StatefulIMProxyIPCServerLauncher*);
+  std::unique_ptr<senn::ipc::RequesterInterface> requester_;
 };
-
 
 } // fcitx
 } // senn
