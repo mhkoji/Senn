@@ -25,6 +25,9 @@
               (subseq words 0 (min 10 (length words)))))))
 
 (defun load-prefix-dictionary (user-homedir-pathname)
-  (with-open-file (s (merge-pathnames ".senn/prefix-dictionary.txt"
-                                      user-homedir-pathname))
-    (senn.prefix-dictionary:load-dictionary s)))
+  (let ((path (merge-pathnames ".senn/prefix-dictionary.txt"
+                               user-homedir-pathname)))
+    (if (cl-fad:file-exists-p path)
+        (with-open-file (s path)
+          (senn.prefix-dictionary:load-dictionary s))
+        (senn.prefix-dictionary:make-dictionary))))

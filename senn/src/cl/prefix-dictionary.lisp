@@ -4,6 +4,7 @@
            :dictionary
            :save-dictionary
            :load-dictionary
+           :make-dictionary
            :build-dictionary
            :lookup))
 (in-package :senn.prefix-dictionary)
