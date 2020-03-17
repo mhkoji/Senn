@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -eu
+
 sbcl --noinform \
      --no-userinit \
      --no-sysinit \

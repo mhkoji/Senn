@@ -36,4 +36,4 @@ RUN cd /root/quicklisp/local-projects && \
          --eval "(ql:quickload :senn-fcitx)"
 
 WORKDIR /app/senn/dists/ibus-senn/frontend/
-CMD ["/app/senn/dists/ibus-senn/docker/deb.sh"]
+ENTRYPOINT ["/app/senn/dists/ibus-senn/docker/deb.sh"]
