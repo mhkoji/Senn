@@ -15,6 +15,8 @@ typedef struct _FcitxSennIM {
   FcitxInstance *fcitx;
   senn::fcitx::StatefulIM *im;
   senn::fcitx::StatefulIMProxyIPCServerLauncher *launcher;
+
+  FcitxUIMenu menu;
 } FcitxSennIM;
 
 } // namespace
@@ -30,6 +32,15 @@ void ResetIM(void *arg) {
   editing_view.input = "";
   editing_view.cursor_pos = 0;
   senn::fcitx::ui::Show(instance, &editing_view);
+
+  {
+    FcitxIM *im = FcitxInstanceGetCurrentIM(instance);
+    if (im && strcmp(im->uniqueName, "senn") == 0) {
+      senn::fcitx::ui::SetMenuVisibility(instance, true);
+    } else {
+      senn::fcitx::ui::SetMenuVisibility(instance, false);
+    }
+  }
 }
 
 
@@ -118,6 +129,10 @@ static void* FcitxSennCreate(FcitxInstance *fcitx) {
   senn_im->im = new senn::fcitx::StatefulIMProxyIPC(
     std::unique_ptr<senn::ipc::RequesterInterface>(
       new senn::fcitx::ReconnectableStatefulIMRequester(senn_im->launcher)));
+
+  // Menu
+  senn::fcitx::ui::SetupMenu(fcitx, &senn_im->menu);
+  senn::fcitx::ui::SetMenuVisibility(fcitx, false);
 
   // Register
   FcitxIMIFace iface;

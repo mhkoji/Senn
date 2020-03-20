@@ -128,6 +128,34 @@ void Show(FcitxInstance *instance,
   FcitxUIUpdateInputWindow(instance);
 }
 
+namespace {
+
+void UpdateMenu(FcitxUIMenu *menu) {
+}
+
+
+boolean MenuAction(FcitxUIMenu *menu, int index) {
+  return true;
+}
+
+} // namespace
+
+void SetupMenu(FcitxInstance *fcitx, FcitxUIMenu *menu) {
+  FcitxMenuInit(menu);
+  menu->name = strdup("メニュー");
+  menu->candStatusBind = strdup("senn-menu");
+  menu->UpdateMenu = UpdateMenu;
+  menu->MenuAction = MenuAction;
+  menu->priv = NULL;
+  menu->isSubMenu = false;
+  FcitxMenuAddMenuItem(menu, "Senn について", MENUTYPE_SIMPLE, NULL);
+  FcitxUIRegisterMenu(fcitx, menu);
+}
+
+void SetMenuVisibility(FcitxInstance *fcitx, boolean vis) {
+  FcitxUISetStatusVisable(fcitx, "senn-menu", vis);
+}
+
 } // ui
 } // fcitx
 } // senn

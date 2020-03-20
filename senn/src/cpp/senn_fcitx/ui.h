@@ -1,5 +1,6 @@
 #pragma once
 #include <fcitx/instance.h>
+#include <fcitx/ui.h>
 #include <vector>
 #include <string>
 
@@ -12,6 +13,10 @@ namespace ui {
 void Show(FcitxInstance*, const senn::fcitx::views::Converting*);
 
 void Show(FcitxInstance*, const senn::fcitx::views::Editing*);
+
+void SetupMenu(FcitxInstance*, FcitxUIMenu *);
+
+void SetMenuVisibility(FcitxInstance *fcitx, boolean);
 
 } // ui
 } // fcitx
