@@ -130,6 +130,10 @@ void Show(FcitxInstance *instance,
 
 namespace {
 
+const char* GetMenuIconName(void* arg) {
+  return "";
+}
+
 void UpdateMenu(FcitxUIMenu *menu) {
 }
 
@@ -141,6 +145,15 @@ boolean MenuAction(FcitxUIMenu *menu, int index) {
 } // namespace
 
 void SetupMenu(FcitxInstance *fcitx, FcitxUIMenu *menu) {
+  FcitxUIRegisterComplexStatus(
+      fcitx,
+      NULL,
+      "senn-menu",
+      "メニュー",
+      "メニュー",
+      NULL,
+      GetMenuIconName);
+
   FcitxMenuInit(menu);
   menu->name = strdup("メニュー");
   menu->candStatusBind = strdup("senn-menu");
@@ -150,6 +163,15 @@ void SetupMenu(FcitxInstance *fcitx, FcitxUIMenu *menu) {
   menu->isSubMenu = false;
   FcitxMenuAddMenuItem(menu, "Senn について", MENUTYPE_SIMPLE, NULL);
   FcitxUIRegisterMenu(fcitx, menu);
+
+  SetMenuVisibility(fcitx, false);
+}
+
+void DestoryMenu(FcitxInstance *fcitx, FcitxUIMenu *menu) {
+  FcitxUIUnRegisterMenu(fcitx, menu);
+  fcitx_utils_free(menu->name);
+  fcitx_utils_free(menu->candStatusBind);
+  FcitxMenuFinalize(menu);
 }
 
 void SetMenuVisibility(FcitxInstance *fcitx, boolean vis) {

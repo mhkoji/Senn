@@ -2,6 +2,7 @@
 // #include <iostream>
 
 #include <fcitx/ime.h>
+#include <fcitx/hook.h>
 #include <fcitx/instance.h>
 #include <fcitx/context.h>
 
@@ -19,10 +20,24 @@ typedef struct _FcitxSennIM {
   FcitxUIMenu menu;
 } FcitxSennIM;
 
+
 } // namespace
 
 namespace senn {
 namespace fcitx_senn_im {
+
+static void ResetInput(void *arg) {
+  FcitxSennIM *senn = (FcitxSennIM *)arg;
+  FcitxInstance *instance = senn->fcitx;
+
+  FcitxIM *im = FcitxInstanceGetCurrentIM(instance);
+  if (im && strcmp(im->uniqueName, "senn") == 0) {
+    senn::fcitx::ui::SetMenuVisibility(instance, true);
+  } else {
+    senn::fcitx::ui::SetMenuVisibility(instance, false);
+  }
+}
+
 
 void ResetIM(void *arg) {
   FcitxSennIM *senn = (FcitxSennIM *)arg;
@@ -32,32 +47,23 @@ void ResetIM(void *arg) {
   editing_view.input = "";
   editing_view.cursor_pos = 0;
   senn::fcitx::ui::Show(instance, &editing_view);
-
-  {
-    FcitxIM *im = FcitxInstanceGetCurrentIM(instance);
-    if (im && strcmp(im->uniqueName, "senn") == 0) {
-      senn::fcitx::ui::SetMenuVisibility(instance, true);
-    } else {
-      senn::fcitx::ui::SetMenuVisibility(instance, false);
-    }
-  }
 }
 
 
 boolean Init(void *arg) {
-  FcitxSennIM *senn = (FcitxSennIM *)arg;
+  FcitxSennIM *senn_im = (FcitxSennIM *)arg;
 
   boolean flag = true;
-  FcitxInstanceSetContext(senn->fcitx,
+  FcitxInstanceSetContext(senn_im->fcitx,
                           CONTEXT_IM_KEYBOARD_LAYOUT,
                           "jp");
-  FcitxInstanceSetContext(senn->fcitx,
+  FcitxInstanceSetContext(senn_im->fcitx,
                           CONTEXT_DISABLE_AUTO_FIRST_CANDIDATE_HIGHTLIGHT,
                           &flag);
-  FcitxInstanceSetContext(senn->fcitx,
+  FcitxInstanceSetContext(senn_im->fcitx,
                           CONTEXT_DISABLE_AUTOENG,
                           &flag);
-  FcitxInstanceSetContext(senn->fcitx,
+  FcitxInstanceSetContext(senn_im->fcitx,
                           CONTEXT_DISABLE_QUICKPHRASE,
                           &flag);
 
@@ -106,10 +112,14 @@ void ReloadConfig(void *arg) {
 
 
 static void FcitxSennDestroy(void *arg) {
-  FcitxSennIM *senn = (FcitxSennIM *)arg;
-  delete senn->im;
-  delete senn->launcher;
-  free(senn);
+  FcitxSennIM *senn_im = (FcitxSennIM *)arg;
+
+  delete senn_im->im;
+  delete senn_im->launcher;
+
+  senn::fcitx::ui::DestoryMenu(senn_im->fcitx, &senn_im->menu);
+
+  free(senn_im);
 
   // std::cout << "senn-fcitx: destroyed:"
   //           << " [" << std::hex << arg << "]"
@@ -130,9 +140,12 @@ static void* FcitxSennCreate(FcitxInstance *fcitx) {
     std::unique_ptr<senn::ipc::RequesterInterface>(
       new senn::fcitx::ReconnectableStatefulIMRequester(senn_im->launcher)));
 
-  // Menu
-  senn::fcitx::ui::SetupMenu(fcitx, &senn_im->menu);
-  senn::fcitx::ui::SetMenuVisibility(fcitx, false);
+  senn::fcitx::ui::SetupMenu(senn_im->fcitx, &senn_im->menu);
+
+  FcitxIMEventHook hk;
+  hk.arg = senn_im;
+  hk.func = senn::fcitx_senn_im::ResetInput;
+  FcitxInstanceRegisterResetInputHook(fcitx, hk);
 
   // Register
   FcitxIMIFace iface;

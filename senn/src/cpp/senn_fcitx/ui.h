@@ -16,7 +16,9 @@ void Show(FcitxInstance*, const senn::fcitx::views::Editing*);
 
 void SetupMenu(FcitxInstance*, FcitxUIMenu *);
 
-void SetMenuVisibility(FcitxInstance *fcitx, boolean);
+void DestoryMenu(FcitxInstance*, FcitxUIMenu*);
+
+void SetMenuVisibility(FcitxInstance*, boolean);
 
 } // ui
 } // fcitx
