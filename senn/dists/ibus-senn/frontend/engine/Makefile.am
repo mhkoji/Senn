@@ -38,6 +38,7 @@ libexec_PROGRAMS = \
 ibus_engine_senn_SOURCES = \
 	main.cpp \
   ../../../../src/cpp/ipc/ipc.cpp \
+  ../../../../src/cpp/ipc/request.cpp \
   ../../../../src/cpp/senn_ibus/stateful_im_proxy_ipc.cpp \
   ../../../../src/cpp/senn_fcitx/stateful_im_proxy_ipc_server.cpp \
 	$(NULL)

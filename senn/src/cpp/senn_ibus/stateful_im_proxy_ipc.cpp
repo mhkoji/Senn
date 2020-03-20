@@ -37,8 +37,8 @@ std::string MakeRequest(unsigned int sym,
 
 
 StatefulIMProxyIPC::StatefulIMProxyIPC(
-    senn::ipc::Connection* conn)
-  : connection_(conn)  {
+    std::unique_ptr<senn::ipc::RequesterInterface> requester)
+  : requester_(std::move(requester)) {
 }
 
 bool
@@ -73,17 +73,8 @@ StatefulIMProxyIPC::Transit(
   return ParseInputReturnValue(input_return_value);
 }
 
-StatefulIMProxyIPC* StatefulIMProxyIPC::Create(
-    senn::ipc::Connection* conn) {
-  return new StatefulIMProxyIPC(conn);
-}
-
-
 StatefulIMProxyIPC::~StatefulIMProxyIPC() {
-  if (connection_) {
-    connection_->Close();
-    delete connection_;
-  }
+  requester_.reset();
 }
 
 } // ibus

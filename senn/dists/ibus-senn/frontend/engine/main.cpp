@@ -15,7 +15,7 @@ namespace {
 
 IBusEngineClass *g_parent_class = NULL;
 
-senn::ibus::engine::InitCommunicationToBackendServer g_init_comm_fn = NULL;
+senn::ibus::engine::CreatBackendCommunication g_create_backend_comm_fn = NULL;
 
 GObject *SennEngineClassConstructor(
     GType type,
@@ -48,7 +48,7 @@ void SennEngineClassInit(gpointer klass, gpointer class_data) {
     G_TYPE_CHECK_CLASS_CAST(klass,
                             IBUS_TYPE_ENGINE,
                             senn::ibus::engine::EngineClass);
-  senn_engine_class->init_comm_fn = g_init_comm_fn;
+  senn_engine_class->backend_comm = g_create_backend_comm_fn();
 }
 
 GType GetType() {
@@ -138,8 +138,8 @@ gchar *g_option_backend_init = NULL;
 const GOptionEntry g_option_entries[] = {
   { "ibus", 'i', 0, G_OPTION_ARG_NONE, &g_option_ibus,
     "Component is executed by ibus", NULL },
-  { "backend-init", 0, 0, G_OPTION_ARG_STRING, &g_option_backend_init,
-    "How to initialize the communication with the backend server", NULL },
+  { "backend-comm", 0, 0, G_OPTION_ARG_STRING, &g_option_backend_init,
+    "Specify a way to communicate with the backend server", NULL },
   { NULL },
 };
 
@@ -162,7 +162,8 @@ private:
 
 int main(gint argc, gchar **argv) {
   // A global variable used during senn::ibus::engine::Init
-  g_init_comm_fn = senn::ibus::engine::ServerLaunchInitializer;
+  g_create_backend_comm_fn =
+    senn::ibus::engine::BackendCommunicationLaunch::Create;
   {
     GOptionContext *context =
       g_option_context_new("- ibus senn engine component");
@@ -177,7 +178,8 @@ int main(gint argc, gchar **argv) {
 
     if (g_option_backend_init) {
       if (strcmp(g_option_backend_init, "connect") == 0) {
-        g_init_comm_fn = senn::ibus::engine::ServerConnectInitializer;
+        g_create_backend_comm_fn =
+          senn::ibus::engine::BackendCommunicationConnect::Create;
       }
 
       g_free(g_option_backend_init);

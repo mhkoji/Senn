@@ -1,5 +1,6 @@
 #pragma once
-#include "senn_fcitx/stateful_im_proxy_ipc_server.h"
+#include "ipc/ipc.h"
+#include "ipc/request.h"
 #include "stateful_im.h"
 
 namespace senn {
@@ -7,6 +8,7 @@ namespace ibus {
 
 class StatefulIMProxyIPC : public StatefulIM {
 public:
+  StatefulIMProxyIPC(std::unique_ptr<senn::ipc::RequesterInterface>);
   ~StatefulIMProxyIPC();
 
   bool Transit(
@@ -15,12 +17,7 @@ public:
       std::function<void(const senn::fcitx::views::Editing*)>);
 
 private:
-  StatefulIMProxyIPC(senn::ipc::Connection*);
-
-  senn::ipc::Connection *connection_;
-
-public:
-  static StatefulIMProxyIPC* Create(senn::ipc::Connection*);
+  std::unique_ptr<senn::ipc::RequesterInterface> requester_;
 };
 
 
