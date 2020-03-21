@@ -1,3 +1,5 @@
+#include <spawn.h>
+
 #include <fcitx/candidate.h>
 #include <fcitx/instance.h>
 #include <string>
@@ -130,6 +132,16 @@ void Show(FcitxInstance *instance,
 
 namespace {
 
+bool Spawn(const std::string &path_string) {
+  pid_t pid;
+  char path[path_string.size()+1] = {'\0'};
+  path_string.copy(path, path_string.size());
+  char *argv[] = {path, NULL};
+  const int status = posix_spawn(
+      &pid, path_string.c_str(), NULL, NULL, argv, environ);
+  return status == 0;
+}
+
 const char* GetMenuIconName(void* arg) {
   return "";
 }
@@ -139,7 +151,7 @@ void UpdateMenu(FcitxUIMenu *menu) {
 
 
 boolean MenuAction(FcitxUIMenu *menu, int index) {
-  return true;
+  return Spawn("/usr/lib/senn/menu");
 }
 
 } // namespace

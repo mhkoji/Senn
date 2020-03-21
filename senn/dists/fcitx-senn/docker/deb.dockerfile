@@ -1,11 +1,17 @@
 FROM ubuntu:18.04
 
 RUN apt update && apt install -y \
+    ## for backend
+    sbcl \
     wget \
+    ## for frontend
     build-essential \
     cmake \
-    sbcl \
-    fcitx-libs-dev
+    fcitx-libs-dev \
+    ## for menu
+    libqt4-dev \
+    libsmokeqtgui4-3 \
+    libsmokeqt4-dev
 
 RUN mkdir \
     /app \
@@ -32,7 +38,7 @@ RUN cd /root/quicklisp/local-projects && \
          --no-sysinit \
          --non-interactive \
          --load "/root/quicklisp/setup.lisp" \
-         --eval "(ql:quickload :senn-fcitx)"
+         --eval "(ql:quickload '(:senn-fcitx :senn-gui))"
 
 WORKDIR /output-build
 ENTRYPOINT ["/app/senn/dists/fcitx-senn/docker/deb.sh"]
