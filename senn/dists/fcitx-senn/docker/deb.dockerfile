@@ -7,11 +7,7 @@ RUN apt update && apt install -y \
     ## for frontend
     build-essential \
     cmake \
-    fcitx-libs-dev \
-    ## for menu
-    libqt4-dev \
-    libsmokeqtgui4-3 \
-    libsmokeqt4-dev
+    fcitx-libs-dev
 
 RUN mkdir \
     /app \
@@ -38,7 +34,7 @@ RUN cd /root/quicklisp/local-projects && \
          --no-sysinit \
          --non-interactive \
          --load "/root/quicklisp/setup.lisp" \
-         --eval "(ql:quickload '(:senn-fcitx :senn-gui))"
+         --eval "(ql:quickload :senn-fcitx)"
 
 WORKDIR /output-build
 ENTRYPOINT ["/app/senn/dists/fcitx-senn/docker/deb.sh"]
