@@ -101,9 +101,23 @@ Thus, you can uninstall fcitx-senn by the following commands:
 % sudo rm -rf /usr/lib/x86_64-linux-gnu/fcitx/fcitx-senn.so
 ```
 
-## iBus (TODO)
+## iBus
 
-### Install
+### Install via dpkg
+
+#### Build the Deb file
+
+##### Docker
+
+```
+% cd <path/to/Hachee>
+% docker build . -t ibus-deb -f senn/dists/ibus-senn/docker/deb.dockerfile
+% docker run -v $PWD/output:/output -t ibus-deb
+% ls output
+ibus-senn_0.0.1_all.deb
+```
+
+### Install from Command Line
 
 ```
 % /usr/lib/senn/server
