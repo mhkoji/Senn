@@ -11,9 +11,15 @@
 
 (defmethod initialize-instance :after ((dialog dialog) &key)
   (qt:new dialog)
-  (#_setFixedSize dialog 640 300)
+  (#_setFixedSize dialog (floor (* 200 1.1618 2)) 200)
   (#_setWindowTitle dialog "About Senn")
-  (#_move (#_new QLabel "Senn is an input method editor for the Japanese language." dialog) 20 20))
+  (let ((name (#_new QLabel "Senn" dialog)))
+    (let ((font (#_font name)))
+      (#_setPointSize font 36)
+      (#_setBold font t)
+      (#_setFont name font))
+    (#_move name 20 20))
+  (#_move (#_new QLabel "Senn is an input method editor for the Japanese language." dialog) 20 100))
 
 (defun show ()
   (qt:with-main-window (dialog (make-instance 'dialog))))
