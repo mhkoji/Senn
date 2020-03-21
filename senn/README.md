@@ -56,7 +56,6 @@ fcitx-senn-0.0.1-Linux.deb
 #### Uninstall
 
 ```
-% sudo rm -rf /usr/lib/senn
 % sudo dpkg -P fcitx-senn
 ```
 
@@ -69,7 +68,7 @@ fcitx-senn-0.0.1-Linux.deb
 % sudo mkdir /usr/lib/senn
 % sudo mv bin/server /usr/lib/senn
 
-% sudo apt install fcitx-libs-dev
+% sudo apt install -y fcitx-libs-dev
 % mkdir <path/to/Hachee>/senn/dists/fcitx-senn/frontend/build
 % cd <path/to/Hachee>/senn/dists/fcitx-senn/frontend/build
 % sudo make install
