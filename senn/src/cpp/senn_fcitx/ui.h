@@ -14,7 +14,13 @@ void Show(FcitxInstance*, const senn::fcitx::views::Converting*);
 
 void Show(FcitxInstance*, const senn::fcitx::views::Editing*);
 
-void SetupMenu(FcitxInstance*, FcitxUIMenu *);
+
+class MenuHandlerInterface {
+public:
+  virtual boolean OnAbout() = 0;
+};
+
+void SetupMenu(FcitxInstance*, FcitxUIMenu *, MenuHandlerInterface*);
 
 void DestoryMenu(FcitxInstance*, FcitxUIMenu*);
 

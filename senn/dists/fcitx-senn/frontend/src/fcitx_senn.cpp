@@ -1,4 +1,5 @@
 #include <sys/stat.h>
+#include <spawn.h>
 // #include <iostream>
 
 #include <fcitx/ime.h>
@@ -12,12 +13,30 @@
 
 namespace {
 
+bool Spawn(const std::string &path_string) {
+  pid_t pid;
+  char path[path_string.size()+1] = {'\0'};
+  path_string.copy(path, path_string.size());
+  char *argv[] = {path, NULL};
+  const int status = posix_spawn(
+      &pid, path_string.c_str(), NULL, NULL, argv, environ);
+  return status == 0;
+}
+
+class MenuHandler : public senn::fcitx::ui::MenuHandlerInterface {
+public:
+  boolean OnAbout() {
+    return Spawn("/usr/lib/senn/menu");
+  }
+};
+
 typedef struct _FcitxSennIM {
   FcitxInstance *fcitx;
   senn::fcitx::StatefulIM *im;
   senn::fcitx::StatefulIMProxyIPCServerLauncher *launcher;
 
   FcitxUIMenu menu;
+  MenuHandler menu_handler;
 } FcitxSennIM;
 
 
@@ -140,7 +159,9 @@ static void* FcitxSennCreate(FcitxInstance *fcitx) {
     std::unique_ptr<senn::ipc::RequesterInterface>(
       new senn::fcitx::ReconnectableStatefulIMRequester(senn_im->launcher)));
 
-  senn::fcitx::ui::SetupMenu(senn_im->fcitx, &senn_im->menu);
+  senn::fcitx::ui::SetupMenu(senn_im->fcitx,
+                             &senn_im->menu,
+                             &senn_im->menu_handler);
 
   FcitxIMEventHook hk;
   hk.arg = senn_im;

@@ -1,5 +1,3 @@
-#include <spawn.h>
-
 #include <fcitx/candidate.h>
 #include <fcitx/instance.h>
 #include <string>
@@ -132,16 +130,6 @@ void Show(FcitxInstance *instance,
 
 namespace {
 
-bool Spawn(const std::string &path_string) {
-  pid_t pid;
-  char path[path_string.size()+1] = {'\0'};
-  path_string.copy(path, path_string.size());
-  char *argv[] = {path, NULL};
-  const int status = posix_spawn(
-      &pid, path_string.c_str(), NULL, NULL, argv, environ);
-  return status == 0;
-}
-
 const char* GetMenuIconName(void* arg) {
   return "";
 }
@@ -151,12 +139,14 @@ void UpdateMenu(FcitxUIMenu *menu) {
 
 
 boolean MenuAction(FcitxUIMenu *menu, int index) {
-  return Spawn("/usr/lib/senn/menu");
+  return ((MenuHandlerInterface*)menu->priv)->OnAbout();
 }
 
 } // namespace
 
-void SetupMenu(FcitxInstance *fcitx, FcitxUIMenu *menu) {
+void SetupMenu(FcitxInstance *fcitx,
+               FcitxUIMenu *menu,
+               MenuHandlerInterface *menu_handler) {
   FcitxUIRegisterComplexStatus(
       fcitx,
       NULL,
@@ -171,7 +161,7 @@ void SetupMenu(FcitxInstance *fcitx, FcitxUIMenu *menu) {
   menu->candStatusBind = strdup("senn-menu");
   menu->UpdateMenu = UpdateMenu;
   menu->MenuAction = MenuAction;
-  menu->priv = NULL;
+  menu->priv = menu_handler;
   menu->isSubMenu = false;
   FcitxMenuAddMenuItem(menu, "Senn について", MENUTYPE_SIMPLE, NULL);
   FcitxUIRegisterMenu(fcitx, menu);
