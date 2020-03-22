@@ -1,18 +1,3 @@
-## Build the executable file for menu.
-FROM electronuserland/builder:12 as build-menu
-
-RUN mkdir /app \
-          /output
-
-COPY ./senn/menu/about /app
-
-RUN cd /app && \
-    yarn install && \
-    npm run build && \
-    cp ./dist/*.AppImage /output/menu
-
-
-## Build the environment for building a deb package.
 FROM ubuntu:18.04
 
 RUN apt update && apt install -y \
@@ -30,9 +15,6 @@ RUN mkdir \
     /output \
     /output-build
 
-## Deb builder copys the executable menu file here.
-COPY --from=build-menu /output/menu /app/senn/bin/
-
 RUN cd /build && \
     wget https://beta.quicklisp.org/quicklisp.lisp && \
     sbcl --noinform \
@@ -43,7 +25,6 @@ RUN cd /build && \
          --eval "(quicklisp-quickstart:install)"
 
 COPY . /app
-
 RUN cd /root/quicklisp/local-projects && \
     ln -s /app/hachee/ && \
     ln -s /app/senn/ && \
