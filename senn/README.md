@@ -30,6 +30,7 @@ Add the code below to your .emacs file.
 
 ```
 % cd <path/to/Hachee>
+% git submodule update -i
 % docker build . -t fcitx-deb -f senn/dists/fcitx-senn/docker/deb.dockerfile
 % docker run -v $PWD/output:/output -t fcitx-deb
 % ls output

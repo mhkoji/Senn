@@ -28,13 +28,15 @@ COPY . /app
 RUN cd /root/quicklisp/local-projects && \
     ln -s /app/hachee/ && \
     ln -s /app/senn/ && \
+    ## The Updated version of cl-cffi-gtk is required
+    ln -s /app/senn/third-party/cl-cffi-gtk/ && \
     ## Download dependencies by ql:quickload
     sbcl --noinform \
          --no-userinit \
          --no-sysinit \
          --non-interactive \
          --load "/root/quicklisp/setup.lisp" \
-         --eval "(ql:quickload :senn-fcitx)"
+         --eval "(ql:quickload '(:senn-fcitx :senn-gui))"
 
 WORKDIR /output-build
 ENTRYPOINT ["/app/senn/dists/fcitx-senn/docker/deb.sh"]

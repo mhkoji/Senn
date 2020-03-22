@@ -1,0 +1,3 @@
+[submodule "senn/third-party/cl-cffi-gtk"]
+	path = senn/third-party/cl-cffi-gtk
+	url = https://github.com/crategus/cl-cffi-gtk
