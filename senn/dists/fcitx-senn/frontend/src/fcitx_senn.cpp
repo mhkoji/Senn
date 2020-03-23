@@ -32,6 +32,7 @@ public:
 
 typedef struct _FcitxSennIM {
   FcitxInstance *fcitx;
+
   senn::fcitx::StatefulIM *im;
   senn::fcitx::StatefulIMProxyIPCServerLauncher *launcher;
 
@@ -106,7 +107,7 @@ INPUT_RETURN_VALUE DoInput(void *arg,
   uint32_t state = FcitxInputStateGetKeyState(input);
   // std::cout << sym << " " << keycode << " " << state << std::endl;
 
-  return senn->im->Transit(sym, keycode, state,
+  return senn->im->ProcessInput(sym, keycode, state,
     [&](const senn::fcitx::views::Converting *view) {
       senn::fcitx::ui::Show(instance, view);
     },
@@ -152,7 +153,7 @@ static void* FcitxSennCreate(FcitxInstance *fcitx) {
 
   senn_im->fcitx = fcitx;
 
-  // Stateful IM
+  // StatefulIM
   senn_im->launcher = new senn::fcitx::StatefulIMProxyIPCServerLauncher(
       "/usr/lib/senn/server");
   senn_im->launcher->Spawn();

@@ -8,12 +8,12 @@
 
 (defun handle-request (expr state ime client)
   (ecase (expr-op expr)
-    (:transit
-     (let ((key (senn.fcitx.transit.keys:make-key
+    (:process-input
+     (let ((key (senn.fcitx.input-processor.keys:make-key
                  :sym (expr-arg expr "sym")
                  :state (expr-arg expr "state"))))
        (destructuring-bind (new-state view-update)
-           (senn.fcitx.transit:transit ime state key)
+           (senn.fcitx.input-processor:process-input ime state key)
          (senn.fcitx.ipc:send-response client view-update)
          new-state)))))
 
@@ -22,4 +22,4 @@
              (when-let ((expr (senn.fcitx.ipc:read-request client)))
                (let ((new-state (handle-request expr state ime client)))
                  (iter new-state)))))
-    (iter (senn.fcitx.transit:make-initial-state ime))))
+    (iter (senn.fcitx.input-processor:make-initial-state ime))))

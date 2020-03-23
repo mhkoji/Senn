@@ -1,14 +1,17 @@
-(defpackage :senn.fcitx.transit
+;; The input-processor module processes user (keyboard) inputs.
+;; This process is described by state transition that includes:
+;;  - Latin-to-Hiragana conversion
+;;  - Kana-Kanji Conversion
+(defpackage :senn.fcitx.input-processor
   (:use :cl)
-  (:export :transit
+  (:export :process-input
            :make-initial-state
            :+IRV-TO-PROCESS+
            :+IRV-DO-NOTHING+
            :+IRV-FLAG-FORWARD-KEY+))
-(in-package :senn.fcitx.transit)
+(in-package :senn.fcitx.input-processor)
 
-;;; The transit generic function that manipulates states
-(defgeneric transit (ime state key))
+(defgeneric process-input (ime state key))
 
 (defgeneric make-initial-state (ime))
 

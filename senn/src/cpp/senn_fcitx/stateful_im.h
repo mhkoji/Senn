@@ -12,7 +12,7 @@ class StatefulIM {
 public:
   virtual ~StatefulIM() {}
 
-  virtual INPUT_RETURN_VALUE Transit(
+  virtual INPUT_RETURN_VALUE ProcessInput(
       FcitxKeySym, uint32_t, uint32_t,
       std::function<void(const senn::fcitx::views::Converting*)>,
       std::function<void(const senn::fcitx::views::Editing*)>) = 0;

@@ -2,11 +2,11 @@
   :serial t
   :pathname "src/cl/fcitx"
   :components
-  ((:module :transit
-    :pathname "transit"
+  ((:module :input-processor
+    :pathname "input-processor"
     :components
     ((:file "keys")
-     (:file "transit")
+     (:file "input-processor")
      (:file "im/states")
      (:file "im/im")))
 

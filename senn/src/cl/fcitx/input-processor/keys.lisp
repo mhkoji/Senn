@@ -1,11 +1,11 @@
-(defpackage :senn.fcitx.transit.keys
+(defpackage :senn.fcitx.input-processor.keys
   (:use :cl)
   (:export :make-key
            :key
            :key-sym
            :key-state
            :char-p))
-(in-package :senn.fcitx.transit.keys)
+(in-package :senn.fcitx.input-processor.keys)
 
 (defstruct key sym state)
 

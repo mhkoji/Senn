@@ -26,7 +26,7 @@ std::string MakeRequest(FcitxKeySym sym,
                         uint32_t state) {
   std::stringstream ss;
   ss << "{"
-     << "\"op\": \"transit\","
+     << "\"op\": \"process-input\","
      << "\"args\": {" << "\"sym\": " << sym << ","
      << "\"keycode\": " << keycode << ","
      << "\"state\": " << state << "}"
@@ -47,7 +47,7 @@ StatefulIMProxyIPC::~StatefulIMProxyIPC() {
 }
 
 INPUT_RETURN_VALUE
-StatefulIMProxyIPC::Transit(
+StatefulIMProxyIPC::ProcessInput(
     FcitxKeySym sym, uint32_t keycode, uint32_t state,
     std::function<void(const senn::fcitx::views::Converting*)> on_converting,
     std::function<void(const senn::fcitx::views::Editing*)> on_editing) {

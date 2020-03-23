@@ -1,10 +1,10 @@
-(defpackage :senn.fcitx.transit.im
+(defpackage :senn.fcitx.input-processor.im
   (:use :cl
-        :senn.fcitx.transit
-        :senn.fcitx.transit.im.states)
+        :senn.fcitx.input-processor
+        :senn.fcitx.input-processor.im.states)
   (:import-from :senn.im
                 :ime))
-(in-package :senn.fcitx.transit.im)
+(in-package :senn.fcitx.input-processor.im)
 
 ;;; Utilities
 (defun move-segment-form-index! (seg diff ime)
@@ -101,10 +101,10 @@
     (format nil "~A CONVERTING ~A" input-return-value json-string)))
 
 
-;;; Transit
-(defmethod transit ((ime ime) (s katakana)
-                    (key senn.fcitx.transit.keys:key))
-  (cond ((senn.fcitx.transit.keys:enter-p key)
+;;; Process-Input
+(defmethod process-input ((ime ime) (s katakana)
+                          (key senn.fcitx.input-processor.keys:key))
+  (cond ((senn.fcitx.input-processor.keys:enter-p key)
          (let ((inputting-state (make-inputting))
                (committed-string (katakana-input s)))
            (list inputting-state
@@ -114,9 +114,9 @@
         (t
          (list s (katakana->editing-view +IRV-DO-NOTHING+ s)))))
 
-(defmethod transit ((ime ime) (s selecting-from-predictions)
-                    (key senn.fcitx.transit.keys:key))
-  (cond ((senn.fcitx.transit.keys:enter-p key)
+(defmethod process-input ((ime ime) (s selecting-from-predictions)
+                    (key senn.fcitx.input-processor.keys:key))
+  (cond ((senn.fcitx.input-processor.keys:enter-p key)
          (let ((inputting-state (make-inputting))
                (committed-string
                 (selecting-from-predictions-current-input s)))
@@ -124,49 +124,49 @@
                  (inputting->editing-view
                   +IRV-DO-NOTHING+ inputting-state
                   :committed-string committed-string))))
-        ((or (senn.fcitx.transit.keys:tab-p key)
-             (senn.fcitx.transit.keys:down-p key))
+        ((or (senn.fcitx.input-processor.keys:tab-p key)
+             (senn.fcitx.input-processor.keys:down-p key))
          (selecting-from-predictions-move-prediction
           s +1)
          (list s (selecting-from-predictions->editing-view s)))
-        ((senn.fcitx.transit.keys:up-p key)
+        ((senn.fcitx.input-processor.keys:up-p key)
          (selecting-from-predictions-move-prediction
           s -1)
          (list s (selecting-from-predictions->editing-view s)))
         (t
          (list s (selecting-from-predictions->editing-view s)))))
 
-(defmethod transit ((ime ime) (s converting)
-                    (key senn.fcitx.transit.keys:key))
-  (cond ((senn.fcitx.transit.keys:left-p key)
+(defmethod process-input ((ime ime) (s converting)
+                          (key senn.fcitx.input-processor.keys:key))
+  (cond ((senn.fcitx.input-processor.keys:left-p key)
          (converting-move-curret-segment s -1)
          (list s (converting->converting-view +IRV-DO-NOTHING+ s)))
 
-        ((senn.fcitx.transit.keys:right-p key)
+        ((senn.fcitx.input-processor.keys:right-p key)
          (converting-move-curret-segment s +1)
          (list s (converting->converting-view +IRV-DO-NOTHING+ s)))
 
-        ((or (senn.fcitx.transit.keys:space-p key)
-             (senn.fcitx.transit.keys:down-p key))
+        ((or (senn.fcitx.input-processor.keys:space-p key)
+             (senn.fcitx.input-processor.keys:down-p key))
          (let ((curr-seg (converting-current-segment s)))
            (setf (senn.segment:segment-shows-katakana-p curr-seg) nil)
            (move-segment-form-index! curr-seg  +1 ime))
          ;; +IRV-DO-NOTHING+ because the OS may move the current corsor in the candidate window.
          (list s (converting->converting-view +IRV-DO-NOTHING+ s)))
 
-        ((senn.fcitx.transit.keys:up-p key)
+        ((senn.fcitx.input-processor.keys:up-p key)
          (let ((curr-seg (converting-current-segment s)))
            (setf (senn.segment:segment-shows-katakana-p curr-seg) nil)
            (move-segment-form-index! curr-seg -1 ime))
          ;; +IRV-DO-NOTHING+ because the OS may move the current corsor in the candidate window.
          (list s (converting->converting-view +IRV-DO-NOTHING+ s)))
 
-        ((senn.fcitx.transit.keys:f7-p key)
+        ((senn.fcitx.input-processor.keys:f7-p key)
          (let ((curr-seg (converting-current-segment s)))
            (setf (senn.segment:segment-shows-katakana-p curr-seg) t))
          (list s (converting->converting-view +IRV-TO-PROCESS+ s)))
 
-        ((senn.fcitx.transit.keys:backspace-p key)
+        ((senn.fcitx.input-processor.keys:backspace-p key)
          (let ((pron (converting-pronunciation s)))
            (let ((inputting-state (make-inputting
                                    :buffer (senn.buffer:make-buffer
@@ -176,8 +176,9 @@
                    (inputting->editing-view
                     +IRV-DO-NOTHING+ inputting-state)))))
 
-        ((senn.fcitx.transit.keys:char-p key)
-         (let* ((char (code-char (senn.fcitx.transit.keys:key-sym key)))
+        ((senn.fcitx.input-processor.keys:char-p key)
+         (let* ((char (code-char
+                       (senn.fcitx.input-processor.keys:key-sym key)))
                 (inputting-state (make-inputting
                                   :buffer (senn.buffer:insert-char
                                            (senn.buffer:make-buffer) char)))
@@ -195,12 +196,16 @@
                   +IRV-DO-NOTHING+ inputting-state
                   :committed-string committed-string))))))
 
-(defmethod transit ((ime ime) (s inputting)
-                    (key senn.fcitx.transit.keys:key))
-  (cond ((/= (logand (senn.fcitx.transit.keys:key-state key) #b1000000) 0)
+(defmethod process-input ((ime ime) (s inputting)
+                          (key senn.fcitx.input-processor.keys:key))
+  (cond ((/= (logand (senn.fcitx.input-processor.keys:key-state key)
+                     #b1000000)
+             0)
          ;; When FcitxKeyState_Super is on. we cannot hanndle.
          (list s (inputting->editing-view +IRV-TO-PROCESS+ s)))
-        ((/= (logand (senn.fcitx.transit.keys:key-state key) #b100) 0)
+        ((/= (logand (senn.fcitx.input-processor.keys:key-state key)
+                     #b100)
+             0)
          ;; When FcitxKeyState_Ctr is on.
          (list s (inputting->editing-view
                   (if (buffer-empty-p (inputting-buffer s))
@@ -212,7 +217,7 @@
                       +IRV-DO-NOTHING+)
                   s)))
 
-        ((senn.fcitx.transit.keys:tab-p key)
+        ((senn.fcitx.input-processor.keys:tab-p key)
          (let ((inputted-string
                 (senn.buffer:buffer-string (inputting-buffer s))))
            (let ((predictions (senn.im:predict ime inputted-string)))
@@ -227,8 +232,9 @@
                          (selecting-from-predictions->editing-view
                           selecting-from-predictions-state)))))))
 
-        ((senn.fcitx.transit.keys:char-p key)
-         (let ((char (code-char (senn.fcitx.transit.keys:key-sym key))))
+        ((senn.fcitx.input-processor.keys:char-p key)
+         (let ((char (code-char
+                      (senn.fcitx.input-processor.keys:key-sym key))))
            (setf (inputting-buffer s)
                  (senn.buffer:insert-char (inputting-buffer s) char))
            (let ((inputted-string
@@ -238,7 +244,7 @@
                         +IRV-DO-NOTHING+ s
                         :predictions predictions))))))
 
-        ((and (senn.fcitx.transit.keys:f7-p key)
+        ((and (senn.fcitx.input-processor.keys:f7-p key)
               (not (inputting-buffer-empty-p s)))
          (let ((katakana-state (make-katakana
                                 :input (senn.buffer:buffer-string
@@ -246,7 +252,7 @@
            (list katakana-state
                  (katakana->editing-view +IRV-DO-NOTHING+ katakana-state))))
 
-        ((senn.fcitx.transit.keys:space-p key)
+        ((senn.fcitx.input-processor.keys:space-p key)
          (let ((buffer (inputting-buffer s)))
            (if (buffer-empty-p buffer)
                (let ((inputting-state (make-inputting)))
@@ -268,7 +274,7 @@
                            (converting->converting-view
                             +IRV-DO-NOTHING+ converting-state))))))))
 
-        ((senn.fcitx.transit.keys:enter-p key)
+        ((senn.fcitx.input-processor.keys:enter-p key)
          (let ((inputting-state (make-inputting))
                (committed-string
                 (senn.buffer:buffer-string (inputting-buffer s))))
@@ -282,7 +288,7 @@
                       +IRV-DO-NOTHING+ inputting-state
                       :committed-string committed-string)))))
 
-        ((senn.fcitx.transit.keys:backspace-p key)
+        ((senn.fcitx.input-processor.keys:backspace-p key)
          (if (inputting-buffer-empty-p s)
              ;; IMEが文字を削除していない -> OSに文字を削除してもらう
              (list s (inputting->editing-view +IRV-TO-PROCESS+ s))
@@ -292,13 +298,13 @@
                ;; IMEが文字を削除した -> OSが文字が削除するのを抑制
                (list s (inputting->editing-view +IRV-DO-NOTHING+ s)))))
 
-        ((and (senn.fcitx.transit.keys:left-p key)
+        ((and (senn.fcitx.input-processor.keys:left-p key)
               (not (inputting-buffer-empty-p s)))
          (setf (inputting-buffer s)
                (senn.buffer:move-cursor-pos (inputting-buffer s) -1))
          (list s (inputting->editing-view +IRV-DO-NOTHING+ s)))
 
-        ((and (senn.fcitx.transit.keys:right-p key)
+        ((and (senn.fcitx.input-processor.keys:right-p key)
               (not (inputting-buffer-empty-p s)))
          (setf (inputting-buffer s)
                (senn.buffer:move-cursor-pos (inputting-buffer s) +1))
