@@ -17,6 +17,8 @@ void Show(FcitxInstance*, const senn::fcitx::views::Editing*);
 
 class MenuHandlerInterface {
 public:
+  virtual ~MenuHandlerInterface() {}
+
   virtual boolean OnAbout() = 0;
 };
 

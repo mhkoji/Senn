@@ -36,7 +36,7 @@ typedef struct _FcitxSennIM {
   senn::fcitx::StatefulIMProxyIPCServerLauncher *launcher;
 
   FcitxUIMenu menu;
-  MenuHandler menu_handler;
+  MenuHandler *menu_handler;
 } FcitxSennIM;
 
 
@@ -137,6 +137,7 @@ static void FcitxSennDestroy(void *arg) {
   delete senn_im->launcher;
 
   senn::fcitx::ui::DestoryMenu(senn_im->fcitx, &senn_im->menu);
+  delete senn_im->menu_handler;
 
   free(senn_im);
 
@@ -159,9 +160,11 @@ static void* FcitxSennCreate(FcitxInstance *fcitx) {
     std::unique_ptr<senn::ipc::RequesterInterface>(
       new senn::fcitx::ReconnectableStatefulIMRequester(senn_im->launcher)));
 
+  // Menu
+  senn_im->menu_handler = new MenuHandler();
   senn::fcitx::ui::SetupMenu(senn_im->fcitx,
                              &senn_im->menu,
-                             &senn_im->menu_handler);
+                             senn_im->menu_handler);
 
   FcitxIMEventHook hk;
   hk.arg = senn_im;
