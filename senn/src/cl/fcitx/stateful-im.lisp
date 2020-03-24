@@ -8,6 +8,10 @@
 
 (defun handle-request (expr state ime client)
   (ecase (expr-op expr)
+    (:show-menu-about
+     (senn.gui.menu.about:show)
+     (senn.fcitx.ipc:send-response client "")
+     state)
     (:process-input
      (let ((key (senn.fcitx.input-processor.keys:make-key
                  :sym (expr-arg expr "sym")

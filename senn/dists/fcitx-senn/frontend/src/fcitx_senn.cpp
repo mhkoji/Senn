@@ -13,23 +13,6 @@
 
 namespace {
 
-bool Spawn(const std::string &path_string) {
-  pid_t pid;
-  char path[path_string.size()+1] = {'\0'};
-  path_string.copy(path, path_string.size());
-  char *argv[] = {path, NULL};
-  const int status = posix_spawn(
-      &pid, path_string.c_str(), NULL, NULL, argv, environ);
-  return status == 0;
-}
-
-class MenuHandler : public senn::fcitx::ui::MenuHandlerInterface {
-public:
-  boolean OnAbout() {
-    return Spawn("/usr/lib/senn/menu");
-  }
-};
-
 typedef struct _FcitxSennIM {
   FcitxInstance *fcitx;
 
@@ -37,7 +20,6 @@ typedef struct _FcitxSennIM {
   senn::fcitx::StatefulIMProxyIPCServerLauncher *launcher;
 
   FcitxUIMenu menu;
-  MenuHandler *menu_handler;
 } FcitxSennIM;
 
 
@@ -138,7 +120,6 @@ static void FcitxSennDestroy(void *arg) {
   delete senn_im->launcher;
 
   senn::fcitx::ui::DestoryMenu(senn_im->fcitx, &senn_im->menu);
-  delete senn_im->menu_handler;
 
   free(senn_im);
 
@@ -157,15 +138,16 @@ static void* FcitxSennCreate(FcitxInstance *fcitx) {
   senn_im->launcher = new senn::fcitx::StatefulIMProxyIPCServerLauncher(
       "/usr/lib/senn/server");
   senn_im->launcher->Spawn();
+
   senn_im->im = new senn::fcitx::StatefulIMProxyIPC(
     std::unique_ptr<senn::ipc::RequesterInterface>(
-      new senn::fcitx::ReconnectableStatefulIMRequester(senn_im->launcher)));
+      new senn::fcitx::ReconnectableStatefulIMRequester(senn_im->launcher)));;
 
   // Menu
-  senn_im->menu_handler = new MenuHandler();
-  senn::fcitx::ui::SetupMenu(senn_im->fcitx,
-                             &senn_im->menu,
-                             senn_im->menu_handler);
+  senn::fcitx::ui::SetupMenu(
+      senn_im->fcitx,
+      &senn_im->menu,
+      static_cast<senn::fcitx::ui::MenuHandlerInterface*>(senn_im->im));
 
   FcitxIMEventHook hk;
   hk.arg = senn_im;

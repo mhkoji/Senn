@@ -19,5 +19,6 @@
 
    (:file "stateful-im"))
   :depends-on (:senn
+               :senn-gui
 
                :usocket))
