@@ -33,7 +33,7 @@ public:
 typedef struct _FcitxSennIM {
   FcitxInstance *fcitx;
 
-  senn::fcitx::StatefulIM *im;
+  senn::fcitx::StatefulIMProxyIPC *im;
   senn::fcitx::StatefulIMProxyIPCServerLauncher *launcher;
 
   FcitxUIMenu menu;

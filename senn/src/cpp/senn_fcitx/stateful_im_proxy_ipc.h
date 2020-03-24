@@ -2,13 +2,14 @@
 #include <memory>
 #include "ipc/ipc.h"
 #include "ipc/request.h"
-#include "stateful_im.h"
+#include "input_processor.h"
+#include "ui.h"
 #include "stateful_im_proxy_ipc_server.h"
 
 namespace senn {
 namespace fcitx {
 
-class StatefulIMProxyIPC : public StatefulIM {
+class StatefulIMProxyIPC : public InputProcessor {
 public:
   StatefulIMProxyIPC(std::unique_ptr<senn::ipc::RequesterInterface>);
   ~StatefulIMProxyIPC();
