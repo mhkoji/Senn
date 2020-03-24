@@ -46,7 +46,8 @@ StatefulIMProxyIPC::~StatefulIMProxyIPC() {
   requester_.reset();
 }
 
-INPUT_RETURN_VALUE StatefulIMProxyIPC::ProcessInput(
+INPUT_RETURN_VALUE
+StatefulIMProxyIPC::ProcessInput(
     FcitxKeySym sym, uint32_t keycode, uint32_t state,
     std::function<void(const senn::fcitx::views::Converting*)> on_converting,
     std::function<void(const senn::fcitx::views::Editing*)> on_editing) {
@@ -75,12 +76,6 @@ INPUT_RETURN_VALUE StatefulIMProxyIPC::ProcessInput(
   }
 
   return ParseInputReturnValue(input_return_value);
-}
-
-boolean StatefulIMProxyIPC::OnAbout() {
-  std::string res;
-  requester_->Request("{\"op\":\"show-menu-about\"}\n", &res);
-  return true;
 }
 
 } // fcitx

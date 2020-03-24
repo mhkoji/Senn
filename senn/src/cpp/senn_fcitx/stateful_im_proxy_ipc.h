@@ -9,9 +9,7 @@
 namespace senn {
 namespace fcitx {
 
-class StatefulIMProxyIPC
-  : public InputProcessor,
-    public ui::MenuHandlerInterface {
+class StatefulIMProxyIPC : public InputProcessor {
 public:
   StatefulIMProxyIPC(std::unique_ptr<senn::ipc::RequesterInterface>);
   ~StatefulIMProxyIPC();
@@ -20,8 +18,6 @@ public:
       FcitxKeySym, uint32_t, uint32_t,
       std::function<void(const senn::fcitx::views::Converting*)>,
       std::function<void(const senn::fcitx::views::Editing*)>);
-
-  boolean OnAbout();
 
 private:
   std::unique_ptr<senn::ipc::RequesterInterface> requester_;
