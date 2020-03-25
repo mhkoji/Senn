@@ -10,6 +10,7 @@ set(FCITX_SENN_SRC
   fcitx_senn.cpp
   ../../../../src/cpp/ipc/ipc.cpp
   ../../../../src/cpp/ipc/request.cpp
+  ../../../../src/cpp/process/process.cpp
   ../../../../src/cpp/senn_fcitx/stateful_im_proxy_ipc.cpp
   ../../../../src/cpp/senn_fcitx/stateful_im_proxy_ipc_server.cpp
   ../../../../src/cpp/senn_fcitx/ui.cpp)

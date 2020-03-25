@@ -1,5 +1,4 @@
 #include <sys/stat.h>
-#include <spawn.h>
 // #include <iostream>
 
 #include <fcitx/ime.h>
@@ -7,26 +6,17 @@
 #include <fcitx/instance.h>
 #include <fcitx/context.h>
 
+#include "process/process.h"
 #include "senn_fcitx/ui.h"
 #include "senn_fcitx/stateful_im_proxy_ipc.h"
 #include "senn_fcitx/stateful_im_proxy_ipc_server.h"
 
 namespace {
 
-bool Spawn(const std::string &path_string) {
-  pid_t pid;
-  char path[path_string.size()+1] = {'\0'};
-  path_string.copy(path, path_string.size());
-  char *argv[] = {path, NULL};
-  const int status = posix_spawn(
-      &pid, path_string.c_str(), NULL, NULL, argv, environ);
-  return status == 0;
-}
-
 class MenuHandler : public senn::fcitx::ui::MenuHandlerInterface {
 public:
   boolean OnAbout() {
-    return Spawn("/usr/lib/senn/menu");
+    return senn::process::Spawn("/usr/lib/senn/menu");
   }
 };
 
