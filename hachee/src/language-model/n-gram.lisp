@@ -10,6 +10,7 @@
                 :get-count)
   (:export :model
            :class-model
+           :make-classifier
            :train
            :transition-probability
            :sentence-log-probability
@@ -132,9 +133,11 @@
     :reader class-model-classifier)
    (token-freq
     :initform (make-hash-table :test #'equal)
+    :initarg :token-freq
     :reader class-model-token-freq)
    (class-token-freq
     :initform (make-hash-table :test #'equal)
+    :initarg :class-token-freq
     :reader class-model-class-token-freq)))
 
 (defstruct classifier to-class-map)
@@ -175,7 +178,8 @@
 
 
 (defun class-token (classifier x)
-  (gethash x (classifier-to-class-map classifier)))
+  (or (gethash x (classifier-to-class-map classifier))
+      (error "unknown token: ~A" x)))
 
 (defmacro inchash (key hash)
   `(incf (gethash ,key ,hash 0)))
@@ -193,10 +197,13 @@
                                        sentence-tokens)))
           (dolist (token sentence-tokens)
             (inchash token token-freq))
+          (inchash EOS token-freq)
           (dolist (class-token sentence-class-tokens)
             (inchash class-token class-token-freq))
+          (inchash eos-class-token class-token-freq)
           (count-n-grams model sentence-class-tokens
-           :BOS bos-class-token :EOS eos-class-token)))))
+                         :BOS bos-class-token
+                         :EOS eos-class-token)))))
   model)
 
 (defun class-interpolated-probability (class-model
@@ -225,6 +232,36 @@
   (* (class-interpolated-probability model token history-tokens)
      (class-token->token-probability model token)))
 
+(defmethod save-model ((model class-model) stream)
+  (call-next-method)
+  (print (list :classifier
+               (alexandria:hash-table-alist
+                (classifier-to-class-map
+                 (class-model-classifier model)))
+               :token-freq
+               (alexandria:hash-table-alist
+                (class-model-token-freq model))
+               :class-token-freq
+               (alexandria:hash-table-alist
+                (class-model-class-token-freq model)))
+         stream)
+  (values))
+
+(defmethod load-model ((type (eql 'class-model)) stream)
+  (let ((model (load-model 'model stream))
+        (plist (read stream)))
+    (change-class model 'class-model
+                  :classifier
+                  (make-classifier
+                   :to-class-map
+                   (alexandria:alist-hash-table
+                    (getf plist :classifier) :test #'equal))
+                  :token-freq
+                  (alexandria:alist-hash-table
+                   (getf plist :token-freq) :test #'equal)
+                  :class-token-freq
+                  (alexandria:alist-hash-table
+                   (getf plist :class-token-freq) :test #'equal))))
 
 (defun sentence-log-probability (model sentence &key BOS EOS)
   (let ((n (model-n model)))

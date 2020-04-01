@@ -3,7 +3,7 @@
   (:import-from :hachee.kkc.build
                 :build-vocabulary
                 :build-dictionary
-                :build-n-gram-model)
+                :train-n-gram-model)
   (:export :kkc
            :create-kkc))
 (in-package :hachee.kkc.simple)
@@ -21,7 +21,8 @@
 (defun create-kkc (pathnames &key word-dictionary tankan-dictionary)
   (let* ((vocabulary (build-vocabulary pathnames))
          (dictionary (build-dictionary pathnames vocabulary))
-         (n-gram-model (build-n-gram-model pathnames vocabulary)))
+         (n-gram-model (make-instance 'hachee.language-model.n-gram:model)))
+    (train-n-gram-model n-gram-model pathnames vocabulary)
     (make-kkc
      :n-gram-model n-gram-model
      :vocabulary vocabulary

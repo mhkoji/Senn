@@ -17,11 +17,12 @@
            :build-vocabulary-with-unk
            :extend-existing-vocabulary
            :build-dictionary
-           :build-n-gram-model
+           :train-n-gram-model
            :build-unknown-word-vocabulary
            :build-unknown-word-n-gram-model
            :build-word-dictionary
-           :build-tankan-dictionary))
+           :build-tankan-dictionary
+           :build-classifier))
 (in-package :hachee.kkc.build)
 
 (defun to-token-sentence (file-sentence vocabulary)
@@ -78,11 +79,10 @@
             (hachee.kkc.word.dictionary:add-word dict word)))))
     dict))
 
-(defun build-n-gram-model (pathnames vocabulary)
+(defun train-n-gram-model (model pathnames vocabulary)
   (log:info "Building n-gram model...")
   (let ((BOS (to-int vocabulary hachee.language-model.vocabulary:+BOS+))
-        (EOS (to-int vocabulary hachee.language-model.vocabulary:+EOS+))
-        (model (make-instance 'hachee.language-model.n-gram:model)))
+        (EOS (to-int vocabulary hachee.language-model.vocabulary:+EOS+)))
     (dolist (pathname pathnames)
       (let ((sentences
              (mapcar (lambda (s)
@@ -153,3 +153,37 @@
             (let ((char (make-char :form form :pron pron)))
               (hachee.kkc.word.dictionary:add-char dict char))))))
     dict))
+
+(defun build-classifier (class-token-to-word-file-path vocabulary)
+  (let ((to-class-map (make-hash-table :test #'equal)))
+    (setf (gethash (to-int vocabulary hachee.language-model.vocabulary:+UNK+)
+                   to-class-map)
+          0)
+    (setf (gethash (to-int vocabulary hachee.language-model.vocabulary:+BOS+)
+                   to-class-map)
+          -1)
+    (setf (gethash (to-int vocabulary hachee.language-model.vocabulary:+EOS+)
+                   to-class-map)
+          -2)
+    (with-open-file (in class-token-to-word-file-path)
+      (read-line in nil nil) ;; UT
+      (read-line in nil nil) ;; BT
+      (loop for line = (read-line in nil nil) while line do
+        (destructuring-bind (class-token-string form-pron-string)
+            (cl-ppcre:split " " line)
+          (let ((class-token (parse-integer class-token-string)))
+            (let* ((forms
+                    (mapcar (lambda (x) (first (cl-ppcre:split "/" x)))
+                            (cl-ppcre:split "-" form-pron-string)))
+                   (prons
+                    (mapcar (lambda (x) (second (cl-ppcre:split "/" x)))
+                            (cl-ppcre:split "-" form-pron-string)))
+                   (token
+                    (to-int vocabulary
+                            (word->key
+                             (make-word
+                              :form (apply #'concatenate 'string forms)
+                              :pron (apply #'concatenate 'string prons))))))
+              (setf (gethash token to-class-map) class-token))))))
+    (hachee.language-model.n-gram:make-classifier
+     :to-class-map to-class-map)))

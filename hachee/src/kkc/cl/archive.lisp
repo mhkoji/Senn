@@ -15,10 +15,6 @@
 
 (defgeneric save-object (obj stream))
 
-(defmethod save-object ((obj hachee.language-model.n-gram:model)
-                        stream)
-  (save-model obj stream))
-
 (defmethod save-object ((obj hachee.kkc.word.dictionary:dictionary)
                         stream)
   (save-dictionary obj stream))
@@ -44,9 +40,13 @@
                  (zip:write-zipentry writer name data-stream
                                      :file-write-date
                                      (get-universal-time)))))
+      (add-to-zip (if (typep n-gram-model
+                             'hachee.language-model.n-gram:class-model)
+                      "class-n-gram-model.txt"
+                      "n-gram-model.txt")
+                  (with-output-to-string (stream)
+                    (save-model n-gram-model stream)))
       (loop for (filename object) in (list
-                                      (list "n-gram-model.txt"
-                                            n-gram-model)
                                       (list "vocabulary.txt"
                                             vocabulary)
                                       (list "vocabulary-dictionary.txt"
@@ -70,11 +70,6 @@
 (defgeneric load-object-as (type stream))
 
 (defmethod load-object-as
-    ((type (eql 'hachee.language-model.n-gram:model))
-     stream)
-  (load-model 'hachee.language-model.n-gram:model stream))
-
-(defmethod load-object-as
     ((type (eql 'hachee.kkc.word.dictionary:dictionary))
      stream)
   (load-dictionary stream))
@@ -91,33 +86,39 @@
                  (let ((octets (zip:zipfile-entry-contents entry)))
                    (babel:octets-to-string octets :encoding :utf-8)))))
       (alexandria:alist-plist
-       (loop for (key filename type)
-                 in (list
-                     (list :n-gram-model
-                           "n-gram-model.txt"
-                           'hachee.language-model.n-gram:model)
-                     (list :vocabulary
-                           "vocabulary.txt"
-                           'hachee.language-model.vocabulary:vocabulary)
-                     (list :vocabulary-dictionary
-                           "vocabulary-dictionary.txt"
-                           'hachee.kkc.word.dictionary:dictionary)
-                     (list :extended-dictionary
-                           "extended-dictionary.txt"
-                           'hachee.kkc.word.dictionary:dictionary)
-                     (list :word-dictionary
-                           "word-dictionary.txt"
-                           'hachee.kkc.word.dictionary:dictionary)
-                     (list :tankan-dictionary
-                           "tankan-dictionary.txt"
-                           'hachee.kkc.word.dictionary:dictionary)
-                     (list :unknown-word-vocabulary
-                           "unknown-word-vocabulary.txt"
-                           'hachee.language-model.vocabulary:vocabulary)
-                     (list :unknown-word-n-gram-model
-                           "unknown-word-n-gram-model.txt"
-                           'hachee.language-model.n-gram:model))
-             for object = (with-input-from-string
-                              (s (entry-as-string filename))
-                            (load-object-as type s))
-             collect (cons key object))))))
+       (cons
+        (cons :n-gram-model
+              (if (zip:get-zipfile-entry "class-n-gram-model.txt" zip)
+                  (with-input-from-string (s (entry-as-string
+                                              "class-n-gram-model.txt"))
+                    (load-model 'hachee.language-model.n-gram:class-model s))
+                  (with-input-from-string (s (entry-as-string
+                                              "n-gram-model.txt"))
+                    (load-model 'hachee.language-model.n-gram:model s))))
+        (loop for (key filename type)
+                  in (list
+                      (list :vocabulary
+                            "vocabulary.txt"
+                            'hachee.language-model.vocabulary:vocabulary)
+                      (list :vocabulary-dictionary
+                            "vocabulary-dictionary.txt"
+                            'hachee.kkc.word.dictionary:dictionary)
+                      (list :extended-dictionary
+                            "extended-dictionary.txt"
+                            'hachee.kkc.word.dictionary:dictionary)
+                      (list :word-dictionary
+                            "word-dictionary.txt"
+                            'hachee.kkc.word.dictionary:dictionary)
+                      (list :tankan-dictionary
+                            "tankan-dictionary.txt"
+                            'hachee.kkc.word.dictionary:dictionary)
+                      (list :unknown-word-vocabulary
+                            "unknown-word-vocabulary.txt"
+                            'hachee.language-model.vocabulary:vocabulary)
+                      (list :unknown-word-n-gram-model
+                            "unknown-word-n-gram-model.txt"
+                            'hachee.language-model.n-gram:model))
+              for object = (with-input-from-string
+                               (s (entry-as-string filename))
+                             (load-object-as type s))
+              collect (cons key object)))))))
