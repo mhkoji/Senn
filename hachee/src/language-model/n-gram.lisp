@@ -178,8 +178,7 @@
 
 
 (defun class-token (classifier x)
-  (or (gethash x (classifier-to-class-map classifier))
-      (error "unknown token: ~A" x)))
+  (gethash x (classifier-to-class-map classifier)))
 
 (defmacro inchash (key hash)
   `(incf (gethash ,key ,hash 0)))
@@ -192,9 +191,11 @@
           (eos-class-token (class-token classifier EOS)))
       (dolist (sentence sentences)
         (let* ((sentence-tokens (sentence-tokens sentence))
-               (sentence-class-tokens (mapcar
-                                       (curry #'class-token classifier)
-                                       sentence-tokens)))
+               (sentence-class-tokens
+                (mapcar (lambda (x)
+                          (or (class-token classifier x)
+                              eos-class-token))
+                        sentence-tokens)))
           (dolist (token sentence-tokens)
             (inchash token token-freq))
           (inchash EOS token-freq)
