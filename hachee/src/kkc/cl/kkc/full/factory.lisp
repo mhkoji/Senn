@@ -20,7 +20,9 @@
                            class-token-to-word-file-path)
   (let ((vocabulary (build-vocabulary-with-unk pathnames-segmented)))
     (when (and pathnames-inaccurately-segmented
-               trusted-word-dictionary)
+               trusted-word-dictionary
+               ;; Unable to map an added word to a class
+               (not class-token-to-word-file-path))
       (extend-existing-vocabulary vocabulary
                                   trusted-word-dictionary
                                   pathnames-inaccurately-segmented))
