@@ -9,14 +9,14 @@
         :reader ime-kkc)))
 
 (defmethod senn.im:convert ((ime ime) (pron string) &key 1st-boundary-index)
-  (mapcar (lambda (n)
-            (let ((w (hachee.kkc.convert:node-word n)))
+  (mapcar (lambda (e)
+            (let ((w (hachee.kkc.entry:entry-word e)))
               (senn.segment:make-segment
                :pron (hachee.kkc:word-pron w)
                :candidates
                (list (senn.segment:make-candidate
                       :form (hachee.kkc:word-form w)
-                      :origin (hachee.kkc.convert:node-word-origin n)))
+                      :origin (hachee.kkc.entry:entry-origin e)))
                :has-more-candidates-p t
                :current-index 0)))
           (hachee.kkc:convert (ime-kkc ime) pron

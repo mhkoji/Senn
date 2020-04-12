@@ -35,6 +35,7 @@
      (:file "archive")
      (:file "build/file")
      (:file "build/build")
+     (:file "kkc/entry")
      (:file "kkc/kkc")
      (:file "kkc/full/score-fns")
      (:file "kkc/full/full")

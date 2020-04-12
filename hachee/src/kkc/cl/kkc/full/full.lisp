@@ -17,19 +17,21 @@
 ;;; Convert
 (defmethod hachee.kkc:get-convert-score-fn ((kkc kkc))
   (hachee.kkc.full.score-fns:get-for-conv
-   :word-vocabulary (kkc-vocabulary kkc)
    :word-n-gram-model (kkc-n-gram-model kkc)
-   :unknown-word-char-vocabulary (kkc-unknown-word-vocabulary kkc)
-   :unknown-word-char-n-gram-model (kkc-unknown-word-n-gram-model kkc)
-   :probability-for-extended-dictionary-words
-   (let ((extended-dictionary-size
-          (hachee.kkc.word.dictionary:size (kkc-extended-dictionary kkc)))
-         (sum-probabilities-of-vocabulary-words
-          (kkc-sum-probabilities-of-vocabulary-words kkc)))
-     (if (< 0 extended-dictionary-size)
-         (/ sum-probabilities-of-vocabulary-words
-            extended-dictionary-size)
-         0))))
+   :unknown-word-log-probability-fn
+   (lambda (entry)
+     (hachee.kkc.full.score-fns:unknown-word-log-probability
+      entry
+      (kkc-unknown-word-vocabulary kkc)
+      (kkc-unknown-word-n-gram-model kkc)
+      (let ((extended-dictionary-size
+             (hachee.kkc.word.dictionary:size (kkc-extended-dictionary kkc)))
+            (sum-probabilities-of-vocabulary-words
+             (kkc-sum-probabilities-of-vocabulary-words kkc)))
+        (if (< 0 extended-dictionary-size)
+            (/ sum-probabilities-of-vocabulary-words
+               extended-dictionary-size)
+            0))))))
 
 
 ;;; Lookup

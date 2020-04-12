@@ -12,10 +12,15 @@
 
 ;;; Convert
 (defmethod hachee.kkc:get-convert-score-fn ((kkc kkc))
-  (hachee.kkc.simple.convert:get-score-fn
-   :word-vocabulary (kkc-vocabulary kkc)
-   :word-n-gram-model (kkc-n-gram-model kkc)))
-
+  (let ((word-n-gram-model (kkc-n-gram-model kkc)))
+    (lambda (curr-entry prev-entry)
+      (let ((p (hachee.language-model.n-gram:transition-probability
+                word-n-gram-model
+                (hachee.kkc.entry:entry-token curr-entry)
+                (list (hachee.kkc.entry:entry-token prev-entry)))))
+        (if (/= p 0)
+            (log p)
+            -10000)))))
 
 ;;; Create
 (defun create-kkc (pathnames &key word-dictionary tankan-dictionary)
