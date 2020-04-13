@@ -63,3 +63,13 @@
          (hachee.kkc.full:sum-probabilities-of-words
           unknown-word-vocabulary
           unknown-word-n-gram-model
+          (loop for entries
+                    in (hachee.kkc.dictionary:list-all word-dictionary)
+                for vocabulary-entries
+                    = (remove-if-not
+                       (lambda (ent)
+                         (eql (hachee.kkc.dictionary:entry-origin ent)
+                              hachee.kkc.dictionary:+origin-vocabulary+))
+                       entries)
+                nconc (mapcar #'hachee.kkc.dictionary:entry-unit
+                              vocabulary-entries))))))))

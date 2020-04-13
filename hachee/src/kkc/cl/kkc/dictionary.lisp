@@ -13,12 +13,16 @@
            :make-dictionary
            :save-dictionary
            :load-dictionary
-           :entry-word
+           :entry-unit
            :entry-origin
            :entry
            :add-entry
            :lookup
-           :contains-p))
+           :contains-p
+
+           :+origin-vocabulary+
+           :+origin-corpus+
+           :+origin-resource+))
 (in-package :hachee.kkc.dictionary)
 
 ;; unit = form/pron
@@ -85,3 +89,8 @@
 (defun contains-p (dictionary unit)
   (let ((entries (lookup dictionary (unit-pron unit))))
     (member unit entries :key #'entry-unit :test #'unit=)))
+
+
+(defparameter +origin-vocabulary+ :vocabulary)
+(defparameter +origin-corpus+     :corpus)
+(defparameter +origin-resource+   :resource)

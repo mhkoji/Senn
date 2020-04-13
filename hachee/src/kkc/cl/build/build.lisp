@@ -72,8 +72,10 @@
     (dolist (sentence (hachee.kkc.build.file:file->sentences pathname))
       (dolist (unit (hachee.kkc.build.file:sentence-units sentence))
         (if (to-int-or-nil vocabulary (unit->key unit))
-            (hachee.kkc.dictionary:add-entry dict word :vocabulary)
-            (hachee.kkc.dictionary:add-entry dict word :corpus)))))
+            (hachee.kkc.dictionary:add-entry
+             dict word hachee.kkc.dictionary:+origin-vocabulary+)
+            (hachee.kkc.dictionary:add-entry
+             dict word hachee.kkc.dictionary:+origin-corpus+)))))
   dict)
 
 (defun train-n-gram-model (model pathnames vocabulary)
@@ -138,7 +140,8 @@
         (destructuring-bind (form part pron) (cl-ppcre:split "/" line)
           (declare (ignore part))
           (let ((unit (make-unit :form form :pron pron)))
-            (hachee.kkc.dictionary:add-entry dict word :resource))))))
+            (hachee.kkc.dictionary:add-entry
+             dict word +origin-resource+))))))
   dict)
 
 (defun build-tankan-dictionary (dict pathnames)
