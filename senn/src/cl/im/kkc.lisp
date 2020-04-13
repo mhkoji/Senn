@@ -10,15 +10,15 @@
 
 (defmethod senn.im:convert ((ime ime) (pron string) &key 1st-boundary-index)
   (mapcar (lambda (e)
-            (let ((w (hachee.kkc.entry:entry-word e)))
-              (senn.segment:make-segment
-               :pron (hachee.kkc:word-pron w)
-               :candidates
-               (list (senn.segment:make-candidate
-                      :form (hachee.kkc:word-form w)
-                      :origin (hachee.kkc.entry:entry-origin e)))
-               :has-more-candidates-p t
-               :current-index 0)))
+            (senn.segment:make-segment
+             :pron
+             (hachee.kkc.convert:entry-pron e)
+             :candidates
+             (list (senn.segment:make-candidate
+                    :form (hachee.kkc.convert:entry-form e)
+                    :origin (hachee.kkc.convert:entry-origin e)))
+             :has-more-candidates-p t
+             :current-index 0))
           (hachee.kkc:convert (ime-kkc ime) pron
                               :1st-boundary-index 1st-boundary-index)))
 

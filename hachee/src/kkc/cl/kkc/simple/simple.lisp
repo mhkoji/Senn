@@ -23,17 +23,15 @@
             -10000)))))
 
 ;;; Create
-(defun create-kkc (pathnames &key word-dictionary tankan-dictionary)
-  (let* ((vocabulary (build-vocabulary pathnames))
-         (dictionary (build-dictionary pathnames vocabulary))
-         (n-gram-model (make-instance 'hachee.language-model.n-gram:model)))
+(defun create-kkc (pathnames &key char-dictionary)
+  (let ((vocabulary (build-vocabulary pathnames))
+        (n-gram-model (make-instance 'hachee.language-model.n-gram:model)))
     (train-n-gram-model n-gram-model pathnames vocabulary)
     (make-kkc
      :n-gram-model n-gram-model
      :vocabulary vocabulary
      :vocabulary-dictionary dictionary
-     :extended-dictionary (hachee.kkc.word.dictionary:make-dictionary)
-     :word-dictionary (or word-dictionary
+     :word-dictionary (build-dictionary pathnames vocabulary)
+     :char-dictionary (or char-dictionary
                           (hachee.kkc.word.dictionary:make-dictionary))
-     :tankan-dictionary (or tankan-dictionary
-                            (hachee.kkc.word.dictionary:make-dictionary)))))
+     :extended-dictionary (hachee.kkc.word.dictionary:make-dictionary))))

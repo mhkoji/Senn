@@ -24,7 +24,7 @@
       (push (make-sentence :line line) sentences))
     (nreverse sentences)))
 
-(defun sentence-words (sentence)
+(defun sentence-units (sentence)
   (mapcar (lambda (form-pron-str)
             ;; A/a-/B/b => AB/ab
             (let ((form-pron-list
@@ -35,7 +35,7 @@
                                (list (or (first split) "")
                                      (or (second split) ""))))
                            (cl-ppcre:split "-" form-pron-str))))
-              (hachee.kkc.word:make-word
+              (hachee.kkc.dictionary:make-unit
                :form (format nil "~{~A~}" (mapcar #'first
                                                   form-pron-list))
                :pron (format nil "~{~A~}" (mapcar #'second

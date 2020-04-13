@@ -3,7 +3,7 @@
   (:import-from :hachee.kkc.build
                 :build-vocabulary-with-unk
                 :extend-existing-vocabulary
-                :build-dictionary
+                :add-dictionary-entries-from-files
                 :build-classifier
                 :train-n-gram-model
                 :build-unknown-word-vocabulary
@@ -13,11 +13,13 @@
 
 (defun unk-supported (pathnames-segmented
                       &key pathnames-inaccurately-segmented
-                           trusted-word-dictionary
                            word-dictionary
-                           tankan-dictionary
+                           char-dictionary
                            extended-dictionary
+                           trusted-word-dictionary
                            class-token-to-word-file-path)
+  (unless word-dictionary
+    (setq word-dictionary (hachee.kkc.dictionary:make-dictionary)))
   (let ((vocabulary (build-vocabulary-with-unk pathnames-segmented)))
     (when (and pathnames-inaccurately-segmented
                trusted-word-dictionary
@@ -39,32 +41,25 @@
                  (make-instance 'hachee.language-model.n-gram:model
                                 :weights (list 0.253401 0.746599)))))
       (train-n-gram-model n-gram-model pathnames vocabulary)
-      (let* ((dictionary
-              (build-dictionary pathnames vocabulary))
-             (unknown-word-vocabulary
-              (build-unknown-word-vocabulary pathnames
-                                             vocabulary))
-             (unknown-word-n-gram-model
-              (build-unknown-word-n-gram-model pathnames
-                                               vocabulary
-                                               unknown-word-vocabulary)))
+      (add-dictionary-entries-from-files word-dictionary pathnames vocabulary)
+      (let ((unknown-word-vocabulary
+             (build-unknown-word-vocabulary pathnames
+                                            vocabulary))
+            (unknown-word-n-gram-model
+             (build-unknown-word-n-gram-model pathnames
+                                              vocabulary
+                                              unknown-word-vocabulary)))
         (hachee.kkc.full:make-kkc
-         :vocabulary vocabulary
          :n-gram-model n-gram-model
-         :vocabulary-dictionary dictionary
-         :extended-dictionary
-         (or extended-dictionary
-             (hachee.kkc.word.dictionary:make-dictionary))
-         :word-dictionary
-         (or word-dictionary
-             (hachee.kkc.word.dictionary:make-dictionary))
-         :tankan-dictionary
-         (or tankan-dictionary
-             (hachee.kkc.word.dictionary:make-dictionary))
+         :vocabulary vocabulary
+         :word-dictionary dictionary
+         :char-dictionary (or char-dictionary
+                              (hachee.kkc.dictionary:make-dictionary))
+         :extended-dictionary (or extended-dictionary
+                                  (hachee.kkc.dictionary:make-dictionary))
          :unknown-word-vocabulary unknown-word-vocabulary
          :unknown-word-n-gram-model unknown-word-n-gram-model
          :sum-probabilities-of-vocabulary-words
          (hachee.kkc.full:sum-probabilities-of-words
           unknown-word-vocabulary
           unknown-word-n-gram-model
-          (hachee.kkc.word.dictionary:list-all dictionary)))))))

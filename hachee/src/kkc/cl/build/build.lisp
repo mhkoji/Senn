@@ -5,18 +5,16 @@
                 :to-int
                 :to-int-or-nil
                 :to-int-or-unk)
-  (:import-from :hachee.kkc.word
-                :make-char
-                :char->key
-                :make-word
-                :word-form
-                :word-pron
-                :word->pron-chars
-                :word->key)
+  (:import-from :hachee.kkc.dictionary
+                :make-unit
+                :unit-form
+                :unit-pron
+                :unit->key
+                :unit->pron-chars)
   (:export :build-vocabulary
            :build-vocabulary-with-unk
            :extend-existing-vocabulary
-           :build-dictionary
+           :add-dictionary-entries-from-files
            :train-n-gram-model
            :build-unknown-word-vocabulary
            :build-unknown-word-n-gram-model
@@ -27,16 +25,17 @@
 
 (defun to-token-sentence (file-sentence vocabulary)
   (hachee.language-model:make-sentence
-   :tokens (mapcar (lambda (w)
-                     (to-int-or-unk vocabulary (word->key w)))
-                   (hachee.kkc.build.file:sentence-words file-sentence))))
+   :tokens
+   (mapcar (lambda (u)
+             (to-int-or-unk vocabulary (unit->key u)))
+           (hachee.kkc.build.file:sentence-units file-sentence))))
 
 (defun build-vocabulary (pathnames)
   (let ((vocab (hachee.language-model.vocabulary:make-vocabulary)))
     (dolist (pathname pathnames)
       (dolist (sentence (hachee.kkc.build.file:file->sentences pathname))
-        (dolist (word (hachee.kkc.build.file:sentence-words sentence))
-          (add-new vocab (word->key word)))))
+        (dolist (word (hachee.kkc.build.file:sentence-units sentence))
+          (add-new vocab (unit->key word)))))
     vocab))
 
 (defun build-vocabulary-with-unk (pathnames &key (overlap 2))
@@ -62,22 +61,20 @@
   (log:info "Extending vocabulary...")
   (dolist (pathname pathnames-inaccurately-segmented)
     (dolist (sentence (hachee.kkc.build.file:file->sentences pathname))
-      (dolist (word (hachee.kkc.build.file:sentence-words sentence))
-        (when (hachee.kkc.word.dictionary:contains-word-p
-               trusted-word-dictionary
-               word)
-          (add-new vocabulary word)))))
-    vocabulary)
+      (dolist (unit (hachee.kkc.build.file:sentence-units sentence))
+        (when (hachee.kkc.dictionary:contains-p trusted-word-dictionary unit)
+          (add-new vocabulary (unit->key unit))))))
+  vocabulary)
 
-(defun build-dictionary (pathnames vocabulary)
+(defun add-dictionary-entries-from-files (dict pathnames vocabulary)
   (log:info "Building dictionary...")
-  (let ((dict (hachee.kkc.word.dictionary:make-dictionary)))
-    (dolist (pathname pathnames dict)
-      (dolist (sentence (hachee.kkc.build.file:file->sentences pathname))
-        (dolist (word (hachee.kkc.build.file:sentence-words sentence))
-          (when (to-int-or-nil vocabulary (word->key word))
-            (hachee.kkc.word.dictionary:add-word dict word)))))
-    dict))
+  (dolist (pathname pathnames)
+    (dolist (sentence (hachee.kkc.build.file:file->sentences pathname))
+      (dolist (unit (hachee.kkc.build.file:sentence-units sentence))
+        (if (to-int-or-nil vocabulary (unit->key unit))
+            (hachee.kkc.dictionary:add-entry dict word :vocabulary)
+            (hachee.kkc.dictionary:add-entry dict word :corpus)))))
+  dict)
 
 (defun train-n-gram-model (model pathnames vocabulary)
   (log:info "Building n-gram model...")
@@ -98,17 +95,18 @@
   (let ((key->freq (make-hash-table :test #'equal))
         (char-vocab (hachee.language-model.vocabulary:make-vocabulary)))
     (dolist (pathname pathnames)
-      (let ((curr-chars (make-hash-table :test #'equal)))
+      (let ((curr-prons (make-hash-table :test #'equal)))
         (dolist (sentence (hachee.kkc.build.file:file->sentences pathname))
-          (dolist (word (hachee.kkc.build.file:sentence-words sentence))
-            (when (not (to-int-or-nil vocabulary (word->key word)))
-              (dolist (char (word->pron-chars word))
-                (setf (gethash (char->key char) curr-chars) char)))))
-        (maphash (lambda (key char)
+          (dolist (unit (hachee.kkc.build.file:sentence-units sentence))
+            (when (not (to-int-or-nil vocabulary (unit->key unit)))
+              (dolist (pron-unit (unit->pron-units unit))
+                (setf (gethash (unit->key pron-unit) curr-prons)
+                      pron-unit)))))
+        (maphash (lambda (key pron-unit)
                    (let ((freq (incf (gethash key key->freq 0))))
                      (when (<= overlap freq)
-                       (add-new char-vocab (char->key char)))))
-                 curr-chars)))
+                       (add-new char-vocab (unit->key pron-unit)))))
+                 curr-prons)))
     char-vocab))
 
 (defun build-unknown-word-n-gram-model (pathnames
@@ -122,37 +120,36 @@
         (model (make-instance 'hachee.language-model.n-gram:model)))
   (dolist (pathname pathnames)
     (dolist (file-sentence (hachee.kkc.build.file:file->sentences pathname))
-      (dolist (word (hachee.kkc.build.file:sentence-words file-sentence))
-        (when (not (to-int-or-nil vocabulary (word->key word)))
-          (let ((sentence (hachee.kkc.util:word->sentence
-                           word
+      (dolist (unit (hachee.kkc.build.file:sentence-units file-sentence))
+        (when (not (to-int-or-nil vocabulary (unit->key unit)))
+          (let ((sentence (hachee.kkc.util:unit->sentence
+                           unit
                            unknown-word-vocabulary)))
             (hachee.language-model.n-gram:train model (list sentence)
                                                 :BOS BOS
                                                 :EOS EOS))))))
   model))
 
-(defun build-word-dictionary (pathnames)
+(defun build-word-dictionary (dict pathnames)
   (log:info "Building...")
-  (let ((dict (hachee.kkc.word.dictionary:make-dictionary)))
-    (dolist (pathname pathnames)
-      (with-open-file (in pathname)
-        (loop for line = (read-line in nil nil) while line do
-          (destructuring-bind (form part pron) (cl-ppcre:split "/" line)
-            (declare (ignore part))
-            (let ((word (make-word :form form :pron pron)))
-              (hachee.kkc.word.dictionary:add-word dict word))))))
-    dict))
+  (dolist (pathname pathnames)
+    (with-open-file (in pathname)
+      (loop for line = (read-line in nil nil) while line do
+        (destructuring-bind (form part pron) (cl-ppcre:split "/" line)
+          (declare (ignore part))
+          (let ((unit (make-unit :form form :pron pron)))
+            (hachee.kkc.dictionary:add-entry dict word :resource))))))
+  dict)
 
-(defun build-tankan-dictionary (pathnames)
-  (let ((dict (hachee.kkc.word.dictionary:make-dictionary)))
-    (dolist (pathname pathnames)
-      (with-open-file (in pathname)
-        (loop for line = (read-line in nil nil) while line do
-          (destructuring-bind (form pron) (cl-ppcre:split "/" line)
-            (let ((char (make-char :form form :pron pron)))
-              (hachee.kkc.word.dictionary:add-char dict char))))))
-    dict))
+(defun build-tankan-dictionary (dict pathnames)
+  (dolist (pathname pathnames)
+    (with-open-file (in pathname)
+      (loop for line = (read-line in nil nil) while line do
+        (destructuring-bind (form pron) (cl-ppcre:split "/" line)
+          (let ((char-unit (make-unit :form form
+                                      :pron pron)))
+            (hachee.kkc.dictionary:add-entry dict char-unit :tankan))))))
+  dict)
 
 (defun build-classifier (class-token-to-word-file-path vocabulary)
   (let ((to-class-map (make-hash-table :test #'equal)))
@@ -180,8 +177,8 @@
                             (cl-ppcre:split "-" form-pron-string)))
                    (token
                     (to-int vocabulary
-                            (word->key
-                             (make-word
+                            (unit->key
+                             (make-unit
                               :form (apply #'concatenate 'string forms)
                               :pron (apply #'concatenate 'string prons))))))
               (setf (gethash token to-class-map) class-token))))))

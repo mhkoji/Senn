@@ -1,9 +1,9 @@
-(defpackage :hachee.kkc.convert
+(defpackage :hachee.kkc.convert.viterbi
   (:use :cl)
   (:export :execute
            :node
            :node-entry))
-(in-package :hachee.kkc.convert)
+(in-package :hachee.kkc.convert.viterbi)
 
 (defstruct node entry score-so-far prev-node)
 

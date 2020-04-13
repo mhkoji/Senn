@@ -5,34 +5,29 @@
            :item-origin))
 (in-package :hachee.kkc.lookup)
 
-(defstruct item form origin)
+(defstruct item unit origin)
 
-(defun lookup-word-forms (dict pron)
-  (mapcar #'hachee.kkc.word:word-form
-          (hachee.kkc.word.dictionary:lookup dict pron)))
+(defun item-form (item)
+  (hachee.kkc.dictionary:unit-form (item-unit)))
 
-(defun lookup-char-forms (dict pron)
-  (mapcar #'hachee.kkc.word:char-form
-          (hachee.kkc.word.dictionary:lookup dict pron)))
-
-(defun execute (pronunciation &key score-fn word-dicts char-dicts)
+(defun execute (pronunciation &key score-fn word-dict char-dict)
   (let ((result-items nil))
-    (labels ((push-items (forms origin)
-               (dolist (form forms)
-                 (let ((item (make-item :form form :origin origin)))
+    (labels ((push-items (dictionary-entries)
+               (dolist (dictionary-entry dictionary-entries)
+                 (let ((item (make-item
+                              :unit (hachee.kkc.dictionary:entry-unit
+                                     dictionary-entry)
+                              :origin (hachee.kkc.dictionary:entry-origin
+                                       dictionary-entry))))
                    (pushnew item result-items
                             :test #'string=
                             :key #'item-form)))))
-      (loop for (origin dict) in word-dicts do
-        (push-items (lookup-word-forms dict pronunciation) origin))
+      (push-items (hachee.kkc.dictionary:lookup word-dict pronunciation))
       (when score-fn
         (labels ((item->score (item)
-                   (funcall score-fn (hachee.kkc.word:make-word
-                                      :form (item-form item)
-                                      :pron pronunciation))))
+                   (funcall score-fn (item-unit item))))
           (setq result-items (sort result-items #'< :key #'item->score))))
-      (loop for (origin dict) in char-dicts do
-        (push-items (lookup-char-forms dict pronunciation) origin)))
+      (push-items (hachee.kkc.dictionary:lookup char-dict pronunciation)))
     ;; ch_1, ..., ch_s, w_1, ..., w_t,
     ;;     where score(w_1) < score(w_2) < ... < score(w_t)
     ;; => w_t, ..., w_1, ch_s, ..., ch_1
