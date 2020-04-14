@@ -3,7 +3,7 @@
   (:import-from :alexandria
                 :with-gensyms)
   (:export :file->sentences
-           :sentence-words))
+           :sentence-units))
 (in-package :hachee.kkc.build.file)
 
 (defvar +external-format+ :utf-8)

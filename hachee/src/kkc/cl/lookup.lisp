@@ -8,7 +8,7 @@
 (defstruct item unit origin)
 
 (defun item-form (item)
-  (hachee.kkc.dictionary:unit-form (item-unit)))
+  (hachee.kkc.dictionary:unit-form (item-unit item)))
 
 (defun execute (pronunciation &key score-fn word-dict char-dict)
   (let ((result-items nil))

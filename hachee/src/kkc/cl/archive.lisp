@@ -4,7 +4,7 @@
   (:import-from :hachee.language-model.n-gram
                 :load-model
                 :save-model)
-  (:import-from :hachee.kkc.word.dictionary
+  (:import-from :hachee.kkc.dictionary
                 :save-dictionary
                 :load-dictionary)
   (:import-from :hachee.language-model.vocabulary
@@ -19,7 +19,7 @@
                         stream)
   (save-model obj stream))
 
-(defmethod save-object ((obj hachee.kkc.word.dictionary:dictionary)
+(defmethod save-object ((obj hachee.kkc.dictionary:dictionary)
                         stream)
   (save-dictionary obj stream))
 
@@ -29,10 +29,9 @@
 
 (defun save (pathname &key n-gram-model
                            vocabulary
-                           vocabulary-dictionary
-                           extended-dictionary
                            word-dictionary
-                           tankan-dictionary
+                           char-dictionary
+                           extended-dictionary
                            unknown-word-vocabulary
                            unknown-word-n-gram-model)
   (zip:with-output-to-zipfile (writer pathname)
@@ -53,14 +52,12 @@
       (loop for (filename object) in (list
                                       (list "vocabulary.txt"
                                             vocabulary)
-                                      (list "vocabulary-dictionary.txt"
-                                            vocabulary-dictionary)
-                                      (list "extended-dictionary.txt"
-                                            extended-dictionary)
                                       (list "word-dictionary.txt"
                                             word-dictionary)
-                                      (list "tankan-dictionary.txt"
-                                            tankan-dictionary)
+                                      (list "char-dictionary.txt"
+                                            char-dictionary)
+                                      (list "extended-dictionary.txt"
+                                            extended-dictionary)
                                       (list "unknown-word-vocabulary.txt"
                                             unknown-word-vocabulary)
                                       (list "unknown-word-n-gram-model.txt"
@@ -74,12 +71,7 @@
 (defgeneric load-object-as (type stream))
 
 (defmethod load-object-as
-    ((type (eql 'hachee.language-model.n-gram:model))
-     stream)
-  (load-model 'hachee.language-model.n-gram:model stream))
-
-(defmethod load-object-as
-    ((type (eql 'hachee.kkc.word.dictionary:dictionary))
+    ((type (eql 'hachee.kkc.dictionary:dictionary))
      stream)
   (load-dictionary stream))
 
@@ -109,18 +101,15 @@
                       (list :vocabulary
                             "vocabulary.txt"
                             'hachee.language-model.vocabulary:vocabulary)
-                      (list :vocabulary-dictionary
-                            "vocabulary-dictionary.txt"
-                            'hachee.kkc.word.dictionary:dictionary)
-                      (list :extended-dictionary
-                            "extended-dictionary.txt"
-                            'hachee.kkc.word.dictionary:dictionary)
                       (list :word-dictionary
                             "word-dictionary.txt"
-                            'hachee.kkc.word.dictionary:dictionary)
-                      (list :tankan-dictionary
-                            "tankan-dictionary.txt"
-                            'hachee.kkc.word.dictionary:dictionary)
+                            'hachee.kkc.dictionary:dictionary)
+                      (list :extended-dictionary
+                            "extended-dictionary.txt"
+                            'hachee.kkc.dictionary:dictionary)
+                      (list :char-dictionary
+                            "char-dictionary.txt"
+                            'hachee.kkc.dictionary:dictionary)
                       (list :unknown-word-vocabulary
                             "unknown-word-vocabulary.txt"
                             'hachee.language-model.vocabulary:vocabulary)

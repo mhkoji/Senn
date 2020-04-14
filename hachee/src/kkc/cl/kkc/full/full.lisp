@@ -6,7 +6,7 @@
            :make-kkc
            :save-kkc
            :load-kkc
-           :sum-probabilities-of-words))
+           :sum-probabilities-of-vocabulary-words))
 (in-package :hachee.kkc.full)
 
 (defstruct (kkc (:include hachee.kkc:kkc))
@@ -25,7 +25,7 @@
       (kkc-unknown-word-vocabulary kkc)
       (kkc-unknown-word-n-gram-model kkc)
       (let ((extended-dictionary-size
-             (hachee.kkc.word.dictionary:size (kkc-extended-dictionary kkc)))
+             (hachee.kkc.dictionary:size (kkc-extended-dictionary kkc)))
             (sum-probabilities-of-vocabulary-words
              (kkc-sum-probabilities-of-vocabulary-words kkc)))
         (if (< 0 extended-dictionary-size)
@@ -43,7 +43,7 @@
    :unknown-word-char-n-gram-model (kkc-unknown-word-n-gram-model kkc)
    :probability-for-extended-dictionary-words
    (let ((extended-dictionary-size
-          (hachee.kkc.word.dictionary:size (kkc-extended-dictionary kkc)))
+          (hachee.kkc.dictionary:size (kkc-extended-dictionary kkc)))
          (sum-probabilities-of-vocabulary-words
           (kkc-sum-probabilities-of-vocabulary-words kkc)))
      (if (< 0 extended-dictionary-size)
@@ -57,10 +57,9 @@
    pathname
    :n-gram-model (kkc-n-gram-model kkc)
    :vocabulary (kkc-vocabulary kkc)
-   :vocabulary-dictionary (kkc-vocabulary-dictionary kkc)
-   :extended-dictionary (kkc-extended-dictionary kkc)
    :word-dictionary (kkc-word-dictionary kkc)
-   :tankan-dictionary (kkc-tankan-dictionary kkc)
+   :char-dictionary (kkc-char-dictionary kkc)
+   :extended-dictionary (kkc-extended-dictionary kkc)
    :unknown-word-vocabulary (kkc-unknown-word-vocabulary kkc)
    :unknown-word-n-gram-model (kkc-unknown-word-n-gram-model kkc)))
 
@@ -77,31 +76,40 @@
       for word in words
       sum (exp (hachee.language-model.n-gram:sentence-log-probability
                 unknown-word-n-gram-model
-                (hachee.kkc.util:word->sentence word unknown-word-vocabulary)
+                (hachee.kkc.util:unit->sentence word unknown-word-vocabulary)
                 :BOS bos-token
                 :EOS eos-token)))))
+
+(defun sum-probabilities-of-vocabulary-words (unknown-word-vocabulary
+                                              unknown-word-n-gram-model
+                                              word-dictionary)
+  (sum-probabilities-of-words
+   unknown-word-vocabulary
+   unknown-word-n-gram-model
+   (mapcar #'hachee.kkc.dictionary:entry-unit
+           (remove-if-not (lambda (ent)
+                            (eql (hachee.kkc.dictionary:entry-origin ent)
+                                 hachee.kkc:+origin-vocabulary+))
+                          (hachee.kkc.dictionary:list-all word-dictionary)))))
 
 (defun load-kkc (pathname)
   (destructuring-bind (&key n-gram-model
                             vocabulary
-                            vocabulary-dictionary
-                            extended-dictionary
                             word-dictionary
-                            tankan-dictionary
+                            char-dictionary
+                            extended-dictionary
                             unknown-word-vocabulary
                             unknown-word-n-gram-model)
       (hachee.kkc.archive:load pathname)
     (make-kkc
      :n-gram-model n-gram-model
      :vocabulary vocabulary
-     :vocabulary-dictionary vocabulary-dictionary
-     :extended-dictionary extended-dictionary
      :word-dictionary word-dictionary
-     :tankan-dictionary tankan-dictionary
+     :char-dictionary char-dictionary
+     :extended-dictionary extended-dictionary
      :unknown-word-vocabulary unknown-word-vocabulary
      :unknown-word-n-gram-model unknown-word-n-gram-model
      :sum-probabilities-of-vocabulary-words
-     (sum-probabilities-of-words
-      unknown-word-vocabulary
-      unknown-word-n-gram-model
-      (hachee.kkc.word.dictionary:list-all vocabulary-dictionary)))))
+     (sum-probabilities-of-vocabulary-words unknown-word-vocabulary
+                                            unknown-word-n-gram-model
+                                            word-dictionary))))

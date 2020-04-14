@@ -4,9 +4,10 @@
            :entry-form
            :entry-pron
            :entry-token
+           :entry-unit
            :entry
            :dictionary-entry
-           :unknown-word-entry))
+           :non-dictionary-entry))
 (in-package :hachee.kkc.convert)
 
 (defgeneric entry-origin (entry))
@@ -14,10 +15,10 @@
 (defgeneric entry-unit (entry))
 
 (defun entry-form (entry)
-  (hachee.kkc.unit:unit-form (entry-unit entry)))
+  (hachee.kkc.dictionary:unit-form (entry-unit entry)))
 
 (defun entry-pron (entry)
-  (hachee.kkc.unit:unit-pron (entry-unit entry)))
+  (hachee.kkc.dictionary:unit-pron (entry-unit entry)))
 
 (defclass entry ()
   ((token
@@ -25,7 +26,7 @@
     :reader entry-token)))
 
 
-(defclass dictionary-entry ()
+(defclass dictionary-entry (entry)
   ((entry
     :initarg :entry)))
 
@@ -36,10 +37,10 @@
   (hachee.kkc.dictionary:entry-origin (slot-value e 'entry)))
 
 
-(defclass unknown-word-entry ()
+(defclass non-dictionary-entry (entry)
   ((unit
     :initarg :unit
-    :reader entry-unit)))
-
-(defmethod entry-origin ((e unknown-unit-entry))
-  :unknown-unit)
+    :reader entry-unit)
+   (origin
+    :initarg :origin
+    :reader entry-origin)))

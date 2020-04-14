@@ -42,17 +42,17 @@
                                 :weights (list 0.253401 0.746599)))))
       (train-n-gram-model n-gram-model pathnames vocabulary)
       (add-dictionary-entries-from-files word-dictionary pathnames vocabulary)
-      (let ((unknown-word-vocabulary
-             (build-unknown-word-vocabulary pathnames
-                                            vocabulary))
-            (unknown-word-n-gram-model
-             (build-unknown-word-n-gram-model pathnames
-                                              vocabulary
-                                              unknown-word-vocabulary)))
+      (let* ((unknown-word-vocabulary
+              (build-unknown-word-vocabulary pathnames
+                                             vocabulary))
+             (unknown-word-n-gram-model
+              (build-unknown-word-n-gram-model pathnames
+                                               vocabulary
+                                               unknown-word-vocabulary)))
         (hachee.kkc.full:make-kkc
          :n-gram-model n-gram-model
          :vocabulary vocabulary
-         :word-dictionary dictionary
+         :word-dictionary word-dictionary
          :char-dictionary (or char-dictionary
                               (hachee.kkc.dictionary:make-dictionary))
          :extended-dictionary (or extended-dictionary
@@ -60,16 +60,7 @@
          :unknown-word-vocabulary unknown-word-vocabulary
          :unknown-word-n-gram-model unknown-word-n-gram-model
          :sum-probabilities-of-vocabulary-words
-         (hachee.kkc.full:sum-probabilities-of-words
+         (hachee.kkc.full:sum-probabilities-of-vocabulary-words
           unknown-word-vocabulary
           unknown-word-n-gram-model
-          (loop for entries
-                    in (hachee.kkc.dictionary:list-all word-dictionary)
-                for vocabulary-entries
-                    = (remove-if-not
-                       (lambda (ent)
-                         (eql (hachee.kkc.dictionary:entry-origin ent)
-                              hachee.kkc.dictionary:+origin-vocabulary+))
-                       entries)
-                nconc (mapcar #'hachee.kkc.dictionary:entry-unit
-                              vocabulary-entries))))))))
+          word-dictionary))))))

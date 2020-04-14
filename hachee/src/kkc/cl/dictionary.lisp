@@ -18,11 +18,7 @@
            :entry
            :add-entry
            :lookup
-           :contains-p
-
-           :+origin-vocabulary+
-           :+origin-corpus+
-           :+origin-resource+))
+           :contains-p))
 (in-package :hachee.kkc.dictionary)
 
 ;; unit = form/pron
@@ -78,19 +74,14 @@
 (defun add-entry (dict unit origin)
   (let ((key (unit-pron unit))
         (entry (make-entry :unit unit :origin origin)))
-    (pushnew entry (gethash pron (dictionary-entry-hash dict))
+    (pushnew entry (gethash key (dictionary-entry-hash dict))
              :key #'entry-unit
              :test #'unit=)
     (values)))
 
 (defun lookup (dictionary pron)
-  (gethash pron (dictionary-word-hash dictionary)))
+  (gethash pron (dictionary-entry-hash dictionary)))
 
 (defun contains-p (dictionary unit)
   (let ((entries (lookup dictionary (unit-pron unit))))
     (member unit entries :key #'entry-unit :test #'unit=)))
-
-
-(defparameter +origin-vocabulary+ :vocabulary)
-(defparameter +origin-corpus+     :corpus)
-(defparameter +origin-resource+   :resource)

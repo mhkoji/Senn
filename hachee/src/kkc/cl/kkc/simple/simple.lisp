@@ -2,7 +2,7 @@
   (:use :cl)
   (:import-from :hachee.kkc.build
                 :build-vocabulary
-                :build-dictionary
+                :add-dictionary-entries-from-files
                 :train-n-gram-model)
   (:export :kkc
            :create-kkc))
@@ -16,8 +16,8 @@
     (lambda (curr-entry prev-entry)
       (let ((p (hachee.language-model.n-gram:transition-probability
                 word-n-gram-model
-                (hachee.kkc.entry:entry-token curr-entry)
-                (list (hachee.kkc.entry:entry-token prev-entry)))))
+                (hachee.kkc.convert:entry-token curr-entry)
+                (list (hachee.kkc.convert:entry-token prev-entry)))))
         (if (/= p 0)
             (log p)
             -10000)))))
@@ -25,13 +25,16 @@
 ;;; Create
 (defun create-kkc (pathnames &key char-dictionary)
   (let ((vocabulary (build-vocabulary pathnames))
+        (word-dictionary (hachee.kkc.dictionary:make-dictionary))
         (n-gram-model (make-instance 'hachee.language-model.n-gram:model)))
     (train-n-gram-model n-gram-model pathnames vocabulary)
+    (add-dictionary-entries-from-files word-dictionary
+                                       pathnames
+                                       vocabulary)
     (make-kkc
      :n-gram-model n-gram-model
      :vocabulary vocabulary
-     :vocabulary-dictionary dictionary
-     :word-dictionary (build-dictionary pathnames vocabulary)
+     :word-dictionary word-dictionary
      :char-dictionary (or char-dictionary
-                          (hachee.kkc.word.dictionary:make-dictionary))
-     :extended-dictionary (hachee.kkc.word.dictionary:make-dictionary))))
+                          (hachee.kkc.dictionary:make-dictionary))
+     :extended-dictionary (hachee.kkc.dictionary:make-dictionary))))

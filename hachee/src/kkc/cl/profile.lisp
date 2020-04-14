@@ -11,8 +11,7 @@
                                         :hachee.kkc.convert
                                         :hachee.kkc.full.convert
                                         :hachee.kkc.simple.convert
-                                        :hachee.kkc.word
-                                        :hachee.kkc.word.dictionary
+                                        :hachee.kkc.dictionary
                                         :hachee.language-mdoel.vocabulary
                                         :hachee.language-model.freq
                                         :hachee.language-model.n-gram)))

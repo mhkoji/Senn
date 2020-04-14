@@ -10,7 +10,7 @@
                 :unit-form
                 :unit-pron
                 :unit->key
-                :unit->pron-chars)
+                :unit->pron-units)
   (:export :build-vocabulary
            :build-vocabulary-with-unk
            :extend-existing-vocabulary
@@ -46,12 +46,12 @@
     (dolist (pathname pathnames)
       (let ((curr-words (make-hash-table :test #'equal)))
         (dolist (sentence (hachee.kkc.build.file:file->sentences pathname))
-          (dolist (word (hachee.kkc.build.file:sentence-words sentence))
-            (setf (gethash (word->key word) curr-words) word)))
+          (dolist (word (hachee.kkc.build.file:sentence-units sentence))
+            (setf (gethash (unit->key word) curr-words) word)))
         (maphash (lambda (word-key word)
                    (let ((freq (incf (gethash word-key word-key->freq 0))))
                      (when (<= overlap freq)
-                       (add-new vocab (word->key word)))))
+                       (add-new vocab (unit->key word)))))
                  curr-words)))
     vocab))
 
@@ -73,9 +73,9 @@
       (dolist (unit (hachee.kkc.build.file:sentence-units sentence))
         (if (to-int-or-nil vocabulary (unit->key unit))
             (hachee.kkc.dictionary:add-entry
-             dict word hachee.kkc.dictionary:+origin-vocabulary+)
+             dict unit hachee.kkc:+origin-vocabulary+)
             (hachee.kkc.dictionary:add-entry
-             dict word hachee.kkc.dictionary:+origin-corpus+)))))
+             dict unit hachee.kkc:+origin-corpus+)))))
   dict)
 
 (defun train-n-gram-model (model pathnames vocabulary)
@@ -141,7 +141,7 @@
           (declare (ignore part))
           (let ((unit (make-unit :form form :pron pron)))
             (hachee.kkc.dictionary:add-entry
-             dict word +origin-resource+))))))
+             dict unit hachee.kkc:+origin-resource+))))))
   dict)
 
 (defun build-tankan-dictionary (dict pathnames)
@@ -151,7 +151,8 @@
         (destructuring-bind (form pron) (cl-ppcre:split "/" line)
           (let ((char-unit (make-unit :form form
                                       :pron pron)))
-            (hachee.kkc.dictionary:add-entry dict char-unit :tankan))))))
+            (hachee.kkc.dictionary:add-entry
+             dict char-unit hachee.kkc:+origin-tankan+))))))
   dict)
 
 (defun build-classifier (class-token-to-word-file-path vocabulary)

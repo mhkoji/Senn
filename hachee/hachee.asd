@@ -27,22 +27,20 @@
    (:module :kkc
     :pathname "kkc/cl"
     :components
-    ((:file "word/word")
-     (:file "word/dictionary")
-     (:file "util")
-     (:file "convert")
+    ((:file "dictionary")
+     (:file "convert/viterbi")
+     (:file "convert/entry")
      (:file "lookup")
      (:file "archive")
-     (:file "build/file")
-     (:file "build/build")
-     (:file "kkc/entry")
      (:file "kkc/kkc")
+     (:file "profile")
+     (:file "kkc/util")
+     (:file "kkc/build/file")
+     (:file "kkc/build/build")
      (:file "kkc/full/score-fns")
      (:file "kkc/full/full")
      (:file "kkc/full/factory")
-     (:file "kkc/simple/convert")
-     (:file "kkc/simple/simple")
-     (:file "profile")))
+     (:file "kkc/simple/simple")))
 
    (:module :algorithm
     :pathname "algorithm"

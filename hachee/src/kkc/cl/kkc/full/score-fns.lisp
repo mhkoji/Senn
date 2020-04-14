@@ -1,7 +1,7 @@
 (defpackage :hachee.kkc.full.score-fns
   (:use :cl)
-  (:import-from :hachee.kkc.entry
-                :entry-word
+  (:import-from :hachee.kkc.convert
+                :entry-unit
                 :entry-token
                 :entry-origin)
   (:import-from :hachee.language-model.n-gram
@@ -18,10 +18,10 @@
 (in-package :hachee.kkc.full.score-fns)
 
 (defun from-vocabulary-p (entry)
-  (eql (entry-origin entry) :vocabulary))
+  (eql (entry-origin entry) hachee.kkc:+origin-vocabulary+))
 
 (defun from-extended-dictionary-p (entry)
-  (eql (entry-origin entry) :extended-dictionary))
+  (eql (entry-origin entry) hachee.kkc:+origin-extended-dictionary+))
 
 (defun unknown-word-log-probability
     (entry
@@ -31,7 +31,7 @@
   (let ((char-bos-token (to-int unknown-word-char-vocabulary +BOS+))
         (char-eos-token (to-int unknown-word-char-vocabulary +EOS+)))
     (let* ((char-sentence
-            (hachee.kkc.util:word->sentence (entry-word entry)
+            (hachee.kkc.util:unit->sentence (entry-unit entry)
                                             unknown-word-char-vocabulary))
            (log-prob-by-unknown-word-n-gram
             (sentence-log-probability unknown-word-char-n-gram-model
@@ -85,7 +85,7 @@
                               (let ((log-prob-by-unknown-word-n-gram
                                      (sentence-log-probability
                                       unknown-word-char-n-gram-model
-                                      (hachee.kkc.util:word->sentence
+                                      (hachee.kkc.util:unit->sentence
                                        curr-word
                                        unknown-word-char-vocabulary)
                                       :BOS char-bos-token
@@ -95,7 +95,7 @@
                            fail-safe-score))))))
       (let ((score-cache (make-hash-table :test #'equal)))
         (lambda (curr-word)
-          (let ((key (hachee.kkc.word:word->key curr-word)))
+          (let ((key (hachee.kkc.dictionary:unit->key curr-word)))
             (or (gethash key score-cache)
                 (setf (gethash key score-cache)
                       (+ (transit-score prev-token
