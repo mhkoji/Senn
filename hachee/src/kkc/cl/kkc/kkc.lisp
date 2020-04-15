@@ -58,7 +58,8 @@
                  :unit unk-unit
                  :token (hachee.language-model.vocabulary:to-int
                          vocabulary
-                         hachee.language-model.vocabulary:+UNK+))
+                         hachee.language-model.vocabulary:+UNK+)
+                 :origin +origin-unknown-word+)
                 entries))))
     (nreverse entries)))
 

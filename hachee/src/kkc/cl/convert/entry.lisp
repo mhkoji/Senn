@@ -25,6 +25,12 @@
     :initarg :token
     :reader entry-token)))
 
+(defmethod print-object ((entry entry) stream)
+  (print-unreadable-object (entry stream :type t)
+    (format stream "~A [~A, ~A]"
+            (entry-form entry)
+            (entry-token entry)
+            (entry-origin entry))))
 
 (defclass dictionary-entry (entry)
   ((entry
