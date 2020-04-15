@@ -2,7 +2,7 @@
   (:use :cl)
   (:import-from :hachee.kkc.build
                 :build-vocabulary
-                :add-dictionary-entries-from-files
+                :build-word-dictionary
                 :train-n-gram-model)
   (:export :kkc
            :create-kkc))
@@ -25,16 +25,12 @@
 ;;; Create
 (defun create-kkc (pathnames &key char-dictionary)
   (let ((vocabulary (build-vocabulary pathnames))
-        (word-dictionary (hachee.kkc.dictionary:make-dictionary))
         (n-gram-model (make-instance 'hachee.language-model.n-gram:model)))
     (train-n-gram-model n-gram-model pathnames vocabulary)
-    (add-dictionary-entries-from-files word-dictionary
-                                       pathnames
-                                       vocabulary)
     (make-kkc
      :n-gram-model n-gram-model
      :vocabulary vocabulary
-     :word-dictionary word-dictionary
+     :word-dictionary (build-word-dictionary pathnames vocabulary)
      :char-dictionary (or char-dictionary
                           (hachee.kkc.dictionary:make-dictionary))
      :extended-dictionary (hachee.kkc.dictionary:make-dictionary))))
