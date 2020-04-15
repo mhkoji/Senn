@@ -71,6 +71,11 @@
 (defgeneric load-object-as (type stream))
 
 (defmethod load-object-as
+    ((type (eql 'hachee.language-model.n-gram:model))
+     stream)
+  (load-model 'hachee.language-model.n-gram:model stream))
+
+(defmethod load-object-as
     ((type (eql 'hachee.kkc.dictionary:dictionary))
      stream)
   (load-dictionary stream))
