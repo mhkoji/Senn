@@ -3,7 +3,8 @@
   (:import-from :hachee.kkc.build
                 :build-vocabulary-with-unk
                 :extend-existing-vocabulary
-                :add-dictionary-entries-from-files
+                :build-word-dictionary
+                :add-to-word-dictionary-from-resources
                 :build-classifier
                 :train-n-gram-model
                 :build-unknown-word-vocabulary
@@ -13,13 +14,11 @@
 
 (defun unk-supported (pathnames-segmented
                       &key pathnames-inaccurately-segmented
-                           word-dictionary
+                           word-dictionary-pathnames
                            char-dictionary
                            extended-dictionary
                            trusted-word-dictionary
                            class-token-to-word-file-path)
-  (unless word-dictionary
-    (setq word-dictionary (hachee.kkc.dictionary:make-dictionary)))
   (let ((vocabulary (build-vocabulary-with-unk pathnames-segmented)))
     (when (and pathnames-inaccurately-segmented
                trusted-word-dictionary
@@ -33,16 +32,19 @@
                    pathnames-inaccurately-segmented))
           (n-gram-model
            (if class-token-to-word-file-path
-                 (make-instance 'hachee.language-model.n-gram:class-model
-                                :classifier (build-classifier
-                                             class-token-to-word-file-path
-                                             vocabulary)
-                                :weights (list 0.115267 0.884733))
-                 (make-instance 'hachee.language-model.n-gram:model
-                                :weights (list 0.253401 0.746599)))))
+               (make-instance 'hachee.language-model.n-gram:class-model
+                              :classifier (build-classifier
+                                           class-token-to-word-file-path
+                                           vocabulary)
+                              :weights (list 0.115267 0.884733))
+               (make-instance 'hachee.language-model.n-gram:model
+                              :weights (list 0.253401 0.746599)))))
       (train-n-gram-model n-gram-model pathnames vocabulary)
-      (add-dictionary-entries-from-files word-dictionary pathnames vocabulary)
-      (let* ((unknown-word-vocabulary
+      (let* ((word-dictionary
+              (add-to-word-dictionary-from-resources
+               (build-word-dictionary pathnames vocabulary)
+               word-dictionary-pathnames))
+             (unknown-word-vocabulary
               (build-unknown-word-vocabulary pathnames
                                              vocabulary))
              (unknown-word-n-gram-model

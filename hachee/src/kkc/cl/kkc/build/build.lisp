@@ -14,11 +14,11 @@
   (:export :build-vocabulary
            :build-vocabulary-with-unk
            :extend-existing-vocabulary
-           :add-dictionary-entries-from-files
+           :build-word-dictionary
            :train-n-gram-model
            :build-unknown-word-vocabulary
            :build-unknown-word-n-gram-model
-           :build-word-dictionary
+           :add-to-word-dictionary-from-resources
            :build-tankan-dictionary
            :build-classifier))
 (in-package :hachee.kkc.build)
@@ -66,17 +66,18 @@
           (add-new vocabulary (unit->key unit))))))
   vocabulary)
 
-(defun add-dictionary-entries-from-files (dict pathnames vocabulary)
+(defun build-word-dictionary (pathnames vocabulary)
   (log:info "Building dictionary...")
-  (dolist (pathname pathnames)
-    (dolist (sentence (hachee.kkc.build.file:file->sentences pathname))
-      (dolist (unit (hachee.kkc.build.file:sentence-units sentence))
-        (if (to-int-or-nil vocabulary (unit->key unit))
-            (hachee.kkc.dictionary:add-entry
-             dict unit hachee.kkc:+origin-vocabulary+)
-            (hachee.kkc.dictionary:add-entry
-             dict unit hachee.kkc:+origin-corpus+)))))
-  dict)
+  (let ((dict (hachee.kkc.dictionary:make-dictionary)))
+    (dolist (pathname pathnames)
+      (dolist (sentence (hachee.kkc.build.file:file->sentences pathname))
+        (dolist (unit (hachee.kkc.build.file:sentence-units sentence))
+          (if (to-int-or-nil vocabulary (unit->key unit))
+              (hachee.kkc.dictionary:add-entry
+               dict unit hachee.kkc:+origin-vocabulary+)
+              (hachee.kkc.dictionary:add-entry
+               dict unit hachee.kkc:+origin-corpus+)))))
+    dict))
 
 (defun train-n-gram-model (model pathnames vocabulary)
   (log:info "Building n-gram model...")
@@ -132,7 +133,7 @@
                                                 :EOS EOS))))))
   model))
 
-(defun build-word-dictionary (dict pathnames)
+(defun add-to-word-dictionary-from-resources (dict pathnames)
   (log:info "Building...")
   (dolist (pathname pathnames)
     (with-open-file (in pathname)

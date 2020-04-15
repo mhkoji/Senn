@@ -8,5 +8,7 @@
 (defun unit->sentence (unit unknown-word-char-vocabulary)
   (hachee.language-model:make-sentence
    :tokens (mapcar (lambda (pron-unit)
-                     (to-int-or-unk unknown-word-char-vocabulary pron-unit))
+                     (to-int-or-unk
+                      unknown-word-char-vocabulary
+                      (hachee.kkc.dictionary:unit->key pron-unit)))
                    (hachee.kkc.dictionary:unit->pron-units unit))))

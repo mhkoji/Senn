@@ -19,15 +19,15 @@
   (hachee.kkc.full.score-fns:get-for-conv
    :word-n-gram-model (kkc-n-gram-model kkc)
    :unknown-word-log-probability-fn
-   (lambda (entry)
-     (hachee.kkc.full.score-fns:unknown-word-log-probability
-      entry
-      (kkc-unknown-word-vocabulary kkc)
-      (kkc-unknown-word-n-gram-model kkc)
-      (let ((extended-dictionary-size
-             (hachee.kkc.dictionary:size (kkc-extended-dictionary kkc)))
-            (sum-probabilities-of-vocabulary-words
-             (kkc-sum-probabilities-of-vocabulary-words kkc)))
+   (let ((extended-dictionary-size
+          (hachee.kkc.dictionary:size (kkc-extended-dictionary kkc)))
+         (sum-probabilities-of-vocabulary-words
+          (kkc-sum-probabilities-of-vocabulary-words kkc)))
+     (lambda (entry)
+       (hachee.kkc.full.score-fns:unknown-word-log-probability
+        entry
+        (kkc-unknown-word-vocabulary kkc)
+        (kkc-unknown-word-n-gram-model kkc)
         (if (< 0 extended-dictionary-size)
             (/ sum-probabilities-of-vocabulary-words
                extended-dictionary-size)
