@@ -20,6 +20,15 @@ exec ros -Q -- $0 "$@"
 (defvar *prefix-dictionary*
   (senn.im.predictors:load-prefix-dictionary (user-homedir-pathname)))
 
+(let ((user-dictionary
+       (senn.user-dictionary:load-dictionary
+        (merge-pathnames ".senn/user-dict.csv" (user-homedir-pathname)))))
+  (when user-dictionary
+    (senn.user-dictionary:add-to-kkc
+     user-dictionary *kkc*)
+    (senn.user-dictionary:add-to-prefix-dictionary
+     user-dictionary *prefix-dictionary*)))
+
 (defclass ime (senn.im.predictors:prefix
                senn.im.predictors:katakana
                senn.im.kkc:ime) ())

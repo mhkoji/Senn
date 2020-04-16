@@ -6,6 +6,7 @@
    (:file "buffer")
    (:file "segment")
    (:file "prefix-dictionary")
+   (:file "user-dictionary")
    (:module :im
     :pathname "im/"
     :components
@@ -18,4 +19,5 @@
      (:file "net/stdio")
      (:file "predictors"))))
   :depends-on (:hachee
-               :cl-trie))
+               :cl-trie
+               :cl-csv))

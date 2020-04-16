@@ -6,6 +6,7 @@
            :load-dictionary
            :make-dictionary
            :build-dictionary
+           :add-unit
            :lookup))
 (in-package :senn.prefix-dictionary)
 
@@ -28,17 +29,23 @@
             do (progn (setf (cl-trie:lookup trie key) value))))
     (make-dictionary :trie trie)))
 
+(defun add-unit-to-trie (trie unit)
+  (let ((pron (hachee.kkc.dictionary:unit-pron unit)))
+    (loop for i from 1 below (length pron)
+          for prefix = (subseq pron 0 i)
+          do (pushnew unit (cl-trie:lookup trie prefix)
+                      :test #'hachee.kkc.dictionary:unit=))))
+
+(defun add-unit (dictionary unit)
+  (add-unit-to-trie (dictionary-trie dictionary) unit))
+
 (defun build-dictionary (pathnames)
   (log:info "Building...")
   (let ((trie (make-instance 'cl-trie:trie)))
     (dolist (pathname pathnames)
       (dolist (sentence (hachee.kkc.build.file:file->sentences pathname))
         (dolist (unit (hachee.kkc.build.file:sentence-units sentence))
-          (let ((pron (hachee.kkc.dictionary:unit-pron unit)))
-            (loop for i from 1 below (length pron)
-                  for prefix = (subseq pron 0 i)
-                  do (pushnew unit (cl-trie:lookup trie prefix)
-                              :test #'hachee.kkc.dictionary:unit=))))))
+          (add-unit-to-trie trie unit))))
     (make-dictionary :trie trie)))
 
 (defun lookup (dictionary prefix)

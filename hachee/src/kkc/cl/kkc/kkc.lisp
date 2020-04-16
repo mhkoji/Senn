@@ -8,6 +8,7 @@
            :+origin-tankan+
 
            :kkc
+           :kkc-extended-dictionary
            :convert
            :get-convert-score-fn
            :lookup
@@ -39,7 +40,7 @@
    :pron pron
    :form (hachee.ja:hiragana->katakana pron)))
 
-(defun list-entries (sub-pron &key dictionary vocabulary)
+(defun list-entries (sub-pron &key dictionaries vocabulary)
   (let ((entries
          (mapcar
           (lambda (dictionary-entry)
@@ -49,11 +50,15 @@
                      vocabulary
                      (hachee.kkc.dictionary:unit->key
                       (hachee.kkc.dictionary:entry-unit dictionary-entry)))))
-          (hachee.kkc.dictionary:lookup dictionary sub-pron))))
+          (alexandria:mappend (lambda (dict)
+                                (hachee.kkc.dictionary:lookup dict sub-pron))
+                              dictionaries))))
     ;; Add unknown word node if necessary
     (when (< (length sub-pron) 8) ;; Length up to 8
       (let ((unk-unit (make-unknown-word-unit sub-pron)))
-        (when (not (hachee.kkc.dictionary:contains-p dictionary unk-unit))
+        (when (not (some (lambda (dict)
+                           (hachee.kkc.dictionary:contains-p dict unk-unit))
+                         dictionaries))
           (push (make-instance 'hachee.kkc.convert:non-dictionary-entry
                  :unit unk-unit
                  :token (hachee.language-model.vocabulary:to-int
@@ -84,7 +89,8 @@
    :list-entries-fn
    (lambda (sub-pron)
      (list-entries sub-pron
-                   :dictionary (kkc-word-dictionary kkc)
+                   :dictionaries (list (kkc-word-dictionary kkc)
+                                       (kkc-extended-dictionary kkc))
                    :vocabulary (kkc-vocabulary kkc)))
    :1st-boundary-index 1st-boundary-index))
 
