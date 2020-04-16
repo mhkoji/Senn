@@ -9,8 +9,9 @@
                                   (list :cl
                                         :hachee.kkc
                                         :hachee.kkc.convert
-                                        :hachee.kkc.full.convert
-                                        :hachee.kkc.simple.convert
+                                        :hachee.kkc.convert.viterbi
+                                        :hachee.kkc.full.score-fns
+                                        :hachee.kkc.simple
                                         :hachee.kkc.dictionary
                                         :hachee.language-mdoel.vocabulary
                                         :hachee.language-model.freq

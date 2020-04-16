@@ -33,14 +33,14 @@
      (:file "lookup")
      (:file "archive")
      (:file "kkc/kkc")
-     (:file "profile")
      (:file "kkc/util")
      (:file "kkc/build/file")
      (:file "kkc/build/build")
      (:file "kkc/full/score-fns")
      (:file "kkc/full/full")
      (:file "kkc/full/factory")
-     (:file "kkc/simple/simple")))
+     (:file "kkc/simple/simple")
+     (:file "profile")))
 
    (:module :algorithm
     :pathname "algorithm"
