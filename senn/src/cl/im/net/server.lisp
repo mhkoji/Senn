@@ -10,8 +10,8 @@
 (defgeneric read-message (conn))
 (defgeneric send-message (conn msg))
 
-(defun expr->word (expr)
-  (hachee.kkc.word:make-word
+(defun expr->unit (expr)
+  (hachee.kkc.dictionary:make-unit
    :pron (jsown:val expr "pron")
    :form (jsown:val expr "form")))
 
@@ -35,9 +35,9 @@
      (let ((candidates
             (senn.im:lookup ime (expr-arg expr "text")
              :prev (let ((prev (expr-arg expr "prev")))
-                     (when prev (expr->word prev)))
+                     (when prev (expr->unit prev)))
              :next (let ((next (expr-arg expr "next")))
-                     (when next (expr->word next))))))
+                     (when next (expr->unit next))))))
        (jsown:to-json
         (mapcar (lambda (cand)
                   (jsown:new-js

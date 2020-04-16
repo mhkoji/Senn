@@ -21,7 +21,7 @@
                                    (string string))
   (let ((dict (prefix-dictionary predictor)))
     (let ((words (senn.prefix-dictionary:lookup dict string)))
-      (mapcar #'hachee.kkc.word:word-form
+      (mapcar #'hachee.kkc.dictionary:unit-form
               (subseq words 0 (min 10 (length words)))))))
 
 (defun load-prefix-dictionary (user-homedir-pathname)
