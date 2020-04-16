@@ -39,8 +39,8 @@
   (hachee.kkc.full.score-fns:get-for-lookup prev-word next-word
    :word-vocabulary (kkc-vocabulary kkc)
    :word-n-gram-model (kkc-n-gram-model kkc)
-   :unknown-word-char-vocabulary (kkc-unknown-word-vocabulary kkc)
-   :unknown-word-char-n-gram-model (kkc-unknown-word-n-gram-model kkc)
+   :unknown-word-pron-vocabulary (kkc-unknown-word-vocabulary kkc)
+   :unknown-word-pron-n-gram-model (kkc-unknown-word-n-gram-model kkc)
    :probability-for-extended-dictionary-words
    (let ((extended-dictionary-size
           (hachee.kkc.dictionary:size (kkc-extended-dictionary kkc)))

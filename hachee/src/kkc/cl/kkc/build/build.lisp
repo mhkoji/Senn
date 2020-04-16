@@ -96,7 +96,7 @@
 (defun build-unknown-word-vocabulary (pathnames vocabulary &key (overlap 2))
   (log:info "Building...")
   (let ((key->freq (make-hash-table :test #'equal))
-        (char-vocab (hachee.language-model.vocabulary:make-vocabulary)))
+        (pron-vocab (hachee.language-model.vocabulary:make-vocabulary)))
     (dolist (pathname pathnames)
       (let ((curr-prons (make-hash-table :test #'equal)))
         (dolist (sentence (hachee.kkc.build.file:file->sentences pathname))
@@ -108,9 +108,9 @@
         (maphash (lambda (key pron-unit)
                    (let ((freq (incf (gethash key key->freq 0))))
                      (when (<= overlap freq)
-                       (add-new char-vocab (unit->key pron-unit)))))
+                       (add-new pron-vocab (unit->key pron-unit)))))
                  curr-prons)))
-    char-vocab))
+    pron-vocab))
 
 (defun build-unknown-word-n-gram-model (pathnames
                                         vocabulary

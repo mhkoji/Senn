@@ -25,19 +25,19 @@
 
 (defun unknown-word-log-probability
     (entry
-     unknown-word-char-vocabulary
-     unknown-word-char-n-gram-model
+     unknown-word-pron-vocabulary
+     unknown-word-pron-n-gram-model
      probability-for-extended-dictionary-words)
-  (let ((char-bos-token (to-int unknown-word-char-vocabulary +BOS+))
-        (char-eos-token (to-int unknown-word-char-vocabulary +EOS+)))
-    (let* ((char-sentence
+  (let ((pron-bos-token (to-int unknown-word-pron-vocabulary +BOS+))
+        (pron-eos-token (to-int unknown-word-pron-vocabulary +EOS+)))
+    (let* ((pron-sentence
             (hachee.kkc.util:unit->sentence (entry-unit entry)
-                                            unknown-word-char-vocabulary))
+                                            unknown-word-pron-vocabulary))
            (log-prob-by-unknown-word-n-gram
-            (sentence-log-probability unknown-word-char-n-gram-model
-                                      char-sentence
-                                      :BOS char-bos-token
-                                      :EOS char-eos-token)))
+            (sentence-log-probability unknown-word-pron-n-gram-model
+                                      pron-sentence
+                                      :BOS pron-bos-token
+                                      :EOS pron-eos-token)))
       (if (from-extended-dictionary-p entry)
           (log (+ (exp log-prob-by-unknown-word-n-gram)
                   probability-for-extended-dictionary-words))
@@ -59,13 +59,13 @@
 (defun get-for-lookup (prev-word next-word
                        &key word-vocabulary
                             word-n-gram-model
-                            unknown-word-char-vocabulary
-                            unknown-word-char-n-gram-model
+                            unknown-word-pron-vocabulary
+                            unknown-word-pron-n-gram-model
                             (probability-for-extended-dictionary-words 0))
   (declare (ignore probability-for-extended-dictionary-words))
   (let ((word-unk-token (to-int word-vocabulary +UNK+))
-        (char-bos-token (to-int unknown-word-char-vocabulary +BOS+))
-        (char-eos-token (to-int unknown-word-char-vocabulary +EOS+))
+        (pron-bos-token (to-int unknown-word-pron-vocabulary +BOS+))
+        (pron-eos-token (to-int unknown-word-pron-vocabulary +EOS+))
         (prev-token (to-int-or-unk word-vocabulary prev-word))
         (fail-safe-score -10000))
     (labels ((transit-score (prev-token curr-word)
@@ -84,12 +84,12 @@
                            (+ (log p)
                               (let ((log-prob-by-unknown-word-n-gram
                                      (sentence-log-probability
-                                      unknown-word-char-n-gram-model
+                                      unknown-word-pron-n-gram-model
                                       (hachee.kkc.util:unit->sentence
                                        curr-word
-                                       unknown-word-char-vocabulary)
-                                      :BOS char-bos-token
-                                      :EOS char-eos-token)))
+                                       unknown-word-pron-vocabulary)
+                                      :BOS pron-bos-token
+                                      :EOS pron-eos-token)))
                                 ;; TODO: support for extended dictionary
                                 log-prob-by-unknown-word-n-gram))
                            fail-safe-score))))))
