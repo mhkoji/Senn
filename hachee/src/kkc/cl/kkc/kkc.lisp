@@ -4,7 +4,7 @@
            :+origin-extended-dictionary+
            :+origin-corpus+
            :+origin-resource+
-           :+origin-unknown-word+
+           :+origin-out-of-dictionary+
            :+origin-tankan+
 
            :kkc
@@ -20,7 +20,7 @@
 (defparameter +origin-extended-dictionary+ :extended-dictionary)
 (defparameter +origin-corpus+              :corpus)
 (defparameter +origin-resource+            :resource)
-(defparameter +origin-unknown-word+        :unknown-word)
+(defparameter +origin-out-of-dictionary+   :out-of-dictionary)
 (defparameter +origin-tankan+              :tankan)
 
 ;; word-pron pair n-gram model
@@ -44,12 +44,14 @@
   (let ((entries
          (mapcar
           (lambda (dictionary-entry)
-            (make-instance 'hachee.kkc.convert:dictionary-entry
-             :entry dictionary-entry
-             :token (hachee.language-model.vocabulary:to-int-or-unk
-                     vocabulary
-                     (hachee.kkc.dictionary:unit->key
-                      (hachee.kkc.dictionary:entry-unit dictionary-entry)))))
+            (let ((unit (hachee.kkc.dictionary:entry-unit dictionary-entry)))
+              (hachee.kkc.convert:make-entry
+               :unit unit
+               :token (hachee.language-model.vocabulary:to-int-or-unk
+                       vocabulary
+                       (hachee.kkc.dictionary:unit->key unit))
+               :origin
+               (hachee.kkc.dictionary:entry-origin dictionary-entry))))
           (alexandria:mappend (lambda (dict)
                                 (hachee.kkc.dictionary:lookup dict sub-pron))
                               dictionaries))))
@@ -59,26 +61,26 @@
         (when (not (some (lambda (dict)
                            (hachee.kkc.dictionary:contains-p dict unk-unit))
                          dictionaries))
-          (push (make-instance 'hachee.kkc.convert:non-dictionary-entry
+          (push (hachee.kkc.convert:make-entry
                  :unit unk-unit
                  :token (hachee.language-model.vocabulary:to-int
                          vocabulary
                          hachee.language-model.vocabulary:+UNK+)
-                 :origin +origin-unknown-word+)
+                 :origin +origin-out-of-dictionary+)
                 entries))))
     (nreverse entries)))
 
 (defun convert (kkc pronunciation &key 1st-boundary-index)
   (hachee.kkc.convert.viterbi:execute pronunciation
    :begin-entry
-   (make-instance 'hachee.kkc.convert:non-dictionary-entry
+   (hachee.kkc.convert:make-entry
     :unit hachee.language-model.vocabulary:+BOS+
     :token (hachee.language-model.vocabulary:to-int
             (kkc-vocabulary kkc)
             hachee.language-model.vocabulary:+BOS+)
     :origin +origin-vocabulary+)
    :end-entry
-   (make-instance 'hachee.kkc.convert:non-dictionary-entry
+   (hachee.kkc.convert:make-entry
     :unit hachee.language-model.vocabulary:+EOS+
     :token (hachee.language-model.vocabulary:to-int
             (kkc-vocabulary kkc)
