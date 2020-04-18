@@ -35,7 +35,7 @@
     (let ((kkc-path (merge-pathnames ".senn/kkc.zip"
                                      user-homedir-pathname)))
       (when (cl-fad:file-exists-p kkc-path)
-        (hachee.kkc.full:load-kkc kkc-path)))))
+        (hachee.kkc:load-kkc kkc-path)))))
 
 (defun create-system-kkc ()
   (let ((corpus-pathnames
