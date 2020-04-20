@@ -1,0 +1,45 @@
+#!/bin/sh
+#|-*- mode:lisp -*-|#
+#|
+exec ros -Q -- $0 "$@"
+|#
+(progn ;;init forms
+  (ros:ensure-asdf)
+  ;;#+quicklisp (ql:quickload '() :silent t)
+  )
+
+(defpackage :ros.script.run.3796370984
+  (:use :cl))
+(in-package :ros.script.run.3796370984)
+(ql:quickload :senn :silent t)
+
+(defun convert (ime in-stream out-stream)
+  (labels ((to-elem (seg)
+             (format nil "~A/~A"
+                     (first (senn.segment:segment-forms seg))
+                     (senn.segment:segment-pron seg))))
+    (loop for line = (read-line in-stream nil nil)
+          while line
+          do (let ((elems (mapcar #'to-elem
+                                  (senn.im:convert ime line))))
+               (format out-stream "~{~A~^ ~}~%" elems)))))
+
+(defun make-ime (arg ime-fn)
+  (cond ((equal arg "unix")
+         (let ((ime (senn.im.net.client:make-ime
+                     #'senn.im.net.ipc.unix:connect)))
+           (funcall ime-fn ime)
+           (senn.im.net.client:close-ime ime)))
+        (t
+         (let ((ime (make-instance 'senn.im.kkc:ime
+                     :kkc (senn.im.kkc:load-kkc (user-homedir-pathname)))))
+           (funcall ime-fn ime)))))
+
+(defun main (&rest argv)
+  (let ((op (first argv)))
+    (make-ime (second argv)
+      (lambda (ime)
+        (cond ((equal op "convert")
+               (convert ime *standard-input* *standard-output*)))))))
+
+;;; vim: set ft=lisp lisp:

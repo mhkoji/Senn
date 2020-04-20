@@ -71,3 +71,6 @@
 
 (defmethod senn.im.net.client:send-message ((conn connection) (msg string))
   (send-message conn msg))
+
+(defmethod senn.im.net.client:close-connection ((conn connection))
+  (hachee.ipc.unix:socket-close (connection-socket conn)))

@@ -1,12 +1,15 @@
 (defpackage :senn.im.net.client
   (:use :cl)
   (:export :make-ime
+           :close-ime
            :read-message
-           :send-message))
+           :send-message
+           :close-connection))
 (in-package :senn.im.net.client)
 
 (defgeneric read-message (conn))
 (defgeneric send-message (conn msg))
+(defgeneric close-connection (conn))
 
 (defclass connection-holder ()
   ((connection :initarg :connection
@@ -40,6 +43,9 @@
     (make-instance 'ime
      :connection conn
      :reconnect-fn reconnect-fn)))
+
+(defun close-ime (ime)
+  (close-connection (connection ime)))
 
 (defmethod senn.im:convert ((ime ime) (pron string) &key 1st-boundary-index)
   (let ((response
