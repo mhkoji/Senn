@@ -24,9 +24,9 @@
       (mapcar #'hachee.kkc.dictionary:unit-form
               (subseq words 0 (min 10 (length words)))))))
 
-(defun load-prefix-dictionary (user-homedir-pathname)
-  (let ((path (merge-pathnames ".senn/prefix-dictionary.txt"
-                               user-homedir-pathname)))
+(defun load-prefix-dictionary (senn-homedir-pathname)
+  (let ((path (merge-pathnames "prefix-dictionary.txt"
+                               senn-homedir-pathname)))
     (if (cl-fad:file-exists-p path)
         (with-open-file (s path)
           (senn.prefix-dictionary:load-dictionary s))

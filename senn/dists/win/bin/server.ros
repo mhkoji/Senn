@@ -14,7 +14,7 @@ exec ros -Q -- $0 "$@"
 (ql:quickload :senn-win)
 
 (defvar *kkc*
-  (senn.im.kkc:load-kkc (user-homedir-pathname)))
+  (senn.im.kkc:load-kkc (merge-pathnames ".senn/" (user-homedir-pathname))))
 
 (defun main (&rest argv)
   (declare (ignorable argv))

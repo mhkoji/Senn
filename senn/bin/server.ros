@@ -11,18 +11,19 @@ exec ros -Q -- $0 "$@"
 (defpackage :ros.script.server.3786319478
   (:use :cl))
 (in-package :ros.script.server.3786319478)
-
 (ql:quickload :senn :silent t)
 
+(defvar *senn-dir*
+  (merge-pathnames ".senn/" (user-homedir-pathname)))
+
 (defvar *kkc*
-  (senn.im.kkc:load-kkc (user-homedir-pathname)))
+  (senn.im.kkc:load-kkc *senn-dir*))
 
 (defvar *prefix-dictionary*
-  (senn.im.predictors:load-prefix-dictionary (user-homedir-pathname)))
+  (senn.im.predictors:load-prefix-dictionary *senn-dir*))
 
-(let ((user-dictionary
-       (senn.user-dictionary:load-dictionary
-        (merge-pathnames ".senn/user-dict.csv" (user-homedir-pathname)))))
+(let ((user-dictionary (senn.user-dictionary:load-dictionary
+                        (merge-pathnames "user-dict.csv" *senn-dir*))))
   (when user-dictionary
     (senn.user-dictionary:add-to-kkc
      user-dictionary *kkc*)

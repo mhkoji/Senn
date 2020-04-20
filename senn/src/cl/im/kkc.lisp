@@ -30,10 +30,9 @@
              :origin (hachee.kkc.lookup:item-origin item)))
           (hachee.kkc:lookup (ime-kkc ime) pron :prev prev :next next)))
 
-(defun load-user-kkc (user-homedir-pathname)
-  (when user-homedir-pathname
-    (let ((kkc-path (merge-pathnames ".senn/kkc.zip"
-                                     user-homedir-pathname)))
+(defun load-user-kkc (senn-homedir-pathname)
+  (when senn-homedir-pathname
+    (let ((kkc-path (merge-pathnames "kkc.zip" senn-homedir-pathname)))
       (when (cl-fad:file-exists-p kkc-path)
         (hachee.kkc:load-kkc kkc-path)))))
 
@@ -46,6 +45,6 @@
     (log:debug "Loading: ~A" corpus-pathnames)
     (hachee.kkc.simple::create-kkc corpus-pathnames)))
 
-(defun load-kkc (&optional user-homedir-pathname)
-  (or (load-user-kkc user-homedir-pathname)
+(defun load-kkc (&optional senn-homedir-pathname)
+  (or (load-user-kkc senn-homedir-pathname)
       (create-system-kkc)))
