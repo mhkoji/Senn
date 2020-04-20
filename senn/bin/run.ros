@@ -28,8 +28,9 @@ exec ros -Q -- $0 "$@"
   (cond ((equal arg "unix")
          (let ((ime (senn.im.net.client:make-ime
                      #'senn.im.net.ipc.unix:connect)))
-           (funcall ime-fn ime)
-           (senn.im.net.client:close-ime ime)))
+           (unwind-protect
+                (funcall ime-fn ime)
+             (senn.im.net.client:close-ime ime))))
         (t
          (let ((ime (make-instance 'senn.im.kkc:ime
                      :kkc (senn.im.kkc:load-kkc
