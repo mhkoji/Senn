@@ -32,7 +32,7 @@ exec ros -Q -- $0 "$@"
                 (funcall ime-fn ime)
              (senn.im.net.client:close-ime ime))))
         (t
-         (let ((ime (make-instance 'senn.im.kkc:ime
+         (let ((ime (make-instance 'senn.im.kkc:kkc-mixin
                      :kkc (senn.im.kkc:load-kkc
                            (merge-pathnames ".senn/"
                                             (user-homedir-pathname))))))

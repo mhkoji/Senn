@@ -32,7 +32,8 @@ exec ros -Q -- $0 "$@"
 
 (defclass ime (senn.im.predictors:prefix
                senn.im.predictors:katakana
-               senn.im.kkc:ime) ())
+               senn.im.kkc:kkc-mixin
+               senn.im:ime) ())
 
 (defun main (&rest argv)
   (declare (ignorable argv))
