@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentScriptType="application/ecmascript" contentStyleType="text/css" height="657px" preserveAspectRatio="none" style="width:488px;height:657px;" version="1.1" viewBox="0 0 488 657" width="488px" zoomAndPan="magnify"><defs><filter height="300%" id="f1botuvdistc8l" width="300%" x="-1" y="-1"><feGaussianBlur result="blurOut" stdDeviation="2.0"/><feColorMatrix in="blurOut" result="blurOut2" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .4 0"/><feOffset dx="4.0" dy="4.0" in="blurOut2" result="blurOut3"/><feBlend in="SourceGraphic" in2="blurOut3" mode="normal"/></filter></defs><g><!--MD5=[5891b99a7eee63e7b239ad02809485ce]
+cluster senn--><polygon fill="#FFFFFF" filter="url(#f1botuvdistc8l)" points="167,558,211,558,218,580.2969,247,580.2969,247,645,167,645,167,558" style="stroke: #000000; stroke-width: 1.5;"/><line style="stroke: #000000; stroke-width: 1.5;" x1="167" x2="218" y1="580.2969" y2="580.2969"/><text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="38" x="171" y="572.9951">senn</text><!--MD5=[82e9b82210379fb7838e950c38f0806f]
+cluster fcitx-senn--><polygon fill="#FFFFFF" filter="url(#f1botuvdistc8l)" points="22,152,110,152,117,174.2969,466,174.2969,466,509,22,509,22,152" style="stroke: #000000; stroke-width: 1.5;"/><line style="stroke: #000000; stroke-width: 1.5;" x1="22" x2="117" y1="174.2969" y2="174.2969"/><text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="82" x="26" y="166.9951">fcitx-senn</text><!--MD5=[23cbaadc18b1780d966e07254adaec4d]
+cluster frontend--><polygon fill="#FFFFFF" filter="url(#f1botuvdistc8l)" points="75,195,152,195,159,217.2969,252,217.2969,252,282,75,282,75,195" style="stroke: #000000; stroke-width: 1.5;"/><line style="stroke: #000000; stroke-width: 1.5;" x1="75" x2="159" y1="217.2969" y2="217.2969"/><text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="71" x="79" y="209.9951">frontend</text><!--MD5=[47c14c564e796a575e671c2b0469a7bb]
+cluster backend--><polygon fill="#FFFFFF" filter="url(#f1botuvdistc8l)" points="46,331,119,331,126,353.2969,442,353.2969,442,485,46,485,46,331" style="stroke: #000000; stroke-width: 1.5;"/><line style="stroke: #000000; stroke-width: 1.5;" x1="46" x2="126" y1="353.2969" y2="353.2969"/><text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="67" x="50" y="345.9951">backend</text><!--MD5=[9dfbd9b4b22b43a18bfc384767cc6112]
+cluster input-processor--><polygon fill="#FFFFFF" filter="url(#f1botuvdistc8l)" points="273,374,408,374,415,396.2969,418,396.2969,418,461,273,461,273,374" style="stroke: #000000; stroke-width: 1.5;"/><line style="stroke: #000000; stroke-width: 1.5;" x1="273" x2="415" y1="396.2969" y2="396.2969"/><text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="129" x="277" y="388.9951">input-processor</text><!--MD5=[c0f53b31ac6bc61da689df9afd70510b]
+entity ime--><rect fill="#FEFECE" filter="url(#f1botuvdistc8l)" height="36.2969" style="stroke: #A80036; stroke-width: 1.5;" width="47" x="183.5" y="593"/><rect fill="#FEFECE" height="5" style="stroke: #A80036; stroke-width: 1.5;" width="10" x="178.5" y="598"/><rect fill="#FEFECE" height="5" style="stroke: #A80036; stroke-width: 1.5;" width="10" x="178.5" y="619.2969"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="27" x="193.5" y="615.9951">ime</text><!--MD5=[85bead529d89c2113e70913fbdef214f]
+entity DoInput--><rect fill="#FEFECE" filter="url(#f1botuvdistc8l)" height="36.2969" style="stroke: #A80036; stroke-width: 1.5;" width="78" x="158" y="230"/><rect fill="#FEFECE" height="5" style="stroke: #A80036; stroke-width: 1.5;" width="10" x="153" y="235"/><rect fill="#FEFECE" height="5" style="stroke: #A80036; stroke-width: 1.5;" width="10" x="153" y="256.2969"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="58" x="168" y="252.9951">DoInput</text><!--MD5=[bf1b4add2ee2e1b53e65912b20fb7ef4]
+entity ui--><rect fill="#FEFECE" filter="url(#f1botuvdistc8l)" height="36.2969" style="stroke: #A80036; stroke-width: 1.5;" width="32" x="91" y="230"/><rect fill="#FEFECE" height="5" style="stroke: #A80036; stroke-width: 1.5;" width="10" x="86" y="235"/><rect fill="#FEFECE" height="5" style="stroke: #A80036; stroke-width: 1.5;" width="10" x="86" y="256.2969"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="12" x="101" y="252.9951">ui</text><!--MD5=[48af7236ebe878760a3516eafd0f9e45]
+entity menu--><rect fill="#FEFECE" filter="url(#f1botuvdistc8l)" height="36.2969" style="stroke: #A80036; stroke-width: 1.5;" width="60" x="62" y="409"/><rect fill="#FEFECE" height="5" style="stroke: #A80036; stroke-width: 1.5;" width="10" x="57" y="414"/><rect fill="#FEFECE" height="5" style="stroke: #A80036; stroke-width: 1.5;" width="10" x="57" y="435.2969"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="40" x="72" y="431.9951">menu</text><!--MD5=[9129a5710a511cd41dc0211e8dcbb620]
+entity stateful-im--><rect fill="#FEFECE" filter="url(#f1botuvdistc8l)" height="36.2969" style="stroke: #A80036; stroke-width: 1.5;" width="100" x="157" y="409"/><rect fill="#FEFECE" height="5" style="stroke: #A80036; stroke-width: 1.5;" width="10" x="152" y="414"/><rect fill="#FEFECE" height="5" style="stroke: #A80036; stroke-width: 1.5;" width="10" x="152" y="435.2969"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="80" x="167" y="431.9951">stateful-im</text><!--MD5=[f350ee6f6cc17b9109e91461bf56a5ea]
+entity state--><rect fill="#FEFECE" filter="url(#f1botuvdistc8l)" height="36.2969" style="stroke: #A80036; stroke-width: 1.5;" width="58" x="292" y="409"/><rect fill="#FEFECE" height="5" style="stroke: #A80036; stroke-width: 1.5;" width="10" x="287" y="414"/><rect fill="#FEFECE" height="5" style="stroke: #A80036; stroke-width: 1.5;" width="10" x="287" y="435.2969"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="38" x="302" y="431.9951">state</text><!--MD5=[fee662a292a0353a69bd162820bae93b]
+entity User--><ellipse cx="154" cy="17.5" fill="#FEFECE" filter="url(#f1botuvdistc8l)" rx="8" ry="8" style="stroke: #A80036; stroke-width: 1.5;"/><path d="M154,25.5 L154,52.5 M141,33.5 L167,33.5 M154,52.5 L141,67.5 M154,52.5 L167,67.5 " fill="none" filter="url(#f1botuvdistc8l)" style="stroke: #A80036; stroke-width: 1.5;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="31" x="138.5" y="85.9951">User</text><!--MD5=[02cd8774ced85f52cea37786f26e3d04]
+link ui to menu--><path d="M105.5344,266.294 C102.6594,300.219 96.3114,375.125 93.4494,408.897 " fill="none" id="ui-menu" style="stroke: #A80036; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="42" x="104" y="311.0669">spawn</text><!--MD5=[8604555726e06795fbaf4845d93dc88c]
+link DoInput to stateful-im--><path d="M197.977,266.294 C199.894,300.219 204.126,375.125 206.034,408.897 " fill="none" id="DoInput-stateful-im" style="stroke: #A80036; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="87" x="201" y="311.0669">process-input</text><!--MD5=[b71a11d6f31afba5eb5cdb0b116a0f3a]
+link stateful-im to state--><path d="M257.32,427 C268.763,427 280.205,427 291.648,427 " fill="none" id="stateful-im-state" style="stroke: #A80036; stroke-width: 1.0;"/><!--MD5=[c313249b6558f1fc99206b0a1664784e]
+link stateful-im to ime--><path d="M207,445.122 C207,479.81 207,558.03 207,592.7908 " fill="none" id="stateful-im-ime" style="stroke: #A80036; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="151" x="208" y="538.0669">convert, lookup, predict</text><!--MD5=[726ba7560173f8a4fc020a7b0a7fe86f]
+link User to DoInput--><path d="M162.702,89.467 C172.027,132.299 186.403,198.328 193.196,229.527 " fill="none" id="User-DoInput" style="stroke: #A80036; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="23" x="172" y="132.0669">key</text><!--MD5=[6e2d087bcca10a9b6549da48108ccf62]
+link User to ui--><path d="M140.536,89.335 C137.512,98.985 134.471,109.312 132,119 C121.984,158.272 113.752,205.205 109.706,229.885 " fill="none" id="User-ui" style="stroke: #A80036; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="27" x="133" y="132.0669">click</text><!--MD5=[6397108f17a7bf6bf536e8b6240c5e2c]
+@startuml
+package "senn" {
+  [ime]
+}
+
+package "fcitx-senn" {
+  folder "frontend" {
+    [DoInput]
+    [ui]
+  }
+
+  folder "backend" {
+    [menu]
+    [stateful-im]
+    folder "input-processor" {
+      [state]
+    }
+  }
+
+  [ui] - [menu] : spawn
+  [DoInput] - - [stateful-im] : process-input
+  [stateful-im] - [state]
+  [stateful-im] - - [ime] : convert, lookup, predict
+}
+
+:User: - - DoInput : key
+:User: - - ui: click
+@enduml
+
+PlantUML version 1.2020.09(Sun May 10 10:51:06 UTC 2020)
+(GPL source distribution)
+Java Runtime: Java(TM) SE Runtime Environment
+JVM: Java HotSpot(TM) 64-Bit Server VM
+Java Version: 14.0.1+7
+Operating System: Linux
+Default Encoding: UTF-8
+Language: en
+Country: US
+--></g></svg>
