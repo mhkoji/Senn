@@ -1,10 +1,10 @@
-(defpackage :senn.win.stateful-im.ipc
+(defpackage :senn.win.ipc
   (:use :cl)
   (:export :start-server)
   (:import-from :alexandria
                 :if-let
                 :when-let))
-(in-package :senn.win.stateful-im.ipc)
+(in-package :senn.win.ipc)
 
 (defstruct client id pipe)
 
@@ -35,7 +35,7 @@
   (log/info client "Connected")
   (bordeaux-threads:make-thread
    (lambda ()
-     (let ((initial-state (senn.win.transit.states:make-editing)))
+     (let ((initial-state (senn.win.input-processor.states:make-editing)))
        (senn.win.stateful-im:loop-handling-request initial-state ime client))
      (log/info client "Disconnected"))))
 

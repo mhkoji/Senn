@@ -13,11 +13,11 @@
 
 (defun handle-request (expr state ime client)
   (case (expr-op expr)
-    (:transit
-     (let ((key (senn.win.transit.keys:make-key
+    (:process-input
+     (let ((key (senn.win.input-processor.keys:make-key
                  :code (expr-arg expr "keycode"))))
        (destructuring-bind (new-state view)
-           (senn.win.transit:transit ime state key)
+           (senn.win.input-processor:process-input ime state key)
          (send-response client view)
          new-state)))))
 

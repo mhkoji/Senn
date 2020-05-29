@@ -1,4 +1,4 @@
-(defpackage :senn.win.transit.states
+(defpackage :senn.win.input-processor.states
   (:use :cl)
   (:export :to-view
 
@@ -14,7 +14,7 @@
            :converting-current-input
            :converting-current-segment-index
            :converting-move-curret-segment))
-(in-package :senn.win.transit.states)
+(in-package :senn.win.input-processor.states)
 
 (defgeneric to-view (s))
 

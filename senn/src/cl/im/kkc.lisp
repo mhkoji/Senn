@@ -8,8 +8,8 @@
   ((kkc :initarg :kkc
         :reader kkc-mixin-kkc)))
 
-(defmethod senn.im:convert ((ime kkc-mixin)
-                            (pron string) &key 1st-boundary-index)
+(defmethod senn.im:convert ((ime kkc-mixin) (pron string)
+                            &key 1st-boundary-index)
   (mapcar (lambda (e)
             (senn.segment:make-segment
              :pron
