@@ -37,7 +37,7 @@ void StatefulIMProxyIPC::Transit(
   {
     std::stringstream ss;
     ss << "{"
-       << "\"op\": \"transit\","
+       << "\"op\": \"process-input\","
        << "\"args\": {" << "\"keycode\": " << keycode
                         << "}"
        << "}";
