@@ -16,8 +16,10 @@ exec ros -Q -- $0 "$@"
 (defvar *kkc*
   (senn.im.kkc:load-kkc (merge-pathnames ".senn/" (user-homedir-pathname))))
 
+(defclass ime (senn.im.kkc:kkc-mixin
+               senn.im:ime) ())
+
 (defun main (&rest argv)
   (declare (ignorable argv))
-  (senn.win.ipc:start-server
-   (make-instance 'senn.im.kkc:kkc-mixin :kkc *kkc*)))
+  (senn.win.ipc:start-server (make-instance 'ime :kkc *kkc*)))
 ;;; vim: set ft=lisp lisp:
