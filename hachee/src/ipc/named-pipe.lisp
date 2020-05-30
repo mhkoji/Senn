@@ -48,7 +48,8 @@
                                              buf-size
                                              bytes-read-ptr
                                              (cffi:null-pointer))))
-          (if (= return-value 0)
+          (if (and (numberp return-value)
+                   (= return-value 0))
               nil
               ;; succeeds
               (let ((bytes-read
