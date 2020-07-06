@@ -182,7 +182,7 @@
           (n-gram-model
            (if class-token-to-word-file-path
                (make-instance 'hachee.language-model.n-gram:class-model
-                              :classifier (build-classifier
+                              :classifier (hachee.kkc.build:build-classifier
                                            class-token-to-word-file-path
                                            vocabulary)
                               :weights (list 0.115267 0.884733))
