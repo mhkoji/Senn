@@ -28,6 +28,7 @@
     (aref table (1- str1-len) (1- str2-len))))
 
 (defun compute-length (str1 str2)
+  "Returns the length of the longest common subsequence by str1 and str2"
   (if (or (string= str1 "") (string= str2 ""))
       0
       (compute-length-non-empty str1 str2)))
