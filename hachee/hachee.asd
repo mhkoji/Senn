@@ -24,6 +24,12 @@
      #+win32
      (:file "named-pipe")))
 
+   (:module :algorithm
+    :pathname "algorithm"
+    :components
+    ((:file "chu-liu-edmonds")
+     (:file "longest-common-subsequence")))
+
    (:module :kkc
     :pathname "kkc/cl"
     :components
@@ -41,12 +47,6 @@
      (:file "kkc/simple/simple")
      (:file "profile")
      (:file "eval")))
-
-   (:module :algorithm
-    :pathname "algorithm"
-    :components
-    ((:file "chu-liu-edmonds")
-     (:file "longest-common-subsequence")))
 
    (:file "util/stream")
    (:module :dependency-parsing
