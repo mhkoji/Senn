@@ -39,7 +39,8 @@
      (:file "kkc/full/score-fns")
      (:file "kkc/full/full")
      (:file "kkc/simple/simple")
-     (:file "profile")))
+     (:file "profile")
+     (:file "eval")))
 
    (:module :algorithm
     :pathname "algorithm"
