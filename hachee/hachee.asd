@@ -44,7 +44,8 @@
    (:module :algorithm
     :pathname "algorithm"
     :components
-    ((:file "chu-liu-edmonds")))
+    ((:file "chu-liu-edmonds")
+     (:file "longest-common-subsequence")))
 
    (:file "util/stream")
    (:module :dependency-parsing
