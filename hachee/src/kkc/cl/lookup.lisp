@@ -1,6 +1,7 @@
 (defpackage :hachee.kkc.lookup
   (:use :cl)
   (:export :execute
+           :item-unit
            :item-form
            :item-origin))
 (in-package :hachee.kkc.lookup)
@@ -24,9 +25,7 @@
                             :key #'item-form)))))
       (push-items (hachee.kkc.dictionary:lookup word-dict pronunciation))
       (when score-fn
-        (labels ((item->score (item)
-                   (funcall score-fn (item-unit item))))
-          (setq result-items (sort result-items #'< :key #'item->score))))
+        (setq result-items (sort result-items #'< :key score-fn)))
       (push-items (hachee.kkc.dictionary:lookup char-dict pronunciation)))
     ;; ch_1, ..., ch_s, w_1, ..., w_t,
     ;;     where score(w_1) < score(w_2) < ... < score(w_t)

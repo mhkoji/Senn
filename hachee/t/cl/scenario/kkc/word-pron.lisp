@@ -8,7 +8,7 @@
                          system-pathname)))
 
 (defmacro build-and-convert-pronunciations (pathnames &key test)
-  `(let ((kkc (hachee.kkc.simple:create-kkc ,pathnames)))
+  `(let ((kkc (hachee.kkc:build-kkc-simple ,pathnames)))
      (,test
       (equal (mapcar #'hachee.kkc.dictionary:unit->key
                      (mapcar #'hachee.kkc.convert:entry-unit

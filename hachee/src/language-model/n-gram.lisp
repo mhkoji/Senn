@@ -272,8 +272,9 @@
                             (sentence-tokens sentence)
                             eos-tokens)))
         (loop for curr-index from (1- n) to (1- (length tokens))
-              sum (log (transition-probability
-                        model
-                        (nth curr-index tokens)
-                        (subseq tokens
-                                (- curr-index (1- n)) curr-index))))))))
+              for p = (transition-probability
+                       model
+                       (nth curr-index tokens)
+                       (subseq tokens (- curr-index (1- n)) curr-index))
+              when (= p 0) return -10000
+              sum (log p))))))
