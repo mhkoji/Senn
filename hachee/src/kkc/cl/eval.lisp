@@ -35,11 +35,12 @@
   (with-open-file (out out-file :direction :output)
     (loop for pron in pron-list while pron do
       (let ((entries (hachee.kkc:convert kkc pron)))
-        (format out "~A~%" (apply #'concatenate 'string
-                                  (mapcar (lambda (e)
-                                            (hachee.kkc.dictionary:unit-form
-                                             (hachee.kkc.convert:entry-unit e)))
-                                          entries)))))))
+        (format out "~A~%"
+                (apply #'concatenate 'string
+                       (mapcar (lambda (e)
+                                 (hachee.kkc.dictionary:unit-form
+                                  (hachee.kkc.convert:entry-unit e)))
+                               entries)))))))
 
 (defun convert-save-eval (kkc pathname dir)
   (labels ((sentence-pron (s)

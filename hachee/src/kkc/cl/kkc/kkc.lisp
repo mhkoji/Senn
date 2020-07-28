@@ -26,6 +26,15 @@
 (defparameter +origin-tankan+              :tankan)
 (defparameter +origin-runtime-none+        :runtime-none)
 
+(defun from-vocabulary-p (entry)
+  (eql (hachee.kkc.convert:entry-origin entry)
+       +origin-vocabulary+))
+
+(defun from-extended-dictionary-p (entry)
+  (eql (hachee.kkc.convert:entry-origin entry)
+       +origin-extended-dictionary+))
+
+
 ;; word-pron pair n-gram model
 (defstruct kkc
   n-gram-model
@@ -99,9 +108,7 @@
    unknown-word-vocabulary
    unknown-word-n-gram-model
    (mapcar #'hachee.kkc.dictionary:entry-unit
-           (remove-if-not (lambda (ent)
-                            (eql (hachee.kkc.dictionary:entry-origin ent)
-                                 hachee.kkc:+origin-vocabulary+))
+           (remove-if-not #'from-vocabulary-p
                           (hachee.kkc.dictionary:list-all word-dictionary)))))
 
 (defun load-kkc (pathname)
@@ -272,14 +279,6 @@
                 entries))))
     (nreverse entries)))
 
-(defun from-vocabulary-p (entry)
-  (eql (hachee.kkc.convert:entry-origin entry)
-       hachee.kkc:+origin-vocabulary+))
-
-(defun from-extended-dictionary-p (entry)
-  (eql (hachee.kkc.convert:entry-origin entry)
-       hachee.kkc:+origin-extended-dictionary+))
-
 (defun unknown-word-log-probability (entry kkc)
   (let ((unknown-word-pron-vocabulary
          (kkc-unknown-word-vocabulary kkc))
@@ -292,16 +291,15 @@
                            hachee.language-model.vocabulary:+BOS+))
           (pron-eos-token (hachee.language-model.vocabulary:to-int
                            unknown-word-pron-vocabulary
-                           hachee.language-model.vocabulary:+EOS+)))
-      (let* ((pron-sentence
-              (hachee.kkc.util:unit->sentence
-               (hachee.kkc.convert:entry-unit entry)
-               unknown-word-pron-vocabulary))
-             (log-prob-by-unknown-word-n-gram
-              (hachee.language-model.n-gram:sentence-log-probability
-               unknown-word-pron-n-gram-model pron-sentence
-               :BOS pron-bos-token
-               :EOS pron-eos-token)))
+                           hachee.language-model.vocabulary:+EOS+))
+          (pron-sentence (hachee.kkc.util:unit->sentence
+                          (hachee.kkc.convert:entry-unit entry)
+                          unknown-word-pron-vocabulary)))
+      (let ((log-prob-by-unknown-word-n-gram
+             (hachee.language-model.n-gram:sentence-log-probability
+              unknown-word-pron-n-gram-model pron-sentence
+              :BOS pron-bos-token
+              :EOS pron-eos-token)))
         (if (and (from-extended-dictionary-p entry)
                  (< 0 extended-dictionary-size))
             (let ((probability-for-extended-dictionary-words
