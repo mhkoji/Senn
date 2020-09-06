@@ -37,6 +37,7 @@
      (:file "convert/viterbi")
      (:file "convert/entry")
      (:file "lookup")
+     (:file "kkc/origin")
      (:file "kkc/util")
      (:file "kkc/build/file")
      (:file "kkc/build/build")

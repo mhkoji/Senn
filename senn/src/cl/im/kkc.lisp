@@ -46,7 +46,7 @@
            "src/kkc/data/aozora/word-pron-utf8/"
            (asdf:system-source-directory :hachee)))))
     (log:debug "Loading: ~A" corpus-pathnames)
-    (hachee.kkc.simple::create-kkc corpus-pathnames)))
+    (hachee.kkc:build-kkc-simple corpus-pathnames)))
 
 (defun load-kkc (&optional senn-homedir-pathname)
   (or (load-user-kkc senn-homedir-pathname)

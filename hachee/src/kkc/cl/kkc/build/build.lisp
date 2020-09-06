@@ -74,9 +74,9 @@
         (dolist (unit (hachee.kkc.build.file:sentence-units sentence))
           (if (to-int-or-nil vocabulary (unit->key unit))
               (hachee.kkc.dictionary:add-entry
-               dict unit hachee.kkc:+origin-vocabulary+)
+               dict unit hachee.kkc.origin:+vocabulary+)
               (hachee.kkc.dictionary:add-entry
-               dict unit hachee.kkc:+origin-corpus+)))))
+               dict unit hachee.kkc.origin:+corpus+)))))
     dict))
 
 (defun train-n-gram-model (model pathnames vocabulary)
@@ -142,7 +142,7 @@
           (declare (ignore part))
           (let ((unit (make-unit :form form :pron pron)))
             (hachee.kkc.dictionary:add-entry
-             dict unit hachee.kkc:+origin-resource+))))))
+             dict unit hachee.kkc.origin:+resource+))))))
   dict)
 
 (defun build-tankan-dictionary (dict pathnames)
@@ -153,7 +153,7 @@
           (let ((char-unit (make-unit :form form
                                       :pron pron)))
             (hachee.kkc.dictionary:add-entry
-             dict char-unit hachee.kkc:+origin-tankan+))))))
+             dict char-unit hachee.kkc.origin:+tankan+))))))
   dict)
 
 (defun build-classifier (class-token-to-word-file-path vocabulary)

@@ -1,13 +1,6 @@
 (defpackage :hachee.kkc
   (:use :cl)
-  (:export :+origin-vocabulary+
-           :+origin-extended-dictionary+
-           :+origin-corpus+
-           :+origin-resource+
-           :+origin-out-of-dictionary+
-           :+origin-tankan+
-
-           :kkc
+  (:export :kkc
            :kkc-extended-dictionary
            :save-kkc
            :load-kkc
@@ -18,21 +11,13 @@
            :profile))
 (in-package :hachee.kkc)
 
-(defparameter +origin-vocabulary+          :vocabulary)
-(defparameter +origin-extended-dictionary+ :extended-dictionary)
-(defparameter +origin-corpus+              :corpus)
-(defparameter +origin-resource+            :resource)
-(defparameter +origin-out-of-dictionary+   :out-of-dictionary)
-(defparameter +origin-tankan+              :tankan)
-(defparameter +origin-runtime-none+        :runtime-none)
-
 (defun from-vocabulary-p (entry)
   (eql (hachee.kkc.convert:entry-origin entry)
-       +origin-vocabulary+))
+       hachee.kkc.origin:+vocabulary+))
 
 (defun from-extended-dictionary-p (entry)
   (eql (hachee.kkc.convert:entry-origin entry)
-       +origin-extended-dictionary+))
+       hachee.kkc.origin:+extended-dictionary+))
 
 
 ;; word-pron pair n-gram model
@@ -108,7 +93,9 @@
    unknown-word-vocabulary
    unknown-word-n-gram-model
    (mapcar #'hachee.kkc.dictionary:entry-unit
-           (remove-if-not #'from-vocabulary-p
+           (remove-if-not (lambda (e)
+                            (eql (hachee.kkc.dictionary:entry-origin e)
+                                 hachee.kkc.origin:+vocabulary+))
                           (hachee.kkc.dictionary:list-all word-dictionary)))))
 
 (defun load-kkc (pathname)
@@ -275,7 +262,7 @@
                  :token (hachee.language-model.vocabulary:to-int
                          vocabulary
                          hachee.language-model.vocabulary:+UNK+)
-                 :origin +origin-out-of-dictionary+)
+                 :origin hachee.kkc.origin:+out-of-dictionary+)
                 entries))))
     (nreverse entries)))
 
@@ -329,14 +316,14 @@
     :token (hachee.language-model.vocabulary:to-int
             (kkc-vocabulary kkc)
             hachee.language-model.vocabulary:+BOS+)
-    :origin +origin-vocabulary+)
+    :origin hachee.kkc.origin:+vocabulary+)
    :end-entry
    (hachee.kkc.convert:make-entry
     :unit hachee.language-model.vocabulary:+EOS+
     :token (hachee.language-model.vocabulary:to-int
             (kkc-vocabulary kkc)
             hachee.language-model.vocabulary:+EOS+)
-    :origin +origin-vocabulary+)
+    :origin hachee.kkc.origin:+vocabulary+)
    :score-fn
    (lambda (curr-entry prev-entry)
      (compute-convert-score curr-entry prev-entry kkc))
@@ -357,7 +344,7 @@
               :token (hachee.language-model.vocabulary:to-int-or-unk
                       (kkc-vocabulary kkc)
                       unit)
-              :origin +origin-runtime-none+)))
+              :origin hachee.kkc.origin:+runtime-none+)))
     (let ((prev-entry (unit->entry prev-unit))
           (next-entry (unit->entry next-unit))
           (score-cache (make-hash-table :test #'equal)))

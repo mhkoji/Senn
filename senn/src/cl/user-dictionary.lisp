@@ -35,7 +35,7 @@
       (hachee.kkc.dictionary:add-entry
        extended-dict
        (item-unit item)
-       hachee.kkc:+origin-extended-dictionary+))))
+       hachee.kkc.origin:+extended-dictionary+))))
 
 (defun add-to-prefix-dictionary (dictionary prefix-dictionary)
   (dolist (item (dictionary-items dictionary))
