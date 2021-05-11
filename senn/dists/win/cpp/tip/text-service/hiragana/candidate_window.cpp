@@ -83,16 +83,7 @@ HRESULT __stdcall CandidateWindow::Show(BOOL bShow) {
   } else {
     ShowWindow(hwnd_, SW_HIDE);
   }
-
   shown_ = bShow;
-
-  ITfUIElementMgr *ui_mgr = nullptr;
-  if (thread_mgr_->QueryInterface(IID_ITfUIElementMgr, (void **)&ui_mgr) ==
-      S_OK) {
-    ui_mgr->UpdateUIElement(ui_element_id);
-    ui_mgr->Release();
-  }
-
   return S_OK;
 }
 
@@ -104,47 +95,87 @@ HRESULT __stdcall CandidateWindow::IsShown(BOOL *pbShow) {
   return S_OK;
 }
 
+void CandidateWindow::ShowCandidates(
+    const senn::senn_win::ime::views::Converting &view) {
+  candidates_.clear();
+  for (std::vector<std::wstring>::const_iterator it =
+           view.cursor_form_candidates.begin();
+       it != view.cursor_form_candidates.end(); ++it) {
+    candidates_.push_back(*it);
+  }
+  // Send WM_PAINT message
+  InvalidateRect(hwnd_, nullptr, true);
+  UpdateWindow(hwnd_);
+}
+
+LRESULT CALLBACK CandidateWindow::WindowProc(HWND hwnd, UINT umsg,
+                                             WPARAM wparam, LPARAM lparam) {
+  CandidateWindow *cw;
+  if (umsg == WM_NCCREATE) {
+    cw = (CandidateWindow *)((LPCREATESTRUCTW(lparam))->lpCreateParams);
+    SetWindowLongPtrW(hwnd, GWLP_USERDATA, LONG_PTR(cw));
+  } else {
+    cw = (CandidateWindow *)(GetWindowLongPtrW(hwnd, GWLP_USERDATA));
+  }
+
+  switch (umsg) {
+  case WM_PAINT: {
+    PAINTSTRUCT ps;
+    HDC hdc = BeginPaint(cw->hwnd_, &ps);
+    for (size_t i = 0; i < cw->candidates_.size(); ++i) {
+      std::wstring &s = cw->candidates_[i];
+      TextOut(hdc, 0, int(i * 50), s.c_str(), s.length());
+    }
+
+    EndPaint(cw->hwnd_, &ps);
+    return 0;
+  }
+  default:
+    break;
+  }
+  return DefWindowProc(hwnd, umsg, wparam, lparam);
+}
+
+// https://docs.microsoft.com/en-us/windows/win32/tsf/uiless-mode-overview#the-flow-chart-of-uilessmode
 CandidateWindow *CandidateWindow::Create(ITfContext *context,
                                          ITfThreadMgr *thread_mgr) {
-  HWND hwndParent = nullptr;
-  {
-    ITfContextView *pView;
-    if (context->GetActiveView(&pView) == S_OK) {
-      if (FAILED(pView->GetWnd(&hwndParent)) || (hwndParent == nullptr)) {
-        hwndParent = GetFocus();
-      }
-    } else {
-      hwndParent = GetFocus();
+
+  ITfUIElementMgr *ui_mgr = nullptr;
+  if (thread_mgr->QueryInterface(IID_ITfUIElementMgr, (void **)&ui_mgr) ==
+      S_OK) {
+    if (ui_mgr == nullptr) {
+      return nullptr;
     }
   }
 
   CandidateWindow *cw = new CandidateWindow(thread_mgr);
 
-  ITfUIElementMgr *ui_mgr = nullptr;
-  if (thread_mgr->QueryInterface(IID_ITfUIElementMgr, (void **)&ui_mgr) ==
-      S_OK) {
-    if (ui_mgr != nullptr) {
-      ui_mgr->BeginUIElement(cw, &cw->is_show_mode, &cw->ui_element_id);
+  ui_mgr->BeginUIElement(cw, &cw->tip_should_show_, &cw->ui_element_id_);
+
+  if (cw->tip_should_show_) {
+
+    HWND hwndParent = nullptr;
+    {
+      ITfContextView *pView;
+      if (context->GetActiveView(&pView) == S_OK) {
+        if (FAILED(pView->GetWnd(&hwndParent)) || (hwndParent == nullptr)) {
+          hwndParent = GetFocus();
+        }
+      } else {
+        hwndParent = GetFocus();
+      }
     }
-  }
 
-  cw->hwnd_ = ::CreateWindowExW(WS_EX_TOOLWINDOW | WS_EX_TOPMOST,
-                                senn::senn_win::kSennCandidateWindowClassName,
-                                L"", WS_POPUP | WS_BORDER, 50, 50, 100, 100,
-                                hwndParent, nullptr, g_module_handle, cw);
-
-  if (cw->is_show_mode) {
+    cw->hwnd_ = ::CreateWindowExW(WS_EX_TOOLWINDOW | WS_EX_TOPMOST,
+                                  senn::senn_win::kSennCandidateWindowClassName,
+                                  L"", WS_POPUP | WS_BORDER, 50, 50, 100, 500,
+                                  hwndParent, nullptr, g_module_handle, cw);
     ShowWindow(cw->hwnd_, SW_SHOWNA);
   } else {
-    if (ui_mgr != nullptr) {
-      ui_mgr->UpdateUIElement(cw->ui_element_id);
-    }
+    ui_mgr->UpdateUIElement(cw->ui_element_id_);
   }
 
-  if (ui_mgr != nullptr) {
-    ui_mgr->EndUIElement(cw->ui_element_id);
-    ui_mgr->Release();
-  }
+  ui_mgr->Release();
 
   return cw;
 }
@@ -154,7 +185,7 @@ bool CandidateWindow::RegisterWindowClass() {
 
   wc.cbSize = sizeof(wc);
   wc.style = CS_VREDRAW | CS_HREDRAW;
-  wc.lpfnWndProc = DefWindowProcW;
+  wc.lpfnWndProc = CandidateWindow::WindowProc;
   wc.cbClsExtra = 0;
   wc.cbWndExtra = 0;
   wc.hInstance = g_module_handle;

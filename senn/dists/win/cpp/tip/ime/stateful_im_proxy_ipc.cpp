@@ -78,17 +78,37 @@ void StatefulIMProxyIPC::Transit(
     picojson::value v;
     picojson::parse(v, content);
 
-    const picojson::array forms =
-        v.get<picojson::object>()["forms"].get<picojson::array>();
-    for (picojson::array::const_iterator it = forms.begin(); it != forms.end();
-         ++it) {
-      std::wstring form;
-      ToWString(it->get<std::string>(), &form);
-      converting.forms.push_back(form);
+    {
+      const picojson::array forms =
+          v.get<picojson::object>()["forms"].get<picojson::array>();
+      for (picojson::array::const_iterator it = forms.begin();
+           it != forms.end(); ++it) {
+        std::wstring form;
+        ToWString(it->get<std::string>(), &form);
+        converting.forms.push_back(form);
+      }
     }
 
     converting.cursor_form_index = static_cast<size_t>(
         v.get<picojson::object>()["cursor-form-index"].get<double>());
+
+    {
+      const picojson::array candidates =
+          v.get<picojson::object>()["cursor-form"]
+              .get<picojson::object>()["candidates"]
+              .get<picojson::array>();
+      for (picojson::array::const_iterator it = candidates.begin();
+           it != candidates.end(); ++it) {
+        std::wstring str;
+        ToWString(it->get<std::string>(), &str);
+        converting.cursor_form_candidates.push_back(str);
+      }
+    }
+
+    converting.cursor_form_candidate_index =
+        static_cast<size_t>(v.get<picojson::object>()["cursor-form"]
+                                .get<picojson::object>()["candidate-index"]
+                                .get<double>());
 
     on_converting(converting);
   } else if (type == "COMMITTED") {

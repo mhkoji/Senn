@@ -194,6 +194,50 @@ HRESULT HiraganaKeyEventHandler::OnTestKeyDown(ITfContext *context,
   return S_OK;
 }
 
+bool HiraganaKeyEventHandler::HandleView(
+    ITfContext *context, const senn::senn_win::ime::views::Editing &view) {
+  ITfEditSession *edit_session =
+      new EditSessionEditing(view, context, editing_display_attribute_atom_,
+                             composition_sink_, &composition_holder_);
+  ObjectReleaser<ITfEditSession> edit_session_releaser(edit_session);
+
+  HRESULT result;
+  return context->RequestEditSession(client_id_, edit_session,
+                                     TF_ES_SYNC | TF_ES_READWRITE,
+                                     &result) == S_OK;
+}
+
+bool HiraganaKeyEventHandler::HandleView(
+    ITfContext *context, const senn::senn_win::ime::views::Converting &view) {
+  ITfEditSession *edit_session = new EditSessionConverting(
+      thread_mgr_, view, context, converting_display_attribute_atoms_,
+      composition_holder_.Get());
+  ObjectReleaser<ITfEditSession> edit_session_releaser(edit_session);
+
+  HRESULT result, ret;
+  ret = context->RequestEditSession(client_id_, edit_session,
+                                    TF_ES_SYNC | TF_ES_READWRITE, &result);
+
+  if (ret != S_OK) {
+    return false;
+  }
+
+  candidate_window_->ShowCandidates(view);
+
+  return true;
+}
+
+bool HiraganaKeyEventHandler::HandleView(
+    ITfContext *context, const senn::senn_win::ime::views::Committed &view) {
+  ITfEditSession *edit_session = new EditSessionCommitted(
+      view, context, composition_sink_, &composition_holder_);
+
+  HRESULT result;
+  return context->RequestEditSession(client_id_, edit_session,
+                                     TF_ES_SYNC | TF_ES_READWRITE,
+                                     &result) == S_OK;
+}
+
 HRESULT HiraganaKeyEventHandler::OnKeyDown(ITfContext *context, WPARAM wParam,
                                            LPARAM lParam, BOOL *pfEaten) {
   *pfEaten = true;
@@ -202,35 +246,19 @@ HRESULT HiraganaKeyEventHandler::OnKeyDown(ITfContext *context, WPARAM wParam,
     candidate_window_ = CandidateWindow::Create(context, thread_mgr_);
   }
 
-  ITfEditSession *edit_session = nullptr;
+  bool success;
   stateful_im_->Transit(
       wParam,
       [&](const senn::senn_win::ime::views::Editing &view) {
-        edit_session = new EditSessionEditing(
-            view, context, editing_display_attribute_atom_, composition_sink_,
-            &composition_holder_);
+        success = HandleView(context, view);
       },
       [&](const senn::senn_win::ime::views::Converting &view) {
-        edit_session = new EditSessionConverting(
-            thread_mgr_, view, context, converting_display_attribute_atoms_,
-            composition_holder_.Get());
+        success = HandleView(context, view);
       },
       [&](const senn::senn_win::ime::views::Committed &view) {
-        edit_session = new EditSessionCommitted(
-            view, context, composition_sink_, &composition_holder_);
+        success = HandleView(context, view);
       });
-  if (edit_session == nullptr) {
-    return E_FAIL;
-  }
-  ObjectReleaser<ITfEditSession> edit_session_releaser(edit_session);
-
-  HRESULT result;
-  if (context->RequestEditSession(client_id_, edit_session,
-                                  TF_ES_SYNC | TF_ES_READWRITE,
-                                  &result) != S_OK) {
-    return E_FAIL;
-  }
-  return S_OK;
+  return success ? S_OK : E_FAIL;
 }
 
 HRESULT HiraganaKeyEventHandler::OnTestKeyUp(ITfContext *context, WPARAM wParam,

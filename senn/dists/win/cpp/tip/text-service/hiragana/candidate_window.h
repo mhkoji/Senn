@@ -2,6 +2,7 @@
 
 #include <msctf.h>
 
+#include "../../ime/views.h"
 #include <string>
 
 namespace senn {
@@ -12,17 +13,15 @@ namespace hiragana {
 class CandidateWindow : public ITfUIElement {
 public:
   CandidateWindow(ITfThreadMgr *thread_mgr)
-      : thread_mgr_(thread_mgr), ref_count_(1), hwnd_(nullptr), shown_(false) {
+      : thread_mgr_(thread_mgr), ref_count_(1), hwnd_(nullptr), shown_(false),
+        tip_should_show_(false), ui_element_id_(-1),
+        candidates_(std::vector<std::wstring>()) {
     thread_mgr_->AddRef();
   }
 
   ~CandidateWindow() { thread_mgr_->Release(); }
 
-  BOOL is_show_mode;
-
-  DWORD ui_element_id;
-
-  // ITfUIElement ÇâÓÇµÇƒåpè≥Ç≥ÇÍÇ‹ÇµÇΩ
+  // ITfUIElement
   virtual HRESULT __stdcall QueryInterface(REFIID riid,
                                            void **ppvObject) override;
 
@@ -38,6 +37,11 @@ public:
 
   virtual HRESULT __stdcall IsShown(BOOL *pbShow) override;
 
+  void ShowCandidates(const senn::senn_win::ime::views::Converting &);
+
+  static LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wparam,
+                                     LPARAM lparam);
+
   static CandidateWindow *Create(ITfContext *context, ITfThreadMgr *thread_mgr);
 
   static bool RegisterWindowClass();
@@ -52,6 +56,12 @@ private:
   HWND hwnd_;
 
   BOOL shown_;
+
+  BOOL tip_should_show_;
+
+  DWORD ui_element_id_;
+
+  std::vector<std::wstring> candidates_;
 };
 
 } // namespace hiragana

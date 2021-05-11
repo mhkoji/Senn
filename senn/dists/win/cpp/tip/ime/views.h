@@ -15,8 +15,8 @@ struct Editing {
 struct Converting {
   std::vector<std::wstring> forms;
   size_t cursor_form_index;
-
-  Converting() : cursor_form_index(0) {}
+  std::vector<std::wstring> cursor_form_candidates;
+  size_t cursor_form_candidate_index;
 };
 
 struct Committed {
