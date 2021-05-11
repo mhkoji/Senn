@@ -1,6 +1,7 @@
 #include "hiragana.h"
 #include "ui.h"
 #include "../object_releaser.h"
+#include "candidate_window.h"
 
 namespace senn {
 namespace senn_win {
@@ -71,19 +72,25 @@ HRESULT __stdcall EditSessionEditing::DoEditSession(TfEditCookie ec) {
 
 
 EditSessionConverting::EditSessionConverting(
+	ITfThreadMgr *thread_mgr,
     const senn::senn_win::ime::views::Converting& view,
     ITfContext *context,
     const DisplayAttributeAtoms *atoms,
     ITfComposition *composition)
-  : view_(view),
+  : thread_mgr_(thread_mgr),
+    view_(view),
     context_(context),
     atoms_(atoms),
     composition_(composition) {
   context_->AddRef();
+  thread_mgr_->AddRef();
 }
+
+CandidateWindow *cw = nullptr;
 
 EditSessionConverting::~EditSessionConverting() {
   context_->Release();
+  thread_mgr_->Release();
 }
 
 
@@ -185,14 +192,16 @@ HRESULT __stdcall EditSessionCommitted::DoEditSession(TfEditCookie ec) {
 
 
 HiraganaKeyEventHandler::HiraganaKeyEventHandler(
+    ITfThreadMgr *thread_mgr,
     TfClientId id,
     ITfCompositionSink *sink,
     ::senn::senn_win::ime::StatefulIM *im,
     TfGuidAtom atom_editing,
     EditSessionConverting::DisplayAttributeAtoms *atoms_converting)
-  : client_id_(id), composition_sink_(sink), stateful_im_(im),
+  : thread_mgr_(thread_mgr), client_id_(id), composition_sink_(sink), stateful_im_(im),
     editing_display_attribute_atom_(atom_editing),
-    converting_display_attribute_atoms_(atoms_converting) {
+    converting_display_attribute_atoms_(atoms_converting),
+    candidate_window_(nullptr) {
 }
 
 HRESULT HiraganaKeyEventHandler::OnSetFocus(BOOL fForeground) {
@@ -215,15 +224,20 @@ HRESULT HiraganaKeyEventHandler::OnKeyDown(
     ITfContext *context, WPARAM wParam, LPARAM lParam, BOOL *pfEaten) {
   *pfEaten = true;
 
+  if (!candidate_window_) {
+    candidate_window_ = CandidateWindow::Create(context, thread_mgr_);
+  }
+
   ITfEditSession *edit_session = nullptr;
   stateful_im_->Transit(wParam,
       [&](const senn::senn_win::ime::views::Editing& view) {
         edit_session = new EditSessionEditing(
-            view, context, editing_display_attribute_atom_, 
+            view, context, editing_display_attribute_atom_,
             composition_sink_, &composition_holder_);
       },
       [&](const senn::senn_win::ime::views::Converting& view) {
         edit_session = new EditSessionConverting(
+            thread_mgr_,
             view, context, converting_display_attribute_atoms_,
             composition_holder_.Get());
       },
@@ -243,7 +257,6 @@ HRESULT HiraganaKeyEventHandler::OnKeyDown(
     return E_FAIL;
   }
   return S_OK;
-
 }
 
 HRESULT HiraganaKeyEventHandler::OnTestKeyUp(

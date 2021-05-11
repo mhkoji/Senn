@@ -98,6 +98,7 @@ HRESULT TextService::Activate(ITfThreadMgr *thread_mgr, TfClientId client_id) {
       return E_FAIL;
     }
     hiragana_key_event_handler_ = new hiragana::HiraganaKeyEventHandler(
+      thread_mgr_,
       client_id,
       static_cast<ITfCompositionSink*>(this),
       im,

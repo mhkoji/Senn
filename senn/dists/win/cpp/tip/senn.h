@@ -34,5 +34,7 @@ static const GUID kCategories[] = {
 
 static const WCHAR kNamedPipePath[] = L"\\\\.\\pipe\\senn";
 
+static const WCHAR kSennCandidateWindowClassName[] = L"senn-candidate-window";
+
 } // senn_win
 } // senn

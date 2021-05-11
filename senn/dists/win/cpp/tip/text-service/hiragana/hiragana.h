@@ -4,6 +4,7 @@
 
 #include <string>
 #include "../../ime/stateful_im.h"
+#include "candidate_window.h"
 
 
 namespace senn {
@@ -105,6 +106,7 @@ public:
   };
 
   EditSessionConverting(
+    ITfThreadMgr*,
     const senn::senn_win::ime::views::Converting&,
     ITfContext*,
     const DisplayAttributeAtoms*,
@@ -115,6 +117,8 @@ private:
   // ITfEditSession
   HRESULT __stdcall DoEditSession(TfEditCookie ec) override;
 
+  ITfThreadMgr *thread_mgr_;
+
   const senn::senn_win::ime::views::Converting view_;
 
   ITfContext* const context_;
@@ -122,6 +126,8 @@ private:
   const DisplayAttributeAtoms *atoms_;
 
   ITfComposition* const composition_;
+
+  CandidateWindow* candidate_window_;
 };
 
 class EditSessionCommitted : public EditSessionImplementingIUnknown {
@@ -150,6 +156,7 @@ private:
 class HiraganaKeyEventHandler {
 public:
   HiraganaKeyEventHandler(
+      ITfThreadMgr*,
       TfClientId,
       ITfCompositionSink*,
       ::senn::senn_win::ime::StatefulIM*,
@@ -164,6 +171,8 @@ public:
   HRESULT OnPreservedKey(ITfContext * pic, REFGUID rguid, BOOL * pfEaten);
 
 private:
+  ITfThreadMgr *thread_mgr_;
+
   TfClientId client_id_;
 
   ITfCompositionSink *composition_sink_;
@@ -178,6 +187,8 @@ private:
 
   // Values of the style for decorating a text when converting
   const EditSessionConverting::DisplayAttributeAtoms *converting_display_attribute_atoms_;
+
+  CandidateWindow *candidate_window_;
 };
 
 } // hiragana
