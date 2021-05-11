@@ -8,15 +8,10 @@ namespace senn_win {
 namespace text_service {
 namespace langbar {
 
-InputModeToggleButton::InputModeToggleButton(
-    CLSID clsid,
-    ULONG sort,
-    State* state,
-    Handlers* handlers)
-  : ref_count_(1), clsid_(clsid), sort_(sort),
-    lang_bar_item_sink_(nullptr),
-    state_(state), handlers_(handlers) {
-}
+InputModeToggleButton::InputModeToggleButton(CLSID clsid, ULONG sort,
+                                             State *state, Handlers *handlers)
+    : ref_count_(1), clsid_(clsid), sort_(sort), lang_bar_item_sink_(nullptr),
+      state_(state), handlers_(handlers) {}
 
 HRESULT __stdcall InputModeToggleButton::GetInfo(TF_LANGBARITEMINFO *pInfo) {
   if (!pInfo) {
@@ -40,9 +35,7 @@ HRESULT __stdcall InputModeToggleButton::GetStatus(DWORD *pdwStatus) {
   return S_OK;
 }
 
-HRESULT __stdcall InputModeToggleButton::Show(BOOL fShow) {
-  return E_NOTIMPL;
-}
+HRESULT __stdcall InputModeToggleButton::Show(BOOL fShow) { return E_NOTIMPL; }
 
 HRESULT __stdcall InputModeToggleButton::GetTooltipString(BSTR *pbstrToolTip) {
   if (!pbstrToolTip) {
@@ -52,8 +45,8 @@ HRESULT __stdcall InputModeToggleButton::GetTooltipString(BSTR *pbstrToolTip) {
   return S_OK;
 }
 
-HRESULT __stdcall InputModeToggleButton::OnClick(
-    TfLBIClick click, POINT pt, const RECT *prcArea) {
+HRESULT __stdcall InputModeToggleButton::OnClick(TfLBIClick click, POINT pt,
+                                                 const RECT *prcArea) {
   handlers_->ToggleInputMode();
   return S_OK;
 }
@@ -62,9 +55,7 @@ HRESULT __stdcall InputModeToggleButton::InitMenu(ITfMenu *menu) {
   return S_OK;
 }
 
-HRESULT __stdcall InputModeToggleButton::OnMenuSelect(UINT wID) {
-  return S_OK;
-}
+HRESULT __stdcall InputModeToggleButton::OnMenuSelect(UINT wID) { return S_OK; }
 
 HRESULT __stdcall InputModeToggleButton::GetIcon(HICON *phIcon) {
   if (!phIcon) {
@@ -87,12 +78,13 @@ HRESULT __stdcall InputModeToggleButton::GetText(BSTR *pbstrText) {
   return (*pbstrText ? S_OK : E_OUTOFMEMORY);
 }
 
-HRESULT __stdcall InputModeToggleButton::AdviseSink(REFIID riid, IUnknown *punk, DWORD *pdwCookie) {
+HRESULT __stdcall InputModeToggleButton::AdviseSink(REFIID riid, IUnknown *punk,
+                                                    DWORD *pdwCookie) {
   if (!IsEqualIID(IID_ITfLangBarItemSink, riid)) {
     return CONNECT_E_CANNOTCONNECT;
   }
 
-  // Support only one sink once.                                                                                                                           
+  // Support only one sink once.
   if (lang_bar_item_sink_ != nullptr) {
     return CONNECT_E_ADVISELIMIT;
   }
@@ -100,7 +92,8 @@ HRESULT __stdcall InputModeToggleButton::AdviseSink(REFIID riid, IUnknown *punk,
   if (punk == nullptr) {
     return E_INVALIDARG;
   }
-  if (punk->QueryInterface(IID_ITfLangBarItemSink, (void **)&lang_bar_item_sink_) != S_OK) {
+  if (punk->QueryInterface(IID_ITfLangBarItemSink,
+                           (void **)&lang_bar_item_sink_) != S_OK) {
     lang_bar_item_sink_ = nullptr;
     return E_NOINTERFACE;
   }
@@ -110,12 +103,12 @@ HRESULT __stdcall InputModeToggleButton::AdviseSink(REFIID riid, IUnknown *punk,
 }
 
 HRESULT __stdcall InputModeToggleButton::UnadviseSink(DWORD dwCookie) {
-  // Check the given cookie.                                                                                                                                  
+  // Check the given cookie.
   if (dwCookie != kCookie) {
     return CONNECT_E_NOCONNECTION;
   }
 
-  // If there is no connected sink, we just fail.                                                                                                            
+  // If there is no connected sink, we just fail.
   if (lang_bar_item_sink_ == nullptr) {
     return CONNECT_E_NOCONNECTION;
   }
@@ -129,8 +122,7 @@ ITfLangBarItemSink *InputModeToggleButton::item_sink() {
   return lang_bar_item_sink_;
 }
 
-
-} // langbar
-} // text_service
-} // senn_win
-} // senn
+} // namespace langbar
+} // namespace text_service
+} // namespace senn_win
+} // namespace senn

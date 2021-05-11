@@ -2,36 +2,35 @@
 
 #include <windows.h>
 
-#include "win/registry.h"
-#include "win/text-service/registration.h"
-#include "win/text-service/class_factory.h"
 #include "senn.h"
+#include "win/registry.h"
+#include "win/text-service/class_factory.h"
+#include "win/text-service/registration.h"
 
 namespace senn {
 namespace senn_win {
 namespace registration {
 
 class COMServerSettingsProvider
-  : public ::senn::win::registry::com_server::SettingsProvider {
+    : public ::senn::win::registry::com_server::SettingsProvider {
 public:
-  COMServerSettingsProvider(HINSTANCE module_handle) :
-      module_handle_(module_handle) {
-  }
+  COMServerSettingsProvider(HINSTANCE module_handle)
+      : module_handle_(module_handle) {}
 
   BOOL Get(::senn::win::registry::com_server::Settings *output) const override {
     DWORD size = ARRAYSIZE(output->module_file_name.content);
-    DWORD num_chars = GetModuleFileName(
-        module_handle_, output->module_file_name.content, size);
+    DWORD num_chars = GetModuleFileName(module_handle_,
+                                        output->module_file_name.content, size);
     if (num_chars == 0) {
       return FALSE;
     }
     output->module_file_name.size_including_null_termination =
-      num_chars < (size - 1) ? num_chars + 1 : size;
+        num_chars < (size - 1) ? num_chars + 1 : size;
 
-    output->description.content = (const BYTE*)kDescription;
+    output->description.content = (const BYTE *)kDescription;
     output->description.bytes = (_countof(kDescription)) * sizeof(WCHAR);
 
-    output->threading_model.content = (const BYTE*)kThreadingModel;
+    output->threading_model.content = (const BYTE *)kThreadingModel;
     output->threading_model.bytes = (_countof(kThreadingModel)) * sizeof(WCHAR);
 
     return TRUE;
@@ -42,9 +41,10 @@ private:
 };
 
 class TextServiceSettingsProvider
-  : public ::senn::win::text_service::registration::SettingsProvider {
+    : public ::senn::win::text_service::registration::SettingsProvider {
 public:
-  void Get(::senn::win::text_service::registration::Settings *output) const override {
+  void Get(::senn::win::text_service::registration::Settings *output)
+      const override {
     output->langid = MAKELANGID(LANG_JAPANESE, SUBLANG_JAPANESE_JAPAN);
 
     output->profile.guid = kProfileGuid;
@@ -60,6 +60,6 @@ public:
   }
 };
 
-} // registration
-} // win
-} // senn
+} // namespace registration
+} // namespace senn_win
+} // namespace senn

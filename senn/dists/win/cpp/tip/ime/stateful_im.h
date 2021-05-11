@@ -1,7 +1,7 @@
 #pragma once
 
-#include <functional>
 #include "views.h"
+#include <functional>
 
 namespace senn {
 namespace senn_win {
@@ -11,13 +11,12 @@ class StatefulIM {
 public:
   virtual ~StatefulIM() {}
 
-  virtual void Transit(
-      uint64_t keycode,
-      std::function<void(const views::Editing&)>,
-      std::function<void(const views::Converting&)>,
-      std::function<void(const views::Committed&)>) = 0;
+  virtual void Transit(uint64_t keycode,
+                       std::function<void(const views::Editing &)>,
+                       std::function<void(const views::Converting &)>,
+                       std::function<void(const views::Committed &)>) = 0;
 };
 
-}  // ime
-}  // senn_win
-}  // senn
+} // namespace ime
+} // namespace senn_win
+} // namespace senn

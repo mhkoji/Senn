@@ -2,10 +2,9 @@
 
 #include <msctf.h>
 
-#include <string>
 #include "../../ime/stateful_im.h"
 #include "candidate_window.h"
-
+#include <string>
 
 namespace senn {
 namespace senn_win {
@@ -14,21 +13,15 @@ namespace hiragana {
 
 class CompositionHolder {
 public:
-
   CompositionHolder() : composition_(nullptr) {}
 
-  ITfComposition *Get() {
-    return composition_;
-  }
+  ITfComposition *Get() { return composition_; }
 
-  void Set(ITfComposition *c) {
-    composition_ = c;
-  }
+  void Set(ITfComposition *c) { composition_ = c; }
 
 private:
   ITfComposition *composition_;
 };
-
 
 class EditSessionImplementingIUnknown : public ITfEditSession {
 public:
@@ -40,8 +33,7 @@ public:
     if (IsEqualIID(riid, IID_IUnknown) ||
         IsEqualIID(riid, IID_ITfEditSession)) {
       *ppvObject = (ITfLangBarItem *)this;
-    }
-    else {
+    } else {
       *ppvObject = NULL;
       return E_NOINTERFACE;
     }
@@ -49,9 +41,7 @@ public:
     return S_OK;
   }
 
-  ULONG __stdcall AddRef(void) {
-    return ++ref_count_;
-  }
+  ULONG __stdcall AddRef(void) { return ++ref_count_; }
 
   ULONG __stdcall Release(void) {
     if (ref_count_ <= 0) {
@@ -70,33 +60,28 @@ public:
   virtual ~EditSessionImplementingIUnknown() {}
 
 private:
-
   ULONG ref_count_ = 1;
 };
 
 class EditSessionEditing : public EditSessionImplementingIUnknown {
 public:
-  EditSessionEditing(
-      const senn::senn_win::ime::views::Editing&,
-      ITfContext*,
-      TfGuidAtom,
-      ITfCompositionSink*,
-      CompositionHolder*);
+  EditSessionEditing(const senn::senn_win::ime::views::Editing &, ITfContext *,
+                     TfGuidAtom, ITfCompositionSink *, CompositionHolder *);
   ~EditSessionEditing() override;
- 
+
 private:
   // ITfEditSession
   HRESULT __stdcall DoEditSession(TfEditCookie ec) override;
 
   const senn::senn_win::ime::views::Editing view_;
 
-  ITfContext* const context_;
+  ITfContext *const context_;
 
   const TfGuidAtom display_attribute_atom_;
 
   ITfCompositionSink *composition_sink_;
 
-  CompositionHolder* const composition_holder_;
+  CompositionHolder *const composition_holder_;
 };
 
 class EditSessionConverting : public EditSessionImplementingIUnknown {
@@ -105,12 +90,10 @@ public:
     TfGuidAtom non_focused, focused;
   };
 
-  EditSessionConverting(
-    ITfThreadMgr*,
-    const senn::senn_win::ime::views::Converting&,
-    ITfContext*,
-    const DisplayAttributeAtoms*,
-    ITfComposition*);
+  EditSessionConverting(ITfThreadMgr *,
+                        const senn::senn_win::ime::views::Converting &,
+                        ITfContext *, const DisplayAttributeAtoms *,
+                        ITfComposition *);
   ~EditSessionConverting() override;
 
 private:
@@ -121,22 +104,19 @@ private:
 
   const senn::senn_win::ime::views::Converting view_;
 
-  ITfContext* const context_;
+  ITfContext *const context_;
 
   const DisplayAttributeAtoms *atoms_;
 
-  ITfComposition* const composition_;
+  ITfComposition *const composition_;
 
-  CandidateWindow* candidate_window_;
+  CandidateWindow *candidate_window_;
 };
 
 class EditSessionCommitted : public EditSessionImplementingIUnknown {
 public:
-  EditSessionCommitted(
-      const senn::senn_win::ime::views::Committed&,
-      ITfContext*,
-      ITfCompositionSink*,
-      CompositionHolder*);
+  EditSessionCommitted(const senn::senn_win::ime::views::Committed &,
+                       ITfContext *, ITfCompositionSink *, CompositionHolder *);
   ~EditSessionCommitted() override;
 
 private:
@@ -145,30 +125,28 @@ private:
 
   const senn::senn_win::ime::views::Committed view_;
 
-  ITfContext* const context_;
+  ITfContext *const context_;
 
   ITfCompositionSink *composition_sink_;
 
-  CompositionHolder* const composition_holder_;
+  CompositionHolder *const composition_holder_;
 };
-
 
 class HiraganaKeyEventHandler {
 public:
-  HiraganaKeyEventHandler(
-      ITfThreadMgr*,
-      TfClientId,
-      ITfCompositionSink*,
-      ::senn::senn_win::ime::StatefulIM*,
-      TfGuidAtom,
-      EditSessionConverting::DisplayAttributeAtoms*);
+  HiraganaKeyEventHandler(ITfThreadMgr *, TfClientId, ITfCompositionSink *,
+                          ::senn::senn_win::ime::StatefulIM *, TfGuidAtom,
+                          EditSessionConverting::DisplayAttributeAtoms *);
 
   HRESULT OnSetFocus(BOOL fForeground);
-  HRESULT OnTestKeyDown(ITfContext * pic, WPARAM wParam, LPARAM lParam, BOOL * pfEaten);
-  HRESULT OnTestKeyUp(ITfContext * pic, WPARAM wParam, LPARAM lParam, BOOL * pfEaten);
-  HRESULT OnKeyDown(ITfContext * pic, WPARAM wParam, LPARAM lParam, BOOL * pfEaten);
-  HRESULT OnKeyUp(ITfContext * pic, WPARAM wParam, LPARAM lParam, BOOL * pfEaten);
-  HRESULT OnPreservedKey(ITfContext * pic, REFGUID rguid, BOOL * pfEaten);
+  HRESULT OnTestKeyDown(ITfContext *pic, WPARAM wParam, LPARAM lParam,
+                        BOOL *pfEaten);
+  HRESULT OnTestKeyUp(ITfContext *pic, WPARAM wParam, LPARAM lParam,
+                      BOOL *pfEaten);
+  HRESULT OnKeyDown(ITfContext *pic, WPARAM wParam, LPARAM lParam,
+                    BOOL *pfEaten);
+  HRESULT OnKeyUp(ITfContext *pic, WPARAM wParam, LPARAM lParam, BOOL *pfEaten);
+  HRESULT OnPreservedKey(ITfContext *pic, REFGUID rguid, BOOL *pfEaten);
 
 private:
   ITfThreadMgr *thread_mgr_;
@@ -186,12 +164,13 @@ private:
   TfGuidAtom editing_display_attribute_atom_;
 
   // Values of the style for decorating a text when converting
-  const EditSessionConverting::DisplayAttributeAtoms *converting_display_attribute_atoms_;
+  const EditSessionConverting::DisplayAttributeAtoms
+      *converting_display_attribute_atoms_;
 
   CandidateWindow *candidate_window_;
 };
 
-} // hiragana
-} // text_service
-} // win
-} // senn
+} // namespace hiragana
+} // namespace text_service
+} // namespace senn_win
+} // namespace senn

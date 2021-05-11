@@ -1,16 +1,14 @@
 #pragma once
 
-#include <msctf.h>
 #include <combaseapi.h>
+#include <msctf.h>
 
 namespace senn {
 namespace win {
 namespace text_service {
 
-template <typename T>
-class ClassFactory : public IClassFactory {
+template <typename T> class ClassFactory : public IClassFactory {
 public:
-
   HRESULT __stdcall QueryInterface(REFIID riid, void **ppv) override {
     if (ppv == nullptr) {
       return E_INVALIDARG;
@@ -27,7 +25,8 @@ public:
     return S_OK;
   }
 
-  HRESULT __stdcall CreateInstance(IUnknown *unk, REFIID riid, void **ppv) override {
+  HRESULT __stdcall CreateInstance(IUnknown *unk, REFIID riid,
+                                   void **ppv) override {
     if (ppv == nullptr) {
       return E_INVALIDARG;
     }
@@ -49,9 +48,7 @@ public:
     return result;
   }
 
-  ULONG __stdcall AddRef(void) override {
-    return ++ref_count_;
-  }
+  ULONG __stdcall AddRef(void) override { return ++ref_count_; }
 
   ULONG __stdcall Release(void) override {
     if (ref_count_ <= 0) {
@@ -69,10 +66,9 @@ public:
   virtual HRESULT __stdcall LockServer(BOOL) = 0;
 
 private:
-
   ULONG ref_count_ = 0;
 };
 
-} // text_service
-} // win
-} // senn
+} // namespace text_service
+} // namespace win
+} // namespace senn

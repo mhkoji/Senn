@@ -4,8 +4,7 @@ namespace senn {
 namespace senn_win {
 namespace text_service {
 
-template <typename T>
-class ObjectReleaser {
+template <typename T> class ObjectReleaser {
 public:
   ObjectReleaser(T *obj) : obj_(obj) {}
 
@@ -19,6 +18,6 @@ private:
   T *obj_;
 };
 
-}  // text_service
-}  // senn_win
-}  // senn
+} // namespace text_service
+} // namespace senn_win
+} // namespace senn

@@ -3,40 +3,36 @@
 #include <msctf.h>
 #include <windows.h>
 
-#include <string>
+#include "../ime/stateful_im.h"
 #include "../senn.h"
 #include "../win/text-service/class_factory.h"
-#include "../ime/stateful_im.h"
+#include "direct.h"
+#include "hiragana/hiragana.h"
+#include "hiragana/ui.h"
 #include "input_mode.h"
 #include "langbar.h"
-#include "hiragana/ui.h"
-#include "hiragana/hiragana.h"
-#include "direct.h"
+#include <string>
 
 namespace senn {
 namespace senn_win {
 namespace text_service {
 
-class TextService
-    : public ITfKeyEventSink,
-      public ITfDisplayAttributeProvider,
-      public ITfCompositionSink,
-      public ITfTextInputProcessor,
-      public langbar::InputModeToggleButton::State,
-      public langbar::InputModeToggleButton::Handlers {
+class TextService : public ITfKeyEventSink,
+                    public ITfDisplayAttributeProvider,
+                    public ITfCompositionSink,
+                    public ITfTextInputProcessor,
+                    public langbar::InputModeToggleButton::State,
+                    public langbar::InputModeToggleButton::Handlers {
 public:
-
   TextService()
-    : clsid_text_service_(kClsid),
-      thread_mgr_(nullptr),
-      client_id_(TF_CLIENTID_NULL),
-      input_mode_(InputMode::kDirect),
-      hiragana_key_event_handler_(nullptr),
-      input_mode_toggle_button_(nullptr),
-      editing_display_attribute_atom_(TF_INVALID_GUIDATOM) {}
+      : clsid_text_service_(kClsid), thread_mgr_(nullptr),
+        client_id_(TF_CLIENTID_NULL), input_mode_(InputMode::kDirect),
+        hiragana_key_event_handler_(nullptr),
+        input_mode_toggle_button_(nullptr),
+        editing_display_attribute_atom_(TF_INVALID_GUIDATOM) {}
 
   // IUnknow
-  HRESULT __stdcall QueryInterface(REFIID riid, void** ppvObject) {
+  HRESULT __stdcall QueryInterface(REFIID riid, void **ppvObject) {
     if (ppvObject == NULL) {
       return E_INVALIDARG;
     }
@@ -57,9 +53,7 @@ public:
     return S_OK;
   }
 
-  ULONG __stdcall AddRef(void) {
-    return ++ref_count_;
-  }
+  ULONG __stdcall AddRef(void) { return ++ref_count_; }
 
   ULONG __stdcall Release(void) {
     if (ref_count_ <= 0) {
@@ -75,22 +69,26 @@ public:
 
   // ITfKeyEventSink
   HRESULT __stdcall OnSetFocus(BOOL fForeground) override;
-  HRESULT __stdcall OnTestKeyDown(ITfContext*, WPARAM, LPARAM, BOOL*) override;
-  HRESULT __stdcall OnTestKeyUp(ITfContext*, WPARAM, LPARAM, BOOL*) override;
-  HRESULT __stdcall OnKeyDown(ITfContext*, WPARAM, LPARAM, BOOL*) override;
-  HRESULT __stdcall OnKeyUp(ITfContext*, WPARAM, LPARAM, BOOL*) override;
-  HRESULT __stdcall OnPreservedKey(ITfContext*, REFGUID, BOOL*) override;
+  HRESULT __stdcall OnTestKeyDown(ITfContext *, WPARAM, LPARAM,
+                                  BOOL *) override;
+  HRESULT __stdcall OnTestKeyUp(ITfContext *, WPARAM, LPARAM, BOOL *) override;
+  HRESULT __stdcall OnKeyDown(ITfContext *, WPARAM, LPARAM, BOOL *) override;
+  HRESULT __stdcall OnKeyUp(ITfContext *, WPARAM, LPARAM, BOOL *) override;
+  HRESULT __stdcall OnPreservedKey(ITfContext *, REFGUID, BOOL *) override;
 
   // ITfTextInputProcessor
-  HRESULT Activate(ITfThreadMgr*, TfClientId);
+  HRESULT Activate(ITfThreadMgr *, TfClientId);
   HRESULT Deactivate();
 
   // ITfCompositionSink
-  HRESULT __stdcall OnCompositionTerminated(TfEditCookie, ITfComposition*) override;
+  HRESULT __stdcall OnCompositionTerminated(TfEditCookie,
+                                            ITfComposition *) override;
 
   // ITfDisplayAttributeProvider
-  HRESULT __stdcall EnumDisplayAttributeInfo(IEnumTfDisplayAttributeInfo**) override;
-  HRESULT __stdcall GetDisplayAttributeInfo(REFGUID, ITfDisplayAttributeInfo**) override;
+  HRESULT __stdcall EnumDisplayAttributeInfo(
+      IEnumTfDisplayAttributeInfo **) override;
+  HRESULT __stdcall GetDisplayAttributeInfo(
+      REFGUID, ITfDisplayAttributeInfo **) override;
 
   // langbar::InputModeToggleButton::State
   virtual InputMode input_mode() const override;
@@ -99,7 +97,6 @@ public:
   void ToggleInputMode() override;
 
 private:
-
   CLSID clsid_text_service_;
 
   ITfThreadMgr *thread_mgr_;
@@ -121,31 +118,28 @@ private:
   TfGuidAtom editing_display_attribute_atom_;
 
   // Values of the style for decorating a text when converting
-  hiragana::EditSessionConverting::DisplayAttributeAtoms converting_display_attribute_atoms_;
-
+  hiragana::EditSessionConverting::DisplayAttributeAtoms
+      converting_display_attribute_atoms_;
 
   ULONG ref_count_ = 1;
 };
-
 
 class TextServiceFactory
     : public senn::win::text_service::ClassFactory<TextService> {
 public:
   class ServerLocker {
   public:
-    virtual ~ServerLocker() {};
+    virtual ~ServerLocker(){};
 
     virtual void Lock() = 0;
 
     virtual void Unlock() = 0;
   };
 
-  TextServiceFactory(ServerLocker* const locker) : locker_(locker) {}
+  TextServiceFactory(ServerLocker *const locker) : locker_(locker) {}
 
-  REFIID GetIid() {
-    return kClsid;
-  }
- 
+  REFIID GetIid() { return kClsid; }
+
   HRESULT __stdcall LockServer(BOOL lock) override {
     if (lock) {
       locker_->Lock();
@@ -156,10 +150,9 @@ public:
   }
 
 private:
-
-  ServerLocker* const locker_;
+  ServerLocker *const locker_;
 };
 
-} // text_service
-} // win
-} // senn
+} // namespace text_service
+} // namespace senn_win
+} // namespace senn

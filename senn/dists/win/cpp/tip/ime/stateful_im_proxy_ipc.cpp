@@ -1,6 +1,6 @@
-#include <sstream>
-#include "../../third-party/picojson/picojson.h"
 #include "stateful_im_proxy_ipc.h"
+#include "../../third-party/picojson/picojson.h"
+#include <sstream>
 
 namespace senn {
 namespace senn_win {
@@ -8,38 +8,31 @@ namespace ime {
 
 namespace {
 
-int ToWString(const std::string& char_string, std::wstring* output) {
-  WCHAR buf[1024] = { '\0' };
-  int size = MultiByteToWideChar(
-      CP_UTF8, 0,
-      char_string.c_str(),
-      static_cast<int>(char_string.length()),
-      buf,
-      static_cast<int>(sizeof(buf)));
+int ToWString(const std::string &char_string, std::wstring *output) {
+  WCHAR buf[1024] = {'\0'};
+  int size = MultiByteToWideChar(CP_UTF8, 0, char_string.c_str(),
+                                 static_cast<int>(char_string.length()), buf,
+                                 static_cast<int>(sizeof(buf)));
   *output = buf;
   return size;
 }
 
 } // namespace
 
-StatefulIMProxyIPC::StatefulIMProxyIPC(const HANDLE pipe) : pipe_(pipe) {
-}
+StatefulIMProxyIPC::StatefulIMProxyIPC(const HANDLE pipe) : pipe_(pipe) {}
 
-StatefulIMProxyIPC::~StatefulIMProxyIPC() {
-  CloseHandle(pipe_);
-}
+StatefulIMProxyIPC::~StatefulIMProxyIPC() { CloseHandle(pipe_); }
 
 void StatefulIMProxyIPC::Transit(
-    uint64_t keycode,
-    std::function<void(const views::Editing&)> on_editing,
-    std::function<void(const views::Converting&)> on_converting,
-    std::function<void(const views::Committed&)> on_committed) {
+    uint64_t keycode, std::function<void(const views::Editing &)> on_editing,
+    std::function<void(const views::Converting &)> on_converting,
+    std::function<void(const views::Committed &)> on_committed) {
   {
     std::stringstream ss;
     ss << "{"
        << "\"op\": \"process-input\","
-       << "\"args\": {" << "\"keycode\": " << keycode
-                        << "}"
+       << "\"args\": {"
+       << "\"keycode\": " << keycode << "}"
        << "}";
     std::string req = ss.str();
     DWORD bytes_written;
@@ -51,7 +44,7 @@ void StatefulIMProxyIPC::Transit(
 
   std::string response;
   {
-    char buf[1024] = { '\0' };
+    char buf[1024] = {'\0'};
     while (1) {
       DWORD bytes_read;
       if (!ReadFile(pipe_, buf, sizeof(buf), &bytes_read, NULL)) {
@@ -86,17 +79,16 @@ void StatefulIMProxyIPC::Transit(
     picojson::parse(v, content);
 
     const picojson::array forms =
-        v.get<picojson::object>()["forms"]
-         .get<picojson::array>();
-    for (picojson::array::const_iterator it = forms.begin();
-      it != forms.end(); ++it) {
+        v.get<picojson::object>()["forms"].get<picojson::array>();
+    for (picojson::array::const_iterator it = forms.begin(); it != forms.end();
+         ++it) {
       std::wstring form;
       ToWString(it->get<std::string>(), &form);
       converting.forms.push_back(form);
     }
 
-    converting.cursor_form_index = static_cast<size_t>
-        (v.get<picojson::object>()["cursor-form-index"].get<double>());
+    converting.cursor_form_index = static_cast<size_t>(
+        v.get<picojson::object>()["cursor-form-index"].get<double>());
 
     on_converting(converting);
   } else if (type == "COMMITTED") {
@@ -109,30 +101,23 @@ void StatefulIMProxyIPC::Transit(
     picojson::parse(v, content);
 
     const std::string char_input =
-        v.get<picojson::object>()["input"]
-         .get<std::string>();
+        v.get<picojson::object>()["input"].get<std::string>();
     ToWString(char_input, &committed.input);
 
     on_committed(committed);
   }
 };
 
-StatefulIMProxyIPC *StatefulIMProxyIPC::Create(
-    const WCHAR* const named_pipe_path) {
-  HANDLE pipe = CreateFile(
-      named_pipe_path,
-      GENERIC_READ | GENERIC_WRITE,
-      0,
-      NULL,
-      OPEN_EXISTING, 
-      FILE_ATTRIBUTE_NORMAL,
-      NULL);	
+StatefulIMProxyIPC *
+StatefulIMProxyIPC::Create(const WCHAR *const named_pipe_path) {
+  HANDLE pipe = CreateFile(named_pipe_path, GENERIC_READ | GENERIC_WRITE, 0,
+                           NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
   if (pipe == INVALID_HANDLE_VALUE) {
     return nullptr;
   }
   return new StatefulIMProxyIPC(pipe);
 }
 
-}  // ime
-}  // senn_win
-}  // senn
+} // namespace ime
+} // namespace senn_win
+} // namespace senn

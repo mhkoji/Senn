@@ -5,9 +5,10 @@ namespace senn_win {
 namespace text_service {
 
 enum InputMode {
-  kDirect, kHiragana,
+  kDirect,
+  kHiragana,
 };
 
-} // text_service
-} // win
-} // senn
+} // namespace text_service
+} // namespace senn_win
+} // namespace senn

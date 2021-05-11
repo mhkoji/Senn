@@ -23,7 +23,7 @@ struct Committed {
   std::wstring input;
 };
 
-} // views
-} // ime
-} // senn_win 
-} // senn
+} // namespace views
+} // namespace ime
+} // namespace senn_win
+} // namespace senn

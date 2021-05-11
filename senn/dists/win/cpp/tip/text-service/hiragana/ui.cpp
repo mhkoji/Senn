@@ -1,5 +1,5 @@
-#include "../object_releaser.h"
 #include "ui.h"
+#include "../object_releaser.h"
 
 namespace senn {
 namespace senn_win {
@@ -20,9 +20,7 @@ HRESULT __stdcall EnumDisplayAttributeInfo::Clone(
 }
 
 HRESULT __stdcall EnumDisplayAttributeInfo::Next(
-    ULONG ulCount,
-    ITfDisplayAttributeInfo **rgInfo,
-    ULONG *pcFetched) {
+    ULONG ulCount, ITfDisplayAttributeInfo **rgInfo, ULONG *pcFetched) {
   ULONG items = 0;
   for (; items < ulCount; ++items) {
     ITfDisplayAttributeInfo *attribute = nullptr;
@@ -59,64 +57,53 @@ HRESULT __stdcall EnumDisplayAttributeInfo::Skip(ULONG ulCount) {
   return S_OK;
 }
 
-ITfRange *InsertTextAndStartComposition(
-    const std::wstring& text,
-    TfEditCookie ec,
-    ITfContext *context,
-    ITfCompositionSink *composition_sink,
-    ITfComposition **output) {
+ITfRange *InsertTextAndStartComposition(const std::wstring &text,
+                                        TfEditCookie ec, ITfContext *context,
+                                        ITfCompositionSink *composition_sink,
+                                        ITfComposition **output) {
   ITfRange *range;
 
   ITfInsertAtSelection *insert;
-  if (context->QueryInterface(IID_ITfInsertAtSelection, (void**)&insert) !=
+  if (context->QueryInterface(IID_ITfInsertAtSelection, (void **)&insert) !=
       S_OK) {
     return nullptr;
   }
   ObjectReleaser<ITfInsertAtSelection> insert_releaser(insert);
 
-  if (insert->InsertTextAtSelection(
-          ec, 0, text.c_str(), static_cast<LONG>(text.size()), &range) !=
-      S_OK) {
+  if (insert->InsertTextAtSelection(ec, 0, text.c_str(),
+                                    static_cast<LONG>(text.size()),
+                                    &range) != S_OK) {
     return nullptr;
   }
 
   ITfContextComposition *context_composition;
-  if (context->QueryInterface(
-          IID_ITfContextComposition, (void**)&context_composition) !=
-      S_OK) {
+  if (context->QueryInterface(IID_ITfContextComposition,
+                              (void **)&context_composition) != S_OK) {
     return nullptr;
   }
   ObjectReleaser<ITfContextComposition> context_composition_releader(
       context_composition);
 
   // MEMO: StartComposition seems to fail if compositin_sink is nullptr.
-  if (context_composition->StartComposition(
-          ec, range, composition_sink, output) !=
-      S_OK) {
+  if (context_composition->StartComposition(ec, range, composition_sink,
+                                            output) != S_OK) {
     return nullptr;
   }
   return range;
 }
 
-ITfRange *ReplaceTextInComposition(
-    const std::wstring& text,
-    TfEditCookie ec,
-    ITfComposition *composition) {
+ITfRange *ReplaceTextInComposition(const std::wstring &text, TfEditCookie ec,
+                                   ITfComposition *composition) {
   ITfRange *range;
   composition->GetRange(&range);
   range->SetText(ec, 0, text.c_str(), static_cast<LONG>(text.length()));
   return range;
 }
 
-
-void SetDisplayAttribute(
-    TfEditCookie ec,
-    ITfContext *context,
-    ITfRange *range,
-    TfGuidAtom attribute_atom) {
+void SetDisplayAttribute(TfEditCookie ec, ITfContext *context, ITfRange *range,
+                         TfGuidAtom attribute_atom) {
   ITfProperty *display_attribute;
-  if (context->GetProperty(GUID_PROP_ATTRIBUTE, &display_attribute) !=
-      S_OK) {
+  if (context->GetProperty(GUID_PROP_ATTRIBUTE, &display_attribute) != S_OK) {
     return;
   }
   ObjectReleaser<ITfProperty> releaser(display_attribute);
@@ -127,13 +114,10 @@ void SetDisplayAttribute(
   display_attribute->SetValue(ec, range, &var);
 }
 
-void RemoveDisplayAttributes(
-    TfEditCookie ec,
-    ITfContext *context,
-    ITfRange *range) {
+void RemoveDisplayAttributes(TfEditCookie ec, ITfContext *context,
+                             ITfRange *range) {
   ITfProperty *display_attribute;
-  if (context->GetProperty(GUID_PROP_ATTRIBUTE, &display_attribute) !=
-      S_OK) {
+  if (context->GetProperty(GUID_PROP_ATTRIBUTE, &display_attribute) != S_OK) {
     return;
   }
   ObjectReleaser<ITfProperty> releaser(display_attribute);
@@ -141,9 +125,8 @@ void RemoveDisplayAttributes(
   display_attribute->Clear(ec, range);
 }
 
-
-} // ui
-} // hiragana
-} // text_service
-} // win
-} // senn
+} // namespace ui
+} // namespace hiragana
+} // namespace text_service
+} // namespace senn_win
+} // namespace senn

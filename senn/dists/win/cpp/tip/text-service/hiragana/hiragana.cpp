@@ -1,7 +1,7 @@
 #include "hiragana.h"
-#include "ui.h"
 #include "../object_releaser.h"
 #include "candidate_window.h"
+#include "ui.h"
 
 namespace senn {
 namespace senn_win {
@@ -9,22 +9,17 @@ namespace text_service {
 namespace hiragana {
 
 EditSessionEditing::EditSessionEditing(
-    const senn::senn_win::ime::views::Editing& view,
-    ITfContext *context,
-    TfGuidAtom display_attribute_atom,
-    ITfCompositionSink *composition_sink,
+    const senn::senn_win::ime::views::Editing &view, ITfContext *context,
+    TfGuidAtom display_attribute_atom, ITfCompositionSink *composition_sink,
     CompositionHolder *composition_holder)
-  : view_(view),
-    context_(context),
-    display_attribute_atom_(display_attribute_atom),
-    composition_sink_(composition_sink),
-    composition_holder_(composition_holder) {
+    : view_(view), context_(context),
+      display_attribute_atom_(display_attribute_atom),
+      composition_sink_(composition_sink),
+      composition_holder_(composition_holder) {
   context_->AddRef();
 }
 
-EditSessionEditing::~EditSessionEditing() {
-  context_->Release();
-}
+EditSessionEditing::~EditSessionEditing() { context_->Release(); }
 
 HRESULT __stdcall EditSessionEditing::DoEditSession(TfEditCookie ec) {
   // Draw the text on the screen.
@@ -32,15 +27,15 @@ HRESULT __stdcall EditSessionEditing::DoEditSession(TfEditCookie ec) {
   ITfRange *range;
   if (composition_holder_->Get() == nullptr) {
     ITfComposition *composition;
-    range = ui::InsertTextAndStartComposition(
-        view_.input, ec, context_, composition_sink_, &composition);
+    range = ui::InsertTextAndStartComposition(view_.input, ec, context_,
+                                              composition_sink_, &composition);
     if (composition == nullptr || range == nullptr) {
       return S_OK;
     }
     composition_holder_->Set(composition);
   } else {
-    range = ui::ReplaceTextInComposition(
-        view_.input, ec, composition_holder_->Get());
+    range = ui::ReplaceTextInComposition(view_.input, ec,
+                                         composition_holder_->Get());
     if (range == nullptr) {
       return S_OK;
     }
@@ -51,7 +46,7 @@ HRESULT __stdcall EditSessionEditing::DoEditSession(TfEditCookie ec) {
   ui::SetDisplayAttribute(ec, context_, range, display_attribute_atom_);
 
   // Update the selection
-  // We'll make it an insertion point just past the inserted text. 
+  // We'll make it an insertion point just past the inserted text.
   {
     ITfRange *range_for_selection;
     if (range->Clone(&range_for_selection) == S_OK) {
@@ -70,18 +65,12 @@ HRESULT __stdcall EditSessionEditing::DoEditSession(TfEditCookie ec) {
   return S_OK;
 }
 
-
 EditSessionConverting::EditSessionConverting(
-	ITfThreadMgr *thread_mgr,
-    const senn::senn_win::ime::views::Converting& view,
-    ITfContext *context,
-    const DisplayAttributeAtoms *atoms,
-    ITfComposition *composition)
-  : thread_mgr_(thread_mgr),
-    view_(view),
-    context_(context),
-    atoms_(atoms),
-    composition_(composition) {
+    ITfThreadMgr *thread_mgr,
+    const senn::senn_win::ime::views::Converting &view, ITfContext *context,
+    const DisplayAttributeAtoms *atoms, ITfComposition *composition)
+    : thread_mgr_(thread_mgr), view_(view), context_(context), atoms_(atoms),
+      composition_(composition) {
   context_->AddRef();
   thread_mgr_->AddRef();
 }
@@ -92,7 +81,6 @@ EditSessionConverting::~EditSessionConverting() {
   context_->Release();
   thread_mgr_->Release();
 }
-
 
 HRESULT __stdcall EditSessionConverting::DoEditSession(TfEditCookie ec) {
   // Composition must have started by the previous EditSessionCommitted
@@ -106,7 +94,7 @@ HRESULT __stdcall EditSessionConverting::DoEditSession(TfEditCookie ec) {
     text += view_.forms[i];
   }
 
-  ITfRange *range = ui::ReplaceTextInComposition(text, ec, composition_); 
+  ITfRange *range = ui::ReplaceTextInComposition(text, ec, composition_);
   if (range == nullptr) {
     return S_OK;
   }
@@ -134,9 +122,8 @@ HRESULT __stdcall EditSessionConverting::DoEditSession(TfEditCookie ec) {
         return result;
       }
 
-      TfGuidAtom attr = (i == view_.cursor_form_index) ?
-          atoms_->focused :
-          atoms_->non_focused;
+      TfGuidAtom attr = (i == view_.cursor_form_index) ? atoms_->focused
+                                                       : atoms_->non_focused;
       ui::SetDisplayAttribute(ec, context_, segment_range, attr);
 
       start = end;
@@ -146,22 +133,15 @@ HRESULT __stdcall EditSessionConverting::DoEditSession(TfEditCookie ec) {
   return S_OK;
 }
 
-
 EditSessionCommitted::EditSessionCommitted(
-    const senn::senn_win::ime::views::Committed& view,
-    ITfContext *context,
-    ITfCompositionSink* composition_sink,
-    CompositionHolder *composition_holder)
-  : view_(view),
-    context_(context),
-    composition_sink_(composition_sink),
-    composition_holder_(composition_holder) {
+    const senn::senn_win::ime::views::Committed &view, ITfContext *context,
+    ITfCompositionSink *composition_sink, CompositionHolder *composition_holder)
+    : view_(view), context_(context), composition_sink_(composition_sink),
+      composition_holder_(composition_holder) {
   context_->AddRef();
 }
 
-EditSessionCommitted::~EditSessionCommitted() {
-  context_->Release();
-}
+EditSessionCommitted::~EditSessionCommitted() { context_->Release(); }
 
 HRESULT __stdcall EditSessionCommitted::DoEditSession(TfEditCookie ec) {
   if (composition_holder_->Get() == nullptr) {
@@ -177,8 +157,8 @@ HRESULT __stdcall EditSessionCommitted::DoEditSession(TfEditCookie ec) {
     }
   } else {
     ITfComposition *composition = composition_holder_->Get();
-    ITfRange *range = ui::ReplaceTextInComposition(
-        view_.input, ec, composition);
+    ITfRange *range =
+        ui::ReplaceTextInComposition(view_.input, ec, composition);
     if (range != nullptr) {
       ui::RemoveDisplayAttributes(ec, context_, range);
       range->Release();
@@ -186,31 +166,25 @@ HRESULT __stdcall EditSessionCommitted::DoEditSession(TfEditCookie ec) {
     composition->EndComposition(ec);
     composition->Release();
     composition_holder_->Set(nullptr);
-  } 
+  }
   return S_OK;
 }
-
 
 HiraganaKeyEventHandler::HiraganaKeyEventHandler(
-    ITfThreadMgr *thread_mgr,
-    TfClientId id,
-    ITfCompositionSink *sink,
-    ::senn::senn_win::ime::StatefulIM *im,
-    TfGuidAtom atom_editing,
+    ITfThreadMgr *thread_mgr, TfClientId id, ITfCompositionSink *sink,
+    ::senn::senn_win::ime::StatefulIM *im, TfGuidAtom atom_editing,
     EditSessionConverting::DisplayAttributeAtoms *atoms_converting)
-  : thread_mgr_(thread_mgr), client_id_(id), composition_sink_(sink), stateful_im_(im),
-    editing_display_attribute_atom_(atom_editing),
-    converting_display_attribute_atoms_(atoms_converting),
-    candidate_window_(nullptr) {
-}
+    : thread_mgr_(thread_mgr), client_id_(id), composition_sink_(sink),
+      stateful_im_(im), editing_display_attribute_atom_(atom_editing),
+      converting_display_attribute_atoms_(atoms_converting),
+      candidate_window_(nullptr) {}
 
-HRESULT HiraganaKeyEventHandler::OnSetFocus(BOOL fForeground) {
-  return S_OK;
-}
+HRESULT HiraganaKeyEventHandler::OnSetFocus(BOOL fForeground) { return S_OK; }
 
-HRESULT HiraganaKeyEventHandler::OnTestKeyDown(
-    ITfContext *context, WPARAM wParam, LPARAM lParam, BOOL *pfEaten) {
-  if (wParam == VK_BACK || wParam == VK_LEFT || wParam ==  VK_UP ||
+HRESULT HiraganaKeyEventHandler::OnTestKeyDown(ITfContext *context,
+                                               WPARAM wParam, LPARAM lParam,
+                                               BOOL *pfEaten) {
+  if (wParam == VK_BACK || wParam == VK_LEFT || wParam == VK_UP ||
       wParam == VK_RIGHT || wParam == VK_DOWN) {
     // Force the OS operate according to the key.
     *pfEaten = false;
@@ -220,8 +194,8 @@ HRESULT HiraganaKeyEventHandler::OnTestKeyDown(
   return S_OK;
 }
 
-HRESULT HiraganaKeyEventHandler::OnKeyDown(
-    ITfContext *context, WPARAM wParam, LPARAM lParam, BOOL *pfEaten) {
+HRESULT HiraganaKeyEventHandler::OnKeyDown(ITfContext *context, WPARAM wParam,
+                                           LPARAM lParam, BOOL *pfEaten) {
   *pfEaten = true;
 
   if (!candidate_window_) {
@@ -229,19 +203,19 @@ HRESULT HiraganaKeyEventHandler::OnKeyDown(
   }
 
   ITfEditSession *edit_session = nullptr;
-  stateful_im_->Transit(wParam,
-      [&](const senn::senn_win::ime::views::Editing& view) {
+  stateful_im_->Transit(
+      wParam,
+      [&](const senn::senn_win::ime::views::Editing &view) {
         edit_session = new EditSessionEditing(
-            view, context, editing_display_attribute_atom_,
-            composition_sink_, &composition_holder_);
+            view, context, editing_display_attribute_atom_, composition_sink_,
+            &composition_holder_);
       },
-      [&](const senn::senn_win::ime::views::Converting& view) {
+      [&](const senn::senn_win::ime::views::Converting &view) {
         edit_session = new EditSessionConverting(
-            thread_mgr_,
-            view, context, converting_display_attribute_atoms_,
+            thread_mgr_, view, context, converting_display_attribute_atoms_,
             composition_holder_.Get());
       },
-      [&](const senn::senn_win::ime::views::Committed& view) {
+      [&](const senn::senn_win::ime::views::Committed &view) {
         edit_session = new EditSessionCommitted(
             view, context, composition_sink_, &composition_holder_);
       });
@@ -251,34 +225,33 @@ HRESULT HiraganaKeyEventHandler::OnKeyDown(
   ObjectReleaser<ITfEditSession> edit_session_releaser(edit_session);
 
   HRESULT result;
-  if (context->RequestEditSession(
-          client_id_, edit_session, TF_ES_SYNC | TF_ES_READWRITE, &result)
-      != S_OK) {
+  if (context->RequestEditSession(client_id_, edit_session,
+                                  TF_ES_SYNC | TF_ES_READWRITE,
+                                  &result) != S_OK) {
     return E_FAIL;
   }
   return S_OK;
 }
 
-HRESULT HiraganaKeyEventHandler::OnTestKeyUp(
-    ITfContext *context, WPARAM wParam, LPARAM lParam, BOOL *pfEaten) {
+HRESULT HiraganaKeyEventHandler::OnTestKeyUp(ITfContext *context, WPARAM wParam,
+                                             LPARAM lParam, BOOL *pfEaten) {
   *pfEaten = false;
   return S_OK;
 }
 
-HRESULT HiraganaKeyEventHandler::OnKeyUp(
-    ITfContext *context, WPARAM wParam, LPARAM lParam, BOOL *pfEaten) {
+HRESULT HiraganaKeyEventHandler::OnKeyUp(ITfContext *context, WPARAM wParam,
+                                         LPARAM lParam, BOOL *pfEaten) {
   *pfEaten = false;
   return S_OK;
 }
 
-HRESULT HiraganaKeyEventHandler::OnPreservedKey(
-    ITfContext *context, REFGUID rguid, BOOL *pfEaten) {
+HRESULT HiraganaKeyEventHandler::OnPreservedKey(ITfContext *context,
+                                                REFGUID rguid, BOOL *pfEaten) {
   *pfEaten = false;
   return S_OK;
 }
 
-
-} // hiragana
-} // text_service
-} // win
-} // senn
+} // namespace hiragana
+} // namespace text_service
+} // namespace senn_win
+} // namespace senn
