@@ -47,7 +47,9 @@ public:
     return current_index_;
   }
 
-  void ShowCandidates(const senn::senn_win::ime::views::Converting &);
+  void UpdateCandidates(const senn::senn_win::ime::views::Converting &);
+
+  void ClearCandidates();
 
   static CandidateListUI *Create(ITfContext *context, ITfThreadMgr *thread_mgr);
 

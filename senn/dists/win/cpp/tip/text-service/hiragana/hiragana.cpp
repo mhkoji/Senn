@@ -224,13 +224,23 @@ bool HiraganaKeyEventHandler::HandleView(
   }
 
   assert(candidate_list_ui_); // Must have been initialized in OnKeyDown
-  candidate_list_ui_->ShowCandidates(view);
+  if (0 < view.cursor_form_candidates.size()) {
+    candidate_list_ui_->UpdateCandidates(view);
+    candidate_list_ui_->Show(true);
+  } else {
+    candidate_list_ui_->ClearCandidates();
+    candidate_list_ui_->Show(false);
+  }
 
   return true;
 }
 
 bool HiraganaKeyEventHandler::HandleView(
     ITfContext *context, const senn::senn_win::ime::views::Committed &view) {
+  assert(candidate_list_ui_); // Must have been initialized in OnKeyDown
+  candidate_list_ui_->ClearCandidates();
+  candidate_list_ui_->Show(false);
+
   ITfEditSession *edit_session = new EditSessionCommitted(
       view, context, composition_sink_, &composition_holder_);
 

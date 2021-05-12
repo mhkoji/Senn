@@ -79,7 +79,7 @@ HRESULT __stdcall CandidateListUI::GetGUID(GUID *pguid) {
 
 HRESULT __stdcall CandidateListUI::Show(BOOL bShow) {
   if (bShow) {
-    ShowWindow(hwnd_, SW_SHOW);
+    ShowWindow(hwnd_, SW_SHOWNA);
   } else {
     ShowWindow(hwnd_, SW_HIDE);
   }
@@ -95,8 +95,9 @@ HRESULT __stdcall CandidateListUI::IsShown(BOOL *pbShow) {
   return S_OK;
 }
 
-void CandidateListUI::ShowCandidates(
+void CandidateListUI::UpdateCandidates(
     const senn::senn_win::ime::views::Converting &view) {
+  current_index_ = view.cursor_form_candidate_index;
   candidates_.clear();
   for (std::vector<std::wstring>::const_iterator it =
            view.cursor_form_candidates.begin();
@@ -104,7 +105,16 @@ void CandidateListUI::ShowCandidates(
     candidates_.push_back(*it);
   }
 
-  current_index_ = view.cursor_form_candidate_index;
+  if (should_show_original_window_) {
+    // Send WM_PAINT message
+    InvalidateRect(hwnd_, nullptr, true);
+    UpdateWindow(hwnd_);
+  }
+}
+
+void CandidateListUI::ClearCandidates() {
+  current_index_ = 0;
+  candidates_.clear();
 
   if (should_show_original_window_) {
     // Send WM_PAINT message
@@ -112,6 +122,7 @@ void CandidateListUI::ShowCandidates(
     UpdateWindow(hwnd_);
   }
 }
+
 
 // https://docs.microsoft.com/en-us/windows/win32/tsf/uiless-mode-overview#the-flow-chart-of-uilessmode
 CandidateListUI *CandidateListUI::Create(ITfContext *context,
@@ -152,7 +163,6 @@ CandidateListUI *CandidateListUI::Create(ITfContext *context,
                        senn::senn_win::kSennCandidateWindowClassName, L"",
                        WS_POPUP | WS_BORDER, 50, 50, 100, 500, hwndParent,
                        nullptr, g_module_handle, cw);
-    ShowWindow(candidate_list_ui->hwnd_, SW_SHOWNA);
   } else {
     ui_mgr->UpdateUIElement(candidate_list_ui->ui_element_id_);
   }
