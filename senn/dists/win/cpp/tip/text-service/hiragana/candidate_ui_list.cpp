@@ -79,6 +79,7 @@ HRESULT __stdcall CandidateListUI::GetGUID(GUID *pguid) {
 
 HRESULT __stdcall CandidateListUI::Show(BOOL bShow) {
   if (bShow) {
+    // When SW_SHOW is used, the window hangs.
     ShowWindow(hwnd_, SW_SHOWNA);
   } else {
     ShowWindow(hwnd_, SW_HIDE);
