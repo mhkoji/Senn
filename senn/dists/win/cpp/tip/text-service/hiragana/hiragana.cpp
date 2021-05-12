@@ -2,6 +2,7 @@
 #include "../object_releaser.h"
 #include "candidate_window.h"
 #include "ui.h"
+#include <cassert>
 
 namespace senn {
 namespace senn_win {
@@ -222,6 +223,7 @@ bool HiraganaKeyEventHandler::HandleView(
     return false;
   }
 
+  assert(candidate_list_ui_); // Must have been initialized in OnKeyDown
   candidate_list_ui_->ShowCandidates(view);
 
   return true;

@@ -9,9 +9,9 @@ namespace text_service {
 namespace langbar {
 
 InputModeToggleButton::InputModeToggleButton(CLSID clsid, ULONG sort,
-                                             State *state, Handlers *handlers)
+                                             View *view, Handlers *handlers)
     : ref_count_(1), clsid_(clsid), sort_(sort), lang_bar_item_sink_(nullptr),
-      state_(state), handlers_(handlers) {}
+      view_(view), handlers_(handlers) {}
 
 HRESULT __stdcall InputModeToggleButton::GetInfo(TF_LANGBARITEMINFO *pInfo) {
   if (!pInfo) {
@@ -62,7 +62,7 @@ HRESULT __stdcall InputModeToggleButton::GetIcon(HICON *phIcon) {
     return E_INVALIDARG;
   }
   // Use a built-in icon for a while...
-  if (state_->input_mode() == InputMode::kDirect) {
+  if (view_->input_mode() == InputMode::kDirect) {
     *phIcon = LoadIcon(NULL, IDI_APPLICATION);
   } else {
     *phIcon = LoadIcon(NULL, IDI_ASTERISK);

@@ -24,7 +24,7 @@ static const WCHAR kItemDescription[] = L"Input mode menu button";
 // https://docs.microsoft.com/ja-jp/windows/desktop/tsf/language-bar
 class InputModeToggleButton : public ITfLangBarItemButton, public ITfSource {
 public:
-  class State {
+  class View {
   public:
     virtual InputMode input_mode() const = 0;
   };
@@ -34,7 +34,7 @@ public:
     virtual void ToggleInputMode() = 0;
   };
 
-  InputModeToggleButton(CLSID, ULONG, State *, Handlers *);
+  InputModeToggleButton(CLSID, ULONG, View *, Handlers *);
 
   HRESULT __stdcall QueryInterface(REFIID riid, void **ppvObject) {
     if (ppvObject == NULL) {
@@ -96,7 +96,7 @@ private:
 
   ITfLangBarItemSink *lang_bar_item_sink_;
 
-  const State *state_;
+  const View *view_;
 
   Handlers *handlers_;
 

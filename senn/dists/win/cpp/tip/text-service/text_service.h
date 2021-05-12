@@ -21,7 +21,7 @@ class TextService : public ITfKeyEventSink,
                     public ITfDisplayAttributeProvider,
                     public ITfCompositionSink,
                     public ITfTextInputProcessor,
-                    public langbar::InputModeToggleButton::State,
+                    public langbar::InputModeToggleButton::View,
                     public langbar::InputModeToggleButton::Handlers {
 public:
   TextService()
@@ -90,7 +90,7 @@ public:
   HRESULT __stdcall GetDisplayAttributeInfo(
       REFGUID, ITfDisplayAttributeInfo **) override;
 
-  // langbar::InputModeToggleButton::State
+  // langbar::InputModeToggleButton::View
   virtual InputMode input_mode() const override;
 
   // langbar::InputModeToggleButton::Handlers

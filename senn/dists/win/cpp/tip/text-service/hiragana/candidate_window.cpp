@@ -1,16 +1,16 @@
 #include <msctf.h>
+#include <string>
 
 #include "../../senn.h"
 #include "../../variable.h"
 #include "candidate_window.h"
-#include <string>
 
 namespace senn {
 namespace senn_win {
 namespace text_service {
 namespace hiragana {
 
-CandidateWindow::CandidateWindow(State *state) : state_(state) {}
+CandidateWindow::CandidateWindow(View *view) : view_(view) {}
 
 bool CandidateWindow::RegisterWindowClass() {
   WNDCLASSEXW wc = {};
@@ -51,9 +51,7 @@ LRESULT CALLBACK CandidateWindow::WindowProc(HWND hwnd, UINT umsg,
   case WM_PAINT: {
     PAINTSTRUCT ps;
     HDC hdc = BeginPaint(hwnd, &ps);
-
-    const std::vector<std::wstring> *candidates = nullptr;
-    cw->state_->candidates(&candidates);
+    const std::vector<std::wstring> *candidates = cw->view_->candidates();
     for (size_t i = 0; i < candidates->size(); ++i) {
       const std::wstring &s = candidates->at(i);
       TextOut(hdc, 0, int(i * 50), s.c_str(), s.length());
@@ -188,7 +186,7 @@ CandidateListUI *CandidateListUI::Create(ITfContext *context,
 
   if (candidate_list_ui->should_show_original_window_) {
     CandidateWindow *cw = new CandidateWindow(
-        static_cast<CandidateWindow::State *>(candidate_list_ui));
+        static_cast<CandidateWindow::View *>(candidate_list_ui));
 
     HWND hwndParent = nullptr;
     {

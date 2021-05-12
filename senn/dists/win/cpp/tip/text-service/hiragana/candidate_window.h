@@ -12,12 +12,12 @@ namespace hiragana {
 
 class CandidateWindow {
 public:
-  class State {
+  class View {
   public:
-    virtual void candidates(const std::vector<std::wstring> **out) const = 0;
+    virtual const std::vector<std::wstring>* candidates() const = 0;
   };
 
-  CandidateWindow(State *);
+  CandidateWindow(View *);
 
   static LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wparam,
                                      LPARAM lparam);
@@ -27,10 +27,10 @@ public:
   static void UnregisterWindowClass();
 
 private:
-  State *state_;
+  View *view_;
 };
 
-class CandidateListUI : public ITfUIElement, public CandidateWindow::State {
+class CandidateListUI : public ITfUIElement, public CandidateWindow::View {
 public:
   CandidateListUI(ITfThreadMgr *thread_mgr)
       : thread_mgr_(thread_mgr), ref_count_(1), shown_(false),
@@ -58,8 +58,8 @@ public:
   virtual HRESULT __stdcall IsShown(BOOL *pbShow) override;
 
   // Candidate::State
-  virtual void candidates(const std::vector<std::wstring> **out) const override {
-    *out = &candidates_;
+  virtual const std::vector<std::wstring> *candidates() const override {
+    return &candidates_;
   }
 
   void ShowCandidates(const senn::senn_win::ime::views::Converting &);
