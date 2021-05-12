@@ -15,6 +15,8 @@ public:
   class View {
   public:
     virtual const std::vector<std::wstring>* candidates() const = 0;
+    
+    virtual size_t current_index() const = 0;
   };
 
   CandidateWindow(View *);

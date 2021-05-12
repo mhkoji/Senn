@@ -37,6 +37,45 @@ void CandidateWindow::UnregisterWindowClass() {
                    g_module_handle);
 }
 
+namespace {
+
+const LONG MARGIN_X = 2;
+const LONG MARGIN_Y = 4;
+
+void DrawCandidates(HDC hdc, const CandidateWindow::View *view) {
+  UINT format = DT_NOCLIP | DT_NOPREFIX | DT_SINGLELINE | DT_WORDBREAK |
+                DT_NOFULLWIDTHCHARBREAK;
+  const std::vector<std::wstring> *candidates = view->candidates();
+  std::vector<std::wstring>::const_iterator it = candidates->begin();
+  LONG prev_bottom = 0;
+  for (size_t index = 0; it != candidates->end(); ++it, ++index) {
+    RECT r_temp = {0, 0, 1, 1};
+    DrawText(hdc, it->c_str(), -1, &r_temp, DT_CALCRECT | format);
+
+    if (index == view->current_index()) {
+      // Set highlight
+      SetBkColor(hdc, RGB(0x97, 0xC2, 0xE2));
+      SetBkMode(hdc, OPAQUE);
+    } else {
+      SetBkMode(hdc, TRANSPARENT);
+    }
+
+    LONG width = r_temp.right;
+    LONG height = r_temp.bottom;
+
+    LONG top = prev_bottom + MARGIN_Y;
+    LONG bottom = top + height + MARGIN_Y;
+    LONG left = MARGIN_X;
+    LONG right = left + width + MARGIN_X;
+    RECT r = {left, top, right, bottom};
+    DrawText(hdc, it->c_str(), -1, &r, format);
+
+    prev_bottom = bottom;
+  }
+}
+
+} // namespace
+
 LRESULT CALLBACK CandidateWindow::WindowProc(HWND hwnd, UINT umsg,
                                              WPARAM wparam, LPARAM lparam) {
   CandidateWindow *cw;
@@ -51,12 +90,7 @@ LRESULT CALLBACK CandidateWindow::WindowProc(HWND hwnd, UINT umsg,
   case WM_PAINT: {
     PAINTSTRUCT ps;
     HDC hdc = BeginPaint(hwnd, &ps);
-    const std::vector<std::wstring> *candidates = cw->view_->candidates();
-    for (size_t i = 0; i < candidates->size(); ++i) {
-      const std::wstring &s = candidates->at(i);
-      TextOut(hdc, 0, int(i * 50), s.c_str(), s.length());
-    }
-
+    DrawCandidates(hdc, cw->view_);
     EndPaint(hwnd, &ps);
     return 0;
   }

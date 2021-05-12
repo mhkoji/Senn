@@ -43,6 +43,10 @@ public:
     return &candidates_;
   }
 
+  virtual size_t current_index() const override {
+    return current_index_;
+  }
+
   void ShowCandidates(const senn::senn_win::ime::views::Converting &);
 
   static CandidateListUI *Create(ITfContext *context, ITfThreadMgr *thread_mgr);
@@ -63,6 +67,8 @@ private:
   CandidateWindow *cw_;
 
   std::vector<std::wstring> candidates_;
+
+  size_t current_index_ = 0;
 };
 
 } // namespace hiragana

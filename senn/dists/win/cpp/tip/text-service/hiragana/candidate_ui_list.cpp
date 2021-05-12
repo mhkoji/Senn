@@ -103,6 +103,9 @@ void CandidateListUI::ShowCandidates(
        it != view.cursor_form_candidates.end(); ++it) {
     candidates_.push_back(*it);
   }
+
+  current_index_ = view.cursor_form_candidate_index;
+
   if (should_show_original_window_) {
     // Send WM_PAINT message
     InvalidateRect(hwnd_, nullptr, true);
