@@ -75,7 +75,7 @@ EditSessionConverting::EditSessionConverting(
   thread_mgr_->AddRef();
 }
 
-CandidateWindow *cw = nullptr;
+CandidateListUI *cw = nullptr;
 
 EditSessionConverting::~EditSessionConverting() {
   context_->Release();
@@ -177,7 +177,7 @@ HiraganaKeyEventHandler::HiraganaKeyEventHandler(
     : thread_mgr_(thread_mgr), client_id_(id), composition_sink_(sink),
       stateful_im_(im), editing_display_attribute_atom_(atom_editing),
       converting_display_attribute_atoms_(atoms_converting),
-      candidate_window_(nullptr) {}
+      candidate_list_ui_(nullptr) {}
 
 HRESULT HiraganaKeyEventHandler::OnSetFocus(BOOL fForeground) { return S_OK; }
 
@@ -222,7 +222,7 @@ bool HiraganaKeyEventHandler::HandleView(
     return false;
   }
 
-  candidate_window_->ShowCandidates(view);
+  candidate_list_ui_->ShowCandidates(view);
 
   return true;
 }
@@ -242,8 +242,8 @@ HRESULT HiraganaKeyEventHandler::OnKeyDown(ITfContext *context, WPARAM wParam,
                                            LPARAM lParam, BOOL *pfEaten) {
   *pfEaten = true;
 
-  if (!candidate_window_) {
-    candidate_window_ = CandidateWindow::Create(context, thread_mgr_);
+  if (!candidate_list_ui_) {
+    candidate_list_ui_ = CandidateListUI::Create(context, thread_mgr_);
   }
 
   bool success;

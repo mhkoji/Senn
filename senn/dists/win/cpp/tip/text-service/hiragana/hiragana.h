@@ -110,7 +110,7 @@ private:
 
   ITfComposition *const composition_;
 
-  CandidateWindow *candidate_window_;
+  CandidateListUI *candidate_window_;
 };
 
 class EditSessionCommitted : public EditSessionImplementingIUnknown {
@@ -171,7 +171,7 @@ private:
   const EditSessionConverting::DisplayAttributeAtoms
       *converting_display_attribute_atoms_;
 
-  CandidateWindow *candidate_window_;
+  CandidateListUI *candidate_list_ui_;
 };
 
 } // namespace hiragana
