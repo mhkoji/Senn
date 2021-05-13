@@ -132,6 +132,25 @@ private:
   CompositionHolder *const composition_holder_;
 };
 
+class CandidateListState : public CandidateWindow::View {
+public:
+  CandidateListState() : candidates_(std::vector<std::wstring>()) {}
+
+  void Update(const senn::senn_win::ime::views::Converting &);
+
+  // CandidateWindow::View
+  virtual const std::vector<std::wstring> *candidates() const override {
+    return &candidates_;
+  }
+
+  virtual size_t current_index() const override { return current_index_; }
+
+private:
+  std::vector<std::wstring> candidates_;
+
+  size_t current_index_ = 0;
+};
+
 class HiraganaKeyEventHandler {
 public:
   HiraganaKeyEventHandler(ITfThreadMgr *, TfClientId, ITfCompositionSink *,
@@ -170,6 +189,8 @@ private:
   // Values of the style for decorating a text when converting
   const EditSessionConverting::DisplayAttributeAtoms
       *converting_display_attribute_atoms_;
+
+  CandidateListState *candidate_list_state_;
 
   CandidateListUI *candidate_list_ui_;
 };

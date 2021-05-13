@@ -95,31 +95,12 @@ HRESULT __stdcall CandidateListUI::IsShown(BOOL *pbShow) {
   return S_OK;
 }
 
-void CandidateListUI::UpdateCandidates(
-    const senn::senn_win::ime::views::Converting &view) {
-  current_index_ = view.cursor_form_candidate_index;
-  candidates_.clear();
-  for (std::vector<std::wstring>::const_iterator it =
-           view.cursor_form_candidates.begin();
-       it != view.cursor_form_candidates.end(); ++it) {
-    candidates_.push_back(*it);
-  }
-
-  NotifyUpdateUI();
-}
-
-void CandidateListUI::ClearCandidates() {
-  current_index_ = 0;
-  candidates_.clear();
-
-  NotifyUpdateUI();
-}
-
 void CandidateListUI::NotifyUpdateUI() {
   if (hwnd_) {
     // Send WM_PAINT message
     InvalidateRect(hwnd_, nullptr, true);
     UpdateWindow(hwnd_);
+    Show(0 < view_->candidates()->size());
   } else {
     ITfUIElementMgr *ui_mgr = nullptr;
     if (thread_mgr_->QueryInterface(IID_ITfUIElementMgr, (void **)&ui_mgr) ==
@@ -147,7 +128,8 @@ void CandidateListUI::DestroyUI() {
 
 // https://docs.microsoft.com/en-us/windows/win32/tsf/uiless-mode-overview#the-flow-chart-of-uilessmode
 CandidateListUI *CandidateListUI::Create(ITfContext *context,
-                                         ITfThreadMgr *thread_mgr) {
+                                         ITfThreadMgr *thread_mgr,
+                                         CandidateWindow::View *view) {
 
   ITfUIElementMgr *ui_mgr = nullptr;
   if (thread_mgr->QueryInterface(IID_ITfUIElementMgr, (void **)&ui_mgr) ==
@@ -157,7 +139,8 @@ CandidateListUI *CandidateListUI::Create(ITfContext *context,
     }
   }
 
-  CandidateListUI *candidate_list_ui = new CandidateListUI(context, thread_mgr);
+  CandidateListUI *candidate_list_ui =
+      new CandidateListUI(context, thread_mgr, view);
   BOOL tip_should_show_window = true;
   ui_mgr->BeginUIElement(candidate_list_ui, &tip_should_show_window,
                          &candidate_list_ui->ui_element_id_);
@@ -165,8 +148,7 @@ CandidateListUI *CandidateListUI::Create(ITfContext *context,
   if (tip_should_show_window) {
     ui_mgr->EndUIElement(candidate_list_ui->ui_element_id_);
 
-    CandidateWindow *cw = new CandidateWindow(
-        static_cast<CandidateWindow::View *>(candidate_list_ui));
+    CandidateWindow *cw = new CandidateWindow(view);
 
     HWND hwndParent = nullptr;
     {
@@ -215,7 +197,7 @@ HRESULT __stdcall CandidateListUI::GetCount(UINT *puCount) {
   if (puCount == nullptr) {
     return E_INVALIDARG;
   }
-  *puCount = candidates_.size();
+  *puCount = view_->candidates()->size();
   return S_OK;
 }
 
@@ -223,7 +205,7 @@ HRESULT __stdcall CandidateListUI::GetSelection(UINT *puIndex) {
   if (puIndex == nullptr) {
     return E_INVALIDARG;
   }
-  *puIndex = current_index_;
+  *puIndex = view_->current_index();
   return S_OK;
 }
 
@@ -231,10 +213,10 @@ HRESULT __stdcall CandidateListUI::GetString(UINT uIndex, BSTR *pstr) {
   if (pstr == nullptr) {
     return E_INVALIDARG;
   }
-  if (candidates_.size() <= uIndex) {
+  if (view_->candidates()->size() <= uIndex) {
     return E_INVALIDARG;
   }
-  *pstr = SysAllocString(candidates_[uIndex].c_str());
+  *pstr = SysAllocString((*view_->candidates())[uIndex].c_str());
   return S_OK;
 }
 
@@ -244,7 +226,7 @@ HRESULT __stdcall CandidateListUI::GetPageIndex(UINT *pIndex, UINT uSize,
     return E_INVALIDARG;
   }
 
-  *puPageCnt = (candidates_.size() / kPageSize) + 1;
+  *puPageCnt = (view_->candidates()->size() / kPageSize) + 1;
 
   if (pIndex == nullptr) {
     // https://docs.microsoft.com/ja-jp/windows/win32/api/msctf/nf-msctf-itfcandidatelistuielement-getpageindex
@@ -273,7 +255,7 @@ HRESULT __stdcall CandidateListUI::GetCurrentPage(UINT *puPage) {
   if (puPage == nullptr) {
     return E_INVALIDARG;
   }
-  *puPage = current_index_ / kPageSize;
+  *puPage = view_->current_index() / kPageSize;
   return S_OK;
 }
 

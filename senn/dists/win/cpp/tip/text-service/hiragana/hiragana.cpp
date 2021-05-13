@@ -178,7 +178,7 @@ HiraganaKeyEventHandler::HiraganaKeyEventHandler(
     : thread_mgr_(thread_mgr), client_id_(id), composition_sink_(sink),
       stateful_im_(im), editing_display_attribute_atom_(atom_editing),
       converting_display_attribute_atoms_(atoms_converting),
-      candidate_list_ui_(nullptr) {}
+      candidate_list_state_(nullptr), candidate_list_ui_(nullptr) {}
 
 HRESULT HiraganaKeyEventHandler::OnSetFocus(BOOL fForeground) { return S_OK; }
 
@@ -224,16 +224,13 @@ bool HiraganaKeyEventHandler::HandleView(
   }
 
   if (!candidate_list_ui_) {
-    candidate_list_ui_ = CandidateListUI::Create(context, thread_mgr_);
+    candidate_list_state_ = new CandidateListState();
+    candidate_list_ui_ =
+        CandidateListUI::Create(context, thread_mgr_, candidate_list_state_);
   }
 
-  if (0 < view.cursor_form_candidates.size()) {
-    candidate_list_ui_->UpdateCandidates(view);
-    candidate_list_ui_->Show(true);
-  } else {
-    candidate_list_ui_->ClearCandidates();
-    candidate_list_ui_->Show(false);
-  }
+  candidate_list_state_->Update(view);
+  candidate_list_ui_->NotifyUpdateUI();
 
   return true;
 }
@@ -241,6 +238,9 @@ bool HiraganaKeyEventHandler::HandleView(
 bool HiraganaKeyEventHandler::HandleView(
     ITfContext *context, const senn::senn_win::ime::views::Committed &view) {
   if (candidate_list_ui_) {
+    delete candidate_list_state_;
+    candidate_list_state_ = nullptr;
+
     candidate_list_ui_->Release();
     candidate_list_ui_ = nullptr;
   }
@@ -289,6 +289,17 @@ HRESULT HiraganaKeyEventHandler::OnPreservedKey(ITfContext *context,
                                                 REFGUID rguid, BOOL *pfEaten) {
   *pfEaten = false;
   return S_OK;
+}
+
+void CandidateListState::Update(
+    const senn::senn_win::ime::views::Converting &view) {
+  current_index_ = view.cursor_form_candidate_index;
+  candidates_.clear();
+  for (std::vector<std::wstring>::const_iterator it =
+           view.cursor_form_candidates.begin();
+       it != view.cursor_form_candidates.end(); ++it) {
+    candidates_.push_back(*it);
+  }
 }
 
 } // namespace hiragana
