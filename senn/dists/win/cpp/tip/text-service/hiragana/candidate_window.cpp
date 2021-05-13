@@ -87,6 +87,9 @@ LRESULT CALLBACK CandidateWindow::WindowProc(HWND hwnd, UINT umsg,
   }
 
   switch (umsg) {
+  case WM_DESTROY:
+    delete cw;
+    return 0;
   case WM_PAINT: {
     PAINTSTRUCT ps;
     HDC hdc = BeginPaint(hwnd, &ps);

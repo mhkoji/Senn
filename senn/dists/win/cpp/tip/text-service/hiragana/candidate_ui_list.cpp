@@ -10,6 +10,8 @@ namespace senn_win {
 namespace text_service {
 namespace hiragana {
 
+const size_t kPageSize = 9;
+
 HRESULT __stdcall CandidateListUI::QueryInterface(REFIID riid,
                                                   void **ppvObject) {
   if (ppvObject == nullptr) {
@@ -51,7 +53,7 @@ HRESULT __stdcall CandidateListUI::GetDescription(BSTR *pbstrDescription) {
 
   *pbstrDescription = nullptr;
 
-  BSTR bstrDesc = SysAllocString(L"Senn");
+  BSTR bstrDesc = SysAllocString(L"Senn Candidate List UI");
 
   if (bstrDesc == nullptr) {
     return E_OUTOFMEMORY;
@@ -78,21 +80,18 @@ HRESULT __stdcall CandidateListUI::GetGUID(GUID *pguid) {
 }
 
 HRESULT __stdcall CandidateListUI::Show(BOOL bShow) {
-  if (bShow) {
-    // When SW_SHOW is used, the window hangs.
-    ShowWindow(hwnd_, SW_SHOWNA);
-  } else {
-    ShowWindow(hwnd_, SW_HIDE);
+  if (hwnd_) {
+    // If SW_SHOW is used instead of SW_SHOWNA, the window hangs.
+    ShowWindow(hwnd_, bShow ? SW_SHOWNA : SW_HIDE);
   }
-  shown_ = bShow;
   return S_OK;
 }
 
 HRESULT __stdcall CandidateListUI::IsShown(BOOL *pbShow) {
   if (pbShow == nullptr) {
-    return E_FAIL;
+    return E_INVALIDARG;
   }
-  *pbShow = shown_;
+  *pbShow = hwnd_ && IsWindowVisible(hwnd_);
   return S_OK;
 }
 
@@ -106,24 +105,45 @@ void CandidateListUI::UpdateCandidates(
     candidates_.push_back(*it);
   }
 
-  if (should_show_original_window_) {
-    // Send WM_PAINT message
-    InvalidateRect(hwnd_, nullptr, true);
-    UpdateWindow(hwnd_);
-  }
+  NotifyUpdateUI();
 }
 
 void CandidateListUI::ClearCandidates() {
   current_index_ = 0;
   candidates_.clear();
 
-  if (should_show_original_window_) {
+  NotifyUpdateUI();
+}
+
+void CandidateListUI::NotifyUpdateUI() {
+  if (hwnd_) {
     // Send WM_PAINT message
     InvalidateRect(hwnd_, nullptr, true);
     UpdateWindow(hwnd_);
+  } else {
+    ITfUIElementMgr *ui_mgr = nullptr;
+    if (thread_mgr_->QueryInterface(IID_ITfUIElementMgr, (void **)&ui_mgr) ==
+            S_OK &&
+        ui_mgr != nullptr) {
+      ui_mgr->UpdateUIElement(ui_element_id_);
+      ui_mgr->Release();
+    }
   }
 }
 
+void CandidateListUI::DestroyUI() {
+  if (hwnd_) {
+    DestroyWindow(hwnd_);
+  } else {
+    ITfUIElementMgr *ui_mgr = nullptr;
+    if (thread_mgr_->QueryInterface(IID_ITfUIElementMgr, (void **)&ui_mgr) ==
+            S_OK &&
+        ui_mgr != nullptr) {
+      ui_mgr->EndUIElement(ui_element_id_);
+      ui_mgr->Release();
+    }
+  }
+}
 
 // https://docs.microsoft.com/en-us/windows/win32/tsf/uiless-mode-overview#the-flow-chart-of-uilessmode
 CandidateListUI *CandidateListUI::Create(ITfContext *context,
@@ -137,13 +157,14 @@ CandidateListUI *CandidateListUI::Create(ITfContext *context,
     }
   }
 
-  CandidateListUI *candidate_list_ui = new CandidateListUI(thread_mgr);
-
-  ui_mgr->BeginUIElement(candidate_list_ui,
-                         &candidate_list_ui->should_show_original_window_,
+  CandidateListUI *candidate_list_ui = new CandidateListUI(context, thread_mgr);
+  BOOL tip_should_show_window = true;
+  ui_mgr->BeginUIElement(candidate_list_ui, &tip_should_show_window,
                          &candidate_list_ui->ui_element_id_);
 
-  if (candidate_list_ui->should_show_original_window_) {
+  if (tip_should_show_window) {
+    ui_mgr->EndUIElement(candidate_list_ui->ui_element_id_);
+
     CandidateWindow *cw = new CandidateWindow(
         static_cast<CandidateWindow::View *>(candidate_list_ui));
 
@@ -171,6 +192,89 @@ CandidateListUI *CandidateListUI::Create(ITfContext *context,
   ui_mgr->Release();
 
   return candidate_list_ui;
+}
+
+HRESULT __stdcall CandidateListUI::GetUpdatedFlags(DWORD *pdwFlags) {
+  if (pdwFlags == nullptr) {
+    return E_INVALIDARG;
+  }
+  *pdwFlags = 0;
+  *pdwFlags |= (TF_CLUIE_STRING | TF_CLUIE_COUNT);
+  *pdwFlags |= (TF_CLUIE_SELECTION | TF_CLUIE_CURRENTPAGE | TF_CLUIE_PAGEINDEX);
+  return S_OK;
+}
+
+HRESULT __stdcall CandidateListUI::GetDocumentMgr(ITfDocumentMgr **ppdim) {
+  if (ppdim == nullptr) {
+    return E_INVALIDARG;
+  }
+  return context_->GetDocumentMgr(ppdim);
+}
+
+HRESULT __stdcall CandidateListUI::GetCount(UINT *puCount) {
+  if (puCount == nullptr) {
+    return E_INVALIDARG;
+  }
+  *puCount = candidates_.size();
+  return S_OK;
+}
+
+HRESULT __stdcall CandidateListUI::GetSelection(UINT *puIndex) {
+  if (puIndex == nullptr) {
+    return E_INVALIDARG;
+  }
+  *puIndex = current_index_;
+  return S_OK;
+}
+
+HRESULT __stdcall CandidateListUI::GetString(UINT uIndex, BSTR *pstr) {
+  if (pstr == nullptr) {
+    return E_INVALIDARG;
+  }
+  if (candidates_.size() <= uIndex) {
+    return E_INVALIDARG;
+  }
+  *pstr = SysAllocString(candidates_[uIndex].c_str());
+  return S_OK;
+}
+
+HRESULT __stdcall CandidateListUI::GetPageIndex(UINT *pIndex, UINT uSize,
+                                                UINT *puPageCnt) {
+  if (puPageCnt == nullptr) {
+    return E_INVALIDARG;
+  }
+
+  *puPageCnt = (candidates_.size() / kPageSize) + 1;
+
+  if (pIndex == nullptr) {
+    // https://docs.microsoft.com/ja-jp/windows/win32/api/msctf/nf-msctf-itfcandidatelistuielement-getpageindex
+    // > The caller calls this method with NULL for this parameter first to get
+    // the number of pages in puPageCnt and allocates the buffer to receive
+    // indexes for all pages.
+    return S_OK;
+  }
+
+  if (uSize < *puPageCnt) {
+    return E_NOT_SUFFICIENT_BUFFER;
+  }
+
+  for (size_t i = 0; i < *puPageCnt; i++) {
+    pIndex[i] = i * kPageSize;
+  }
+
+  return S_OK;
+}
+
+HRESULT __stdcall CandidateListUI::SetPageIndex(UINT *pIndex, UINT uPageCnt) {
+  return E_NOTIMPL;
+}
+
+HRESULT __stdcall CandidateListUI::GetCurrentPage(UINT *puPage) {
+  if (puPage == nullptr) {
+    return E_INVALIDARG;
+  }
+  *puPage = current_index_ / kPageSize;
+  return S_OK;
 }
 
 } // namespace hiragana

@@ -29,6 +29,8 @@ static const GUID kCategories[] = {
 
     // Probably needed to show an language bar item in the notification tray.
     GUID_TFCAT_TIPCAP_SYSTRAYSUPPORT,
+
+    GUID_TFCAT_TIPCAP_UIELEMENTENABLED,
 };
 
 static const WCHAR kNamedPipePath[] = L"\\\\.\\pipe\\senn";

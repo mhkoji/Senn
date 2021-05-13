@@ -223,7 +223,10 @@ bool HiraganaKeyEventHandler::HandleView(
     return false;
   }
 
-  assert(candidate_list_ui_); // Must have been initialized in OnKeyDown
+  if (!candidate_list_ui_) {
+    candidate_list_ui_ = CandidateListUI::Create(context, thread_mgr_);
+  }
+
   if (0 < view.cursor_form_candidates.size()) {
     candidate_list_ui_->UpdateCandidates(view);
     candidate_list_ui_->Show(true);
@@ -237,9 +240,10 @@ bool HiraganaKeyEventHandler::HandleView(
 
 bool HiraganaKeyEventHandler::HandleView(
     ITfContext *context, const senn::senn_win::ime::views::Committed &view) {
-  assert(candidate_list_ui_); // Must have been initialized in OnKeyDown
-  candidate_list_ui_->ClearCandidates();
-  candidate_list_ui_->Show(false);
+  if (candidate_list_ui_) {
+    candidate_list_ui_->Release();
+    candidate_list_ui_ = nullptr;
+  }
 
   ITfEditSession *edit_session = new EditSessionCommitted(
       view, context, composition_sink_, &composition_holder_);
@@ -253,10 +257,6 @@ bool HiraganaKeyEventHandler::HandleView(
 HRESULT HiraganaKeyEventHandler::OnKeyDown(ITfContext *context, WPARAM wParam,
                                            LPARAM lParam, BOOL *pfEaten) {
   *pfEaten = true;
-
-  if (!candidate_list_ui_) {
-    candidate_list_ui_ = CandidateListUI::Create(context, thread_mgr_);
-  }
 
   bool success;
   stateful_im_->Transit(
