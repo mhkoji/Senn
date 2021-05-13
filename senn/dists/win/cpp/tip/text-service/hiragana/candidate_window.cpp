@@ -93,7 +93,17 @@ LRESULT CALLBACK CandidateWindow::WindowProc(HWND hwnd, UINT umsg,
   case WM_PAINT: {
     PAINTSTRUCT ps;
     HDC hdc = BeginPaint(hwnd, &ps);
-    DrawCandidates(hdc, cw->view_);
+    HDC hdcmem = CreateCompatibleDC(hdc);
+    RECT rc = {0, 0, 100, 500};
+    HBITMAP hbmpmem = CreateCompatibleBitmap(hdc, rc.right, rc.bottom);
+    SelectObject(hdcmem, hbmpmem);
+    FillRect(hdcmem, &rc, HBRUSH(GetStockObject(WHITE_BRUSH)));
+
+    DrawCandidates(hdcmem, cw->view_);
+
+    BitBlt(hdc, 0, 0, 100, 500, hdcmem, 0, 0, SRCCOPY);
+    DeleteObject(hbmpmem);
+    DeleteDC(hdcmem);
     EndPaint(hwnd, &ps);
     return 0;
   }
