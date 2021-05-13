@@ -163,7 +163,7 @@ CandidateListUI *CandidateListUI::Create(ITfContext *context,
     candidate_list_ui->hwnd_ =
         CreateWindowEx(WS_EX_TOOLWINDOW | WS_EX_TOPMOST,
                        senn::senn_win::kSennCandidateWindowClassName, L"",
-                       WS_POPUP | WS_BORDER, 50, 50, 100, 500, hwndParent,
+                       WS_POPUP | WS_BORDER, 50, 50, 100, 400, hwndParent,
                        nullptr, g_module_handle, cw);
   } else {
     ui_mgr->UpdateUIElement(candidate_list_ui->ui_element_id_);
