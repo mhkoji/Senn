@@ -12,6 +12,8 @@ namespace hiragana {
 
 class CandidateWindow {
 public:
+  static const size_t kPageSize = 9;
+
   class View {
   public:
     virtual const std::vector<std::wstring>* candidates() const = 0;

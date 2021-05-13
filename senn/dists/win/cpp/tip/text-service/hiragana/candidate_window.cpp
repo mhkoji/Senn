@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <msctf.h>
 #include <string>
 
@@ -42,15 +43,26 @@ namespace {
 const LONG MARGIN_X = 2;
 const LONG MARGIN_Y = 4;
 
+const UINT format = DT_NOCLIP | DT_NOPREFIX | DT_SINGLELINE | DT_WORDBREAK |
+                    DT_NOFULLWIDTHCHARBREAK;
+
 void DrawCandidates(HDC hdc, const CandidateWindow::View *view) {
-  UINT format = DT_NOCLIP | DT_NOPREFIX | DT_SINGLELINE | DT_WORDBREAK |
-                DT_NOFULLWIDTHCHARBREAK;
   const std::vector<std::wstring> *candidates = view->candidates();
-  std::vector<std::wstring>::const_iterator it = candidates->begin();
+
+  const size_t current_page =
+      view->current_index() / CandidateWindow::kPageSize;
+
+  const size_t begin_index = current_page * CandidateWindow::kPageSize;
+
+  const size_t end_index = (std::min)(
+      (current_page + 1) * CandidateWindow::kPageSize, candidates->size());
+
   LONG prev_bottom = 0;
-  for (size_t index = 0; it != candidates->end(); ++it, ++index) {
+  for (size_t index = begin_index; index < end_index; ++index) {
+    const std::wstring &s = (*view->candidates())[index];
+
     RECT r_temp = {0, 0, 1, 1};
-    DrawText(hdc, it->c_str(), -1, &r_temp, DT_CALCRECT | format);
+    DrawText(hdc, s.c_str(), -1, &r_temp, DT_CALCRECT | format);
 
     if (index == view->current_index()) {
       // Set highlight
@@ -68,7 +80,7 @@ void DrawCandidates(HDC hdc, const CandidateWindow::View *view) {
     LONG left = MARGIN_X;
     LONG right = left + width + MARGIN_X;
     RECT r = {left, top, right, bottom};
-    DrawText(hdc, it->c_str(), -1, &r, format);
+    DrawText(hdc, s.c_str(), -1, &r, format);
 
     prev_bottom = bottom;
   }

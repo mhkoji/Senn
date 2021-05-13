@@ -10,8 +10,6 @@ namespace senn_win {
 namespace text_service {
 namespace hiragana {
 
-const size_t kPageSize = 9;
-
 HRESULT __stdcall CandidateListUI::QueryInterface(REFIID riid,
                                                   void **ppvObject) {
   if (ppvObject == nullptr) {
@@ -226,7 +224,7 @@ HRESULT __stdcall CandidateListUI::GetPageIndex(UINT *pIndex, UINT uSize,
     return E_INVALIDARG;
   }
 
-  *puPageCnt = (view_->candidates()->size() / kPageSize) + 1;
+  *puPageCnt = (view_->candidates()->size() / CandidateWindow::kPageSize) + 1;
 
   if (pIndex == nullptr) {
     // https://docs.microsoft.com/ja-jp/windows/win32/api/msctf/nf-msctf-itfcandidatelistuielement-getpageindex
@@ -241,7 +239,7 @@ HRESULT __stdcall CandidateListUI::GetPageIndex(UINT *pIndex, UINT uSize,
   }
 
   for (size_t i = 0; i < *puPageCnt; i++) {
-    pIndex[i] = i * kPageSize;
+    pIndex[i] = i * CandidateWindow::kPageSize;
   }
 
   return S_OK;
@@ -255,7 +253,7 @@ HRESULT __stdcall CandidateListUI::GetCurrentPage(UINT *puPage) {
   if (puPage == nullptr) {
     return E_INVALIDARG;
   }
-  *puPage = view_->current_index() / kPageSize;
+  *puPage = view_->current_index() / CandidateWindow::kPageSize;
   return S_OK;
 }
 
