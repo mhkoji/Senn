@@ -36,10 +36,10 @@
   (bordeaux-threads:make-thread
    (lambda ()
      (handler-case
-         (senn.win.stateful-im:loop-handling-request
-          (senn.win.input-processor.states:make-editing)
-          initial-state
-          ime client)
+         (let ((initial-state
+                (senn.win.input-processor.states:make-editing)))
+           (senn.win.stateful-im:loop-handling-request
+            initial-state ime client))
        (error (e)
          (log:info "~A" e)))
      (log/info client "Disconnected"))))
