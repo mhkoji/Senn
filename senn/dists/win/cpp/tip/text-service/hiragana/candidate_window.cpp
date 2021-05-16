@@ -26,7 +26,7 @@ bool CandidateWindow::RegisterWindowClass() {
   wc.hCursor = LoadCursorW(nullptr, IDC_ARROW);
   wc.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
   wc.lpszMenuName = nullptr;
-  wc.lpszClassName = senn::senn_win::kSennCandidateWindowClassName;
+  wc.lpszClassName = senn::senn_win::kCandidateWindowClassName;
   wc.hIconSm = nullptr;
 
   ATOM atom = RegisterClassExW(&wc);
@@ -34,8 +34,7 @@ bool CandidateWindow::RegisterWindowClass() {
 }
 
 void CandidateWindow::UnregisterWindowClass() {
-  UnregisterClassW(senn::senn_win::kSennCandidateWindowClassName,
-                   g_module_handle);
+  UnregisterClassW(senn::senn_win::kCandidateWindowClassName, g_module_handle);
 }
 
 namespace {

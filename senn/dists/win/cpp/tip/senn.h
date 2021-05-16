@@ -35,7 +35,16 @@ static const GUID kCategories[] = {
 
 static const WCHAR kNamedPipePath[] = L"\\\\.\\pipe\\senn";
 
-static const WCHAR kSennCandidateWindowClassName[] = L"senn-candidate-window";
+static const WCHAR kCandidateWindowClassName[] = L"senn-candidate-window";
+
+static const WCHAR kCandidateListUIDescription[] = L"Senn Candidate List UI";
+
+// {68CC0134-855F-4216-A6EB-7D568BB808C2}
+static const GUID kCandidateListUIGuid = {
+    0x68cc0134,
+    0x855f,
+    0x4216,
+    {0xa6, 0xeb, 0x7d, 0x56, 0x8b, 0xb8, 0x8, 0xc2}};
 
 } // namespace senn_win
 } // namespace senn

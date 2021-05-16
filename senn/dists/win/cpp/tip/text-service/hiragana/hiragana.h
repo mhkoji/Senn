@@ -30,15 +30,16 @@ public:
     if (ppvObject == NULL) {
       return E_INVALIDARG;
     }
+
     if (IsEqualIID(riid, IID_IUnknown) ||
         IsEqualIID(riid, IID_ITfEditSession)) {
       *ppvObject = (ITfLangBarItem *)this;
-    } else {
-      *ppvObject = NULL;
-      return E_NOINTERFACE;
+      AddRef();
+      return S_OK;
     }
-    AddRef();
-    return S_OK;
+
+    *ppvObject = NULL;
+    return E_NOINTERFACE;
   }
 
   ULONG __stdcall AddRef(void) { return ++ref_count_; }
@@ -169,8 +170,10 @@ public:
 
 private:
   bool HandleIMEView(ITfContext *, const senn::senn_win::ime::views::Editing &);
-  bool HandleIMEView(ITfContext *, const senn::senn_win::ime::views::Converting &);
-  bool HandleIMEView(ITfContext *, const senn::senn_win::ime::views::Committed &);
+  bool HandleIMEView(ITfContext *,
+                     const senn::senn_win::ime::views::Converting &);
+  bool HandleIMEView(ITfContext *,
+                     const senn::senn_win::ime::views::Committed &);
 
   ITfThreadMgr *thread_mgr_;
 

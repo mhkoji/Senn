@@ -16,17 +16,13 @@ HRESULT __stdcall CandidateListUI::QueryInterface(REFIID riid,
     return E_INVALIDARG;
   }
 
-  *ppvObject = nullptr;
-
   if (IsEqualIID(riid, IID_IUnknown) || IsEqualIID(riid, IID_ITfUIElement)) {
     *ppvObject = static_cast<ITfUIElement *>(this);
-  }
-
-  if (*ppvObject) {
     AddRef();
     return S_OK;
   }
 
+  *ppvObject = nullptr;
   return E_NOINTERFACE;
 }
 
@@ -51,7 +47,7 @@ HRESULT __stdcall CandidateListUI::GetDescription(BSTR *pbstrDescription) {
 
   *pbstrDescription = nullptr;
 
-  BSTR bstrDesc = SysAllocString(L"Senn Candidate List UI");
+  BSTR bstrDesc = SysAllocString(kCandidateListUIDescription);
 
   if (bstrDesc == nullptr) {
     return E_OUTOFMEMORY;
@@ -62,18 +58,13 @@ HRESULT __stdcall CandidateListUI::GetDescription(BSTR *pbstrDescription) {
   return S_OK;
 }
 
-// {68CC0134-855F-4216-A6EB-7D568BB808C2}
-static const GUID guid_CANDIDATE_LIST_UI = {
-    0x68cc0134,
-    0x855f,
-    0x4216,
-    {0xa6, 0xeb, 0x7d, 0x56, 0x8b, 0xb8, 0x8, 0xc2}};
+
 
 HRESULT __stdcall CandidateListUI::GetGUID(GUID *pguid) {
   if (pguid == nullptr) {
     return E_INVALIDARG;
   }
-  *pguid = guid_CANDIDATE_LIST_UI;
+  *pguid = kCandidateListUIGuid;
   return S_OK;
 }
 
@@ -162,7 +153,7 @@ CandidateListUI *CandidateListUI::Create(ITfContext *context,
 
     candidate_list_ui->hwnd_ =
         CreateWindowEx(WS_EX_TOOLWINDOW | WS_EX_TOPMOST,
-                       senn::senn_win::kSennCandidateWindowClassName, L"",
+                       senn::senn_win::kCandidateWindowClassName, L"",
                        WS_POPUP | WS_BORDER, 50, 50, 100, 400, hwndParent,
                        nullptr, g_module_handle, cw);
   } else {
