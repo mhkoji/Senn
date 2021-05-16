@@ -1,6 +1,7 @@
 #pragma once
 
 #include <msctf.h>
+#include <string>
 #include <windows.h>
 
 #include "../ime/stateful_im.h"
@@ -11,7 +12,6 @@
 #include "hiragana/ui.h"
 #include "input_mode.h"
 #include "langbar.h"
-#include <string>
 
 namespace senn {
 namespace senn_win {
@@ -28,8 +28,10 @@ public:
       : clsid_text_service_(kClsid), thread_mgr_(nullptr),
         client_id_(TF_CLIENTID_NULL), input_mode_(InputMode::kDirect),
         hiragana_key_event_handler_(nullptr),
-        input_mode_toggle_button_(nullptr),
-        editing_display_attribute_atom_(TF_INVALID_GUIDATOM) {}
+        direct_key_event_handler_(nullptr), input_mode_toggle_button_(nullptr),
+        editing_display_attribute_atom_(TF_INVALID_GUIDATOM),
+        converting_display_attribute_atoms_(
+            {TF_INVALID_GUIDATOM, TF_INVALID_GUIDATOM}) {}
 
   // IUnknow
   HRESULT __stdcall QueryInterface(REFIID riid, void **ppvObject) {
