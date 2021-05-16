@@ -3,6 +3,7 @@
 
 #include "../../senn.h"
 #include "../../variable.h"
+#include "../object_releaser.h"
 #include "candidate_ui_list.h"
 
 namespace senn {
@@ -57,8 +58,6 @@ HRESULT __stdcall CandidateListUI::GetDescription(BSTR *pbstrDescription) {
 
   return S_OK;
 }
-
-
 
 HRESULT __stdcall CandidateListUI::GetGUID(GUID *pguid) {
   if (pguid == nullptr) {
@@ -121,12 +120,12 @@ CandidateListUI *CandidateListUI::Create(ITfContext *context,
                                          CandidateWindow::View *view) {
 
   ITfUIElementMgr *ui_mgr = nullptr;
-  if (thread_mgr->QueryInterface(IID_ITfUIElementMgr, (void **)&ui_mgr) ==
-      S_OK) {
-    if (ui_mgr == nullptr) {
-      return nullptr;
-    }
+  if (thread_mgr->QueryInterface(IID_ITfUIElementMgr, (void **)&ui_mgr) !=
+          S_OK ||
+      ui_mgr == nullptr) {
+    return nullptr;
   }
+  ObjectReleaser<ITfUIElementMgr> ui_mgr_releaser(ui_mgr);
 
   CandidateListUI *candidate_list_ui =
       new CandidateListUI(context, thread_mgr, view);
@@ -151,16 +150,13 @@ CandidateListUI *CandidateListUI::Create(ITfContext *context,
       }
     }
 
-    candidate_list_ui->hwnd_ =
-        CreateWindowEx(WS_EX_TOOLWINDOW | WS_EX_TOPMOST,
-                       senn::senn_win::kCandidateWindowClassName, L"",
-                       WS_POPUP | WS_BORDER, 50, 50, 100, 400, hwndParent,
-                       nullptr, g_module_handle, cw);
+    candidate_list_ui->hwnd_ = CreateWindowEx(
+        WS_EX_TOOLWINDOW | WS_EX_TOPMOST,
+        senn::senn_win::kCandidateWindowClassName, L"", WS_POPUP | WS_BORDER,
+        50, 50, 100, 400, hwndParent, nullptr, g_module_handle, cw);
   } else {
     ui_mgr->UpdateUIElement(candidate_list_ui->ui_element_id_);
   }
-
-  ui_mgr->Release();
 
   return candidate_list_ui;
 }
