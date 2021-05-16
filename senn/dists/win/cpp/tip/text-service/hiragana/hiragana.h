@@ -168,9 +168,9 @@ public:
   HRESULT OnPreservedKey(ITfContext *pic, REFGUID rguid, BOOL *pfEaten);
 
 private:
-  bool HandleView(ITfContext *, const senn::senn_win::ime::views::Editing &);
-  bool HandleView(ITfContext *, const senn::senn_win::ime::views::Converting &);
-  bool HandleView(ITfContext *, const senn::senn_win::ime::views::Committed &);
+  bool HandleIMEView(ITfContext *, const senn::senn_win::ime::views::Editing &);
+  bool HandleIMEView(ITfContext *, const senn::senn_win::ime::views::Converting &);
+  bool HandleIMEView(ITfContext *, const senn::senn_win::ime::views::Committed &);
 
   ITfThreadMgr *thread_mgr_;
 

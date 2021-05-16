@@ -195,7 +195,7 @@ HRESULT HiraganaKeyEventHandler::OnTestKeyDown(ITfContext *context,
   return S_OK;
 }
 
-bool HiraganaKeyEventHandler::HandleView(
+bool HiraganaKeyEventHandler::HandleIMEView(
     ITfContext *context, const senn::senn_win::ime::views::Editing &view) {
   ITfEditSession *edit_session =
       new EditSessionEditing(view, context, editing_display_attribute_atom_,
@@ -208,7 +208,7 @@ bool HiraganaKeyEventHandler::HandleView(
                                      &result) == S_OK;
 }
 
-bool HiraganaKeyEventHandler::HandleView(
+bool HiraganaKeyEventHandler::HandleIMEView(
     ITfContext *context, const senn::senn_win::ime::views::Converting &view) {
   ITfEditSession *edit_session = new EditSessionConverting(
       thread_mgr_, view, context, converting_display_attribute_atoms_,
@@ -235,7 +235,7 @@ bool HiraganaKeyEventHandler::HandleView(
   return true;
 }
 
-bool HiraganaKeyEventHandler::HandleView(
+bool HiraganaKeyEventHandler::HandleIMEView(
     ITfContext *context, const senn::senn_win::ime::views::Committed &view) {
   if (candidate_list_ui_) {
     delete candidate_list_state_;
@@ -262,13 +262,13 @@ HRESULT HiraganaKeyEventHandler::OnKeyDown(ITfContext *context, WPARAM wParam,
   stateful_im_->Transit(
       wParam,
       [&](const senn::senn_win::ime::views::Editing &view) {
-        success = HandleView(context, view);
+        success = HandleIMEView(context, view);
       },
       [&](const senn::senn_win::ime::views::Converting &view) {
-        success = HandleView(context, view);
+        success = HandleIMEView(context, view);
       },
       [&](const senn::senn_win::ime::views::Committed &view) {
-        success = HandleView(context, view);
+        success = HandleIMEView(context, view);
       });
   return success ? S_OK : E_FAIL;
 }
