@@ -1,10 +1,40 @@
-#include "stateful_im_proxy_ipc.h"
-#include "../../third-party/picojson/picojson.h"
 #include <sstream>
+
+#include "../../third-party/picojson/picojson.h"
+#include "stateful_im_proxy.h"
 
 namespace senn {
 namespace senn_win {
 namespace ime {
+
+ConnectionIPC::ConnectionIPC(const HANDLE pipe) : pipe_(pipe) {}
+
+void ConnectionIPC::Close() { CloseHandle(pipe_); }
+
+bool ConnectionIPC::Write(const std::string &content) {
+  DWORD bytes_written;
+  return WriteFile(pipe_, content.c_str(), static_cast<DWORD>(content.size()),
+                   &bytes_written, NULL);
+}
+
+bool ConnectionIPC::ReadLine(std::string *output) {
+  char buf[1024] = {'\0'};
+
+  while (1) {
+    DWORD bytes_read;
+    if (!ReadFile(pipe_, buf, sizeof(buf), &bytes_read, NULL)) {
+      return false;
+    }
+
+    *output += std::string(buf, bytes_read);
+
+    if (buf[bytes_read - 1] == '\n') {
+      break;
+    }
+  }
+
+  return true;
+}
 
 namespace {
 
@@ -19,14 +49,11 @@ int ToWString(const std::string &char_string, std::wstring *output) {
 
 } // namespace
 
-StatefulIMProxyIPC::StatefulIMProxyIPC(const HANDLE pipe) : pipe_(pipe) {}
-
-StatefulIMProxyIPC::~StatefulIMProxyIPC() { CloseHandle(pipe_); }
-
-void StatefulIMProxyIPC::Transit(
+void StatefulIMProxy::Transit(
     uint64_t keycode, std::function<void(const views::Editing &)> on_editing,
     std::function<void(const views::Converting &)> on_converting,
     std::function<void(const views::Committed &)> on_committed) {
+  std::string response;
   {
     std::stringstream ss;
     ss << "{"
@@ -34,28 +61,11 @@ void StatefulIMProxyIPC::Transit(
        << "\"args\": {"
        << "\"keycode\": " << keycode << "}"
        << "}";
-    std::string req = ss.str();
-    DWORD bytes_written;
-    if (!WriteFile(pipe_, req.c_str(), static_cast<DWORD>(req.size()),
-                   &bytes_written, NULL)) {
+    if (!conn_->Write(ss.str())) {
       return;
     }
-  }
-
-  std::string response;
-  {
-    char buf[1024] = {'\0'};
-    while (1) {
-      DWORD bytes_read;
-      if (!ReadFile(pipe_, buf, sizeof(buf), &bytes_read, NULL)) {
-        return;
-      }
-
-      response += std::string(buf, bytes_read);
-
-      if (buf[bytes_read - 1] == '\n') {
-        break;
-      }
+    if (!conn_->ReadLine(&response)) {
+      return;
     }
   }
 
@@ -128,14 +138,18 @@ void StatefulIMProxyIPC::Transit(
   }
 };
 
-StatefulIMProxyIPC *
-StatefulIMProxyIPC::Create(const WCHAR *const named_pipe_path) {
+StatefulIMProxy::StatefulIMProxy(Connection *conn) : conn_(conn) {}
+
+StatefulIMProxy::~StatefulIMProxy() { conn_->Close(); }
+
+StatefulIMProxy *
+StatefulIMProxy::CreateIPCPRoxy(const WCHAR *const named_pipe_path) {
   HANDLE pipe = CreateFile(named_pipe_path, GENERIC_READ | GENERIC_WRITE, 0,
                            NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
   if (pipe == INVALID_HANDLE_VALUE) {
     return nullptr;
   }
-  return new StatefulIMProxyIPC(pipe);
+  return new StatefulIMProxy(new ConnectionIPC(pipe));
 }
 
 } // namespace ime

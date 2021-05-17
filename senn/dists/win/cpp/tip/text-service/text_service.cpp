@@ -1,5 +1,5 @@
 #include "text_service.h"
-#include "../ime/stateful_im_proxy_ipc.h"
+#include "../ime/stateful_im_proxy.h"
 #include "hiragana/ui.h"
 #include "object_releaser.h"
 
@@ -83,7 +83,7 @@ HRESULT TextService::Activate(ITfThreadMgr *thread_mgr, TfClientId client_id) {
   // Create a stateful IM to process user inputs of keys.
   {
     senn::senn_win::ime::StatefulIM *im =
-        senn::senn_win::ime::StatefulIMProxyIPC::Create(kNamedPipePath);
+        senn::senn_win::ime::StatefulIMProxy::CreateIPCPRoxy(kNamedPipePath);
     if (im == nullptr) {
       return E_FAIL;
     }

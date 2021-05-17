@@ -151,7 +151,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\third-party\picojson\picojson.h" />
-    <ClInclude Include="ime\stateful_im_proxy_ipc.h" />
+    <ClInclude Include="ime\stateful_im_proxy.h" />
     <ClInclude Include="ime\stateful_im.h" />
     <ClInclude Include="ime\views.h" />
     <ClInclude Include="registration.h" />
@@ -174,7 +174,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
-    <ClCompile Include="ime\stateful_im_proxy_ipc.cpp" />
+    <ClCompile Include="ime\stateful_im_proxy.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
