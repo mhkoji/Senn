@@ -261,10 +261,8 @@ bool HiraganaKeyEventHandler::HandleIMEView(
                                 static_cast<CandidateListUI::Handlers *>(this));
   }
 
-  if (candidate_list_ui_) {
-    candidate_list_state_->Update(view);
-    candidate_list_ui_->NotifyUpdateUI();
-  }
+  candidate_list_state_->Update(view);
+  candidate_list_ui_->NotifyUpdateUI();
 
   return true;
 }
