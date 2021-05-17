@@ -2,7 +2,6 @@
 #include "../object_releaser.h"
 #include "candidate_window.h"
 #include "ui.h"
-#include <cassert>
 
 namespace senn {
 namespace senn_win {
@@ -75,8 +74,6 @@ EditSessionConverting::EditSessionConverting(
   context_->AddRef();
   thread_mgr_->AddRef();
 }
-
-CandidateListUI *cw = nullptr;
 
 EditSessionConverting::~EditSessionConverting() {
   context_->Release();
@@ -171,6 +168,23 @@ HRESULT __stdcall EditSessionCommitted::DoEditSession(TfEditCookie ec) {
   return S_OK;
 }
 
+HRESULT __stdcall MoveCandidateWindowToTextPositionEditSession::DoEditSession(
+    TfEditCookie ec) {
+  ITfRange *range = nullptr;
+  if (composition_->GetRange(&range) != S_OK || range == nullptr) {
+    // Can't do anything...
+    return S_OK;
+  }
+  ObjectReleaser<ITfRange> range_releaser(range);
+
+  RECT rc = {};
+  BOOL fClipped;
+  if (context_view_->GetTextExt(ec, range, &rc, &fClipped) == S_OK) {
+    ui_->Move(&rc);
+  }
+  return S_OK;
+}
+
 HiraganaKeyEventHandler::HiraganaKeyEventHandler(
     ITfThreadMgr *thread_mgr, TfClientId id, ITfCompositionSink *sink,
     ::senn::senn_win::ime::StatefulIM *im, TfGuidAtom atom_editing,
@@ -179,6 +193,23 @@ HiraganaKeyEventHandler::HiraganaKeyEventHandler(
       stateful_im_(im), editing_display_attribute_atom_(atom_editing),
       converting_display_attribute_atoms_(atoms_converting),
       candidate_list_state_(nullptr), candidate_list_ui_(nullptr) {}
+
+HRESULT HiraganaKeyEventHandler::OnLayoutChange(ITfContext *pic,
+                                                ITfContextView *pView) {
+  ITfComposition *composition = composition_holder_.Get();
+  if (!composition) {
+    // Can't do anything...
+    return S_OK;
+  }
+
+  ITfEditSession *edit_session =
+      new MoveCandidateWindowToTextPositionEditSession(pView, composition,
+                                                       candidate_list_ui_);
+  ObjectReleaser<ITfEditSession> releaser(edit_session);
+  HRESULT hr;
+  return pic->RequestEditSession(client_id_, edit_session,
+                                 TF_ES_SYNC | TF_ES_READ, &hr);
+}
 
 HRESULT HiraganaKeyEventHandler::OnSetFocus(BOOL fForeground) { return S_OK; }
 
@@ -226,11 +257,14 @@ bool HiraganaKeyEventHandler::HandleIMEView(
   if (!candidate_list_ui_) {
     candidate_list_state_ = new CandidateListState();
     candidate_list_ui_ =
-        CandidateListUI::Create(context, thread_mgr_, candidate_list_state_);
+        CandidateListUI::Create(context, thread_mgr_, candidate_list_state_,
+                                static_cast<CandidateListUI::Handlers *>(this));
   }
 
-  candidate_list_state_->Update(view);
-  candidate_list_ui_->NotifyUpdateUI();
+  if (candidate_list_ui_) {
+    candidate_list_state_->Update(view);
+    candidate_list_ui_->NotifyUpdateUI();
+  }
 
   return true;
 }
@@ -241,6 +275,8 @@ bool HiraganaKeyEventHandler::HandleIMEView(
     delete candidate_list_state_;
     candidate_list_state_ = nullptr;
 
+    // If DestroyUI is called from the destructor, the process crashes...
+    candidate_list_ui_->DestroyUI();
     candidate_list_ui_->Release();
     candidate_list_ui_ = nullptr;
   }

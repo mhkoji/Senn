@@ -11,21 +11,31 @@ namespace senn_win {
 namespace text_service {
 namespace hiragana {
 
-class CandidateListUI : public ITfCandidateListUIElement {
+class CandidateListUI : public ITfCandidateListUIElement,
+                        public ITfTextLayoutSink {
 public:
+  class Handlers {
+  public:
+    virtual HRESULT OnLayoutChange(ITfContext *, ITfContextView *) = 0;
+  };
+
   CandidateListUI(ITfContext *context, ITfThreadMgr *thread_mgr,
                   CandidateWindow::View *view)
       : ref_count_(1), context_(context), thread_mgr_(thread_mgr),
-        ui_element_id_(-1), hwnd_(nullptr), view_(view) {
+        ui_element_id_(-1), hwnd_(nullptr), view_(view),
+        text_layut_sink_cookie_(TF_INVALID_COOKIE), handlers_(nullptr) {
+    context_->AddRef();
     thread_mgr_->AddRef();
   }
 
   ~CandidateListUI() {
-    DestroyUI();
+    context_->Release();
     thread_mgr_->Release();
   }
 
   void NotifyUpdateUI();
+
+  void Move(RECT *);
 
   // ITfUIElement
   virtual HRESULT __stdcall QueryInterface(REFIID riid,
@@ -48,12 +58,16 @@ public:
   virtual HRESULT __stdcall SetPageIndex(UINT *pIndex, UINT uPageCnt) override;
   virtual HRESULT __stdcall GetCurrentPage(UINT *puPage) override;
 
-  static CandidateListUI *Create(ITfContext *context, ITfThreadMgr *thread_mgr,
-                                 CandidateWindow::View *);
+  // ITfTextLayoutSink
+  virtual HRESULT __stdcall OnLayoutChange(ITfContext *pic, TfLayoutCode lcode,
+                                           ITfContextView *pView) override;
 
-private:
+  static CandidateListUI *Create(ITfContext *context, ITfThreadMgr *thread_mgr,
+                                 CandidateWindow::View *, Handlers *);
+
   void DestroyUI();
 
+private:
   ULONG ref_count_;
 
   ITfContext *context_;
@@ -65,6 +79,10 @@ private:
   HWND hwnd_;
 
   CandidateWindow::View *view_;
+
+  DWORD text_layut_sink_cookie_;
+
+  Handlers *handlers_;
 };
 
 } // namespace hiragana

@@ -34,12 +34,13 @@ public:
     if (IsEqualIID(riid, IID_IUnknown) ||
         IsEqualIID(riid, IID_ITfEditSession)) {
       *ppvObject = (ITfLangBarItem *)this;
-      AddRef();
-      return S_OK;
+    } else {
+      *ppvObject = NULL;
+      return E_NOINTERFACE;
     }
 
-    *ppvObject = NULL;
-    return E_NOINTERFACE;
+    AddRef();
+    return S_OK;
   }
 
   ULONG __stdcall AddRef(void) { return ++ref_count_; }
@@ -110,8 +111,6 @@ private:
   const DisplayAttributeAtoms *atoms_;
 
   ITfComposition *const composition_;
-
-  CandidateListUI *candidate_window_;
 };
 
 class EditSessionCommitted : public EditSessionImplementingIUnknown {
@@ -133,6 +132,33 @@ private:
   CompositionHolder *const composition_holder_;
 };
 
+class MoveCandidateWindowToTextPositionEditSession
+    : public EditSessionImplementingIUnknown {
+public:
+  MoveCandidateWindowToTextPositionEditSession(ITfContextView *context_view,
+                                               ITfComposition *composition,
+                                               CandidateListUI *ui)
+      : context_view_(context_view), composition_(composition), ui_(ui) {
+    composition_->AddRef();
+    context_view_->AddRef();
+  }
+
+  ~MoveCandidateWindowToTextPositionEditSession() override {
+    composition_->Release();
+    context_view_->Release();
+  }
+
+private:
+  // ITfEditSession
+  HRESULT __stdcall DoEditSession(TfEditCookie ec) override;
+
+  ITfContextView *const context_view_;
+
+  ITfComposition *const composition_;
+
+  CandidateListUI *ui_;
+};
+
 class CandidateListState : public CandidateWindow::View {
 public:
   CandidateListState() : candidates_(std::vector<std::wstring>()) {}
@@ -152,7 +178,7 @@ private:
   size_t current_index_ = 0;
 };
 
-class HiraganaKeyEventHandler {
+class HiraganaKeyEventHandler : public CandidateListUI::Handlers {
 public:
   HiraganaKeyEventHandler(ITfThreadMgr *, TfClientId, ITfCompositionSink *,
                           ::senn::senn_win::ime::StatefulIM *, TfGuidAtom,
@@ -174,6 +200,9 @@ private:
                      const senn::senn_win::ime::views::Converting &);
   bool HandleIMEView(ITfContext *,
                      const senn::senn_win::ime::views::Committed &);
+
+  //  CandidateListUI::Handlers
+  virtual HRESULT OnLayoutChange(ITfContext *, ITfContextView *);
 
   ITfThreadMgr *thread_mgr_;
 

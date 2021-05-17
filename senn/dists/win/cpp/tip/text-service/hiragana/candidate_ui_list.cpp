@@ -1,3 +1,4 @@
+#include <cassert>
 #include <msctf.h>
 #include <string>
 
@@ -19,12 +20,15 @@ HRESULT __stdcall CandidateListUI::QueryInterface(REFIID riid,
 
   if (IsEqualIID(riid, IID_IUnknown) || IsEqualIID(riid, IID_ITfUIElement)) {
     *ppvObject = static_cast<ITfUIElement *>(this);
-    AddRef();
-    return S_OK;
+  } else if (IsEqualIID(riid, IID_ITfTextLayoutSink)) {
+    *ppvObject = static_cast<ITfTextLayoutSink *>(this);
+  } else {
+    *ppvObject = nullptr;
+    return E_NOINTERFACE;
   }
 
-  *ppvObject = nullptr;
-  return E_NOINTERFACE;
+  AddRef();
+  return S_OK;
 }
 
 ULONG __stdcall CandidateListUI::AddRef(void) { return ++ref_count_; }
@@ -67,6 +71,7 @@ HRESULT __stdcall CandidateListUI::GetGUID(GUID *pguid) {
   return S_OK;
 }
 
+// Not sure if the following methods are implemented correctly.
 HRESULT __stdcall CandidateListUI::Show(BOOL bShow) {
   if (hwnd_) {
     // If SW_SHOW is used instead of SW_SHOWNA, the window hangs.
@@ -100,7 +105,24 @@ void CandidateListUI::NotifyUpdateUI() {
   }
 }
 
+void CandidateListUI::Move(RECT *rc) {
+  if (hwnd_) {
+    // top + 25 so that the candidate windows doesn't covers the composition text.
+    SetWindowPos(hwnd_, HWND_TOPMOST, rc->left, rc->top + 25, 100, 400,
+                 SWP_NOACTIVATE);
+  }
+}
+
 void CandidateListUI::DestroyUI() {
+  if (text_layut_sink_cookie_ != TF_INVALID_COOKIE) {
+    ITfSource *source = nullptr;
+    if (context_->QueryInterface(IID_ITfSource, (void **)&source) == S_OK &&
+        source != nullptr) {
+      source->UnadviseSink(text_layut_sink_cookie_);
+      source->Release();
+    }
+  }
+
   if (hwnd_) {
     DestroyWindow(hwnd_);
   } else {
@@ -114,10 +136,28 @@ void CandidateListUI::DestroyUI() {
   }
 }
 
+HRESULT __stdcall CandidateListUI::OnLayoutChange(ITfContext *pic,
+                                                  TfLayoutCode lcode,
+                                                  ITfContextView *pView) {
+  if (pic != context_) {
+    return S_OK;
+  }
+
+  assert(handlers_ != nullptr);
+  switch (lcode) {
+  case TF_LC_CHANGE:
+    return handlers_->OnLayoutChange(pic, pView);
+  default:
+    break;
+  }
+  return S_OK;
+}
+
 // https://docs.microsoft.com/en-us/windows/win32/tsf/uiless-mode-overview#the-flow-chart-of-uilessmode
 CandidateListUI *CandidateListUI::Create(ITfContext *context,
                                          ITfThreadMgr *thread_mgr,
-                                         CandidateWindow::View *view) {
+                                         CandidateWindow::View *view,
+                                         Handlers *handlers) {
 
   ITfUIElementMgr *ui_mgr = nullptr;
   if (thread_mgr->QueryInterface(IID_ITfUIElementMgr, (void **)&ui_mgr) !=
@@ -129,6 +169,7 @@ CandidateListUI *CandidateListUI::Create(ITfContext *context,
 
   CandidateListUI *candidate_list_ui =
       new CandidateListUI(context, thread_mgr, view);
+
   BOOL tip_should_show_window = true;
   ui_mgr->BeginUIElement(candidate_list_ui, &tip_should_show_window,
                          &candidate_list_ui->ui_element_id_);
@@ -154,6 +195,17 @@ CandidateListUI *CandidateListUI::Create(ITfContext *context,
         WS_EX_TOOLWINDOW | WS_EX_TOPMOST,
         senn::senn_win::kCandidateWindowClassName, L"", WS_POPUP | WS_BORDER,
         50, 50, 100, 400, hwndParent, nullptr, g_module_handle, cw);
+
+    candidate_list_ui->handlers_ = handlers;
+
+    ITfSource *source = nullptr;
+    if (context->QueryInterface(IID_ITfSource, (void **)&source) == S_OK &&
+        source != nullptr) {
+      source->AdviseSink(IID_ITfTextLayoutSink,
+                         static_cast<ITfTextLayoutSink *>(candidate_list_ui),
+                         &candidate_list_ui->text_layut_sink_cookie_);
+      source->Release();
+    }
   } else {
     ui_mgr->UpdateUIElement(candidate_list_ui->ui_element_id_);
   }
