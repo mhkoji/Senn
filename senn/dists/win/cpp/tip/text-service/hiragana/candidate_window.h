@@ -1,9 +1,9 @@
 #pragma once
 
 #include <msctf.h>
+#include <string>
 
 #include "../../ime/views.h"
-#include <string>
 
 namespace senn {
 namespace senn_win {
@@ -16,8 +16,8 @@ public:
 
   class View {
   public:
-    virtual const std::vector<std::wstring>* candidates() const = 0;
-    
+    virtual const std::vector<std::wstring> *candidates() const = 0;
+
     virtual size_t current_index() const = 0;
   };
 
