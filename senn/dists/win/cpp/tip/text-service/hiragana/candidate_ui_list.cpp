@@ -114,11 +114,11 @@ void CandidateListUI::Move(RECT *rc) {
 }
 
 void CandidateListUI::DestroyUI() {
-  if (text_layut_sink_cookie_ != TF_INVALID_COOKIE) {
+  if (text_layout_sink_cookie_ != TF_INVALID_COOKIE) {
     ITfSource *source = nullptr;
     if (context_->QueryInterface(IID_ITfSource, (void **)&source) == S_OK &&
         source != nullptr) {
-      source->UnadviseSink(text_layut_sink_cookie_);
+      source->UnadviseSink(text_layout_sink_cookie_);
       source->Release();
     }
   }
@@ -203,7 +203,7 @@ CandidateListUI *CandidateListUI::Create(ITfContext *context,
         source != nullptr) {
       source->AdviseSink(IID_ITfTextLayoutSink,
                          static_cast<ITfTextLayoutSink *>(candidate_list_ui),
-                         &candidate_list_ui->text_layut_sink_cookie_);
+                         &candidate_list_ui->text_layout_sink_cookie_);
       source->Release();
     }
   } else {

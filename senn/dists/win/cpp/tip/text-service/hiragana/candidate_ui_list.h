@@ -23,7 +23,7 @@ public:
                   CandidateWindow::View *view)
       : ref_count_(1), context_(context), thread_mgr_(thread_mgr),
         ui_element_id_(-1), hwnd_(nullptr), view_(view),
-        text_layut_sink_cookie_(TF_INVALID_COOKIE), handlers_(nullptr) {
+        text_layout_sink_cookie_(TF_INVALID_COOKIE), handlers_(nullptr) {
     context_->AddRef();
     thread_mgr_->AddRef();
   }
@@ -80,7 +80,7 @@ private:
 
   CandidateWindow::View *view_;
 
-  DWORD text_layut_sink_cookie_;
+  DWORD text_layout_sink_cookie_;
 
   Handlers *handlers_;
 };
