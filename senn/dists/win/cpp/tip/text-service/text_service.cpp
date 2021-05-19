@@ -82,8 +82,16 @@ HRESULT TextService::Activate(ITfThreadMgr *thread_mgr, TfClientId client_id) {
 
   // Create a stateful IM to process user inputs of keys.
   {
+    // Load dll for TCP
+    WSADATA wsaData;
+    if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
+      return E_FAIL;
+    }
+
     senn::senn_win::ime::StatefulIM *im =
-        senn::senn_win::ime::StatefulIMProxy::CreateIPCPRoxy(kNamedPipePath);
+        // senn::senn_win::ime::StatefulIMProxy::CreateIPCPRoxy(kNamedPipePath);
+        senn::senn_win::ime::StatefulIMProxy::CreateTCPPRoxy("localhost",
+                                                             "5678");
     if (im == nullptr) {
       return E_FAIL;
     }
@@ -98,6 +106,9 @@ HRESULT TextService::Activate(ITfThreadMgr *thread_mgr, TfClientId client_id) {
 }
 
 HRESULT TextService::Deactivate() {
+  // Unload dll for TCP
+  WSACleanup();
+
   if (thread_mgr_ == nullptr) {
     return S_OK;
   }

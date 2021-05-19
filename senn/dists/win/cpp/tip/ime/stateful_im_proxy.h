@@ -1,7 +1,9 @@
 #pragma once
 
-#include "stateful_im.h"
 #include <windows.h>
+#include <winsock2.h>
+
+#include "stateful_im.h"
 
 namespace senn {
 namespace senn_win {
@@ -30,6 +32,18 @@ private:
   const HANDLE pipe_;
 };
 
+class ConnectionTCP : public Connection {
+public:
+  ConnectionTCP(SOCKET);
+  // Connection
+  virtual void Close() override;
+  virtual bool Write(const std::string &) override;
+  virtual bool ReadLine(std::string *) override;
+
+private:
+  const SOCKET socket_;
+};
+
 class StatefulIMProxy : public StatefulIM {
 public:
   void Transit(uint64_t keycode, std::function<void(const views::Editing &)>,
@@ -45,6 +59,8 @@ private:
 
 public:
   static StatefulIMProxy *CreateIPCPRoxy(const WCHAR *const named_pipe_path);
+  static StatefulIMProxy *CreateTCPPRoxy(const std::string &host,
+                                         const std::string &port);
 };
 
 } // namespace ime

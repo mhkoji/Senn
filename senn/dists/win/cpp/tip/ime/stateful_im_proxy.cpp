@@ -1,4 +1,5 @@
 #include <sstream>
+#include <ws2tcpip.h>
 
 #include "../../third-party/picojson/picojson.h"
 #include "stateful_im_proxy.h"
@@ -23,6 +24,35 @@ bool ConnectionIPC::ReadLine(std::string *output) {
   while (1) {
     DWORD bytes_read;
     if (!ReadFile(pipe_, buf, sizeof(buf), &bytes_read, NULL)) {
+      return false;
+    }
+
+    *output += std::string(buf, bytes_read);
+
+    if (buf[bytes_read - 1] == '\n') {
+      break;
+    }
+  }
+
+  return true;
+}
+
+ConnectionTCP::ConnectionTCP(SOCKET socket) : socket_(socket) {}
+
+void ConnectionTCP::Close() { closesocket(socket_); }
+
+bool ConnectionTCP::Write(const std::string &content) {
+  const std::string data = content + "\n"; // Needs newline
+  return send(socket_, data.c_str(), static_cast<int>(data.size()), 0) !=
+         SOCKET_ERROR;
+}
+
+bool ConnectionTCP::ReadLine(std::string *output) {
+  char buf[1024] = {'\0'};
+
+  while (1) {
+    int bytes_read = recv(socket_, buf, sizeof(buf), 0);
+    if (bytes_read < 0) {
       return false;
     }
 
@@ -150,6 +180,35 @@ StatefulIMProxy::CreateIPCPRoxy(const WCHAR *const named_pipe_path) {
     return nullptr;
   }
   return new StatefulIMProxy(new ConnectionIPC(pipe));
+}
+
+StatefulIMProxy *StatefulIMProxy::CreateTCPPRoxy(const std::string &host,
+                                                 const std::string &port) {
+  // https://docs.microsoft.com/ja-jp/windows/win32/winsock/complete-client-code
+  struct addrinfo hint, *result = nullptr;
+  ZeroMemory(&hint, sizeof(hint));
+  hint.ai_family = AF_UNSPEC;
+  hint.ai_socktype = SOCK_STREAM;
+  hint.ai_protocol = IPPROTO_TCP;
+  if (getaddrinfo(host.c_str(), port.c_str(), &hint, &result) != 0) {
+    WSACleanup();
+    return nullptr;
+  }
+
+  for (struct addrinfo *p = result; p != nullptr; p = p->ai_next) {
+    SOCKET sock = socket(p->ai_family, p->ai_socktype, p->ai_protocol);
+    if (sock == INVALID_SOCKET) {
+      break;
+    }
+    if (connect(sock, p->ai_addr, p->ai_addrlen) != SOCKET_ERROR) {
+      freeaddrinfo(result);
+      return new StatefulIMProxy(new ConnectionTCP(sock));
+    }
+    closesocket(sock);
+  }
+  freeaddrinfo(result);
+  WSACleanup();
+  return nullptr;
 }
 
 } // namespace ime
