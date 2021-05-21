@@ -24,4 +24,4 @@
 (defun loop-handling-request (ime state client)
   (when-let ((expr (read-request client)))
     (when-let ((new-state (handle-request ime state expr client)))
-      (loop-handling-request new-state ime client))))
+      (loop-handling-request ime new-state client))))
