@@ -1,10 +1,10 @@
-(defpackage :senn.win.ipc
+(defpackage :senn.win.ipc.named-pipe
   (:use :cl)
   (:export :start-server)
   (:import-from :alexandria
                 :if-let
                 :when-let))
-(in-package :senn.win.ipc)
+(in-package :senn.win.ipc.named-pipe)
 
 (defstruct client id pipe)
 
@@ -39,7 +39,7 @@
          (let ((initial-state
                 (senn.win.input-processor.states:make-editing)))
            (senn.win.stateful-im:loop-handling-request
-            initial-state ime client))
+            ime initial-state client))
        (error (e)
          (log:info "~A" e)))
      (log/info client "Disconnected"))))

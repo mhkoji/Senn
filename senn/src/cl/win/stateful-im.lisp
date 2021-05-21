@@ -11,7 +11,7 @@
 (defgeneric read-request (c))
 (defgeneric send-response (c resp))
 
-(defun handle-request (expr state ime client)
+(defun handle-request (ime state expr client)
   (case (expr-op expr)
     (:process-input
      (let ((key (senn.win.input-processor.keys:make-key
@@ -21,7 +21,7 @@
          (send-response client view)
          new-state)))))
 
-(defun loop-handling-request (state ime client)
+(defun loop-handling-request (ime state client)
   (when-let ((expr (read-request client)))
-    (when-let ((new-state (handle-request expr state ime client)))
+    (when-let ((new-state (handle-request ime state expr client)))
       (loop-handling-request new-state ime client))))

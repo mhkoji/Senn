@@ -6,6 +6,9 @@
    (:file "input-processor/states")
    (:file "input-processor/transit")
    (:file "stateful-im")
-   (:file "ipc"))
+   #+windows
+   (:file "ipc/named-pipe")
+   #+linux
+   (:file "ipc/tcp"))
   :depends-on (:senn
                :jsown))
