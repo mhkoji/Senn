@@ -89,9 +89,9 @@ HRESULT TextService::Activate(ITfThreadMgr *thread_mgr, TfClientId client_id) {
     }
 
     senn::senn_win::ime::StatefulIM *im =
-        // senn::senn_win::ime::StatefulIMProxy::CreateIPCPRoxy(kNamedPipePath);
-        senn::senn_win::ime::StatefulIMProxy::CreateTCPPRoxy("localhost",
-                                                             "5678");
+        senn::senn_win::ime::StatefulIMProxy::CreateIPCPRoxy(kNamedPipePath);
+    // senn::senn_win::ime::StatefulIMProxy::CreateTCPPRoxy("localhost",
+    // "5678");
     if (im == nullptr) {
       return E_FAIL;
     }
