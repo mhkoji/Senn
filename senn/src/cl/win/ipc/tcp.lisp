@@ -47,7 +47,7 @@
 
 (defun start-server (ime &key (port 5678))
   (usocket:with-server-socket
-      (server-socket (usocket:socket-listen "localhost" port))
+      (server-socket (usocket:socket-listen "0.0.0.0" port))
     (let ((threads nil))
       (log:info "Waiting for client...")
       (unwind-protect
