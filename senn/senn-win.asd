@@ -11,4 +11,6 @@
    #+linux
    (:file "ipc/tcp"))
   :depends-on (:senn
-               :jsown))
+               :jsown
+               #+linux
+               :usocket))
