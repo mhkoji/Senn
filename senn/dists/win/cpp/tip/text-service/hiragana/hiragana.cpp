@@ -327,7 +327,7 @@ HRESULT HiraganaKeyEventHandler::OnPreservedKey(ITfContext *context,
 
 void CandidateListState::Update(
     const senn::senn_win::ime::views::Converting &view) {
-  current_index_ = view.cursor_form_candidate_index;
+  current_index_ = static_cast<UINT>(view.cursor_form_candidate_index);
   candidates_.clear();
   for (std::vector<std::wstring>::const_iterator it =
            view.cursor_form_candidates.begin();

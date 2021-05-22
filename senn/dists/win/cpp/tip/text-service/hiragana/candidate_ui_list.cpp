@@ -234,7 +234,7 @@ HRESULT __stdcall CandidateListUI::GetCount(UINT *puCount) {
   if (puCount == nullptr) {
     return E_INVALIDARG;
   }
-  *puCount = view_->candidates()->size();
+  *puCount = view_->candidate_count();
   return S_OK;
 }
 
@@ -250,7 +250,7 @@ HRESULT __stdcall CandidateListUI::GetString(UINT uIndex, BSTR *pstr) {
   if (pstr == nullptr) {
     return E_INVALIDARG;
   }
-  if (view_->candidates()->size() <= uIndex) {
+  if (view_->candidate_count() <= uIndex) {
     return E_INVALIDARG;
   }
   *pstr = SysAllocString((*view_->candidates())[uIndex].c_str());
@@ -263,7 +263,7 @@ HRESULT __stdcall CandidateListUI::GetPageIndex(UINT *pIndex, UINT uSize,
     return E_INVALIDARG;
   }
 
-  *puPageCnt = (view_->candidates()->size() / CandidateWindow::kPageSize) + 1;
+  *puPageCnt = (view_->candidate_count() / CandidateWindow::kPageSize) + 1;
 
   if (pIndex == nullptr) {
     // https://docs.microsoft.com/ja-jp/windows/win32/api/msctf/nf-msctf-itfcandidatelistuielement-getpageindex
@@ -277,7 +277,7 @@ HRESULT __stdcall CandidateListUI::GetPageIndex(UINT *pIndex, UINT uSize,
     return E_NOT_SUFFICIENT_BUFFER;
   }
 
-  for (size_t i = 0; i < *puPageCnt; i++) {
+  for (UINT i = 0; i < *puPageCnt; i++) {
     pIndex[i] = i * CandidateWindow::kPageSize;
   }
 

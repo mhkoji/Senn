@@ -48,18 +48,17 @@ void DrawCandidates(HDC hdc, const CandidateWindow::View *view,
                     HBRUSH hbrHighlight) {
   const std::vector<std::wstring> *candidates = view->candidates();
 
-  const size_t current_page =
-      view->current_index() / CandidateWindow::kPageSize;
+  const UINT current_page = view->current_index() / CandidateWindow::kPageSize;
 
-  const size_t begin_index = current_page * CandidateWindow::kPageSize;
+  const UINT begin_index = current_page * CandidateWindow::kPageSize;
 
-  const size_t end_index = (std::min)(
-      (current_page + 1) * CandidateWindow::kPageSize, candidates->size());
+  const UINT end_index = (std::min)(
+      (current_page + 1) * CandidateWindow::kPageSize, view->candidate_count());
 
   SetBkMode(hdc, TRANSPARENT);
 
   LONG prev_bottom = 0;
-  for (size_t index = begin_index; index < end_index; ++index) {
+  for (UINT index = begin_index; index < end_index; ++index) {
     const std::wstring &s = (*view->candidates())[index];
 
     RECT r_temp = {0, 0, 1, 1};

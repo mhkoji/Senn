@@ -12,13 +12,17 @@ namespace hiragana {
 
 class CandidateWindow {
 public:
-  static const size_t kPageSize = 9;
+  static const UINT kPageSize = 9;
 
   class View {
   public:
     virtual const std::vector<std::wstring> *candidates() const = 0;
 
-    virtual size_t current_index() const = 0;
+    virtual UINT current_index() const = 0;
+
+    UINT candidate_count() const {
+      return static_cast<UINT>(candidates()->size());
+    }
   };
 
   CandidateWindow(View *);

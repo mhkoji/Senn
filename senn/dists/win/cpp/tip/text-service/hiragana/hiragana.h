@@ -170,12 +170,12 @@ public:
     return &candidates_;
   }
 
-  virtual size_t current_index() const override { return current_index_; }
+  virtual UINT current_index() const override { return current_index_; }
 
 private:
   std::vector<std::wstring> candidates_;
 
-  size_t current_index_ = 0;
+  UINT current_index_ = 0;
 };
 
 class HiraganaKeyEventHandler : public CandidateListUI::Handlers {

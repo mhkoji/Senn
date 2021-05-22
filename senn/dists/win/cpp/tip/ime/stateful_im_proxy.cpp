@@ -200,7 +200,7 @@ StatefulIMProxy *StatefulIMProxy::CreateTCPPRoxy(const std::string &host,
     if (sock == INVALID_SOCKET) {
       break;
     }
-    if (connect(sock, p->ai_addr, p->ai_addrlen) != SOCKET_ERROR) {
+    if (connect(sock, p->ai_addr, static_cast<int>(p->ai_addrlen)) != SOCKET_ERROR) {
       freeaddrinfo(result);
       return new StatefulIMProxy(new ConnectionTCP(sock));
     }
