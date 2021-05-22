@@ -26,9 +26,9 @@ public:
   static LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wparam,
                                      LPARAM lparam);
 
-  static bool RegisterWindowClass();
+  static bool RegisterWindowClass(HINSTANCE);
 
-  static void UnregisterWindowClass();
+  static void UnregisterWindowClass(HINSTANCE);
 
 private:
   View *view_;

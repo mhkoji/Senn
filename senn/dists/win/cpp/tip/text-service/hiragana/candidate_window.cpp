@@ -3,7 +3,6 @@
 #include <string>
 
 #include "../../senn.h"
-#include "../../variable.h"
 #include "candidate_window.h"
 
 namespace senn {
@@ -13,7 +12,7 @@ namespace hiragana {
 
 CandidateWindow::CandidateWindow(View *view) : view_(view) {}
 
-bool CandidateWindow::RegisterWindowClass() {
+bool CandidateWindow::RegisterWindowClass(HINSTANCE hInst) {
   WNDCLASSEXW wc = {};
 
   wc.cbSize = sizeof(wc);
@@ -21,7 +20,7 @@ bool CandidateWindow::RegisterWindowClass() {
   wc.lpfnWndProc = CandidateWindow::WindowProc;
   wc.cbClsExtra = 0;
   wc.cbWndExtra = 0;
-  wc.hInstance = g_module_handle;
+  wc.hInstance = hInst;
   wc.hIcon = nullptr;
   wc.hCursor = LoadCursorW(nullptr, IDC_ARROW);
   wc.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
@@ -33,8 +32,8 @@ bool CandidateWindow::RegisterWindowClass() {
   return atom != 0;
 }
 
-void CandidateWindow::UnregisterWindowClass() {
-  UnregisterClassW(senn::senn_win::kCandidateWindowClassName, g_module_handle);
+void CandidateWindow::UnregisterWindowClass(HINSTANCE hInst) {
+  UnregisterClassW(senn::senn_win::kCandidateWindowClassName, hInst);
 }
 
 namespace {
