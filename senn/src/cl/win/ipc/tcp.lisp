@@ -46,8 +46,7 @@
      (log/info client "Disconnected"))))
 
 (defun start-server (ime &key (port 5678))
-  (usocket:with-server-socket
-      (server-socket (usocket:socket-listen "0.0.0.0" port))
+  (usocket:with-socket-listener (server-socket "0.0.0.0" port)
     (let ((threads nil))
       (log:info "Waiting for client...")
       (unwind-protect

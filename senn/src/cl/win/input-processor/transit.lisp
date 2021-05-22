@@ -63,11 +63,11 @@
            (list editing (->committed-view (converting-current-input s)))))
 
         ((or (senn.win.input-processor.keys:space-p key)
-             (senn.win.input-processor.keys:up-p key))
+             (senn.win.input-processor.keys:down-p key))
          (move-segment-form-index! (converting-current-segment s) +1 ime)
          (list s (->converting-view s)))
 
-        ((senn.win.input-processor.keys:down-p key)
+        ((senn.win.input-processor.keys:up-p key)
          (move-segment-form-index! (converting-current-segment s) -1 ime)
          (list s (->converting-view s)))
 
