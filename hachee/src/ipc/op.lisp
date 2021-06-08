@@ -1,6 +1,5 @@
 (defpackage :hachee.ipc.op
   (:use :cl)
-  (:import-from :cl-arrows :->)
   (:export :as-expr
            :expr-op
            :expr-arg))
@@ -14,5 +13,6 @@
 
 (defun expr-arg (expr name)
   (handler-case
-      (-> expr (jsown:val "args") (jsown:val name))
+      (jsown:val (jsown:val expr "args")
+                 name)
     (error () nil)))

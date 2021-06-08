@@ -58,7 +58,6 @@
                :anaphora
                :bordeaux-threads
                :clazy
-               :cl-arrows
                :cl-annot
                :cl-fad
                :cl-ppcre
