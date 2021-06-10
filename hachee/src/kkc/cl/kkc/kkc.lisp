@@ -238,33 +238,33 @@
 
 (defun list-entries (sub-pron &key dictionaries vocabulary)
   (labels ((dictionary-entry->convert-entry (dictionary-entry)
-	     (let* ((unit (hachee.kkc.dictionary:entry-unit
-			   dictionary-entry))
-		    (origin (hachee.kkc.dictionary:entry-origin
-			     dictionary-entry))
-		    (token (hachee.language-model.vocabulary:to-int-or-unk
-			    vocabulary
-			    (hachee.kkc.dictionary:unit->key unit))))
-	       (hachee.kkc.convert:make-entry
-		:unit unit :token token :origin origin))))
+             (let* ((unit (hachee.kkc.dictionary:entry-unit
+                           dictionary-entry))
+                    (origin (hachee.kkc.dictionary:entry-origin
+                             dictionary-entry))
+                    (token (hachee.language-model.vocabulary:to-int-or-unk
+                            vocabulary
+                            (hachee.kkc.dictionary:unit->key unit))))
+               (hachee.kkc.convert:make-entry
+                :unit unit :token token :origin origin))))
     (let ((entries (mapcar #'dictionary-entry->convert-entry
-			   (alexandria:mappend
-			    (lambda (dict)
-			      (hachee.kkc.dictionary:lookup dict sub-pron))
-			    dictionaries))))
+                           (alexandria:mappend
+                            (lambda (dict)
+                              (hachee.kkc.dictionary:lookup dict sub-pron))
+                            dictionaries))))
       ;; Add unknown word entry if necessary
       (when (< (length sub-pron) 8) ;; Length up to 8
-	(let ((unk-unit (make-unknown-word-unit sub-pron)))
-	  (when (not (some (lambda (dict)
-			     (hachee.kkc.dictionary:contains-p dict unk-unit))
-			   dictionaries))
-	    (push (hachee.kkc.convert:make-entry
-		   :unit unk-unit
-		   :token (hachee.language-model.vocabulary:to-int
-			   vocabulary
-			   hachee.language-model.vocabulary:+UNK+)
-		   :origin hachee.kkc.origin:+out-of-dictionary+)
-		  entries))))
+        (let ((unk-unit (make-unknown-word-unit sub-pron)))
+          (when (not (some (lambda (dict)
+                             (hachee.kkc.dictionary:contains-p dict unk-unit))
+                           dictionaries))
+            (push (hachee.kkc.convert:make-entry
+                   :unit unk-unit
+                   :token (hachee.language-model.vocabulary:to-int
+                           vocabulary
+                           hachee.language-model.vocabulary:+UNK+)
+                   :origin hachee.kkc.origin:+out-of-dictionary+)
+                  entries))))
       (nreverse entries))))
 
 (defun unknown-word-log-probability (entry kkc)
@@ -313,16 +313,16 @@
   (hachee.kkc.convert:make-entry
    :unit hachee.language-model.vocabulary:+BOS+
    :token (hachee.language-model.vocabulary:to-int
-	   (kkc-vocabulary kkc)
-	   hachee.language-model.vocabulary:+BOS+)
+           (kkc-vocabulary kkc)
+           hachee.language-model.vocabulary:+BOS+)
    :origin hachee.kkc.origin:+vocabulary+))
 
 (defun kkc-convert-end-entry (kkc)
   (hachee.kkc.convert:make-entry
    :unit hachee.language-model.vocabulary:+EOS+
    :token (hachee.language-model.vocabulary:to-int
-	   (kkc-vocabulary kkc)
-	   hachee.language-model.vocabulary:+EOS+)
+           (kkc-vocabulary kkc)
+           hachee.language-model.vocabulary:+EOS+)
    :origin hachee.kkc.origin:+vocabulary+))
 
 (defun convert (kkc pronunciation &key 1st-boundary-index)
