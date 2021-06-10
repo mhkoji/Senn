@@ -237,34 +237,35 @@
    :form (hachee.ja:hiragana->katakana pron)))
 
 (defun list-entries (sub-pron &key dictionaries vocabulary)
-  (let ((entries
-         (mapcar
-          (lambda (dictionary-entry)
-            (let ((unit (hachee.kkc.dictionary:entry-unit dictionary-entry)))
-              (hachee.kkc.convert:make-entry
-               :unit unit
-               :token (hachee.language-model.vocabulary:to-int-or-unk
-                       vocabulary
-                       (hachee.kkc.dictionary:unit->key unit))
-               :origin
-               (hachee.kkc.dictionary:entry-origin dictionary-entry))))
-          (alexandria:mappend (lambda (dict)
-                                (hachee.kkc.dictionary:lookup dict sub-pron))
-                              dictionaries))))
-    ;; Add unknown word node if necessary
-    (when (< (length sub-pron) 8) ;; Length up to 8
-      (let ((unk-unit (make-unknown-word-unit sub-pron)))
-        (when (not (some (lambda (dict)
-                           (hachee.kkc.dictionary:contains-p dict unk-unit))
-                         dictionaries))
-          (push (hachee.kkc.convert:make-entry
-                 :unit unk-unit
-                 :token (hachee.language-model.vocabulary:to-int
-                         vocabulary
-                         hachee.language-model.vocabulary:+UNK+)
-                 :origin hachee.kkc.origin:+out-of-dictionary+)
-                entries))))
-    (nreverse entries)))
+  (labels ((dictionary-entry->convert-entry (dictionary-entry)
+	     (let* ((unit (hachee.kkc.dictionary:entry-unit
+			   dictionary-entry))
+		    (origin (hachee.kkc.dictionary:entry-origin
+			     dictionary-entry))
+		    (token (hachee.language-model.vocabulary:to-int-or-unk
+			    vocabulary
+			    (hachee.kkc.dictionary:unit->key unit))))
+	       (hachee.kkc.convert:make-entry
+		:unit unit :token token :origin origin))))
+    (let ((entries (mapcar #'dictionary-entry->convert-entry
+			   (alexandria:mappend
+			    (lambda (dict)
+			      (hachee.kkc.dictionary:lookup dict sub-pron))
+			    dictionaries))))
+      ;; Add unknown word entry if necessary
+      (when (< (length sub-pron) 8) ;; Length up to 8
+	(let ((unk-unit (make-unknown-word-unit sub-pron)))
+	  (when (not (some (lambda (dict)
+			     (hachee.kkc.dictionary:contains-p dict unk-unit))
+			   dictionaries))
+	    (push (hachee.kkc.convert:make-entry
+		   :unit unk-unit
+		   :token (hachee.language-model.vocabulary:to-int
+			   vocabulary
+			   hachee.language-model.vocabulary:+UNK+)
+		   :origin hachee.kkc.origin:+out-of-dictionary+)
+		  entries))))
+      (nreverse entries))))
 
 (defun unknown-word-log-probability (entry kkc)
   (let ((unknown-word-pron-vocabulary
@@ -296,7 +297,7 @@
                       probability-for-extended-dictionary-words)))
             log-prob-by-unknown-word-n-gram)))))
 
-(defun compute-convert-score (curr-entry prev-entry kkc)
+(defun compute-convert-score (kkc curr-entry prev-entry)
   (let ((p (hachee.language-model.n-gram:transition-probability
             (kkc-n-gram-model kkc)
             (hachee.kkc.convert:entry-token curr-entry)
@@ -308,25 +309,31 @@
           (t
            (+ (log p) (unknown-word-log-probability curr-entry kkc))))))
 
+(defun kkc-convert-begin-entry (kkc)
+  (hachee.kkc.convert:make-entry
+   :unit hachee.language-model.vocabulary:+BOS+
+   :token (hachee.language-model.vocabulary:to-int
+	   (kkc-vocabulary kkc)
+	   hachee.language-model.vocabulary:+BOS+)
+   :origin hachee.kkc.origin:+vocabulary+))
+
+(defun kkc-convert-end-entry (kkc)
+  (hachee.kkc.convert:make-entry
+   :unit hachee.language-model.vocabulary:+EOS+
+   :token (hachee.language-model.vocabulary:to-int
+	   (kkc-vocabulary kkc)
+	   hachee.language-model.vocabulary:+EOS+)
+   :origin hachee.kkc.origin:+vocabulary+))
+
 (defun convert (kkc pronunciation &key 1st-boundary-index)
   (hachee.kkc.convert.viterbi:execute pronunciation
    :begin-entry
-   (hachee.kkc.convert:make-entry
-    :unit hachee.language-model.vocabulary:+BOS+
-    :token (hachee.language-model.vocabulary:to-int
-            (kkc-vocabulary kkc)
-            hachee.language-model.vocabulary:+BOS+)
-    :origin hachee.kkc.origin:+vocabulary+)
+   (kkc-convert-begin-entry kkc)
    :end-entry
-   (hachee.kkc.convert:make-entry
-    :unit hachee.language-model.vocabulary:+EOS+
-    :token (hachee.language-model.vocabulary:to-int
-            (kkc-vocabulary kkc)
-            hachee.language-model.vocabulary:+EOS+)
-    :origin hachee.kkc.origin:+vocabulary+)
+   (kkc-convert-end-entry kkc)
    :score-fn
    (lambda (curr-entry prev-entry)
-     (compute-convert-score curr-entry prev-entry kkc))
+     (compute-convert-score kkc curr-entry prev-entry))
    :list-entries-fn
    (lambda (sub-pron)
      (list-entries sub-pron
