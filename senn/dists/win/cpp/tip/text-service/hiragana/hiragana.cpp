@@ -325,14 +325,39 @@ HRESULT HiraganaKeyEventHandler::OnPreservedKey(ITfContext *context,
   return S_OK;
 }
 
+namespace {
+
+bool IsSameCandidateList(const std::vector<std::wstring> &c1,
+                         const std::vector<std::wstring> &c2) {
+
+  if (c1.size() != c2.size()) {
+    return false;
+  }
+
+  bool is_same = true;
+  for (size_t i = 0; is_same && i < c1.size(); i++) {
+    is_same &= (c1[i] == c2[i]);
+  }
+  return is_same;
+}
+
+} // namespace
+
 void CandidateListState::Update(
     const senn::senn_win::ime::views::Converting &view) {
+  // Update candidate index
   current_index_ = static_cast<UINT>(view.cursor_form_candidate_index);
-  candidates_.clear();
-  for (std::vector<std::wstring>::const_iterator it =
-           view.cursor_form_candidates.begin();
-       it != view.cursor_form_candidates.end(); ++it) {
-    candidates_.push_back(*it);
+
+  // Update candidates
+  // If the updated candidate list is the same as the current one, we don't
+  // update.
+  if (!IsSameCandidateList(candidates_, view.cursor_form_candidates)) {
+    candidates_.clear();
+    for (std::vector<std::wstring>::const_iterator it =
+             view.cursor_form_candidates.begin();
+         it != view.cursor_form_candidates.end(); ++it) {
+      candidates_.push_back(*it);
+    }
   }
 }
 
