@@ -292,7 +292,7 @@ HRESULT HiraganaKeyEventHandler::OnKeyDown(ITfContext *context, WPARAM wParam,
                                            LPARAM lParam, BOOL *pfEaten) {
   *pfEaten = true;
 
-  bool success;
+  bool success = false;
   stateful_im_->Transit(
       wParam,
       [&](const senn::senn_win::ime::views::Editing &view) {
