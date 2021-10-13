@@ -184,6 +184,8 @@ public:
                           ::senn::senn_win::ime::StatefulIM *, TfGuidAtom,
                           EditSessionConverting::DisplayAttributeAtoms *);
 
+  ~HiraganaKeyEventHandler();
+
   HRESULT OnSetFocus(BOOL fForeground);
   HRESULT OnTestKeyDown(ITfContext *pic, WPARAM wParam, LPARAM lParam,
                         BOOL *pfEaten);

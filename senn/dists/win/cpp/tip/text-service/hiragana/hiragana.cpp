@@ -194,6 +194,19 @@ HiraganaKeyEventHandler::HiraganaKeyEventHandler(
       converting_display_attribute_atoms_(atoms_converting),
       candidate_list_state_(nullptr), candidate_list_ui_(nullptr) {}
 
+HiraganaKeyEventHandler::~HiraganaKeyEventHandler() {
+  if (candidate_list_state_) {
+    delete candidate_list_state_;
+  }
+
+  if (candidate_list_ui_) {
+    candidate_list_ui_->DestroyUI();
+    delete candidate_list_ui_;
+  }
+
+  delete stateful_im_;
+}
+
 HRESULT HiraganaKeyEventHandler::OnLayoutChange(ITfContext *pic,
                                                 ITfContextView *pView) {
   ITfComposition *composition = composition_holder_.Get();
