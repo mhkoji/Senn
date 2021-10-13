@@ -17,6 +17,45 @@ namespace senn {
 namespace senn_win {
 namespace text_service {
 
+class KeyEventHandler {
+public:
+  ~KeyEventHandler();
+
+  void ToggleInputMode();
+
+  InputMode GetInputMode() const;
+
+  HRESULT OnSetFocus(BOOL fForeground);
+  HRESULT OnTestKeyDown(ITfContext *pic, WPARAM wParam, LPARAM lParam,
+                        BOOL *pfEaten);
+  HRESULT OnTestKeyUp(ITfContext *pic, WPARAM wParam, LPARAM lParam,
+                      BOOL *pfEaten);
+  HRESULT OnKeyDown(ITfContext *pic, WPARAM wParam, LPARAM lParam,
+                    BOOL *pfEaten);
+  HRESULT OnKeyUp(ITfContext *pic, WPARAM wParam, LPARAM lParam, BOOL *pfEaten);
+  HRESULT OnPreservedKey(ITfContext *pic, REFGUID rguid, BOOL *pfEaten);
+
+  static KeyEventHandler *
+  Create(ITfThreadMgr *, TfClientId, langbar::InputModeToggleButton *,
+         ITfCompositionSink *, TfGuidAtom,
+         hiragana::EditSessionConverting::DisplayAttributeAtoms *);
+
+private:
+  InputMode input_mode_;
+
+  langbar::InputModeToggleButton *input_mode_toggle_button_;
+
+  // Component that handles inputs during the hiragana input mode.
+  hiragana::HiraganaKeyEventHandler *hiragana_key_event_handler_;
+
+  // Component that handles inputs during the direct input mode.
+  direct::DirectKeyEventHandler *direct_key_event_handler_;
+
+  KeyEventHandler(langbar::InputModeToggleButton *,
+                  hiragana::HiraganaKeyEventHandler *,
+                  direct::DirectKeyEventHandler *);
+};
+
 class TextService : public ITfKeyEventSink,
                     public ITfDisplayAttributeProvider,
                     public ITfCompositionSink,
@@ -26,9 +65,8 @@ class TextService : public ITfKeyEventSink,
 public:
   TextService()
       : clsid_text_service_(kClsid), thread_mgr_(nullptr),
-        client_id_(TF_CLIENTID_NULL), input_mode_(InputMode::kDirect),
-        hiragana_key_event_handler_(nullptr),
-        direct_key_event_handler_(nullptr), input_mode_toggle_button_(nullptr),
+        client_id_(TF_CLIENTID_NULL), input_mode_toggle_button_(nullptr),
+        key_event_handler_(nullptr),
         editing_display_attribute_atom_(TF_INVALID_GUIDATOM),
         converting_display_attribute_atoms_(
             {TF_INVALID_GUIDATOM, TF_INVALID_GUIDATOM}) {}
@@ -92,6 +130,8 @@ public:
   HRESULT __stdcall GetDisplayAttributeInfo(
       REFGUID, ITfDisplayAttributeInfo **) override;
 
+  HRESULT ActivateInternal(ITfThreadMgr *thread_mgr, TfClientId client_id);
+
   // langbar::InputModeToggleButton::View
   virtual InputMode input_mode() const override;
 
@@ -105,16 +145,10 @@ private:
 
   TfClientId client_id_;
 
-  InputMode input_mode_;
-
-  // Component that handles inputs during the hiragana input mode.
-  hiragana::HiraganaKeyEventHandler *hiragana_key_event_handler_;
-
-  // Component that handles inputs during the direct input mode.
-  direct::DirectKeyEventHandler *direct_key_event_handler_;
-
   // Button to switch the current input mode.
   langbar::InputModeToggleButton *input_mode_toggle_button_;
+
+  KeyEventHandler *key_event_handler_;
 
   // Value of the style for decorating a text when editing
   TfGuidAtom editing_display_attribute_atom_;
