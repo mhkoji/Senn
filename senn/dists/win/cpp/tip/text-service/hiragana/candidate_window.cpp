@@ -9,15 +9,14 @@ namespace senn {
 namespace senn_win {
 namespace text_service {
 namespace hiragana {
+namespace candidate_window {
 
-CandidateWindow::CandidateWindow(View *view) : view_(view) {}
-
-bool CandidateWindow::RegisterWindowClass(HINSTANCE hInst) {
+bool RegisterWindowClass(HINSTANCE hInst) {
   WNDCLASSEXW wc = {};
 
   wc.cbSize = sizeof(wc);
   wc.style = CS_VREDRAW | CS_HREDRAW;
-  wc.lpfnWndProc = CandidateWindow::WindowProc;
+  wc.lpfnWndProc = WindowProc;
   wc.cbClsExtra = 0;
   wc.cbWndExtra = 0;
   wc.hInstance = hInst;
@@ -32,28 +31,63 @@ bool CandidateWindow::RegisterWindowClass(HINSTANCE hInst) {
   return atom != 0;
 }
 
-void CandidateWindow::UnregisterWindowClass(HINSTANCE hInst) {
+void UnregisterWindowClass(HINSTANCE hInst) {
   UnregisterClassW(senn::senn_win::kCandidateWindowClassName, hInst);
 }
 
 namespace {
 
-const LONG MARGIN_X = 20;
-const LONG MARGIN_Y = 10;
+const LONG kMarginX = 20;
+const LONG kMarginY = 10;
 
-const UINT format =
+const UINT kDTFormat =
     DT_NOCLIP | DT_NOPREFIX | DT_LEFT | DT_SINGLELINE | DT_NOFULLWIDTHCHARBREAK;
 
-void DrawCandidates(HDC hdc, const CandidateWindow::View *view,
-                    HBRUSH hbrHighlight) {
+void CalculateSize(HDC hdc, const View *view, LONG *out_width,
+                   LONG *out_height) {
   const std::vector<std::wstring> *candidates = view->candidates();
 
-  const UINT current_page = view->current_index() / CandidateWindow::kPageSize;
+  const UINT current_page = view->current_index() / kPageSize;
 
-  const UINT begin_index = current_page * CandidateWindow::kPageSize;
+  const UINT begin_index = current_page * kPageSize;
 
-  const UINT end_index = (std::min)(
-      (current_page + 1) * CandidateWindow::kPageSize, view->candidate_count());
+  const UINT end_index =
+      (std::min)((current_page + 1) * kPageSize, view->candidate_count());
+
+  LONG max_text_width = 0;
+  LONG prev_bottom = 0;
+  for (UINT index = begin_index; index < end_index; ++index) {
+    const std::wstring &s = (*view->candidates())[index];
+
+    RECT r_temp = {0, 0, 0, 0};
+    DrawText(hdc, s.c_str(), -1, &r_temp, DT_CALCRECT | kDTFormat);
+    LONG text_width = r_temp.right;
+    LONG text_height = r_temp.bottom;
+
+    LONG top = prev_bottom;
+    LONG bottom = top + kMarginY + text_height + kMarginY;
+
+    prev_bottom = bottom;
+
+    if (max_text_width < text_width) {
+      max_text_width = text_width;
+    }
+  }
+
+  *out_width = kMarginX + max_text_width + kMarginX;
+  *out_height = prev_bottom;
+}
+
+void DrawCandidates(HDC hdc, const View *view, HBRUSH hbrHighlight,
+                    LONG area_width) {
+  const std::vector<std::wstring> *candidates = view->candidates();
+
+  const UINT current_page = view->current_index() / kPageSize;
+
+  const UINT begin_index = current_page * kPageSize;
+
+  const UINT end_index =
+      (std::min)((current_page + 1) * kPageSize, view->candidate_count());
 
   SetBkMode(hdc, TRANSPARENT);
 
@@ -61,21 +95,21 @@ void DrawCandidates(HDC hdc, const CandidateWindow::View *view,
   for (UINT index = begin_index; index < end_index; ++index) {
     const std::wstring &s = (*view->candidates())[index];
 
-    RECT r_temp = {0, 0, 1, 1};
-    DrawText(hdc, s.c_str(), -1, &r_temp, DT_CALCRECT | format);
-
-    LONG width = r_temp.right;
-    LONG height = r_temp.bottom;
+    RECT r_temp = {0, 0, 0, 0};
+    DrawText(hdc, s.c_str(), -1, &r_temp, DT_CALCRECT | kDTFormat);
+    LONG text_height = r_temp.bottom;
 
     LONG top = prev_bottom;
-    LONG bottom = top + MARGIN_Y + height + MARGIN_Y;
+    LONG bottom = top + kMarginY + text_height + kMarginY;
+
     if (index == view->current_index()) {
-      RECT r = {0, top, 100, bottom};
+      RECT r = {0, top, area_width, bottom};
       FillRect(hdc, &r, hbrHighlight);
     }
+
     {
-      RECT r = {MARGIN_X, top, 100, bottom};
-      DrawText(hdc, s.c_str(), -1, &r, DT_VCENTER | format);
+      RECT r = {kMarginX, top, area_width, bottom};
+      DrawText(hdc, s.c_str(), -1, &r, DT_VCENTER | DT_NOCLIP | kDTFormat);
     }
 
     prev_bottom = bottom;
@@ -84,16 +118,16 @@ void DrawCandidates(HDC hdc, const CandidateWindow::View *view,
 
 } // namespace
 
-LRESULT CALLBACK CandidateWindow::WindowProc(HWND hwnd, UINT umsg,
-                                             WPARAM wparam, LPARAM lparam) {
+LRESULT CALLBACK WindowProc(HWND hwnd, UINT umsg, WPARAM wparam,
+                            LPARAM lparam) {
   static HBRUSH hbrHighlight;
 
-  CandidateWindow *cw;
+  View *view;
   if (umsg == WM_NCCREATE) {
-    cw = (CandidateWindow *)((LPCREATESTRUCTW(lparam))->lpCreateParams);
-    SetWindowLongPtrW(hwnd, GWLP_USERDATA, LONG_PTR(cw));
+    view = (View *)((LPCREATESTRUCTW(lparam))->lpCreateParams);
+    SetWindowLongPtrW(hwnd, GWLP_USERDATA, LONG_PTR(view));
   } else {
-    cw = (CandidateWindow *)(GetWindowLongPtrW(hwnd, GWLP_USERDATA));
+    view = (View *)(GetWindowLongPtrW(hwnd, GWLP_USERDATA));
   }
 
   switch (umsg) {
@@ -102,23 +136,35 @@ LRESULT CALLBACK CandidateWindow::WindowProc(HWND hwnd, UINT umsg,
     return 0;
   case WM_DESTROY:
     DeleteObject(hbrHighlight);
-    delete cw;
     return 0;
+
   case WM_PAINT: {
     PAINTSTRUCT ps;
     HDC hdc = BeginPaint(hwnd, &ps);
+
+    LONG width = 0, height = 0;
+    {
+      HDC hdcmem = CreateCompatibleDC(hdc);
+      CalculateSize(hdcmem, view, &width, &height);
+      DeleteDC(hdcmem);
+    }
+
+    SetWindowPos(hwnd, nullptr, 0, 0, width, height,
+                 SWP_NOMOVE | SWP_NOACTIVATE | SWP_SHOWWINDOW);
+
     HDC hdcmem = CreateCompatibleDC(hdc);
-    RECT rc = {0, 0, 100, 400};
+    RECT rc = {0, 0, width, height};
     HBITMAP hbmpmem = CreateCompatibleBitmap(hdc, rc.right, rc.bottom);
     SelectObject(hdcmem, hbmpmem);
     FillRect(hdcmem, &rc, HBRUSH(GetStockObject(WHITE_BRUSH)));
 
-    DrawCandidates(hdcmem, cw->view_, hbrHighlight);
+    DrawCandidates(hdcmem, view, hbrHighlight, width);
+    BitBlt(hdc, 0, 0, width, height, hdcmem, 0, 0, SRCCOPY);
 
-    BitBlt(hdc, 0, 0, 100, 400, hdcmem, 0, 0, SRCCOPY);
     DeleteObject(hbmpmem);
     DeleteDC(hdcmem);
     EndPaint(hwnd, &ps);
+
     return 0;
   }
   default:
@@ -127,6 +173,7 @@ LRESULT CALLBACK CandidateWindow::WindowProc(HWND hwnd, UINT umsg,
   return DefWindowProc(hwnd, umsg, wparam, lparam);
 }
 
+} // namespace candidate_window
 } // namespace hiragana
 } // namespace text_service
 } // namespace senn_win

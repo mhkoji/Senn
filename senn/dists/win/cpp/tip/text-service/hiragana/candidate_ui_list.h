@@ -20,7 +20,7 @@ public:
   };
 
   CandidateListUI(ITfContext *context, ITfThreadMgr *thread_mgr,
-                  CandidateWindow::View *view)
+                  candidate_window::View *view)
       : ref_count_(1), context_(context), thread_mgr_(thread_mgr),
         ui_element_id_(-1), hwnd_(nullptr), view_(view),
         text_layout_sink_cookie_(TF_INVALID_COOKIE), handlers_(nullptr) {
@@ -63,7 +63,7 @@ public:
                                            ITfContextView *pView) override;
 
   static CandidateListUI *Create(ITfContext *context, ITfThreadMgr *thread_mgr,
-                                 CandidateWindow::View *, Handlers *);
+                                 candidate_window::View *, Handlers *);
 
   void DestroyUI();
 
@@ -78,7 +78,7 @@ private:
 
   HWND hwnd_;
 
-  CandidateWindow::View *view_;
+  candidate_window::View *view_;
 
   DWORD text_layout_sink_cookie_;
 

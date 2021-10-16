@@ -159,13 +159,13 @@ private:
   CandidateListUI *ui_;
 };
 
-class CandidateListState : public CandidateWindow::View {
+class CandidateListState : public candidate_window::View {
 public:
   CandidateListState() : candidates_(std::vector<std::wstring>()) {}
 
   void Update(const senn::senn_win::ime::views::Converting &);
 
-  // CandidateWindow::View
+  // candidate_window::View
   virtual const std::vector<std::wstring> *candidates() const override {
     return &candidates_;
   }

@@ -156,7 +156,7 @@ HRESULT __stdcall CandidateListUI::OnLayoutChange(ITfContext *pic,
 // https://docs.microsoft.com/en-us/windows/win32/tsf/uiless-mode-overview#the-flow-chart-of-uilessmode
 CandidateListUI *CandidateListUI::Create(ITfContext *context,
                                          ITfThreadMgr *thread_mgr,
-                                         CandidateWindow::View *view,
+                                         candidate_window::View *view,
                                          Handlers *handlers) {
 
   ITfUIElementMgr *ui_mgr = nullptr;
@@ -177,8 +177,6 @@ CandidateListUI *CandidateListUI::Create(ITfContext *context,
   if (tip_should_show_window) {
     ui_mgr->EndUIElement(candidate_list_ui->ui_element_id_);
 
-    CandidateWindow *cw = new CandidateWindow(view);
-
     HWND hwndParent = nullptr;
     {
       ITfContextView *pView;
@@ -194,7 +192,7 @@ CandidateListUI *CandidateListUI::Create(ITfContext *context,
     candidate_list_ui->hwnd_ = CreateWindowEx(
         WS_EX_TOOLWINDOW | WS_EX_TOPMOST,
         senn::senn_win::kCandidateWindowClassName, L"", WS_POPUP | WS_BORDER,
-        50, 50, 100, 400, hwndParent, nullptr, g_module_handle, cw);
+        50, 50, 100, 400, hwndParent, nullptr, g_module_handle, view);
 
     candidate_list_ui->handlers_ = handlers;
 
@@ -263,7 +261,7 @@ HRESULT __stdcall CandidateListUI::GetPageIndex(UINT *pIndex, UINT uSize,
     return E_INVALIDARG;
   }
 
-  *puPageCnt = (view_->candidate_count() / CandidateWindow::kPageSize) + 1;
+  *puPageCnt = (view_->candidate_count() / candidate_window::kPageSize) + 1;
 
   if (pIndex == nullptr) {
     // https://docs.microsoft.com/ja-jp/windows/win32/api/msctf/nf-msctf-itfcandidatelistuielement-getpageindex
@@ -278,7 +276,7 @@ HRESULT __stdcall CandidateListUI::GetPageIndex(UINT *pIndex, UINT uSize,
   }
 
   for (UINT i = 0; i < *puPageCnt; i++) {
-    pIndex[i] = i * CandidateWindow::kPageSize;
+    pIndex[i] = i * candidate_window::kPageSize;
   }
 
   return S_OK;
@@ -292,7 +290,7 @@ HRESULT __stdcall CandidateListUI::GetCurrentPage(UINT *puPage) {
   if (puPage == nullptr) {
     return E_INVALIDARG;
   }
-  *puPage = view_->current_index() / CandidateWindow::kPageSize;
+  *puPage = view_->current_index() / candidate_window::kPageSize;
   return S_OK;
 }
 
