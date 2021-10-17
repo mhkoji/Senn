@@ -19,7 +19,13 @@
        (destructuring-bind (new-state view)
            (senn.win.input-processor:process-input ime state key)
          (send-response client view)
-         new-state)))))
+         new-state)))
+    (:can-process
+     (let ((key (senn.win.input-processor.keys:make-key
+                 :code (expr-arg expr "keycode"))))
+       (let ((resp (senn.win.input-processor:can-process ime state key)))
+         (send-response client resp))
+       state))))
 
 (defun loop-handling-request (ime state client)
   (when-let ((expr (read-request client)))
