@@ -111,6 +111,13 @@ HRESULT KeyEventHandler::OnTestKeyDown(ITfContext *context, WPARAM wParam,
 
 HRESULT KeyEventHandler::OnKeyDown(ITfContext *context, WPARAM wParam,
                                    LPARAM lParam, BOOL *pfEaten) {
+  if (wParam == 0xF3 || wParam == 0xF4) {
+    // hankaku/zenkaku key
+    ToggleInputMode();
+    *pfEaten = false;
+    return S_OK;
+  }
+
   switch (input_mode_) {
   case senn::senn_win::text_service::kDirect:
     return direct_key_event_handler_->OnKeyDown(context, wParam, lParam,
