@@ -46,9 +46,14 @@ private:
 
 class StatefulIMProxy : public StatefulIM {
 public:
-  void Transit(uint64_t keycode, std::function<void(const views::Editing &)>,
-               std::function<void(const views::Converting &)>,
-               std::function<void(const views::Committed &)>) override;
+  bool CanProcess(uint64_t) override;
+  
+  bool ProcessInput(uint64_t,
+                    std::function<void(const views::Editing &)>,
+                    std::function<void(const views::Converting &)>,
+                    std::function<void(const views::Committed &)>) override;
+
+
 
   ~StatefulIMProxy() override;
 

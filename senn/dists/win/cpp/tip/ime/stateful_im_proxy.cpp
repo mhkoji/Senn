@@ -79,7 +79,30 @@ int ToWString(const std::string &char_string, std::wstring *output) {
 
 } // namespace
 
-void StatefulIMProxy::Transit(
+bool StatefulIMProxy::CanProcess(uint64_t keycode) {
+  std::string response;
+  {
+    std::stringstream ss;
+    ss << "{"
+       << "\"op\": \"can-process\","
+       << "\"args\": {"
+       << "\"keycode\": " << keycode << "}"
+       << "}";
+    if (!conn_->Write(ss.str())) {
+      return false;
+    }
+    if (!conn_->ReadLine(&response)) {
+      return false;
+    }
+  }
+
+  std::istringstream iss(response);
+  bool can_process;
+  iss >> can_process;
+  return can_process;
+}
+
+bool StatefulIMProxy::ProcessInput(
     uint64_t keycode, std::function<void(const views::Editing &)> on_editing,
     std::function<void(const views::Converting &)> on_converting,
     std::function<void(const views::Committed &)> on_committed) {
@@ -92,16 +115,17 @@ void StatefulIMProxy::Transit(
        << "\"keycode\": " << keycode << "}"
        << "}";
     if (!conn_->Write(ss.str())) {
-      return;
+      return false;
     }
     if (!conn_->ReadLine(&response)) {
-      return;
+      return false;
     }
   }
 
   std::istringstream iss(response);
+  bool eaten;
   std::string type;
-  iss >> type;
+  iss >> eaten >> type;
 
   if (type == "EDITING") {
     views::Editing editing;
@@ -166,6 +190,8 @@ void StatefulIMProxy::Transit(
 
     on_committed(committed);
   }
+
+  return eaten;
 };
 
 StatefulIMProxy::StatefulIMProxy(Connection *conn) : conn_(conn) {}
@@ -200,7 +226,8 @@ StatefulIMProxy *StatefulIMProxy::CreateTCPPRoxy(const std::string &host,
     if (sock == INVALID_SOCKET) {
       break;
     }
-    if (connect(sock, p->ai_addr, static_cast<int>(p->ai_addrlen)) != SOCKET_ERROR) {
+    if (connect(sock, p->ai_addr, static_cast<int>(p->ai_addrlen)) !=
+        SOCKET_ERROR) {
       freeaddrinfo(result);
       return new StatefulIMProxy(new ConnectionTCP(sock));
     }

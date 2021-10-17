@@ -22,6 +22,23 @@ EditSessionEditing::EditSessionEditing(
 EditSessionEditing::~EditSessionEditing() { context_->Release(); }
 
 HRESULT __stdcall EditSessionEditing::DoEditSession(TfEditCookie ec) {
+  if (view_.input.empty()) {
+    if (composition_holder_->Get() == nullptr) {
+      return S_OK;
+    }
+    ITfComposition *composition = composition_holder_->Get();
+    ITfRange *range =
+        ui::ReplaceTextInComposition(view_.input, ec, composition);
+    if (range != nullptr) {
+      ui::RemoveDisplayAttributes(ec, context_, range);
+      range->Release();
+    }
+    composition->EndComposition(ec);
+    composition->Release();
+    composition_holder_->Set(nullptr);
+    return S_OK;
+  }
+
   // Draw the text on the screen.
   // If it is the first time to draw, we have to create a composition as well.
   ITfRange *range;
@@ -229,13 +246,7 @@ HRESULT HiraganaKeyEventHandler::OnSetFocus(BOOL fForeground) { return S_OK; }
 HRESULT HiraganaKeyEventHandler::OnTestKeyDown(ITfContext *context,
                                                WPARAM wParam, LPARAM lParam,
                                                BOOL *pfEaten) {
-  if (wParam == VK_BACK || wParam == VK_LEFT || wParam == VK_UP ||
-      wParam == VK_RIGHT || wParam == VK_DOWN) {
-    // Force the OS operate according to the key.
-    *pfEaten = false;
-  } else {
-    *pfEaten = true;
-  }
+  *pfEaten = stateful_im_->CanProcess(wParam);
   return S_OK;
 }
 
@@ -303,10 +314,8 @@ bool HiraganaKeyEventHandler::HandleIMEView(
 
 HRESULT HiraganaKeyEventHandler::OnKeyDown(ITfContext *context, WPARAM wParam,
                                            LPARAM lParam, BOOL *pfEaten) {
-  *pfEaten = true;
-
   bool success = false;
-  stateful_im_->Transit(
+  *pfEaten = stateful_im_->ProcessInput(
       wParam,
       [&](const senn::senn_win::ime::views::Editing &view) {
         success = HandleIMEView(context, view);
