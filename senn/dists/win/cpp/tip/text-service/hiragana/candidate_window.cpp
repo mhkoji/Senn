@@ -109,7 +109,7 @@ void DrawCandidates(HDC hdc, const View *view, HBRUSH hbrHighlight,
 
     {
       RECT r = {kMarginX, top, area_width, bottom};
-      DrawText(hdc, s.c_str(), -1, &r, DT_VCENTER | DT_NOCLIP | kDTFormat);
+      DrawText(hdc, s.c_str(), -1, &r, DT_VCENTER | kDTFormat);
     }
 
     prev_bottom = bottom;
