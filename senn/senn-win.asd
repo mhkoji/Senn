@@ -4,7 +4,8 @@
   :components
   ((:file "input-processor/keys")
    (:file "input-processor/states")
-   (:file "input-processor/transit")
+   (:file "input-processor/view")
+   (:file "input-processor/input-processor")
    (:file "stateful-im")
    #+windows
    (:file "ipc/named-pipe")

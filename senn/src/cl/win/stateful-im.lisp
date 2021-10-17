@@ -16,16 +16,16 @@
     (:process-input
      (let ((key (senn.win.input-processor.keys:make-key
                  :code (expr-arg expr "keycode"))))
-       (destructuring-bind (new-state view)
+       (destructuring-bind (new-state retval)
            (senn.win.input-processor:process-input ime state key)
-         (send-response client view)
+         (send-response client retval)
          new-state)))
     (:can-process
      (let ((key (senn.win.input-processor.keys:make-key
                  :code (expr-arg expr "keycode"))))
-       (let ((resp (senn.win.input-processor:can-process ime state key)))
-         (send-response client resp))
-       state))))
+       (let ((retval (senn.win.input-processor:can-process ime state key)))
+         (send-response client retval)))
+     state)))
 
 (defun loop-handling-request (ime state client)
   (when-let ((expr (read-request client)))
