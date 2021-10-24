@@ -1,0 +1,33 @@
+(defpackage :senn.win.im.can-process
+  (:use :cl :senn.win.im))
+(in-package :senn.win.im.can-process)
+
+(defgeneric can-process (ime state mode key))
+
+(defmethod can-process ((ime senn.im:ime)
+                        (s converting)
+                        (mode (eql :hiragana))
+                        (key senn.win.keys:key))
+  (cond ((senn.win.keys:enter-p key) t)
+        ((or (senn.win.keys:space-p key)
+             (senn.win.keys:down-p key))
+         t)
+        ((senn.win.keys:up-p key) t)
+        ((senn.win.keys:left-p key) t)
+        ((senn.win.keys:right-p key) t)
+        (t nil)))
+
+(defmethod can-process ((ime senn.im:ime)
+                        (s editing)
+                        (mode (eql :hiragana))
+                        (key senn.win.keys:key))
+  (cond ((char-p key) t)
+        ((senn.win.keys:backspace-p key)
+         (let ((pron (senn.buffer:buffer-string (editing-buffer s))))
+           ;; IMEが文字を削除していない -> OSに文字を削除してもらう
+           (not (string= pron ""))))
+        ((senn.win.keys:space-p key)
+         (let ((pron (senn.buffer:buffer-string (editing-buffer s))))
+           (not (string= pron ""))))
+        ((senn.win.keys:enter-p key) t)
+        (t nil)))

@@ -1,22 +1,30 @@
 (defpackage :senn.win.im
   (:use :cl)
-  (:export :make-initial-state
-           :process-input
-           :can-process
-
-           :make-editing
+  (:export :make-editing
+           :editing
            :editing-buffer
+
            :make-converting
-           :converting-current-input
-           :converting-current-segment
-           :converting-move-curret-segment
-           :editing-view
-           :converting-view
-           :committed-view))
+           :converting
+           :converting-segments
+           :converting-pronunciation
+           :converting-current-segment-index
+
+           :char-p
+
+           :process-input
+           :can-process))
 (in-package :senn.win.im)
 
-(defgeneric make-initial-state (ime))
+;;; state
 
-(defgeneric process-input (ime state key))
+(defstruct editing
+  (buffer (senn.buffer:make-buffer)))
 
-(defgeneric can-process (ime state key))
+(defstruct converting
+  segments
+  pronunciation
+  (current-segment-index 0))
+
+(defun char-p (k)
+  (<= (char-code #\A) (senn.win.keys:key-code k) (char-code #\Z)))

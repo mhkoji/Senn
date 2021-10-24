@@ -1,9 +1,9 @@
-(defpackage :senn.win.stateful-im.tcp
+(defpackage :senn.win.server.tcp
   (:use :cl)
   (:export :start-server)
   (:import-from :alexandria
                 :when-let))
-(in-package :senn.win.stateful-im.tcp)
+(in-package :senn.win.server.tcp)
 
 (defstruct client id usocket)
 
@@ -12,23 +12,22 @@
              (client-id ,client)
              ,@args))
 
-(defmethod senn.win.stateful-im:read-request ((client client))
+(defmethod senn.win.server:read-request ((client client))
   (let ((stream (usocket:socket-stream (client-usocket client))))
     (when-let ((line (read-line stream nil nil nil)))
       (hachee.ipc.op:as-expr line))))
 
-(defmethod senn.win.stateful-im:send-response ((client client) resp)
+(defmethod senn.win.server:send-response ((client client) resp)
   (let ((stream (usocket:socket-stream (client-usocket client))))
     (write-line resp stream)
     (force-output stream)))
 
-(defmethod senn.win.stateful-im:read-request :around ((client client))
+(defmethod senn.win.server:read-request :around ((client client))
   (let ((req (call-next-method)))
     (log/info client "Read: ~A" req)
     req))
 
-(defmethod senn.win.stateful-im:send-response :after ((client client)
-                                                      resp)
+(defmethod senn.win.server:send-response :after ((client client) resp)
   (log/info client "Written: ~A" resp))
 
 (defun spawn-client-thread (ime client)
@@ -36,7 +35,7 @@
   (bordeaux-threads:make-thread
    (lambda ()
      (handler-case
-         (senn.win.stateful-im:loop-handling-request ime client)
+         (senn.win.server:loop-handling-request ime client)
        (error (c)
          (log:warn "~A" c)))
      (ignore-errors

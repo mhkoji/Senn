@@ -1,10 +1,10 @@
-(defpackage :senn.win.stateful-im.named-pipe
+(defpackage :senn.win.server.named-pipe
   (:use :cl)
   (:export :start-server)
   (:import-from :alexandria
                 :if-let
                 :when-let))
-(in-package :senn.win.stateful-im.named-pipe)
+(in-package :senn.win.server.named-pipe)
 
 (defstruct client id pipe)
 
@@ -13,21 +13,21 @@
              (client-id ,client)
              ,@args))
 
-(defmethod senn.win.stateful-im:read-request ((client client))
+(defmethod senn.win.server:read-request ((client client))
   (when-let ((octets (hachee.ipc.named-pipe:read-file (client-pipe client))))
     (let ((string (babel:octets-to-string octets :encoding :utf-8)))
       (hachee.ipc.op:as-expr string))))
 
-(defmethod senn.win.stateful-im:send-response ((client client) (resp string))
+(defmethod senn.win.server:send-response ((client client) (resp string))
   (let ((octets (babel:string-to-octets resp :encoding :utf-8)))
     (hachee.ipc.named-pipe:write-file (client-pipe client) octets)))
 
-(defmethod senn.win.stateful-im:read-request :around ((client client))
+(defmethod senn.win.server:read-request :around ((client client))
   (let ((req (call-next-method)))
     (log/info client "Read: ~A" req)
     req))
 
-(defmethod senn.win.stateful-im:send-response :after ((client client) resp)
+(defmethod senn.win.server:send-response :after ((client client) resp)
   (log/info client "Written: ~A" resp))
 
 
@@ -36,7 +36,7 @@
   (bordeaux-threads:make-thread
    (lambda ()
      (handler-case
-         (senn.win.stateful-im:loop-handling-request ime client)
+         (senn.win.server:loop-handling-request ime client)
        (error (e)
          (log:info "~A" e)))
      (log/info client "Disconnected"))))
@@ -47,7 +47,7 @@
     (unwind-protect
          (loop
             for client-id from 1
-            for pipe = (hachee.stateful-im.named-pipe:create pipe-name)
+            for pipe = (hachee.ipc.named-pipe:create pipe-name)
             while pipe
             do (progn
                  (log:info "Waiting for client...")

@@ -5,16 +5,15 @@
   ((:file "keys")
 
    (:file "im/im")
-   (:file "stateful-im/stateful-im")
+   (:file "im/process-input")
+   (:file "im/can-process")
+   (:file "stateful-im")
 
-   (:file "im/states")
-   (:file "im/view")
-   (:file "im/ime")
-
+   (:file "server/server")
    #+windows
-   (:file "stateful-im/named-pipe")
+   (:file "server/named-pipe")
    #+linux
-   (:file "stateful-im/tcp"))
+   (:file "server/tcp"))
   :depends-on (:senn
                :jsown
                #+linux
