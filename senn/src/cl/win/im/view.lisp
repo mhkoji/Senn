@@ -1,4 +1,4 @@
-(in-package :senn.win.stateful-im)
+(in-package :senn.win.im)
 
 ;; May be viewed as the side-effect to the system by process-input
 (defun editing-view (can-process editing-state)

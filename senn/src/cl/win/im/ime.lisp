@@ -1,6 +1,6 @@
-(defpackage :senn.win.stateful-im.im
+(defpackage :senn.win.im.ime
   (:use :cl)
-  (:import-from :senn.win.stateful-im
+  (:import-from :senn.win.im
                 :editing
                 :make-editing
                 :editing-buffer
@@ -12,14 +12,14 @@
                 :editing-view
                 :converting-view
                 :committed-view))
-(in-package :senn.win.stateful-im.im)
+(in-package :senn.win.im.ime)
 
-(defmethod senn.win.stateful-im:make-initial-state ((ime senn.im:ime))
+(defmethod senn.win.im:make-initial-state ((ime senn.im:ime))
   (make-editing))
 
 (defgeneric can-process (ime state key))
 
-(defmethod senn.win.stateful-im:can-process ((ime senn.im:ime) state key)
+(defmethod senn.win.im:can-process ((ime senn.im:ime) state key)
   (format nil "~A~%" (if (can-process ime state key) 1 0)))
 
 (defvar +crlf+
@@ -35,9 +35,8 @@
 (defun buffer-empty-p (buffer)
   (string= (senn.buffer:buffer-string buffer) ""))
 
-(defmethod senn.win.stateful-im:process-input
-    ((ime senn.im:ime) (s converting)
-     (key senn.win.keys:key))
+(defmethod senn.win.im:process-input ((ime senn.im:ime) (s converting)
+                                      (key senn.win.keys:key))
   (cond ((senn.win.keys:enter-p key)
          (let ((editing (make-editing))
                (view (committed-view (converting-current-input s))))
@@ -74,9 +73,8 @@
         ((senn.win.keys:right-p key) t)
         (t nil)))
 
-(defmethod senn.win.stateful-im:process-input
-    ((ime senn.im:ime) (s editing)
-     (key senn.win.keys:key))
+(defmethod senn.win.im:process-input ((ime senn.im:ime) (s editing)
+                                      (key senn.win.keys:key))
   (cond ((char-p key)
          (let ((char-lower-case
                 ;; to lower case by adding #x20

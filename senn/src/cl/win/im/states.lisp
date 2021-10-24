@@ -1,4 +1,4 @@
-(in-package :senn.win.stateful-im)
+(in-package :senn.win.im)
 
 (defstruct editing
   (buffer (senn.buffer:make-buffer)))

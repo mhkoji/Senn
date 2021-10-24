@@ -1,10 +1,10 @@
-(defpackage :senn.win.ipc.named-pipe
+(defpackage :senn.win.stateful-im.named-pipe
   (:use :cl)
   (:export :start-server)
   (:import-from :alexandria
                 :if-let
                 :when-let))
-(in-package :senn.win.ipc.named-pipe)
+(in-package :senn.win.stateful-im.named-pipe)
 
 (defstruct client id pipe)
 
@@ -47,7 +47,7 @@
     (unwind-protect
          (loop
             for client-id from 1
-            for pipe = (hachee.ipc.named-pipe:create pipe-name)
+            for pipe = (hachee.stateful-im.named-pipe:create pipe-name)
             while pipe
             do (progn
                  (log:info "Waiting for client...")
