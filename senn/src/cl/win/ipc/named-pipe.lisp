@@ -31,15 +31,12 @@
   (log/info client "Written: ~A" resp))
 
 
-(defun spawn-client-thread (client ime)
+(defun spawn-client-thread (ime client)
   (log/info client "Connected")
   (bordeaux-threads:make-thread
    (lambda ()
      (handler-case
-         (let ((initial-state
-                (senn.win.input-processor.states:make-editing)))
-           (senn.win.stateful-im:loop-handling-request
-            ime initial-state client))
+         (senn.win.stateful-im:loop-handling-request ime client)
        (error (e)
          (log:info "~A" e)))
      (log/info client "Disconnected"))))

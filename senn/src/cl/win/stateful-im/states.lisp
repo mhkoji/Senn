@@ -1,26 +1,7 @@
-(defpackage :senn.win.input-processor.states
-  (:use :cl)
-  (:export :to-view
-
-           :editing
-           :make-editing
-           :editing-buffer
-
-           :converting
-           :make-converting
-           :converting-pronunciation
-           :converting-segments
-           :converting-current-segment
-           :converting-current-input
-           :converting-current-segment-index
-           :converting-move-curret-segment))
-(in-package :senn.win.input-processor.states)
-
-(defgeneric to-view (s))
+(in-package :senn.win.stateful-im)
 
 (defstruct editing
   (buffer (senn.buffer:make-buffer)))
-
 
 (defstruct converting
   segments
@@ -41,4 +22,3 @@
   (format nil "~{~A~}"
           (mapcar #'senn.segment:segment-current-form
                   (converting-segments c))))
-

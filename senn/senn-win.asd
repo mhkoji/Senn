@@ -2,11 +2,15 @@
   :serial t
   :pathname "src/cl/win"
   :components
-  ((:file "input-processor/keys")
-   (:file "input-processor/states")
-   (:file "input-processor/view")
-   (:file "input-processor/input-processor")
-   (:file "stateful-im")
+  ((:file "keys")
+
+   (:file "stateful-im/stateful-im")
+   (:file "ipc/ipc")
+
+   (:file "stateful-im/states")
+   (:file "stateful-im/view")
+   (:file "stateful-im/im")
+
    #+windows
    (:file "ipc/named-pipe")
    #+linux
