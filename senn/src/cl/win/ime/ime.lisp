@@ -1,4 +1,4 @@
-(defpackage :senn.win.im
+(defpackage :senn.win.ime
   (:use :cl)
   (:export :make-editing
            :editing
@@ -14,7 +14,7 @@
 
            :process-input
            :can-process))
-(in-package :senn.win.im)
+(in-package :senn.win.ime)
 
 ;;; state
 

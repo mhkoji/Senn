@@ -1,6 +1,6 @@
-(defpackage :senn.win.im.can-process
-  (:use :cl :senn.win.im))
-(in-package :senn.win.im.can-process)
+(defpackage :senn.win.ime.can-process
+  (:use :cl :senn.win.ime))
+(in-package :senn.win.ime.can-process)
 
 (defgeneric can-process (ime state mode key))
 

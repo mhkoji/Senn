@@ -1,6 +1,6 @@
-(defpackage :senn.win.im.process-input
-  (:use :cl :senn.win.im))
-(in-package :senn.win.im.process-input)
+(defpackage :senn.win.ime.process-input
+  (:use :cl :senn.win.ime))
+(in-package :senn.win.ime.process-input)
 
 (defvar +crlf+
   (format nil "~A~A" #\Return #\Newline))

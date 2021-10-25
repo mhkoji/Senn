@@ -19,7 +19,7 @@
   (make-stateful-ime
    :ime ime
    :state (make-state :input-mode :hiragana
-                      :input-state (senn.win.im:make-editing))))
+                      :input-state (senn.win.ime:make-editing))))
 
 (defun get-input-mode (stateful-ime)
   (format nil "~A%" (state-input-mode (stateful-ime-state stateful-ime))))
@@ -34,14 +34,14 @@
          (setf input-state nil))
         (:direct
          (setf input-mode :hiragana)
-         (setf input-state (senn.win.im:make-editing)))))))
+         (setf input-state (senn.win.ime:make-editing)))))))
 
 (defun can-process (stateful-ime key)
   (with-accessors ((ime stateful-ime-ime)
                    (state stateful-ime-state)) stateful-ime
     (with-accessors ((input-mode state-input-mode)
                      (input-state state-input-state)) state
-      (let ((can-process (senn.win.im:can-process
+      (let ((can-process (senn.win.ime:can-process
                           ime input-state input-mode key)))
         (format nil "~A~%" (if can-process 1 0))))))
 
@@ -51,7 +51,7 @@
     (with-accessors ((input-mode state-input-mode)
                      (input-state state-input-state)) state
       (destructuring-bind (new-input-state new-input-mode can-process view)
-          (senn.win.im:process-input ime input-state input-mode key)
+          (senn.win.ime:process-input ime input-state input-mode key)
         (setf input-mode new-input-mode)
         (setf input-state new-input-state)
         (format nil "~A ~A~%" (if can-process 1 0) view)))))
