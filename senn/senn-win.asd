@@ -7,7 +7,7 @@
    (:file "im/im")
    (:file "im/process-input")
    (:file "im/can-process")
-   (:file "stateful-im")
+   (:file "stateful-ime")
 
    (:file "server/server")
    #+windows

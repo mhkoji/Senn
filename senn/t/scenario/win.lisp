@@ -32,25 +32,25 @@
   (format nil "~A ~A~%" (if can-process 1 0) view))
 
 (defmacro test-convert (&key test)
-  `(let ((im (senn.win.stateful-im:make-im
+  `(let ((im (senn.win.stateful-ime:make-im
               (make-instance 'ime))))
-     (,test (string= (senn.win.stateful-im:process-input
+     (,test (string= (senn.win.stateful-ime:process-input
                       im (senn.win.keys:make-key
                           :code (char-code #\S)))
                      (resp t "EDITING s")))
-     (,test (string= (senn.win.stateful-im:process-input
+     (,test (string= (senn.win.stateful-ime:process-input
                       im (senn.win.keys:make-key
                           :code (char-code #\O)))
                      (resp t "EDITING そ")))
-     (,test (string= (senn.win.stateful-im:process-input
+     (,test (string= (senn.win.stateful-ime:process-input
                       im (senn.win.keys:make-key
                           :code (char-code #\R)))
                      (resp t "EDITING そr")))
-     (,test (string= (senn.win.stateful-im:process-input
+     (,test (string= (senn.win.stateful-ime:process-input
                       im (senn.win.keys:make-key
                           :code (char-code #\A)))
                      (resp t "EDITING そら")))
-     (,test (string= (senn.win.stateful-im:process-input
+     (,test (string= (senn.win.stateful-ime:process-input
                       im (senn.win.keys:make-key
                           :code (char-code #\Space)))
                      (resp t (converting-view
@@ -59,7 +59,7 @@
                               :cursor-form (list nil 0)))))))
 
 (fiveam:def-suite :senn.win)
-(fiveam:in-suite* :senn.win.stateful-im :in :senn.win)
+(fiveam:in-suite* :senn.win.stateful-ime :in :senn.win)
 
 (fiveam:test test-convert
   (test-convert :test fiveam:is))

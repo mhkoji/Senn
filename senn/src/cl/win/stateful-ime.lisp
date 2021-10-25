@@ -1,31 +1,31 @@
-(defpackage :senn.win.stateful-im
+(defpackage :senn.win.stateful-ime
   (:use :cl)
   (:export :make-im
            :get-input-mode
            :toggle-input-mode
            :can-process
            :process-input))
-(in-package :senn.win.stateful-im)
+(in-package :senn.win.stateful-ime)
 
 (defstruct state
   input-mode
   input-state)
 
-(defstruct stateful-im
+(defstruct stateful-ime
   ime
   state)
 
 (defun make-im (ime)
-  (make-stateful-im
+  (make-stateful-ime
    :ime ime
    :state (make-state :input-mode :hiragana
                       :input-state (senn.win.im:make-editing))))
 
-(defun get-input-mode (stateful-im)
-  (format nil "~A%" (state-input-mode (stateful-im-state stateful-im))))
+(defun get-input-mode (stateful-ime)
+  (format nil "~A%" (state-input-mode (stateful-ime-state stateful-ime))))
 
-(defun toggle-input-mode (stateful-im)
-  (with-accessors ((state stateful-im-state)) stateful-im
+(defun toggle-input-mode (stateful-ime)
+  (with-accessors ((state stateful-ime-state)) stateful-ime
     (with-accessors ((input-mode state-input-mode)
                      (input-state state-input-state)) state
       (ecase input-mode
@@ -36,18 +36,18 @@
          (setf input-mode :hiragana)
          (setf input-state (senn.win.im:make-editing)))))))
 
-(defun can-process (stateful-im key)
-  (with-accessors ((ime stateful-im-ime)
-                   (state stateful-im-state)) stateful-im
+(defun can-process (stateful-ime key)
+  (with-accessors ((ime stateful-ime-ime)
+                   (state stateful-ime-state)) stateful-ime
     (with-accessors ((input-mode state-input-mode)
                      (input-state state-input-state)) state
       (let ((can-process (senn.win.im:can-process
                           ime input-state input-mode key)))
         (format nil "~A~%" (if can-process 1 0))))))
 
-(defun process-input (stateful-im key)
-  (with-accessors ((ime stateful-im-ime)
-                   (state stateful-im-state)) stateful-im
+(defun process-input (stateful-ime key)
+  (with-accessors ((ime stateful-ime-ime)
+                   (state stateful-ime-state)) stateful-ime
     (with-accessors ((input-mode state-input-mode)
                      (input-state state-input-state)) state
       (destructuring-bind (new-input-state new-input-mode can-process view)

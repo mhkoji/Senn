@@ -12,19 +12,19 @@
 
 (defgeneric send-response (c resp))
 
-(defun handle-request (stateful-im expr)
+(defun handle-request (stateful-ime expr)
   (case (expr-op expr)
     (:process-input
-     (senn.win.stateful-im:process-input
-      stateful-im
+     (senn.win.stateful-ime:process-input
+      stateful-ime
       (senn.win.keys:make-key :code (expr-arg expr "keycode"))))
     (:can-process
-     (senn.win.stateful-im:can-process
-      stateful-im
+     (senn.win.stateful-ime:can-process
+      stateful-ime
       (senn.win.keys:make-key :code (expr-arg expr "keycode"))))))
 
 (defun loop-handling-request (ime client)
-  (let ((stateful-im (senn.win.stateful-im:make-im ime)))
+  (let ((stateful-ime (senn.win.stateful-ime:make-im ime)))
     (loop for expr = (read-request client) while expr
-          do (let ((resp (handle-request stateful-im expr)))
+          do (let ((resp (handle-request stateful-ime expr)))
                (send-response client resp)))))
