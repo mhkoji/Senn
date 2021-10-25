@@ -1,6 +1,5 @@
 (defpackage :senn.fcitx.t.scenario.transit
-  (:use :cl)
-  (:export :*ops-tests*))
+  (:use :cl))
 (in-package :senn.fcitx.t.scenario.transit)
 
 (defmacro assert-ops (ops &key test)
@@ -95,3 +94,14 @@
                             :cursor-pos 3
                             :input "あ"
                             :committed-input ""))))
+
+
+(fiveam:def-suite :senn.fcitx)
+(fiveam:in-suite* :senn.fcitx)
+
+(progn
+  #.(cons 'progn
+          (mapcar (lambda (ops-test)
+                    `(test ,(intern (symbol-name ops-test))
+                       (,ops-test :test fiveam:is)))
+                  senn.fcitx.t.scenario.transit:*ops-tests*)))

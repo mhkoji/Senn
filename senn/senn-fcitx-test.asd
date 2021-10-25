@@ -2,12 +2,7 @@
   :serial t
   :pathname "t"
   :components
-  ((:module :scenario
-    :pathname "scenario"
-    :components
-    ((:file "transit")))
-
-   (:file "fiveam"))
+  ((:file "scenario/fcitx"))
 
   :perform (asdf:test-op (o s)
              (funcall (intern (symbol-name :run!) :fiveam) :senn.fcitx))
