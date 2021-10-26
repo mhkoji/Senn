@@ -34,6 +34,7 @@
 (defmacro test-convert (&key test)
   `(let ((im (senn.win.stateful-ime:make-im
               (make-instance 'ime))))
+     (senn.win.stateful-ime:toggle-input-mode im)
      (,test (string= (senn.win.stateful-ime:process-input
                       im (senn.win.keys:make-key
                           :code (char-code #\S)))
