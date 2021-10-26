@@ -3,12 +3,11 @@
 #include <msctf.h>
 #include <string>
 
-#include "../../ime/views.h"
+#include "../ime/views.h"
 
 namespace senn {
 namespace senn_win {
 namespace text_service {
-namespace hiragana {
 namespace candidate_window {
 
 static const UINT kPageSize = 9;
@@ -31,7 +30,6 @@ bool RegisterWindowClass(HINSTANCE);
 void UnregisterWindowClass(HINSTANCE);
 
 } // namespace candidate_window
-} // namespace hiragana
 } // namespace text_service
 } // namespace senn_win
 } // namespace senn

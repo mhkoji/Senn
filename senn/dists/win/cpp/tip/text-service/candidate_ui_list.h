@@ -3,13 +3,12 @@
 #include <msctf.h>
 #include <string>
 
-#include "../../ime/views.h"
+#include "../ime/views.h"
 #include "candidate_window.h"
 
 namespace senn {
 namespace senn_win {
 namespace text_service {
-namespace hiragana {
 
 class CandidateListUI : public ITfCandidateListUIElement,
                         public ITfTextLayoutSink {
@@ -85,7 +84,6 @@ private:
   Handlers *handlers_;
 };
 
-} // namespace hiragana
 } // namespace text_service
 } // namespace senn_win
 } // namespace senn

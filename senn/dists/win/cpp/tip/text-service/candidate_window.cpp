@@ -2,13 +2,12 @@
 #include <msctf.h>
 #include <string>
 
-#include "../../senn.h"
+#include "../senn.h"
 #include "candidate_window.h"
 
 namespace senn {
 namespace senn_win {
 namespace text_service {
-namespace hiragana {
 namespace candidate_window {
 
 bool RegisterWindowClass(HINSTANCE hInst) {
@@ -174,7 +173,6 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT umsg, WPARAM wparam,
 }
 
 } // namespace candidate_window
-} // namespace hiragana
 } // namespace text_service
 } // namespace senn_win
 } // namespace senn

@@ -42,9 +42,6 @@
     <ClInclude Include="registration.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="ime\stateful_im.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="text-service\text_service.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
@@ -60,22 +57,22 @@
     <ClInclude Include="text-service\hiragana\ui.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="text-service\hiragana\hiragana.h">
+    <ClInclude Include="ime\stateful_ime.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="text-service\direct.h">
+    <ClInclude Include="ime\stateful_ime_proxy.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="text-service\input_mode.h">
+    <ClInclude Include="text-service\ui.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="text-service\hiragana\candidate_window.h">
+    <ClInclude Include="text-service\candidate_ui_list.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="text-service\hiragana\candidate_ui_list.h">
+    <ClInclude Include="text-service\candidate_window.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="ime\stateful_im_proxy.h">
+    <ClInclude Include="text-service\key_event_handler.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>
@@ -104,22 +101,19 @@
     <ClCompile Include="text-service\langbar.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="text-service\hiragana\ui.cpp">
+    <ClCompile Include="ime\stateful_ime_proxy.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="text-service\hiragana\hiragana.cpp">
+    <ClCompile Include="text-service\ui.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="text-service\direct.cpp">
+    <ClCompile Include="text-service\candidate_ui_list.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="text-service\hiragana\candidate_window.cpp">
+    <ClCompile Include="text-service\candidate_window.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="text-service\hiragana\candidate_ui_list.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="ime\stateful_im_proxy.cpp">
+    <ClCompile Include="text-service\key_event_handler.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>

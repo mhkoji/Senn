@@ -4,64 +4,25 @@
 #include <string>
 #include <windows.h>
 
-#include "../ime/stateful_im.h"
+#include "../ime/stateful_ime.h"
 #include "../senn.h"
 #include "../win/text-service/class_factory.h"
 #include "direct.h"
-#include "hiragana/hiragana.h"
-#include "hiragana/ui.h"
-#include "input_mode.h"
+#include "key_event_handler.h"
 #include "langbar.h"
+#include "ui.h"
 
 namespace senn {
 namespace senn_win {
 namespace text_service {
-
-class KeyEventHandler {
-public:
-  ~KeyEventHandler();
-
-  void ToggleInputMode();
-
-  InputMode GetInputMode() const;
-
-  HRESULT OnSetFocus(BOOL fForeground);
-  HRESULT OnTestKeyDown(ITfContext *pic, WPARAM wParam, LPARAM lParam,
-                        BOOL *pfEaten);
-  HRESULT OnTestKeyUp(ITfContext *pic, WPARAM wParam, LPARAM lParam,
-                      BOOL *pfEaten);
-  HRESULT OnKeyDown(ITfContext *pic, WPARAM wParam, LPARAM lParam,
-                    BOOL *pfEaten);
-  HRESULT OnKeyUp(ITfContext *pic, WPARAM wParam, LPARAM lParam, BOOL *pfEaten);
-  HRESULT OnPreservedKey(ITfContext *pic, REFGUID rguid, BOOL *pfEaten);
-
-  static KeyEventHandler *
-  Create(ITfThreadMgr *, TfClientId, langbar::InputModeToggleButton *,
-         ITfCompositionSink *, TfGuidAtom,
-         hiragana::EditSessionConverting::DisplayAttributeAtoms *);
-
-private:
-  InputMode input_mode_;
-
-  langbar::InputModeToggleButton *input_mode_toggle_button_;
-
-  // Component that handles inputs during the hiragana input mode.
-  hiragana::HiraganaKeyEventHandler *hiragana_key_event_handler_;
-
-  // Component that handles inputs during the direct input mode.
-  direct::DirectKeyEventHandler *direct_key_event_handler_;
-
-  KeyEventHandler(langbar::InputModeToggleButton *,
-                  hiragana::HiraganaKeyEventHandler *,
-                  direct::DirectKeyEventHandler *);
-};
 
 class TextService : public ITfKeyEventSink,
                     public ITfDisplayAttributeProvider,
                     public ITfCompositionSink,
                     public ITfTextInputProcessor,
                     public langbar::InputModeToggleButton::View,
-                    public langbar::InputModeToggleButton::Handlers {
+                    public langbar::InputModeToggleButton::Handlers,
+                    public KeyEventHandler::Handlers {
 public:
   TextService()
       : clsid_text_service_(kClsid), thread_mgr_(nullptr),
@@ -133,10 +94,15 @@ public:
   HRESULT ActivateInternal(ITfThreadMgr *thread_mgr, TfClientId client_id);
 
   // langbar::InputModeToggleButton::View
-  virtual InputMode input_mode() const override;
+  virtual void GetIcon(HICON *) const override;
 
   // langbar::InputModeToggleButton::Handlers
-  void ToggleInputMode() override;
+  virtual void OnClickInputModelToggleButton() override;
+
+  // KeyEventHandler::Handlers
+  virtual void OnToggleInputMode() override;
+
+  void ToggleInputMode();
 
 private:
   CLSID clsid_text_service_;
@@ -148,13 +114,15 @@ private:
   // Button to switch the current input mode.
   langbar::InputModeToggleButton *input_mode_toggle_button_;
 
+  senn::senn_win::ime::StatefulIME *ime_;
+
   KeyEventHandler *key_event_handler_;
 
   // Value of the style for decorating a text when editing
   TfGuidAtom editing_display_attribute_atom_;
 
   // Values of the style for decorating a text when converting
-  hiragana::EditSessionConverting::DisplayAttributeAtoms
+  EditSessionConverting::DisplayAttributeAtoms
       converting_display_attribute_atoms_;
 
   ULONG ref_count_ = 1;

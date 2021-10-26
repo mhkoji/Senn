@@ -7,9 +7,15 @@ namespace senn {
 namespace senn_win {
 namespace ime {
 
-class StatefulIM {
+enum InputMode {
+  kDirect,
+  kHiragana,
+  kUnknown,
+};
+
+class StatefulIME {
 public:
-  virtual ~StatefulIM() {}
+  virtual ~StatefulIME() {}
 
   virtual bool CanProcess(uint64_t) = 0;
 
@@ -17,6 +23,10 @@ public:
                             std::function<void(const views::Editing &)>,
                             std::function<void(const views::Converting &)>,
                             std::function<void(const views::Committed &)>) = 0;
+
+  virtual void ToggleInputMode() = 0;
+
+  virtual InputMode GetInputMode() = 0;
 };
 
 } // namespace ime

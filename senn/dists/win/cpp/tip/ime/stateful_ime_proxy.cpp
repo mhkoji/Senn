@@ -2,7 +2,7 @@
 #include <ws2tcpip.h>
 
 #include "../../third-party/picojson/picojson.h"
-#include "stateful_im_proxy.h"
+#include "stateful_ime_proxy.h"
 
 namespace senn {
 namespace senn_win {
@@ -79,7 +79,55 @@ int ToWString(const std::string &char_string, std::wstring *output) {
 
 } // namespace
 
-bool StatefulIMProxy::CanProcess(uint64_t keycode) {
+void StatefulIMEProxy::ToggleInputMode() {
+  std::string response;
+  {
+    std::stringstream ss;
+    ss << "{"
+       << "\"op\": \"toggle-input-mode\""
+       << "}";
+    if (!conn_->Write(ss.str())) {
+      return;
+    }
+    if (!conn_->ReadLine(&response)) {
+      return;
+    }
+  }
+  // It seems to need to consume output buffer...
+  std::istringstream iss(response);
+  std::string ok;
+  iss >> ok;
+}
+
+InputMode StatefulIMEProxy::GetInputMode() {
+  std::string response;
+  {
+    std::stringstream ss;
+    ss << "{"
+       << "\"op\": \"get-input-mode\""
+       << "}";
+    if (!conn_->Write(ss.str())) {
+      return kUnknown;
+    }
+    if (!conn_->ReadLine(&response)) {
+      return kUnknown;
+    }
+  }
+
+  std::istringstream iss(response);
+  std::string mode;
+  iss >> mode;
+  if (mode == "DIRECT") {
+    return kDirect;
+  }
+  if (mode == "HIRAGANA") {
+    return kHiragana;
+  }
+
+  return kUnknown;
+}
+
+bool StatefulIMEProxy::CanProcess(uint64_t keycode) {
   std::string response;
   {
     std::stringstream ss;
@@ -102,7 +150,7 @@ bool StatefulIMProxy::CanProcess(uint64_t keycode) {
   return can_process;
 }
 
-bool StatefulIMProxy::ProcessInput(
+bool StatefulIMEProxy::ProcessInput(
     uint64_t keycode, std::function<void(const views::Editing &)> on_editing,
     std::function<void(const views::Converting &)> on_converting,
     std::function<void(const views::Committed &)> on_committed) {
@@ -124,92 +172,96 @@ bool StatefulIMProxy::ProcessInput(
 
   std::istringstream iss(response);
   bool eaten;
-  std::string type;
-  iss >> eaten >> type;
+  iss >> eaten;
 
-  if (type == "EDITING") {
-    views::Editing editing;
-    std::string char_text;
-    iss >> char_text;
-    ToWString(char_text, &editing.input);
-    on_editing(editing);
-  } else if (type == "CONVERTING") {
-    std::string content;
-    std::getline(iss, content);
+  if (eaten) {
+    std::string type;
+    iss >> type;
 
-    views::Converting converting;
+    if (type == "EDITING") {
+      views::Editing editing;
+      std::string char_text;
+      iss >> char_text;
+      ToWString(char_text, &editing.input);
+      on_editing(editing);
+    } else if (type == "CONVERTING") {
+      std::string content;
+      std::getline(iss, content);
 
-    picojson::value v;
-    picojson::parse(v, content);
+      views::Converting converting;
 
-    {
-      const picojson::array forms =
-          v.get<picojson::object>()["forms"].get<picojson::array>();
-      for (picojson::array::const_iterator it = forms.begin();
-           it != forms.end(); ++it) {
-        std::wstring form;
-        ToWString(it->get<std::string>(), &form);
-        converting.forms.push_back(form);
+      picojson::value v;
+      picojson::parse(v, content);
+
+      {
+        const picojson::array forms =
+            v.get<picojson::object>()["forms"].get<picojson::array>();
+        for (picojson::array::const_iterator it = forms.begin();
+             it != forms.end(); ++it) {
+          std::wstring form;
+          ToWString(it->get<std::string>(), &form);
+          converting.forms.push_back(form);
+        }
       }
-    }
 
-    converting.cursor_form_index = static_cast<size_t>(
-        v.get<picojson::object>()["cursor-form-index"].get<double>());
+      converting.cursor_form_index = static_cast<size_t>(
+          v.get<picojson::object>()["cursor-form-index"].get<double>());
 
-    {
-      const picojson::array candidates =
-          v.get<picojson::object>()["cursor-form"]
-              .get<picojson::object>()["candidates"]
-              .get<picojson::array>();
-      for (picojson::array::const_iterator it = candidates.begin();
-           it != candidates.end(); ++it) {
-        std::wstring str;
-        ToWString(it->get<std::string>(), &str);
-        converting.cursor_form_candidates.push_back(str);
+      {
+        const picojson::array candidates =
+            v.get<picojson::object>()["cursor-form"]
+                .get<picojson::object>()["candidates"]
+                .get<picojson::array>();
+        for (picojson::array::const_iterator it = candidates.begin();
+             it != candidates.end(); ++it) {
+          std::wstring str;
+          ToWString(it->get<std::string>(), &str);
+          converting.cursor_form_candidates.push_back(str);
+        }
       }
+
+      converting.cursor_form_candidate_index =
+          static_cast<size_t>(v.get<picojson::object>()["cursor-form"]
+                                  .get<picojson::object>()["candidate-index"]
+                                  .get<double>());
+
+      on_converting(converting);
+    } else if (type == "COMMITTED") {
+      std::string content;
+      std::getline(iss, content);
+
+      views::Committed committed;
+
+      picojson::value v;
+      picojson::parse(v, content);
+
+      const std::string char_input =
+          v.get<picojson::object>()["input"].get<std::string>();
+      ToWString(char_input, &committed.input);
+
+      on_committed(committed);
     }
-
-    converting.cursor_form_candidate_index =
-        static_cast<size_t>(v.get<picojson::object>()["cursor-form"]
-                                .get<picojson::object>()["candidate-index"]
-                                .get<double>());
-
-    on_converting(converting);
-  } else if (type == "COMMITTED") {
-    std::string content;
-    std::getline(iss, content);
-
-    views::Committed committed;
-
-    picojson::value v;
-    picojson::parse(v, content);
-
-    const std::string char_input =
-        v.get<picojson::object>()["input"].get<std::string>();
-    ToWString(char_input, &committed.input);
-
-    on_committed(committed);
   }
 
   return eaten;
 };
 
-StatefulIMProxy::StatefulIMProxy(Connection *conn) : conn_(conn) {}
+StatefulIMEProxy::StatefulIMEProxy(Connection *conn) : conn_(conn) {}
 
-StatefulIMProxy::~StatefulIMProxy() { conn_->Close(); }
+StatefulIMEProxy::~StatefulIMEProxy() { conn_->Close(); }
 
-StatefulIMProxy *
-StatefulIMProxy::CreateIPCPRoxy(const WCHAR *const named_pipe_path) {
+StatefulIMEProxy *
+StatefulIMEProxy::CreateIPCPRoxy(const WCHAR *const named_pipe_path) {
   HANDLE pipe = CreateFile(named_pipe_path, GENERIC_READ | GENERIC_WRITE, 0,
                            NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
   if (pipe == INVALID_HANDLE_VALUE) {
     return nullptr;
   }
-  return new StatefulIMProxy(new ConnectionIPC(pipe));
+  return new StatefulIMEProxy(new ConnectionIPC(pipe));
 }
 
-StatefulIMProxy *StatefulIMProxy::CreateTCPPRoxy(const std::string &host,
-                                                 const std::string &port) {
+StatefulIMEProxy *StatefulIMEProxy::CreateTCPPRoxy(const std::string &host,
+                                                   const std::string &port) {
   // https://docs.microsoft.com/ja-jp/windows/win32/winsock/complete-client-code
   struct addrinfo hint, *result = nullptr;
   ZeroMemory(&hint, sizeof(hint));
@@ -229,7 +281,7 @@ StatefulIMProxy *StatefulIMProxy::CreateTCPPRoxy(const std::string &host,
     if (connect(sock, p->ai_addr, static_cast<int>(p->ai_addrlen)) !=
         SOCKET_ERROR) {
       freeaddrinfo(result);
-      return new StatefulIMProxy(new ConnectionTCP(sock));
+      return new StatefulIMEProxy(new ConnectionTCP(sock));
     }
     closesocket(sock);
   }

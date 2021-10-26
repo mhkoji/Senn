@@ -46,16 +46,14 @@ private:
 
 class StatefulIMEProxy : public StatefulIME {
 public:
-  bool CanProcess(uint64_t) override;
-  
-  bool ProcessInput(uint64_t,
-                    std::function<void(const views::Editing &)>,
-                    std::function<void(const views::Converting &)>,
-                    std::function<void(const views::Committed &)>) override;
-
-
-
   ~StatefulIMEProxy() override;
+  virtual bool CanProcess(uint64_t) override;
+  virtual bool
+  ProcessInput(uint64_t, std::function<void(const views::Editing &)>,
+               std::function<void(const views::Converting &)>,
+               std::function<void(const views::Committed &)>) override;
+  virtual void ToggleInputMode() override;
+  virtual InputMode GetInputMode() override;
 
 private:
   StatefulIMEProxy(Connection *);
@@ -65,7 +63,7 @@ private:
 public:
   static StatefulIMEProxy *CreateIPCPRoxy(const WCHAR *const named_pipe_path);
   static StatefulIMEProxy *CreateTCPPRoxy(const std::string &host,
-                                         const std::string &port);
+                                          const std::string &port);
 };
 
 } // namespace ime

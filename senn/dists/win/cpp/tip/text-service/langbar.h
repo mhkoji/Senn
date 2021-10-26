@@ -2,7 +2,7 @@
 
 #include <msctf.h>
 
-#include "input_mode.h"
+#include "../ime/stateful_ime.h"
 #include <functional>
 #include <string>
 
@@ -26,12 +26,12 @@ class InputModeToggleButton : public ITfLangBarItemButton, public ITfSource {
 public:
   class View {
   public:
-    virtual InputMode input_mode() const = 0;
+    virtual void GetIcon(HICON *) const = 0;
   };
 
   class Handlers {
   public:
-    virtual void ToggleInputMode() = 0;
+    virtual void OnClickInputModelToggleButton() = 0;
   };
 
   InputModeToggleButton(CLSID, ULONG, View *, Handlers *);

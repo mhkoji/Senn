@@ -2,15 +2,14 @@
 #include <msctf.h>
 #include <string>
 
-#include "../../senn.h"
-#include "../../variable.h"
-#include "../object_releaser.h"
+#include "../senn.h"
+#include "../variable.h"
+#include "object_releaser.h"
 #include "candidate_ui_list.h"
 
 namespace senn {
 namespace senn_win {
 namespace text_service {
-namespace hiragana {
 
 HRESULT __stdcall CandidateListUI::QueryInterface(REFIID riid,
                                                   void **ppvObject) {
@@ -294,7 +293,6 @@ HRESULT __stdcall CandidateListUI::GetCurrentPage(UINT *puPage) {
   return S_OK;
 }
 
-} // namespace hiragana
 } // namespace text_service
 } // namespace senn_win
 } // namespace senn

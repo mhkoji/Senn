@@ -47,7 +47,7 @@ HRESULT __stdcall InputModeToggleButton::GetTooltipString(BSTR *pbstrToolTip) {
 
 HRESULT __stdcall InputModeToggleButton::OnClick(TfLBIClick click, POINT pt,
                                                  const RECT *prcArea) {
-  handlers_->ToggleInputMode();
+  handlers_->OnClickInputModelToggleButton();
   return S_OK;
 }
 
@@ -61,12 +61,7 @@ HRESULT __stdcall InputModeToggleButton::GetIcon(HICON *phIcon) {
   if (!phIcon) {
     return E_INVALIDARG;
   }
-  // Use a built-in icon for a while...
-  if (view_->input_mode() == InputMode::kDirect) {
-    *phIcon = LoadIcon(NULL, IDI_APPLICATION);
-  } else {
-    *phIcon = LoadIcon(NULL, IDI_ASTERISK);
-  }
+  view_->GetIcon(phIcon);
   return S_OK;
 }
 

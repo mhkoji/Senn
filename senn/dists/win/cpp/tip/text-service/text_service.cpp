@@ -1,177 +1,12 @@
 #include "text_service.h"
 #include "../ime/stateful_im_proxy.h"
-#include "hiragana/ui.h"
 #include "object_releaser.h"
+#include "ui.h"
 #include <cassert>
 
 namespace senn {
 namespace senn_win {
 namespace text_service {
-
-KeyEventHandler::KeyEventHandler(
-    langbar::InputModeToggleButton *toggle_button,
-    hiragana::HiraganaKeyEventHandler *hiragana_key_event_handler,
-    direct::DirectKeyEventHandler *direct_key_event_handler)
-    : input_mode_(InputMode::kDirect), input_mode_toggle_button_(toggle_button),
-      hiragana_key_event_handler_(hiragana_key_event_handler),
-      direct_key_event_handler_(direct_key_event_handler) {}
-
-KeyEventHandler::~KeyEventHandler() {
-  // Unload dll for TCP
-  WSACleanup();
-
-  if (hiragana_key_event_handler_ != nullptr) {
-    delete hiragana_key_event_handler_;
-  }
-
-  if (direct_key_event_handler_ != nullptr) {
-    delete direct_key_event_handler_;
-  }
-}
-
-KeyEventHandler *
-KeyEventHandler::Create(ITfThreadMgr *thread_mgr, TfClientId client_id,
-                        langbar::InputModeToggleButton *toggle_button,
-                        ITfCompositionSink *sink,
-                        TfGuidAtom editing_display_attribute_atom,
-                        hiragana::EditSessionConverting::DisplayAttributeAtoms
-                            *converting_display_attribute_atoms) {
-  // Load dll for TCP
-  WSADATA wsaData;
-  if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
-    return nullptr;
-  }
-
-  // Create a stateful IM to process user inputs of keys.
-  senn::senn_win::ime::StatefulIM *im =
-      //    senn::senn_win::ime::StatefulIMProxy::CreateTCPPRoxy("localhost",
-      //    "5678");
-      senn::senn_win::ime::StatefulIMProxy::CreateIPCPRoxy(kNamedPipePath);
-  if (im == nullptr) {
-    return nullptr;
-  }
-
-  hiragana::HiraganaKeyEventHandler *hiragana_key_event_handler =
-      new hiragana::HiraganaKeyEventHandler(thread_mgr, client_id, sink, im,
-                                            editing_display_attribute_atom,
-                                            converting_display_attribute_atoms);
-
-  direct::DirectKeyEventHandler *direct_key_event_handler =
-      new direct::DirectKeyEventHandler();
-
-  return new KeyEventHandler(toggle_button, hiragana_key_event_handler,
-                             direct_key_event_handler);
-}
-
-void KeyEventHandler::ToggleInputMode() {
-  if (input_mode_ == InputMode::kDirect) {
-    input_mode_ = InputMode::kHiragana;
-  } else {
-    input_mode_ = InputMode::kDirect;
-  }
-
-  input_mode_toggle_button_->item_sink()->OnUpdate(TF_LBI_ICON);
-}
-
-InputMode KeyEventHandler::GetInputMode() const { return input_mode_; }
-
-HRESULT KeyEventHandler::OnSetFocus(BOOL fForeground) {
-  switch (input_mode_) {
-  case senn::senn_win::text_service::kDirect:
-    return direct_key_event_handler_->OnSetFocus(fForeground);
-  case senn::senn_win::text_service::kHiragana:
-    return hiragana_key_event_handler_->OnSetFocus(fForeground);
-  default:
-    break;
-  }
-  return E_FAIL;
-}
-
-HRESULT KeyEventHandler::OnTestKeyDown(ITfContext *context, WPARAM wParam,
-                                       LPARAM lParam, BOOL *pfEaten) {
-  if (wParam == 0xF3 || wParam == 0xF4) {
-    // hankaku/zenkaku key
-    ToggleInputMode();
-    *pfEaten = false;
-    return S_OK;
-  }
-
-  switch (input_mode_) {
-  case senn::senn_win::text_service::kDirect:
-    return direct_key_event_handler_->OnTestKeyDown(context, wParam, lParam,
-                                                    pfEaten);
-  case senn::senn_win::text_service::kHiragana:
-    return hiragana_key_event_handler_->OnTestKeyDown(context, wParam, lParam,
-                                                      pfEaten);
-  default:
-    break;
-  }
-  return E_FAIL;
-}
-
-HRESULT KeyEventHandler::OnKeyDown(ITfContext *context, WPARAM wParam,
-                                   LPARAM lParam, BOOL *pfEaten) {
-  if (wParam == 0xF3 || wParam == 0xF4) {
-    // hankaku/zenkaku key
-    ToggleInputMode();
-    *pfEaten = false;
-    return S_OK;
-  }
-
-  switch (input_mode_) {
-  case senn::senn_win::text_service::kDirect:
-    return direct_key_event_handler_->OnKeyDown(context, wParam, lParam,
-                                                pfEaten);
-  case senn::senn_win::text_service::kHiragana:
-    return hiragana_key_event_handler_->OnKeyDown(context, wParam, lParam,
-                                                  pfEaten);
-  default:
-    break;
-  }
-  return E_FAIL;
-}
-
-HRESULT KeyEventHandler::OnTestKeyUp(ITfContext *context, WPARAM wParam,
-                                     LPARAM lParam, BOOL *pfEaten) {
-  switch (input_mode_) {
-  case senn::senn_win::text_service::kDirect:
-    return direct_key_event_handler_->OnTestKeyUp(context, wParam, lParam,
-                                                  pfEaten);
-  case senn::senn_win::text_service::kHiragana:
-    return hiragana_key_event_handler_->OnTestKeyUp(context, wParam, lParam,
-                                                    pfEaten);
-  default:
-    break;
-  }
-  return E_FAIL;
-}
-
-HRESULT KeyEventHandler::OnKeyUp(ITfContext *context, WPARAM wParam,
-                                 LPARAM lParam, BOOL *pfEaten) {
-  switch (input_mode_) {
-  case senn::senn_win::text_service::kDirect:
-    return direct_key_event_handler_->OnKeyUp(context, wParam, lParam, pfEaten);
-  case senn::senn_win::text_service::kHiragana:
-    return hiragana_key_event_handler_->OnKeyUp(context, wParam, lParam,
-                                                pfEaten);
-  default:
-    break;
-  }
-  return E_FAIL;
-}
-
-HRESULT KeyEventHandler::OnPreservedKey(ITfContext *context, REFGUID rguid,
-                                        BOOL *pfEaten) {
-  switch (input_mode_) {
-  case senn::senn_win::text_service::kDirect:
-    return direct_key_event_handler_->OnPreservedKey(context, rguid, pfEaten);
-  case senn::senn_win::text_service::kHiragana:
-    return hiragana_key_event_handler_->OnPreservedKey(context, rguid, pfEaten);
-  default:
-    break;
-  }
-  return E_FAIL;
-}
 
 // ITfTextInputProcessor
 
@@ -192,22 +27,6 @@ HRESULT TextService::ActivateInternal(ITfThreadMgr *thread_mgr,
 
   HRESULT result;
 
-  // Add language bar items.
-  {
-    ITfLangBarItemMgr *lang_bar_item_mgr;
-    if (thread_mgr->QueryInterface(IID_ITfLangBarItemMgr,
-                                   (void **)&lang_bar_item_mgr) != S_OK) {
-      return E_FAIL;
-    }
-    input_mode_toggle_button_ = new langbar::InputModeToggleButton(
-        clsid_text_service_, 0,
-        static_cast<langbar::InputModeToggleButton::View *>(this),
-        static_cast<langbar::InputModeToggleButton::Handlers *>(this));
-    lang_bar_item_mgr->AddItem(input_mode_toggle_button_);
-
-    lang_bar_item_mgr->Release();
-  }
-
   // Register guids for display attribute to decorate composing texts.
   {
     ITfCategoryMgr *category_mgr;
@@ -223,11 +42,10 @@ HRESULT TextService::ActivateInternal(ITfThreadMgr *thread_mgr,
       const GUID &guid;
       TfGuidAtom *output;
     } settings[] = {
-        {hiragana::ui::editing::kDisplayAttributeGuid,
-         &editing_display_attribute_atom_},
-        {hiragana::ui::converting::non_focused::kDisplayAttributeGuid,
+        {ui::editing::kDisplayAttributeGuid, &editing_display_attribute_atom_},
+        {ui::converting::non_focused::kDisplayAttributeGuid,
          &converting_display_attribute_atoms_.non_focused},
-        {hiragana::ui::converting::focused::kDisplayAttributeGuid,
+        {ui::converting::focused::kDisplayAttributeGuid,
          &converting_display_attribute_atoms_.focused}};
 
     for (size_t i = 0; i < ARRAYSIZE(settings); i++) {
@@ -239,12 +57,25 @@ HRESULT TextService::ActivateInternal(ITfThreadMgr *thread_mgr,
   }
 
   // Create a key event handle that processes user keyboard inputs
-  key_event_handler_ = KeyEventHandler::Create(
-      thread_mgr_, client_id_, input_mode_toggle_button_,
-      static_cast<ITfCompositionSink *>(this), editing_display_attribute_atom_,
-      &converting_display_attribute_atoms_);
-  if (key_event_handler_ == nullptr) {
-    return E_FAIL;
+  {
+    // Load dll for TCP
+    WSADATA wsaData;
+    if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
+      return E_FAIL;
+    }
+
+    // Create a stateful IM to process user inputs of keys.
+    ime_ = senn::senn_win::ime::StatefulIMEProxy::CreateTCPPRoxy("localhost",
+                                                                 "5678");
+    // senn::senn_win::ime::StatefulIMEProxy::CreateIPCPRoxy(kNamedPipePath);
+    if (ime_ == nullptr) {
+      return E_FAIL;
+    }
+
+    key_event_handler_ = new KeyEventHandler(
+        thread_mgr_, client_id_, static_cast<ITfCompositionSink *>(this), ime_,
+        editing_display_attribute_atom_, &converting_display_attribute_atoms_,
+        static_cast<KeyEventHandler::Handlers *>(this));
   }
 
   // Advice key event sink to receive key input notifications.
@@ -266,6 +97,22 @@ HRESULT TextService::ActivateInternal(ITfThreadMgr *thread_mgr,
     if (FAILED(result)) {
       return result;
     }
+  }
+
+  // Add language bar items.
+  {
+    ITfLangBarItemMgr *lang_bar_item_mgr;
+    if (thread_mgr->QueryInterface(IID_ITfLangBarItemMgr,
+                                   (void **)&lang_bar_item_mgr) != S_OK) {
+      return E_FAIL;
+    }
+    input_mode_toggle_button_ = new langbar::InputModeToggleButton(
+        clsid_text_service_, 0,
+        static_cast<langbar::InputModeToggleButton::View *>(this),
+        static_cast<langbar::InputModeToggleButton::Handlers *>(this));
+    lang_bar_item_mgr->AddItem(input_mode_toggle_button_);
+
+    lang_bar_item_mgr->Release();
   }
 
   return S_OK;
@@ -306,6 +153,13 @@ HRESULT TextService::Deactivate() {
     delete key_event_handler_;
   }
 
+  if (ime_ != nullptr) {
+    delete ime_;
+  }
+
+  // Unload dll for TCP
+  WSACleanup();
+
   thread_mgr_->Release();
   thread_mgr_ = nullptr;
   return S_OK;
@@ -318,7 +172,7 @@ HRESULT __stdcall TextService::EnumDisplayAttributeInfo(
   if (attribute_info == nullptr) {
     return E_INVALIDARG;
   }
-  *attribute_info = new hiragana::ui::EnumDisplayAttributeInfo();
+  *attribute_info = new ui::EnumDisplayAttributeInfo();
   return S_OK;
 }
 
@@ -327,8 +181,8 @@ HRESULT __stdcall TextService::GetDisplayAttributeInfo(
   if (attribute == nullptr) {
     return E_INVALIDARG;
   }
-  if (IsEqualGUID(guid, hiragana::ui::editing::kDisplayAttributeGuid)) {
-    *attribute = new hiragana::ui::editing::DisplayAttributeInfo();
+  if (IsEqualGUID(guid, ui::editing::kDisplayAttributeGuid)) {
+    *attribute = new ui::editing::DisplayAttributeInfo();
   } else {
     *attribute = nullptr;
     return E_INVALIDARG;
@@ -379,15 +233,27 @@ HRESULT __stdcall TextService::OnPreservedKey(ITfContext *context,
 }
 
 // langbar::InputModeToggleButton::State
-InputMode TextService::input_mode() const {
-  assert(key_event_handler_ != nullptr);
-  return key_event_handler_->GetInputMode();
+void TextService::GetIcon(HICON *phIcon) const {
+  assert(ime_ != nullptr);
+  senn::senn_win::ime::InputMode mode = ime_->GetInputMode();
+
+  // Use a built-in icon for a while...
+  if (mode == senn::senn_win::ime::InputMode::kDirect) {
+    *phIcon = LoadIcon(NULL, IDI_APPLICATION);
+  } else {
+    *phIcon = LoadIcon(NULL, IDI_ASTERISK);
+  }
 }
 
 // langbar::InputModeToggleButton::Handlers
+void TextService::OnClickInputModelToggleButton() { ToggleInputMode(); }
+
+void TextService::OnToggleInputMode() { ToggleInputMode(); }
+
 void TextService::ToggleInputMode() {
-  assert(key_event_handler_ != nullptr);
-  key_event_handler_->ToggleInputMode();
+  assert(ime_ != nullptr);
+  ime_->ToggleInputMode();
+  input_mode_toggle_button_->item_sink()->OnUpdate(TF_LBI_ICON);
 }
 
 } // namespace text_service

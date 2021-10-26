@@ -3,13 +3,12 @@
 #include <msctf.h>
 #include <string>
 
-#include "../../ime/stateful_im.h"
+#include "../ime/stateful_ime.h"
 #include "candidate_ui_list.h"
 
 namespace senn {
 namespace senn_win {
 namespace text_service {
-namespace hiragana {
 
 class CompositionHolder {
 public:
@@ -178,13 +177,18 @@ private:
   UINT current_index_ = 0;
 };
 
-class HiraganaKeyEventHandler : public CandidateListUI::Handlers {
+class KeyEventHandler : public CandidateListUI::Handlers {
 public:
-  HiraganaKeyEventHandler(ITfThreadMgr *, TfClientId, ITfCompositionSink *,
-                          ::senn::senn_win::ime::StatefulIM *, TfGuidAtom,
-                          EditSessionConverting::DisplayAttributeAtoms *);
+  class Handlers {
+  public:
+    virtual void OnToggleInputMode() = 0;
+  };
 
-  ~HiraganaKeyEventHandler();
+  KeyEventHandler(ITfThreadMgr *, TfClientId, ITfCompositionSink *,
+                  senn::senn_win::ime::StatefulIME *, TfGuidAtom,
+                  EditSessionConverting::DisplayAttributeAtoms *, Handlers *);
+
+  ~KeyEventHandler();
 
   HRESULT OnSetFocus(BOOL fForeground);
   HRESULT OnTestKeyDown(ITfContext *pic, WPARAM wParam, LPARAM lParam,
@@ -213,7 +217,7 @@ private:
   ITfCompositionSink *composition_sink_;
 
   // The input method that manages the states.
-  ::senn::senn_win::ime::StatefulIM *stateful_im_;
+  senn::senn_win::ime::StatefulIME *ime_;
 
   CompositionHolder composition_holder_;
 
@@ -224,12 +228,13 @@ private:
   const EditSessionConverting::DisplayAttributeAtoms
       *converting_display_attribute_atoms_;
 
+  Handlers *handlers_;
+
   CandidateListState *candidate_list_state_;
 
   CandidateListUI *candidate_list_ui_;
 };
 
-} // namespace hiragana
 } // namespace text_service
 } // namespace senn_win
 } // namespace senn

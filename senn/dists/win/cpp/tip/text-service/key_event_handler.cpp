@@ -1,12 +1,11 @@
-#include "hiragana.h"
-#include "../object_releaser.h"
+#include "key_event_handler.h"
 #include "candidate_window.h"
+#include "object_releaser.h"
 #include "ui.h"
 
 namespace senn {
 namespace senn_win {
 namespace text_service {
-namespace hiragana {
 
 EditSessionEditing::EditSessionEditing(
     const senn::senn_win::ime::views::Editing &view, ITfContext *context,
@@ -202,16 +201,18 @@ HRESULT __stdcall MoveCandidateWindowToTextPositionEditSession::DoEditSession(
   return S_OK;
 }
 
-HiraganaKeyEventHandler::HiraganaKeyEventHandler(
+KeyEventHandler::KeyEventHandler(
     ITfThreadMgr *thread_mgr, TfClientId id, ITfCompositionSink *sink,
-    ::senn::senn_win::ime::StatefulIM *im, TfGuidAtom atom_editing,
-    EditSessionConverting::DisplayAttributeAtoms *atoms_converting)
+    senn::senn_win::ime::StatefulIME *ime, TfGuidAtom atom_editing,
+    EditSessionConverting::DisplayAttributeAtoms *atoms_converting,
+    Handlers *handlers)
     : thread_mgr_(thread_mgr), client_id_(id), composition_sink_(sink),
-      stateful_im_(im), editing_display_attribute_atom_(atom_editing),
+      ime_(ime), editing_display_attribute_atom_(atom_editing),
       converting_display_attribute_atoms_(atoms_converting),
-      candidate_list_state_(nullptr), candidate_list_ui_(nullptr) {}
+      handlers_(handlers), candidate_list_state_(nullptr),
+      candidate_list_ui_(nullptr) {}
 
-HiraganaKeyEventHandler::~HiraganaKeyEventHandler() {
+KeyEventHandler::~KeyEventHandler() {
   if (candidate_list_state_) {
     delete candidate_list_state_;
   }
@@ -220,12 +221,10 @@ HiraganaKeyEventHandler::~HiraganaKeyEventHandler() {
     candidate_list_ui_->DestroyUI();
     delete candidate_list_ui_;
   }
-
-  delete stateful_im_;
 }
 
-HRESULT HiraganaKeyEventHandler::OnLayoutChange(ITfContext *pic,
-                                                ITfContextView *pView) {
+HRESULT KeyEventHandler::OnLayoutChange(ITfContext *pic,
+                                        ITfContextView *pView) {
   ITfComposition *composition = composition_holder_.Get();
   if (!composition) {
     // Can't do anything...
@@ -241,16 +240,22 @@ HRESULT HiraganaKeyEventHandler::OnLayoutChange(ITfContext *pic,
                                  TF_ES_SYNC | TF_ES_READ, &hr);
 }
 
-HRESULT HiraganaKeyEventHandler::OnSetFocus(BOOL fForeground) { return S_OK; }
+HRESULT KeyEventHandler::OnSetFocus(BOOL fForeground) { return S_OK; }
 
-HRESULT HiraganaKeyEventHandler::OnTestKeyDown(ITfContext *context,
-                                               WPARAM wParam, LPARAM lParam,
-                                               BOOL *pfEaten) {
-  *pfEaten = stateful_im_->CanProcess(wParam);
+HRESULT KeyEventHandler::OnTestKeyDown(ITfContext *context, WPARAM wParam,
+                                       LPARAM lParam, BOOL *pfEaten) {
+  if (wParam == 0xF3 || wParam == 0xF4) {
+    // hankaku/zenkaku key
+    handlers_->OnToggleInputMode();
+    *pfEaten = false;
+    return S_OK;
+  }
+
+  *pfEaten = ime_->CanProcess(wParam);
   return S_OK;
 }
 
-bool HiraganaKeyEventHandler::HandleIMEView(
+bool KeyEventHandler::HandleIMEView(
     ITfContext *context, const senn::senn_win::ime::views::Editing &view) {
   ITfEditSession *edit_session =
       new EditSessionEditing(view, context, editing_display_attribute_atom_,
@@ -263,7 +268,7 @@ bool HiraganaKeyEventHandler::HandleIMEView(
                                      &result) == S_OK;
 }
 
-bool HiraganaKeyEventHandler::HandleIMEView(
+bool KeyEventHandler::HandleIMEView(
     ITfContext *context, const senn::senn_win::ime::views::Converting &view) {
   ITfEditSession *edit_session = new EditSessionConverting(
       thread_mgr_, view, context, converting_display_attribute_atoms_,
@@ -291,7 +296,7 @@ bool HiraganaKeyEventHandler::HandleIMEView(
   return true;
 }
 
-bool HiraganaKeyEventHandler::HandleIMEView(
+bool KeyEventHandler::HandleIMEView(
     ITfContext *context, const senn::senn_win::ime::views::Committed &view) {
   if (candidate_list_ui_) {
     delete candidate_list_state_;
@@ -312,10 +317,10 @@ bool HiraganaKeyEventHandler::HandleIMEView(
                                      &result) == S_OK;
 }
 
-HRESULT HiraganaKeyEventHandler::OnKeyDown(ITfContext *context, WPARAM wParam,
-                                           LPARAM lParam, BOOL *pfEaten) {
-  bool success = false;
-  *pfEaten = stateful_im_->ProcessInput(
+HRESULT KeyEventHandler::OnKeyDown(ITfContext *context, WPARAM wParam,
+                                   LPARAM lParam, BOOL *pfEaten) {
+  bool success = true;
+  *pfEaten = ime_->ProcessInput(
       wParam,
       [&](const senn::senn_win::ime::views::Editing &view) {
         success = HandleIMEView(context, view);
@@ -329,20 +334,20 @@ HRESULT HiraganaKeyEventHandler::OnKeyDown(ITfContext *context, WPARAM wParam,
   return success ? S_OK : E_FAIL;
 }
 
-HRESULT HiraganaKeyEventHandler::OnTestKeyUp(ITfContext *context, WPARAM wParam,
-                                             LPARAM lParam, BOOL *pfEaten) {
+HRESULT KeyEventHandler::OnTestKeyUp(ITfContext *context, WPARAM wParam,
+                                     LPARAM lParam, BOOL *pfEaten) {
   *pfEaten = false;
   return S_OK;
 }
 
-HRESULT HiraganaKeyEventHandler::OnKeyUp(ITfContext *context, WPARAM wParam,
-                                         LPARAM lParam, BOOL *pfEaten) {
+HRESULT KeyEventHandler::OnKeyUp(ITfContext *context, WPARAM wParam,
+                                 LPARAM lParam, BOOL *pfEaten) {
   *pfEaten = false;
   return S_OK;
 }
 
-HRESULT HiraganaKeyEventHandler::OnPreservedKey(ITfContext *context,
-                                                REFGUID rguid, BOOL *pfEaten) {
+HRESULT KeyEventHandler::OnPreservedKey(ITfContext *context, REFGUID rguid,
+                                        BOOL *pfEaten) {
   *pfEaten = false;
   return S_OK;
 }
@@ -383,7 +388,6 @@ void CandidateListState::Update(
   }
 }
 
-} // namespace hiragana
 } // namespace text_service
 } // namespace senn_win
 } // namespace senn
