@@ -72,6 +72,25 @@
   (list state mode can-process view))
 
 (defmethod process-input ((ime senn.im:ime)
+                          (s editing)
+                          (mode (eql :direct))
+                          (key senn.win.keys:key))
+  (result s mode t (editing-view s)))
+
+(defmethod process-input ((ime senn.im:ime)
+                          (s converting)
+                          (mode (eql :direct))
+                          (key senn.win.keys:key))
+  (result s mode t (converting-view s)))
+
+(defmethod process-input ((ime senn.im:ime)
+                          (s t)
+                          (mode (eql :direct))
+                          (key senn.win.keys:key))
+  (result s mode nil nil))
+
+
+(defmethod process-input ((ime senn.im:ime)
                           (s converting)
                           (mode (eql :hiragana))
                           (key senn.win.keys:key))
@@ -98,7 +117,7 @@
          (result s mode t (converting-view s)))
 
         (t
-         (result s mode nil (converting-view s)))))
+         (result s mode nil nil))))
 
 
 (defmethod process-input ((ime senn.im:ime)
@@ -145,4 +164,4 @@
              (result editing mode t view))))
 
         (t
-         (result s mode nil (editing-view s)))))
+         (result s mode nil nil))))

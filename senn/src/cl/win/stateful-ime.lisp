@@ -18,11 +18,12 @@
 (defun make-im (ime)
   (make-stateful-ime
    :ime ime
-   :state (make-state :input-mode :hiragana
-                      :input-state (senn.win.ime:make-editing))))
+   :state (make-state
+           :input-mode :direct
+           :input-state nil)))
 
 (defun get-input-mode (stateful-ime)
-  (format nil "~A%" (state-input-mode (stateful-ime-state stateful-ime))))
+  (format nil "~A~%" (state-input-mode (stateful-ime-state stateful-ime))))
 
 (defun toggle-input-mode (stateful-ime)
   (with-accessors ((state stateful-ime-state)) stateful-ime
@@ -34,7 +35,9 @@
          (setf input-state nil))
         (:direct
          (setf input-mode :hiragana)
-         (setf input-state (senn.win.ime:make-editing)))))))
+         (setf input-state (senn.win.ime:make-editing))))))
+  ;; It seems to need to consume output buffer..
+  (format nil "OK~%"))
 
 (defun can-process (stateful-ime key)
   (with-accessors ((ime stateful-ime-ime)
@@ -54,4 +57,6 @@
           (senn.win.ime:process-input ime input-state input-mode key)
         (setf input-mode new-input-mode)
         (setf input-state new-input-state)
-        (format nil "~A ~A~%" (if can-process 1 0) view)))))
+        (format nil "~A ~A~%"
+                (if can-process 1 0)
+                (if (and can-process view) view ""))))))

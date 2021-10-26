@@ -5,6 +5,24 @@
 (defgeneric can-process (ime state mode key))
 
 (defmethod can-process ((ime senn.im:ime)
+                        (s editing)
+                        (mode (eql :direct))
+                        (key senn.win.keys:key))
+  t)
+
+(defmethod can-process ((ime senn.im:ime)
+                        (s converting)
+                        (mode (eql :direct))
+                        (key senn.win.keys:key))
+  t)
+
+(defmethod can-process ((ime senn.im:ime)
+                        (s t)
+                        (mode (eql :direct))
+                        (key senn.win.keys:key))
+  nil)
+
+(defmethod can-process ((ime senn.im:ime)
                         (s converting)
                         (mode (eql :hiragana))
                         (key senn.win.keys:key))
