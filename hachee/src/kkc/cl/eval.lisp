@@ -34,7 +34,7 @@
   (ensure-directories-exist out-file)
   (with-open-file (out out-file :direction :output)
     (loop for pron in pron-list while pron do
-      (let ((entries (hachee.kkc:convert kkc pron)))
+      (let ((entries (hachee.kkc.convert:execute kkc pron)))
         (format out "~A~%"
                 (apply #'concatenate 'string
                        (mapcar (lambda (e)

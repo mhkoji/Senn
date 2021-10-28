@@ -1,10 +1,9 @@
 (defpackage :hachee.kkc.profile
   (:use :cl)
-  (:import-from :hachee.kkc
-                :profile))
+  (:export :execute))
 (in-package :hachee.kkc.profile)
 
-(defun profile (kkc)
+(defun execute (kkc)
   (sb-profile:profile . #.(mapcar #'string
                                   (list :cl
                                         :hachee.kkc
@@ -16,7 +15,7 @@
                                         :hachee.language-mdoel.vocabulary
                                         :hachee.language-model.freq
                                         :hachee.language-model.n-gram)))
-  (hachee.kkc:convert kkc "あおぞらぶんこ")
-  (hachee.kkc:convert kkc "とうきょうにいきました")
-  (hachee.kkc:convert kkc "きょうはいいてんきですね")
+  (hachee.kkc.convert:execute kkc "あおぞらぶんこ")
+  (hachee.kkc.convert:execute kkc "とうきょうにいきました")
+  (hachee.kkc.convert:execute kkc "きょうはいいてんきですね")
   (sb-profile:report))

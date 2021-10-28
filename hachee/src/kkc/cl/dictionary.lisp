@@ -21,6 +21,7 @@
            :contains-p))
 (in-package :hachee.kkc.dictionary)
 
+;; word-pron pair model
 ;; unit = form/pron
 (defun make-unit (&key form pron)
   (concatenate 'string form "/" pron))

@@ -3,7 +3,11 @@
   (:export :execute
            :item-unit
            :item-form
-           :item-origin))
+           :item-origin
+
+           :lookupper-score-fn
+           :lookupper-word-dictionary
+           :lookupper-char-dictionary))
 (in-package :hachee.kkc.lookup)
 
 (defstruct item unit origin)
@@ -11,7 +15,7 @@
 (defun item-form (item)
   (hachee.kkc.dictionary:unit-form (item-unit item)))
 
-(defun execute (pronunciation &key score-fn word-dict char-dict)
+(defun execute-internal (pronunciation &key score-fn word-dict char-dict)
   (let ((result-items nil))
     (labels ((push-items (dictionary-entries)
                (dolist (dictionary-entry dictionary-entries)
@@ -32,3 +36,15 @@
     ;; => w_t, ..., w_1, ch_s, ..., ch_1
     ;; We don't care about the order of the chars ch_1, ..., ch_s.
     (nreverse result-items)))
+
+(defgeneric lookupper-score-fn (lookupper prev next))
+(defgeneric lookupper-word-dictionary (lookupper))
+(defgeneric lookupper-char-dictionary (lookupper))
+
+(defun execute (kkc pronunciation &key prev next)
+  (execute-internal pronunciation
+   :score-fn (when (and next prev)
+               (lookupper-score-fn kkc prev next))
+   :word-dict (lookupper-word-dictionary kkc)
+   :char-dict (lookupper-char-dictionary kkc)))
+

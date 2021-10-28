@@ -20,8 +20,9 @@
                     :origin (hachee.kkc.convert:entry-origin e)))
              :has-more-candidates-p t
              :current-index 0))
-          (hachee.kkc:convert (kkc-mixin-kkc ime) pron
-                              :1st-boundary-index 1st-boundary-index)))
+          (hachee.kkc.convert:execute
+           (kkc-mixin-kkc ime) pron
+           :1st-boundary-index 1st-boundary-index)))
 
 (defmethod senn.im:lookup ((ime kkc-mixin) (pron string)
                            &key prev next)
@@ -29,9 +30,9 @@
             (senn.segment:make-candidate
              :form (hachee.kkc.lookup:item-form item)
              :origin (hachee.kkc.lookup:item-origin item)))
-          (hachee.kkc:lookup (kkc-mixin-kkc ime) pron
-                             :prev prev
-                             :next next)))
+          (hachee.kkc.lookup:execute
+           (kkc-mixin-kkc ime) pron
+           :prev prev :next next)))
 
 (defun load-user-kkc (senn-homedir-pathname)
   (when senn-homedir-pathname

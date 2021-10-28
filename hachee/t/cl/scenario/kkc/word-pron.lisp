@@ -12,12 +12,13 @@
      (,test
       (equal (mapcar #'hachee.kkc.dictionary:unit->key
                      (mapcar #'hachee.kkc.convert:entry-unit
-                             (hachee.kkc:convert kkc "わたくしのせんせい")))
+                             (hachee.kkc.convert:execute
+                              kkc "わたくしのせんせい")))
              (list "私/わたくし" "の/の" "先生/せんせい")))
      (,test
       (equal (mapcar #'hachee.kkc.dictionary:unit->key
                      (mapcar #'hachee.kkc.convert:entry-unit
-                             (hachee.kkc:convert
+                             (hachee.kkc.convert:execute
                               kkc "おとといとうきょうまでうかがいました")))
              (list "おととい/おととい" "東京/とうきょう" "まで/まで"
                    "伺/うかが" "い/い" "ま/ま" "し/し" "た/た")))))
