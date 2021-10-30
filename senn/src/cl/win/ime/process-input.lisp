@@ -1,5 +1,6 @@
 (defpackage :senn.win.ime.process-input
-  (:use :cl :senn.win.ime))
+  (:use :cl :senn.win.ime)
+  (:export :execute))
 (in-package :senn.win.ime.process-input)
 
 (defvar +crlf+
@@ -66,34 +67,34 @@
 
 ;;; interface
 
-(defgeneric process-input (ime state mode key))
+(defgeneric execute (ime state mode key))
 
 (defun result (state mode can-process view)
   (list state mode can-process view))
 
-(defmethod process-input ((ime senn.im:ime)
-                          (s editing)
-                          (mode (eql :direct))
-                          (key senn.win.keys:key))
+(defmethod execute ((ime senn.im:ime)
+                    (s editing)
+                    (mode (eql :direct))
+                    (key senn.win.keys:key))
   (result s mode t (editing-view s)))
 
-(defmethod process-input ((ime senn.im:ime)
-                          (s converting)
-                          (mode (eql :direct))
-                          (key senn.win.keys:key))
+(defmethod execute ((ime senn.im:ime)
+                    (s converting)
+                    (mode (eql :direct))
+                    (key senn.win.keys:key))
   (result s mode t (converting-view s)))
 
-(defmethod process-input ((ime senn.im:ime)
-                          (s t)
-                          (mode (eql :direct))
-                          (key senn.win.keys:key))
+(defmethod execute ((ime senn.im:ime)
+                    (s t)
+                    (mode (eql :direct))
+                    (key senn.win.keys:key))
   (result s mode nil nil))
 
 
-(defmethod process-input ((ime senn.im:ime)
-                          (s converting)
-                          (mode (eql :hiragana))
-                          (key senn.win.keys:key))
+(defmethod execute ((ime senn.im:ime)
+                    (s converting)
+                    (mode (eql :hiragana))
+                    (key senn.win.keys:key))
   (cond ((senn.win.keys:enter-p key)
          (let ((new-s (make-editing))
                (view (committed-view (converting-current-input s))))
@@ -124,10 +125,10 @@
   (with-accessors ((buffer editing-buffer)) state
     (setf buffer (senn.buffer:insert-char buffer char))))
 
-(defmethod process-input ((ime senn.im:ime)
-                          (s editing)
-                          (mode (eql :hiragana))
-                          (key senn.win.keys:key))
+(defmethod execute ((ime senn.im:ime)
+                    (s editing)
+                    (mode (eql :hiragana))
+                    (key senn.win.keys:key))
   (cond ((senn.win.keys:oem-minus-p key)
          (editing-insert-char
           s (if (senn.win.keys:key-shift-p key) #\＝ #\ー))

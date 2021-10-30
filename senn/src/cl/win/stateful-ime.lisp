@@ -44,7 +44,7 @@
                    (state stateful-ime-state)) stateful-ime
     (with-accessors ((input-mode state-input-mode)
                      (input-state state-input-state)) state
-      (let ((can-process (senn.win.ime:can-process
+      (let ((can-process (senn.win.ime.can-process:execute
                           ime input-state input-mode key)))
         (format nil "~A~%" (if can-process 1 0))))))
 
@@ -54,7 +54,7 @@
     (with-accessors ((input-mode state-input-mode)
                      (input-state state-input-state)) state
       (destructuring-bind (new-input-state new-input-mode can-process view)
-          (senn.win.ime:process-input ime input-state input-mode key)
+          (senn.win.ime.process-input:execute ime input-state input-mode key)
         (setf input-mode new-input-mode)
         (setf input-state new-input-state)
         (format nil "~A ~A~%"

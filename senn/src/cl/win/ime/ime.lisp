@@ -8,10 +8,7 @@
            :converting
            :converting-segments
            :converting-pronunciation
-           :converting-current-segment-index
-
-           :process-input
-           :can-process))
+           :converting-current-segment-index))
 (in-package :senn.win.ime)
 
 ;;; state
