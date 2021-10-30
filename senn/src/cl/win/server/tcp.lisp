@@ -15,17 +15,13 @@
 (defmethod senn.win.server:read-request ((client client))
   (let ((stream (usocket:socket-stream (client-usocket client))))
     (when-let ((line (read-line stream nil nil nil)))
+      (log/info client "Read: ~A" line)
       (hachee.ipc.op:as-expr line))))
 
 (defmethod senn.win.server:send-response ((client client) resp)
   (let ((stream (usocket:socket-stream (client-usocket client))))
     (write-line resp stream)
     (force-output stream)))
-
-(defmethod senn.win.server:read-request :around ((client client))
-  (let ((req (call-next-method)))
-    (log/info client "Read: ~A" req)
-    req))
 
 (defmethod senn.win.server:send-response :after ((client client) resp)
   (log/info client "Written: ~A" resp))

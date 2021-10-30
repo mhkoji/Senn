@@ -129,51 +129,78 @@
                           (mode (eql :hiragana))
                           (key senn.win.keys:key))
   (cond ((senn.win.keys:oem-minus-p key)
-         (editing-insert-char s #\ー)
+         (editing-insert-char
+          s (if (senn.win.keys:key-shift-p key) #\＝ #\ー))
          (result s mode t (editing-view s)))
         ((senn.win.keys:oem-7-p key)
-         (editing-insert-char s #\＾)
+         (editing-insert-char
+          s (if (senn.win.keys:key-shift-p key) #\〜  #\＾))
          (result s mode t (editing-view s)))
         ((senn.win.keys:oem-5-p key)
-         (editing-insert-char s #\￥)
+         (editing-insert-char
+          s (if (senn.win.keys:key-shift-p key) #\｜ #\￥))
          (result s mode t (editing-view s)))
         ((senn.win.keys:oem-3-p key)
-         (editing-insert-char s #\＠)
+         (editing-insert-char
+          s (if (senn.win.keys:key-shift-p key) #\｀ #\＠))
          (result s mode t (editing-view s)))
         ((senn.win.keys:oem-4-p key)
-         (editing-insert-char s #\「)
+         (editing-insert-char
+          s (if (senn.win.keys:key-shift-p key) #\｛ #\「))
          (result s mode t (editing-view s)))
         ((senn.win.keys:oem-plus-p key)
-         (editing-insert-char s #\；)
+         (editing-insert-char
+          s (if (senn.win.keys:key-shift-p key) #\＋ #\；))
          (result s mode t (editing-view s)))
         ((senn.win.keys:oem-1-p key)
-         (editing-insert-char s #\：)
+         (editing-insert-char
+          s (if (senn.win.keys:key-shift-p key) #\＊ #\：))
          (result s mode t (editing-view s)))
         ((senn.win.keys:oem-6-p key)
-         (editing-insert-char s #\」)
+         (editing-insert-char
+          s (if (senn.win.keys:key-shift-p key) #\｝ #\」))
          (result s mode t (editing-view s)))
         ((senn.win.keys:oem-comma-p key)
-         (editing-insert-char s #\、)
+         (editing-insert-char
+          s (if (senn.win.keys:key-shift-p key) #\＜ #\、))
          (result s mode t (editing-view s)))
         ((senn.win.keys:oem-period-p key)
-         (editing-insert-char s #\。)
+         (editing-insert-char
+          s (if (senn.win.keys:key-shift-p key) #\＞ #\。))
          (result s mode t (editing-view s)))
         ((senn.win.keys:oem-2-p key)
-         (editing-insert-char s #\・)
+         (editing-insert-char
+          s (if (senn.win.keys:key-shift-p key) #\？ #\・))
          (result s mode t (editing-view s)))
         ((senn.win.keys:oem-102-p key)
-         (editing-insert-char s #\￥)
+         (editing-insert-char
+          s (if (senn.win.keys:key-shift-p key) #\＿ #\￥))
          (result s mode t (editing-view s)))
+
         ((senn.win.keys:number-p key)
-         (let ((zenkaku-number-char
-                (code-char (+ #xFEE0 (senn.win.keys:key-code key)))))
-           (editing-insert-char s zenkaku-number-char))
+         (editing-insert-char
+          s (let ((code (senn.win.keys:key-code key)))
+              (if (senn.win.keys:key-shift-p key)
+                  (cond ((= code (char-code #\0)) #\〜)
+                        ((= code (char-code #\1)) #\！)
+                        ((= code (char-code #\2))
+                         #\RIGHT_DOUBLE_QUOTATION_MARK)
+                        ((= code (char-code #\3)) #\＃)
+                        ((= code (char-code #\4)) #\＄)
+                        ((= code (char-code #\5)) #\％)
+                        ((= code (char-code #\6)) #\＆)
+                        ((= code (char-code #\7))
+                         #\RIGHT_SINGLE_QUOTATION_MARK)
+                        ((= code (char-code #\8)) #\（)
+                        ((= code (char-code #\9)) #\）)
+                        (t (code-char (+ #xFEE0 code))))
+                  (code-char (+ #xFEE0 code)))))
          (result s mode t (editing-view s)))
+
         ((senn.win.keys:alphabet-p key)
-         (let ((lower-case-char
-                ;; to lower case by adding #x20
-                (code-char (+ #x20 (senn.win.keys:key-code key)))))
-           (editing-insert-char s lower-case-char))
+         (editing-insert-char
+          ;; to lower case by adding #x20
+          s (code-char (+ #x20 (senn.win.keys:key-code key))))
          (result s mode t (editing-view s)))
 
         ((senn.win.keys:backspace-p key)

@@ -23,7 +23,8 @@
     (:process-input
      (senn.win.stateful-ime:process-input
       stateful-ime
-      (senn.win.keys:make-key :code (expr-arg expr "keycode"))))
+      (senn.win.keys:make-key :code (expr-arg expr "keycode")
+                              :shift-p (expr-arg expr "shift"))))
     (:can-process
      (senn.win.stateful-ime:can-process
       stateful-ime

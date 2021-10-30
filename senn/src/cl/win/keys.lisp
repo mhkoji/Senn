@@ -3,12 +3,13 @@
   (:export :key
            :make-key
            :key-code
+           :key-shift-p
            :alphabet-p
            :number-p))
 (in-package :senn.win.keys)
 
 (defstruct key
-  code)
+  code shift-p)
 
 (defmacro defkey (name code)
   `(progn
