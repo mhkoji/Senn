@@ -17,7 +17,8 @@
      #+linux
      (:file "net/ipc/unix")
      (:file "net/stdio")
-     (:file "predictors"))))
+     (:file "predictors")
+     (:file "build"))))
   :depends-on (:hachee
                :cl-trie
                :cl-csv))

@@ -10,8 +10,6 @@
            :converting-pronunciation
            :converting-current-segment-index
 
-           :char-p
-
            :process-input
            :can-process))
 (in-package :senn.win.ime)
@@ -25,6 +23,3 @@
   segments
   pronunciation
   (current-segment-index 0))
-
-(defun char-p (k)
-  (<= (char-code #\A) (senn.win.keys:key-code k) (char-code #\Z)))
