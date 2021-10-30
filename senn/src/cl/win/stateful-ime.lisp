@@ -58,5 +58,5 @@
         (setf input-mode new-input-mode)
         (setf input-state new-input-state)
         (format nil "~A ~A~%"
-                (if can-process 1 0)
-                (if (and can-process view) view ""))))))
+                (if (and can-process view) 1 0)
+                (or view ""))))))
