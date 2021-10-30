@@ -19,7 +19,7 @@ public:
 
   virtual bool CanProcess(uint64_t) = 0;
 
-  virtual bool ProcessInput(uint64_t,
+  virtual bool ProcessInput(uint64_t, BYTE *,
                             std::function<void(const views::Editing &)>,
                             std::function<void(const views::Converting &)>,
                             std::function<void(const views::Committed &)>) = 0;

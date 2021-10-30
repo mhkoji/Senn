@@ -1,5 +1,5 @@
 #include "text_service.h"
-#include "../ime/stateful_im_proxy.h"
+#include "../ime/stateful_ime_proxy.h"
 #include "object_releaser.h"
 #include "ui.h"
 #include <cassert>
@@ -248,7 +248,8 @@ void TextService::GetIcon(HICON *phIcon) const {
 // langbar::InputModeToggleButton::Handlers
 void TextService::OnClickInputModelToggleButton() { ToggleInputMode(); }
 
-void TextService::OnToggleInputMode() { ToggleInputMode(); }
+// KeyEventHandler::Handlers
+void TextService::OnToggleInputModeKeyDown() { ToggleInputMode(); }
 
 void TextService::ToggleInputMode() {
   assert(ime_ != nullptr);

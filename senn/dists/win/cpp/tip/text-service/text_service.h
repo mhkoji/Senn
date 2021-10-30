@@ -100,7 +100,7 @@ public:
   virtual void OnClickInputModelToggleButton() override;
 
   // KeyEventHandler::Handlers
-  virtual void OnToggleInputMode() override;
+  virtual void OnToggleInputModeKeyDown() override;
 
   void ToggleInputMode();
 

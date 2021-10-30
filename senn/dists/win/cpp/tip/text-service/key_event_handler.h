@@ -181,7 +181,7 @@ class KeyEventHandler : public CandidateListUI::Handlers {
 public:
   class Handlers {
   public:
-    virtual void OnToggleInputMode() = 0;
+    virtual void OnToggleInputModeKeyDown() = 0;
   };
 
   KeyEventHandler(ITfThreadMgr *, TfClientId, ITfCompositionSink *,
@@ -201,11 +201,12 @@ public:
   HRESULT OnPreservedKey(ITfContext *pic, REFGUID rguid, BOOL *pfEaten);
 
 private:
-  bool HandleIMEView(ITfContext *, const senn::senn_win::ime::views::Editing &);
-  bool HandleIMEView(ITfContext *,
-                     const senn::senn_win::ime::views::Converting &);
-  bool HandleIMEView(ITfContext *,
-                     const senn::senn_win::ime::views::Committed &);
+  HRESULT HandleIMEView(ITfContext *,
+                        const senn::senn_win::ime::views::Editing &);
+  HRESULT HandleIMEView(ITfContext *,
+                        const senn::senn_win::ime::views::Converting &);
+  HRESULT HandleIMEView(ITfContext *,
+                        const senn::senn_win::ime::views::Committed &);
 
   //  CandidateListUI::Handlers
   virtual HRESULT OnLayoutChange(ITfContext *, ITfContextView *);

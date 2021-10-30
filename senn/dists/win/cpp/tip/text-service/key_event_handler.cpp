@@ -201,6 +201,66 @@ HRESULT __stdcall MoveCandidateWindowToTextPositionEditSession::DoEditSession(
   return S_OK;
 }
 
+HRESULT KeyEventHandler::HandleIMEView(
+    ITfContext *context, const senn::senn_win::ime::views::Editing &view) {
+  ITfEditSession *edit_session =
+      new EditSessionEditing(view, context, editing_display_attribute_atom_,
+                             composition_sink_, &composition_holder_);
+  ObjectReleaser<ITfEditSession> edit_session_releaser(edit_session);
+
+  HRESULT result;
+  return context->RequestEditSession(client_id_, edit_session,
+                                     TF_ES_SYNC | TF_ES_READWRITE, &result);
+}
+
+HRESULT KeyEventHandler::HandleIMEView(
+    ITfContext *context, const senn::senn_win::ime::views::Converting &view) {
+  ITfEditSession *edit_session = new EditSessionConverting(
+      thread_mgr_, view, context, converting_display_attribute_atoms_,
+      composition_holder_.Get());
+  ObjectReleaser<ITfEditSession> edit_session_releaser(edit_session);
+
+  HRESULT result, ret;
+  ret = context->RequestEditSession(client_id_, edit_session,
+                                    TF_ES_SYNC | TF_ES_READWRITE, &result);
+
+  if (ret != S_OK) {
+    return ret;
+  }
+
+  if (!candidate_list_ui_) {
+    candidate_list_state_ = new CandidateListState();
+    candidate_list_ui_ =
+        CandidateListUI::Create(context, thread_mgr_, candidate_list_state_,
+                                static_cast<CandidateListUI::Handlers *>(this));
+  }
+
+  candidate_list_state_->Update(view);
+  candidate_list_ui_->NotifyUpdateUI();
+
+  return S_OK;
+}
+
+HRESULT KeyEventHandler::HandleIMEView(
+    ITfContext *context, const senn::senn_win::ime::views::Committed &view) {
+  if (candidate_list_ui_) {
+    delete candidate_list_state_;
+    candidate_list_state_ = nullptr;
+
+    // If DestroyUI is called from the destructor, the process crashes...
+    candidate_list_ui_->DestroyUI();
+    candidate_list_ui_->Release();
+    candidate_list_ui_ = nullptr;
+  }
+
+  ITfEditSession *edit_session = new EditSessionCommitted(
+      view, context, composition_sink_, &composition_holder_);
+
+  HRESULT result;
+  return context->RequestEditSession(client_id_, edit_session,
+                                     TF_ES_SYNC | TF_ES_READWRITE, &result);
+}
+
 KeyEventHandler::KeyEventHandler(
     ITfThreadMgr *thread_mgr, TfClientId id, ITfCompositionSink *sink,
     senn::senn_win::ime::StatefulIME *ime, TfGuidAtom atom_editing,
@@ -246,7 +306,7 @@ HRESULT KeyEventHandler::OnTestKeyDown(ITfContext *context, WPARAM wParam,
                                        LPARAM lParam, BOOL *pfEaten) {
   if (wParam == 0xF3 || wParam == 0xF4) {
     // hankaku/zenkaku key
-    handlers_->OnToggleInputMode();
+    handlers_->OnToggleInputModeKeyDown();
     *pfEaten = false;
     return S_OK;
   }
@@ -255,83 +315,34 @@ HRESULT KeyEventHandler::OnTestKeyDown(ITfContext *context, WPARAM wParam,
   return S_OK;
 }
 
-bool KeyEventHandler::HandleIMEView(
-    ITfContext *context, const senn::senn_win::ime::views::Editing &view) {
-  ITfEditSession *edit_session =
-      new EditSessionEditing(view, context, editing_display_attribute_atom_,
-                             composition_sink_, &composition_holder_);
-  ObjectReleaser<ITfEditSession> edit_session_releaser(edit_session);
-
-  HRESULT result;
-  return context->RequestEditSession(client_id_, edit_session,
-                                     TF_ES_SYNC | TF_ES_READWRITE,
-                                     &result) == S_OK;
-}
-
-bool KeyEventHandler::HandleIMEView(
-    ITfContext *context, const senn::senn_win::ime::views::Converting &view) {
-  ITfEditSession *edit_session = new EditSessionConverting(
-      thread_mgr_, view, context, converting_display_attribute_atoms_,
-      composition_holder_.Get());
-  ObjectReleaser<ITfEditSession> edit_session_releaser(edit_session);
-
-  HRESULT result, ret;
-  ret = context->RequestEditSession(client_id_, edit_session,
-                                    TF_ES_SYNC | TF_ES_READWRITE, &result);
-
-  if (ret != S_OK) {
-    return false;
-  }
-
-  if (!candidate_list_ui_) {
-    candidate_list_state_ = new CandidateListState();
-    candidate_list_ui_ =
-        CandidateListUI::Create(context, thread_mgr_, candidate_list_state_,
-                                static_cast<CandidateListUI::Handlers *>(this));
-  }
-
-  candidate_list_state_->Update(view);
-  candidate_list_ui_->NotifyUpdateUI();
-
-  return true;
-}
-
-bool KeyEventHandler::HandleIMEView(
-    ITfContext *context, const senn::senn_win::ime::views::Committed &view) {
-  if (candidate_list_ui_) {
-    delete candidate_list_state_;
-    candidate_list_state_ = nullptr;
-
-    // If DestroyUI is called from the destructor, the process crashes...
-    candidate_list_ui_->DestroyUI();
-    candidate_list_ui_->Release();
-    candidate_list_ui_ = nullptr;
-  }
-
-  ITfEditSession *edit_session = new EditSessionCommitted(
-      view, context, composition_sink_, &composition_holder_);
-
-  HRESULT result;
-  return context->RequestEditSession(client_id_, edit_session,
-                                     TF_ES_SYNC | TF_ES_READWRITE,
-                                     &result) == S_OK;
-}
-
 HRESULT KeyEventHandler::OnKeyDown(ITfContext *context, WPARAM wParam,
                                    LPARAM lParam, BOOL *pfEaten) {
-  bool success = true;
+  if (wParam == 0xF3 || wParam == 0xF4) {
+    // hankaku/zenkaku key
+    handlers_->OnToggleInputModeKeyDown();
+    *pfEaten = false;
+    return S_OK;
+  }
+
+  BYTE key_state[256] = {};
+  if (!GetKeyboardState(key_state)) {
+    *pfEaten = false;
+    return S_OK;
+  }
+
+  HRESULT result;
   *pfEaten = ime_->ProcessInput(
-      wParam,
+      wParam, key_state,
       [&](const senn::senn_win::ime::views::Editing &view) {
-        success = HandleIMEView(context, view);
+        result = HandleIMEView(context, view);
       },
       [&](const senn::senn_win::ime::views::Converting &view) {
-        success = HandleIMEView(context, view);
+        result = HandleIMEView(context, view);
       },
       [&](const senn::senn_win::ime::views::Committed &view) {
-        success = HandleIMEView(context, view);
+        result = HandleIMEView(context, view);
       });
-  return success ? S_OK : E_FAIL;
+  return result;
 }
 
 HRESULT KeyEventHandler::OnTestKeyUp(ITfContext *context, WPARAM wParam,

@@ -49,7 +49,7 @@ public:
   ~StatefulIMEProxy() override;
   virtual bool CanProcess(uint64_t) override;
   virtual bool
-  ProcessInput(uint64_t, std::function<void(const views::Editing &)>,
+  ProcessInput(uint64_t, BYTE *, std::function<void(const views::Editing &)>,
                std::function<void(const views::Converting &)>,
                std::function<void(const views::Committed &)>) override;
   virtual void ToggleInputMode() override;

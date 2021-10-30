@@ -151,7 +151,8 @@ bool StatefulIMEProxy::CanProcess(uint64_t keycode) {
 }
 
 bool StatefulIMEProxy::ProcessInput(
-    uint64_t keycode, std::function<void(const views::Editing &)> on_editing,
+    uint64_t keycode, BYTE *modifiers,
+    std::function<void(const views::Editing &)> on_editing,
     std::function<void(const views::Converting &)> on_converting,
     std::function<void(const views::Committed &)> on_committed) {
   std::string response;
@@ -160,7 +161,8 @@ bool StatefulIMEProxy::ProcessInput(
     ss << "{"
        << "\"op\": \"process-input\","
        << "\"args\": {"
-       << "\"keycode\": " << keycode << "}"
+       << "\"keycode\": " << keycode << ","
+       << "\"shift\": " << (modifiers[VK_SHIFT] ? "true" : "false") << "}"
        << "}";
     if (!conn_->Write(ss.str())) {
       return false;
