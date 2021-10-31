@@ -31,7 +31,7 @@
       (senn.win.keys:make-key :code (expr-arg expr "keycode"))))))
 
 (defun loop-handling-request (ime client)
-  (let ((stateful-ime (senn.win.stateful-ime:make-im ime)))
+  (let ((stateful-ime (senn.win.stateful-ime:make-ime ime)))
     (loop for expr = (read-request client) while expr
           do (let ((resp (handle-request stateful-ime expr)))
                (send-response client resp)))))

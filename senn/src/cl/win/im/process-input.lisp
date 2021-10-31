@@ -1,7 +1,7 @@
-(defpackage :senn.win.ime.process-input
-  (:use :cl :senn.win.ime)
+(defpackage :senn.win.im.process-input
+  (:use :cl :senn.win.im)
   (:export :execute))
-(in-package :senn.win.ime.process-input)
+(in-package :senn.win.im.process-input)
 
 (defvar +crlf+
   (format nil "~A~A" #\Return #\Newline))
@@ -69,114 +69,106 @@
 
 (defgeneric execute (ime state mode key))
 
-(defun result (state mode can-process view)
-  (list state mode can-process view))
+(defun result (can-process view &key state)
+  (list can-process view
+        :state state))
 
-(defmethod execute ((ime senn.im:ime)
-                    (s editing)
-                    (mode (eql :direct))
+(defmethod execute ((ime senn.im:ime) (s editing) (mode (eql :direct))
                     (key senn.win.keys:key))
-  (result s mode t (editing-view s)))
+  (result t (editing-view s)))
 
-(defmethod execute ((ime senn.im:ime)
-                    (s converting)
-                    (mode (eql :direct))
+(defmethod execute ((ime senn.im:ime) (s converting) (mode (eql :direct))
                     (key senn.win.keys:key))
-  (result s mode t (converting-view s)))
+  (result t (converting-view s)))
 
-(defmethod execute ((ime senn.im:ime)
-                    (s t)
-                    (mode (eql :direct))
+(defmethod execute ((ime senn.im:ime) (s t) (mode (eql :direct))
                     (key senn.win.keys:key))
-  (result s mode nil nil))
+  (result nil nil))
 
 
-(defmethod execute ((ime senn.im:ime)
-                    (s converting)
-                    (mode (eql :hiragana))
+(defmethod execute ((ime senn.im:ime) (s converting) (mode (eql :hiragana))
                     (key senn.win.keys:key))
   (cond ((senn.win.keys:enter-p key)
-         (let ((new-s (make-editing))
-               (view (committed-view (converting-current-input s))))
-           (result new-s mode t view)))
+         (let ((view (committed-view (converting-current-input s)))
+               (segs (converting-segments s)))
+           (result t view
+                   :state (make-editing))))
 
         ((or (senn.win.keys:space-p key)
              (senn.win.keys:down-p key))
          (move-segment-form-index! (converting-current-segment s) +1 ime)
-         (result s mode t (converting-view s)))
+         (result t (converting-view s) :state s))
 
         ((senn.win.keys:up-p key)
          (move-segment-form-index! (converting-current-segment s) -1 ime)
-         (result s mode t (converting-view s)))
+         (result t (converting-view s) :state s))
 
         ((senn.win.keys:left-p key)
          (converting-move-curret-segment s -1)
-         (result s mode t (converting-view s)))
+         (result t (converting-view s) :state s))
 
         ((senn.win.keys:right-p key)
          (converting-move-curret-segment s +1)
-         (result s mode t (converting-view s)))
+         (result  t (converting-view s) :state s))
 
         (t
-         (result s mode nil nil))))
+         (result nil nil))))
 
 
 (defun editing-insert-char (state char)
   (with-accessors ((buffer editing-buffer)) state
     (setf buffer (senn.buffer:insert-char buffer char))))
 
-(defmethod execute ((ime senn.im:ime)
-                    (s editing)
-                    (mode (eql :hiragana))
+(defmethod execute ((ime senn.im:ime) (s editing) (mode (eql :hiragana))
                     (key senn.win.keys:key))
   (cond ((senn.win.keys:oem-minus-p key)
          (editing-insert-char
           s (if (senn.win.keys:key-shift-p key) #\＝ #\ー))
-         (result s mode t (editing-view s)))
+         (result t (editing-view s) :state s))
         ((senn.win.keys:oem-7-p key)
          (editing-insert-char
           s (if (senn.win.keys:key-shift-p key) #\〜  #\＾))
-         (result s mode t (editing-view s)))
+         (result t (editing-view s) :state s))
         ((senn.win.keys:oem-5-p key)
          (editing-insert-char
           s (if (senn.win.keys:key-shift-p key) #\｜ #\￥))
-         (result s mode t (editing-view s)))
+         (result t (editing-view s) :state s))
         ((senn.win.keys:oem-3-p key)
          (editing-insert-char
           s (if (senn.win.keys:key-shift-p key) #\｀ #\＠))
-         (result s mode t (editing-view s)))
+         (result t (editing-view s) :state s))
         ((senn.win.keys:oem-4-p key)
          (editing-insert-char
           s (if (senn.win.keys:key-shift-p key) #\｛ #\「))
-         (result s mode t (editing-view s)))
+         (result t (editing-view s) :state s))
         ((senn.win.keys:oem-plus-p key)
          (editing-insert-char
           s (if (senn.win.keys:key-shift-p key) #\＋ #\；))
-         (result s mode t (editing-view s)))
+         (result t (editing-view s) :state s))
         ((senn.win.keys:oem-1-p key)
          (editing-insert-char
           s (if (senn.win.keys:key-shift-p key) #\＊ #\：))
-         (result s mode t (editing-view s)))
+         (result t (editing-view s) :state s))
         ((senn.win.keys:oem-6-p key)
          (editing-insert-char
           s (if (senn.win.keys:key-shift-p key) #\｝ #\」))
-         (result s mode t (editing-view s)))
+         (result t (editing-view s) :state s))
         ((senn.win.keys:oem-comma-p key)
          (editing-insert-char
           s (if (senn.win.keys:key-shift-p key) #\＜ #\、))
-         (result s mode t (editing-view s)))
+         (result t (editing-view s) :state s))
         ((senn.win.keys:oem-period-p key)
          (editing-insert-char
           s (if (senn.win.keys:key-shift-p key) #\＞ #\。))
-         (result s mode t (editing-view s)))
+         (result t (editing-view s) :state s))
         ((senn.win.keys:oem-2-p key)
          (editing-insert-char
           s (if (senn.win.keys:key-shift-p key) #\？ #\・))
-         (result s mode t (editing-view s)))
+         (result t (editing-view s) :state s))
         ((senn.win.keys:oem-102-p key)
          (editing-insert-char
           s (if (senn.win.keys:key-shift-p key) #\＿ #\￥))
-         (result s mode t (editing-view s)))
+         (result t (editing-view s) :state s))
 
         ((senn.win.keys:number-p key)
          (editing-insert-char
@@ -196,43 +188,41 @@
                         ((= code (char-code #\9)) #\）)
                         (t (code-char (+ #xFEE0 code))))
                   (code-char (+ #xFEE0 code)))))
-         (result s mode t (editing-view s)))
+         (result t (editing-view s) :state s))
 
         ((senn.win.keys:alphabet-p key)
          (editing-insert-char
           ;; to lower case by adding #x20
           s (code-char (+ #x20 (senn.win.keys:key-code key))))
-         (result s mode t (editing-view s)))
+         (result t (editing-view s) :state s))
 
         ((senn.win.keys:backspace-p key)
          (let ((pron (senn.buffer:buffer-string (editing-buffer s))))
-           (cond ((string= pron "")
-                  ;; IMEが文字を削除していない -> OSに文字を削除してもらう
-                  (result s mode nil (editing-view s)))
-                 (t
-                  (setf (editing-buffer s)
-                        (senn.buffer:delete-char (editing-buffer s)))
-                  (result s mode t (editing-view s))))))
+           (if (string/= pron "")
+               (with-accessors ((buffer editing-buffer)) s
+                 (setf buffer (senn.buffer:delete-char buffer))
+                 (result t (editing-view s) :state s))
+               ;; IMEが文字を削除していない -> OSに文字を削除してもらう
+               (result nil nil))))
 
         ((senn.win.keys:space-p key)
          (let ((pron (senn.buffer:buffer-string (editing-buffer s))))
-           (if (string= pron "")
-               (result s mode nil (editing-view s))
+           (if (string/= pron "")
                (let ((segments (senn.im:convert ime pron)))
                  (let ((converting (make-converting
                                     :segments segments
                                     :pronunciation pron)))
                    (let ((view (converting-view converting)))
-                     (result converting mode t view)))))))
+                     (result t view :state converting))))
+               (result nil nil))))
 
         ((senn.win.keys:enter-p key)
-         (let ((buffer (editing-buffer s))
-               (editing (make-editing)))
+         (with-accessors ((buffer editing-buffer)) s
            (let ((view (committed-view
                         (if (buffer-empty-p buffer)
                             +crlf+
                             (senn.buffer:buffer-string buffer)))))
-             (result editing mode t view))))
+             (result t view :state (make-editing)))))
 
         (t
-         (result s mode nil nil))))
+         (result nil nil))))

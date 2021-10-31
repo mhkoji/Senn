@@ -1,31 +1,23 @@
-(defpackage :senn.win.ime.can-process
-  (:use :cl :senn.win.ime)
+(defpackage :senn.win.im.can-process
+  (:use :cl :senn.win.im)
   (:export :execute))
-(in-package :senn.win.ime.can-process)
+(in-package :senn.win.im.can-process)
 
 (defgeneric execute (ime state mode key))
 
-(defmethod execute ((ime senn.im:ime)
-                    (s editing)
-                    (mode (eql :direct))
+(defmethod execute ((ime senn.im:ime) (s editing) (mode (eql :direct))
                     (key senn.win.keys:key))
   t)
 
-(defmethod execute ((ime senn.im:ime)
-                    (s converting)
-                    (mode (eql :direct))
+(defmethod execute ((ime senn.im:ime) (s converting) (mode (eql :direct))
                     (key senn.win.keys:key))
   t)
 
-(defmethod execute ((ime senn.im:ime)
-                    (s t)
-                    (mode (eql :direct))
+(defmethod execute ((ime senn.im:ime) (s t) (mode (eql :direct))
                     (key senn.win.keys:key))
   nil)
 
-(defmethod execute ((ime senn.im:ime)
-                    (s converting)
-                    (mode (eql :hiragana))
+(defmethod execute ((ime senn.im:ime) (s converting) (mode (eql :hiragana))
                     (key senn.win.keys:key))
   (cond ((senn.win.keys:enter-p key) t)
         ((or (senn.win.keys:space-p key)
@@ -36,9 +28,7 @@
         ((senn.win.keys:right-p key) t)
         (t nil)))
 
-(defmethod execute ((ime senn.im:ime)
-                    (s editing)
-                    (mode (eql :hiragana))
+(defmethod execute ((ime senn.im:ime) (s editing) (mode (eql :hiragana))
                     (key senn.win.keys:key))
   (cond ((senn.win.keys:oem-minus-p key) t)
         ((senn.win.keys:oem-7-p key) t)

@@ -32,28 +32,28 @@
   (format nil "~A ~A~%" (if can-process 1 0) view))
 
 (defmacro test-convert (&key test)
-  `(let ((im (senn.win.stateful-ime:make-im
-              (make-instance 'ime))))
-     (senn.win.stateful-ime:toggle-input-mode im)
+  `(let ((ime (senn.win.stateful-ime:make-ime
+               (make-instance 'ime))))
+     (senn.win.stateful-ime:toggle-input-mode ime)
      (,test (string= (senn.win.stateful-ime:process-input
-                      im (senn.win.keys:make-key
-                          :code (char-code #\S)))
+                      ime (senn.win.keys:make-key
+                           :code (char-code #\S)))
                      (resp t "EDITING s")))
      (,test (string= (senn.win.stateful-ime:process-input
-                      im (senn.win.keys:make-key
-                          :code (char-code #\O)))
+                      ime (senn.win.keys:make-key
+                           :code (char-code #\O)))
                      (resp t "EDITING そ")))
      (,test (string= (senn.win.stateful-ime:process-input
-                      im (senn.win.keys:make-key
-                          :code (char-code #\R)))
+                      ime (senn.win.keys:make-key
+                           :code (char-code #\R)))
                      (resp t "EDITING そr")))
      (,test (string= (senn.win.stateful-ime:process-input
-                      im (senn.win.keys:make-key
-                          :code (char-code #\A)))
+                      ime (senn.win.keys:make-key
+                           :code (char-code #\A)))
                      (resp t "EDITING そら")))
      (,test (string= (senn.win.stateful-ime:process-input
-                      im (senn.win.keys:make-key
-                          :code (char-code #\Space)))
+                      ime (senn.win.keys:make-key
+                           :code (char-code #\Space)))
                      (resp t (converting-view
                               :forms (list "空")
                               :cursor-form-index 0

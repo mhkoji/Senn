@@ -4,9 +4,9 @@
   :components
   ((:file "keys")
 
-   (:file "ime/ime")
-   (:file "ime/process-input")
-   (:file "ime/can-process")
+   (:file "im/ime")
+   (:file "im/process-input")
+   (:file "im/can-process")
    (:file "stateful-ime")
 
    (:file "server/server")
