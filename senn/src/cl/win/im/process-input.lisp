@@ -69,9 +69,10 @@
 
 (defgeneric execute (ime state mode key))
 
-(defun result (can-process view &key state)
+(defun result (can-process view &key state committed-segments)
   (list can-process view
-        :state state))
+        :state state
+        :committed-segments committed-segments))
 
 (defmethod execute ((ime senn.im:ime) (s editing) (mode (eql :direct))
                     (key senn.win.keys:key))
@@ -92,7 +93,8 @@
          (let ((view (committed-view (converting-current-input s)))
                (segs (converting-segments s)))
            (result t view
-                   :state (make-editing))))
+                   :state (make-editing)
+                   :committed-segments segs)))
 
         ((or (senn.win.keys:space-p key)
              (senn.win.keys:down-p key))
