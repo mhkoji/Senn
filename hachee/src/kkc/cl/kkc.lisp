@@ -1,19 +1,13 @@
 (defpackage :hachee.kkc
   (:use :cl)
   (:export :kkc
-           :kkc-n-gram-model
-           :kkc-vocabulary
-           :kkc-word-dictionary
-           :kkc-char-dictionary
-           :kkc-extended-dictionary
-           :kkc-sum-probabilities-of-vocabulary-words
-           :kkc-unknown-word-vocabulary
-           :kkc-unknown-word-n-gram-model
-
            :save-kkc
            :load-kkc
            :build-kkc
-           :build-kkc-simple))
+           :build-kkc-simple
+
+           :kkc-convert
+           :make-kkc-convert))
 (in-package :hachee.kkc)
 
 (defstruct kkc
@@ -21,11 +15,14 @@
   vocabulary
   word-dictionary
   char-dictionary
-  extended-dictionary
-
   sum-probabilities-of-vocabulary-words
   unknown-word-vocabulary
   unknown-word-n-gram-model)
+
+(defstruct kkc-convert
+  kkc
+  extended-dictionary)
+
 
 (defmethod hachee.kkc.persist:save-object
     ((obj hachee.language-model.n-gram:model) s)
@@ -69,8 +66,6 @@
                (kkc-word-dictionary kkc))
     (add-entry "char-dictionary.txt"
                (kkc-char-dictionary kkc))
-    (add-entry "extended-dictionary.txt"
-               (kkc-extended-dictionary kkc))
     (add-entry "unknown-word-vocabulary.txt"
                (kkc-unknown-word-vocabulary kkc))
     (add-entry "unknown-word-n-gram-model.txt"
@@ -101,10 +96,11 @@
    unknown-word-vocabulary
    unknown-word-n-gram-model
    (mapcar #'hachee.kkc.dictionary:entry-unit
-           (remove-if-not (lambda (e)
-                            (eql (hachee.kkc.dictionary:entry-origin e)
-                                 hachee.kkc.origin:+vocabulary+))
-                          (hachee.kkc.dictionary:list-all word-dictionary)))))
+           (remove-if-not
+            (lambda (e)
+              (eql (hachee.kkc.dictionary:entry-origin e)
+                   hachee.kkc.origin:+vocabulary+))
+            (hachee.kkc.dictionary:list-all word-dictionary)))))
 
 (defun load-kkc (pathname)
   (let ((entry-alist (hachee.kkc.persist:load-from-zip pathname)))
@@ -128,8 +124,6 @@
          :word-dictionary word-dictionary
          :char-dictionary
          (get-entry "char-dictionary.txt")
-         :extended-dictionary
-         (get-entry "extended-dictionary.txt")
          :unknown-word-vocabulary unknown-word-vocabulary
          :unknown-word-n-gram-model unknown-word-n-gram-model
          :sum-probabilities-of-vocabulary-words
@@ -148,7 +142,6 @@
      (hachee.kkc.build:build-word-dictionary pathnames vocabulary)
      :char-dictionary (or char-dictionary
                           (hachee.kkc.dictionary:make-dictionary))
-     :extended-dictionary (hachee.kkc.dictionary:make-dictionary)
      :unknown-word-vocabulary
      (hachee.language-model.vocabulary:make-vocabulary)
      :unknown-word-n-gram-model
@@ -159,7 +152,6 @@
                   &key pathnames-inaccurately-segmented
                        word-dictionary-pathnames
                        char-dictionary
-                       extended-dictionary
                        trusted-word-dictionary
                        class-token-to-word-file-path)
   (let ((vocabulary
@@ -203,8 +195,6 @@
          :word-dictionary word-dictionary
          :char-dictionary (or char-dictionary
                               (hachee.kkc.dictionary:make-dictionary))
-         :extended-dictionary (or extended-dictionary
-                                  (hachee.kkc.dictionary:make-dictionary))
          :unknown-word-vocabulary unknown-word-vocabulary
          :unknown-word-n-gram-model unknown-word-n-gram-model
          :sum-probabilities-of-vocabulary-words

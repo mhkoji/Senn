@@ -2,19 +2,22 @@
   (:use :cl))
 (in-package :senn.t.scenario.win)
 
-(defclass ime (senn.im:ime) ())
+(defclass ime (senn.im:ime
+               senn.win.stateful-ime:stateful-ime)
+  ())
 
-(defmethod senn.im:convert ((ime ime) (pron string)
+(defmethod senn.im:convert ((ime ime)
+                            (pron string)
                             &key 1st-boundary-index)
   (declare (ignore 1st-boundary-index))
   (assert (string= pron "そら"))
   (list (senn.segment:make-segment
-         :pron pron
+         :pron "そら"
          :candidates (list (senn.segment:make-candidate
                             :form "空"
                             :origin nil))
-         :has-more-candidates-p t
-         :current-index 0)))
+         :current-index 0
+         :has-more-candidates-p t)))
 
 (defun converting-view (&key forms cursor-form-index cursor-form)
   (let ((json-string
@@ -32,8 +35,8 @@
   (format nil "~A ~A~%" (if can-process 1 0) view))
 
 (defmacro test-convert (&key test)
-  `(let ((ime (senn.win.stateful-ime:make-ime
-               (make-instance 'ime))))
+  `(let ((ime (make-instance 'ime
+               :state (senn.win.stateful-ime:make-initial-state))))
      (senn.win.stateful-ime:toggle-input-mode ime)
      (,test (string= (senn.win.stateful-ime:process-input
                       ime (senn.win.keys:make-key

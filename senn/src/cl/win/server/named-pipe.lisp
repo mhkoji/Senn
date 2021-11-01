@@ -41,7 +41,7 @@
          (log:info "~A" e)))
      (log/info client "Disconnected"))))
 
-(defun start-server (ime &key (pipe-name "\\\\.\\Pipe\\senn"))
+(defun start-server (kkc &key (pipe-name "\\\\.\\Pipe\\senn"))
   (let ((threads nil)
         (clients nil))
     (unwind-protect
@@ -52,7 +52,8 @@
             do (progn
                  (log:info "Waiting for client...")
                  (hachee.ipc.named-pipe:connect pipe)
-                 (let ((client (make-client :id client-id :pipe pipe)))
+                 (let ((ime (senn.win.stateful-ime:make-from-kkc kkc))
+                       (client (make-client :id client-id :pipe pipe)))
                    (push client clients)
                    (push (spawn-client-thread client ime) threads))))
       (mapc #'hachee.ipc.named-pipe:disconnect-and-close

@@ -1,13 +1,13 @@
 (defpackage :hachee.kkc.lookup
   (:use :cl)
-  (:export :execute
-           :item-unit
+  (:export :item-unit
            :item-form
            :item-origin
 
-           :lookupper-score-fn
-           :lookupper-word-dictionary
-           :lookupper-char-dictionary))
+           :lookup-score-fn
+           :lookup-word-dictionary
+           :lookup-char-dictionary
+           :execute))
 (in-package :hachee.kkc.lookup)
 
 (defstruct item unit origin)
@@ -37,14 +37,13 @@
     ;; We don't care about the order of the chars ch_1, ..., ch_s.
     (nreverse result-items)))
 
-(defgeneric lookupper-score-fn (lookupper prev next))
-(defgeneric lookupper-word-dictionary (lookupper))
-(defgeneric lookupper-char-dictionary (lookupper))
+(defgeneric lookup-score-fn (mixin prev next))
+(defgeneric lookup-word-dictionary (mixin))
+(defgeneric lookup-char-dictionary (mixin))
 
-(defun execute (kkc pronunciation &key prev next)
+(defun execute (lookup pronunciation &key prev next)
   (execute-internal pronunciation
    :score-fn (when (and next prev)
-               (lookupper-score-fn kkc prev next))
-   :word-dict (lookupper-word-dictionary kkc)
-   :char-dict (lookupper-char-dictionary kkc)))
-
+               (lookup-score-fn lookup prev next))
+   :word-dict (lookup-word-dictionary lookup)
+   :char-dict (lookup-char-dictionary lookup)))

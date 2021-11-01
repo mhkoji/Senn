@@ -1,15 +1,16 @@
 (defpackage :senn.im.kkc
   (:use :cl)
-  (:export :kkc-mixin
+  (:export :convert
+           :lookup
+           :lookup-impl
+           :lookup-impl-get
+           :convert-impl
+           :convert-impl-get
+           :get-kkc
            :load-kkc))
 (in-package :senn.im.kkc)
 
-(defclass kkc-mixin ()
-  ((kkc :initarg :kkc
-        :reader kkc-mixin-kkc)))
-
-(defmethod senn.im:convert ((ime kkc-mixin) (pron string)
-                            &key 1st-boundary-index)
+(defun convert (convert pron &key 1st-boundary-index)
   (mapcar (lambda (e)
             (senn.segment:make-segment
              :pron
@@ -18,21 +19,39 @@
              (list (senn.segment:make-candidate
                     :form (hachee.kkc.convert:entry-form e)
                     :origin (hachee.kkc.convert:entry-origin e)))
-             :has-more-candidates-p t
-             :current-index 0))
+             :current-index 0
+             :has-more-candidates-p t))
           (hachee.kkc.convert:execute
-           (kkc-mixin-kkc ime) pron
+           convert pron
            :1st-boundary-index 1st-boundary-index)))
 
-(defmethod senn.im:lookup ((ime kkc-mixin) (pron string)
-                           &key prev next)
+(defclass convert-impl ()
+  ((convert-impl
+    :initarg :convert-impl
+    :reader convert-impl-get)))
+
+(defmethod senn.im:convert ((mixin convert-impl) (pron string)
+                            &key 1st-boundary-index)
+  (convert (convert-impl-get mixin) pron
+           :1st-boundary-index 1st-boundary-index))
+
+
+(defun lookup (lookup pron &key prev next)
   (mapcar (lambda (item)
             (senn.segment:make-candidate
              :form (hachee.kkc.lookup:item-form item)
              :origin (hachee.kkc.lookup:item-origin item)))
-          (hachee.kkc.lookup:execute
-           (kkc-mixin-kkc ime) pron
-           :prev prev :next next)))
+          (hachee.kkc.lookup:execute lookup pron :prev prev :next next)))
+                       
+(defclass lookup-impl ()
+  ((lookup-impl
+    :initarg :lookup-impl
+    :reader lookup-impl-get)))
+
+(defmethod senn.im:lookup ((mixin lookup-impl) (pron string)
+                           &key prev next)
+  (lookup (lookup-impl-get mixin) pron :next next :prev prev))
+
 
 (defun load-user-kkc (senn-homedir-pathname)
   (when senn-homedir-pathname

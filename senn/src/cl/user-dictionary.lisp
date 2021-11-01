@@ -3,7 +3,6 @@
   (:export :load-dictionary
            :item-pron
            :item-form
-           :add-to-kkc
            :add-to-prefix-dictionary))
 (in-package :senn.user-dictionary)
 
@@ -28,14 +27,6 @@
 (defun item-unit (item)
   (hachee.kkc.dictionary:make-unit :form (item-form item)
                                    :pron (item-pron item)))
-
-(defun add-to-kkc (dictionary kkc)
-  (let ((extended-dict (hachee.kkc:kkc-extended-dictionary kkc)))
-    (dolist (item (dictionary-items dictionary))
-      (hachee.kkc.dictionary:add-entry
-       extended-dict
-       (item-unit item)
-       hachee.kkc.origin:+extended-dictionary+))))
 
 (defun add-to-prefix-dictionary (dictionary prefix-dictionary)
   (dolist (item (dictionary-items dictionary))
