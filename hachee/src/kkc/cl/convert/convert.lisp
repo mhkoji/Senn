@@ -96,18 +96,21 @@
               n-gram-model
               curr-token
               (list prev-token))))
-      (when (= p 0)
-        ;; should not reach here
-        (return-from compute-score -10000))
-      (if (from-vocabulary-p curr-entry)
-          (log p)
-          (+ (log p)
-             (unknown-word-log-probability
-              curr-entry
-              unknown-word-vocabulary
-              unknown-word-n-gram-model
-              extended-dictionary
-              sum-probabilities-of-vocabulary-words))))))
+      (cond ((= p 0)
+             ;; The n-gram model was not able to predict the current token
+             ;; For example, if the current token is unknown, and the model
+             ;; can't predict unknown tokens, the probability will be 0.
+             -10000)
+            ((from-vocabulary-p curr-entry)
+             (log p))
+            (t
+             (+ (log p)
+                (unknown-word-log-probability
+                 curr-entry
+                 unknown-word-vocabulary
+                 unknown-word-n-gram-model
+                 extended-dictionary
+                 sum-probabilities-of-vocabulary-words)))))))
 
 (defun list-entries (sub-pron &key dictionaries vocabulary)
   (labels ((dictionary-entry->convert-entry (dictionary-entry)
@@ -178,10 +181,8 @@
 
    :list-entries-fn
    (let ((vocab (convert-vocabulary convert))
-         (dicts (list (convert-word-dictionary convert))))
-     (let ((ex-dict (convert-extended-dictionary convert)))
-       (when ex-dict
-         (push ex-dict dicts)))
+         (dicts (list (convert-word-dictionary convert)
+                      (convert-extended-dictionary convert))))
      (lambda (pron)
        (list-entries pron :dictionaries dicts :vocabulary vocab)))
 
