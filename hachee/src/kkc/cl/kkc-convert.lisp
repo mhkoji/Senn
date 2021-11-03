@@ -12,9 +12,6 @@
 (defmethod hachee.kkc.convert:convert-word-dictionary ((kkc kkc))
   (kkc-word-dictionary kkc))
 
-(defmethod hachee.kkc.convert:convert-char-dictionary ((kkc kkc))
-  (kkc-char-dictionary kkc))
-
 (defmethod hachee.kkc.convert:convert-sum-probabilities-of-vocabulary-words
     ((kkc kkc))
   (kkc-sum-probabilities-of-vocabulary-words kkc))
@@ -40,10 +37,6 @@
 (defmethod hachee.kkc.convert:convert-word-dictionary
     ((c kkc-convert))
   (kkc-word-dictionary (kkc-convert-kkc c)))
-
-(defmethod hachee.kkc.convert:convert-char-dictionary
-    ((c kkc-convert))
-  (kkc-char-dictionary (kkc-convert-kkc c)))
 
 (defmethod hachee.kkc.convert:convert-sum-probabilities-of-vocabulary-words
     ((c kkc-convert))

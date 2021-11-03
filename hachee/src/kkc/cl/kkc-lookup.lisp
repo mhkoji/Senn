@@ -1,27 +1,29 @@
 (in-package :hachee.kkc)
 
-(defmethod hachee.kkc.lookup:lookup-score-fn ((kkc kkc)
-                                              prev-unit next-unit)
+(defmethod hachee.kkc.lookup:lookup-score-fn ((kkc kkc) prev-unit next-unit)
   (labels ((unit->entry (unit origin)
              (hachee.kkc.convert:make-entry
               :unit unit
               :token (hachee.language-model.vocabulary:to-int-or-unk
                       (kkc-vocabulary kkc)
-                      unit)
-              :origin origin))
-           (compute-score (curr-entry prev-entry)
-             (hachee.kkc.convert:compute-score
-              curr-entry
-              prev-entry
-              (kkc-n-gram-model kkc)
-              (kkc-unknown-word-vocabulary kkc)
-              (kkc-unknown-word-n-gram-model kkc)
-              (kkc-sum-probabilities-of-vocabulary-words kkc)
-              *empty-dictionary*)))
-    (let ((prev-entry (unit->entry prev-unit
-                                   hachee.kkc.origin:+runtime-none+))
-          (next-entry (unit->entry next-unit
-                                   hachee.kkc.origin:+runtime-none+))
+                      (hachee.kkc.dictionary:unit->key unit))
+              :origin origin)))
+    (let ((prev-entry (unit->entry
+                       prev-unit
+                       hachee.kkc.origin:+runtime-none+))
+          (next-entry (unit->entry
+                       next-unit
+                       hachee.kkc.origin:+runtime-none+))
+          (score-calc-dto (hachee.kkc.convert:make-score-calc-dto
+                           :n-gram-model
+                           (kkc-n-gram-model kkc)
+                           :unknown-word-vocabulary
+                           (kkc-unknown-word-vocabulary kkc)
+                           :unknown-word-n-gram-model
+                           (kkc-unknown-word-n-gram-model kkc)
+                           :sum-probabilities-of-vocabulary-words
+                           (kkc-sum-probabilities-of-vocabulary-words kkc)
+                           :extended-dictionary *empty-dictionary*))
           (score-cache (make-hash-table :test #'equal)))
       (lambda (curr-item)
         (let ((curr-entry (unit->entry
@@ -31,10 +33,10 @@
                     (hachee.kkc.lookup:item-unit curr-item))))
           (or (gethash key score-cache)
               (setf (gethash key score-cache)
-                    (+ (compute-score curr-entry prev-entry)
-                       (compute-score next-entry curr-entry)))))))))
-                        
-
+                    (+ (hachee.kkc.convert:compute-score
+                        score-calc-dto curr-entry prev-entry)
+                       (hachee.kkc.convert:compute-score
+                        score-calc-dto next-entry curr-entry)))))))))
 
 (defmethod hachee.kkc.lookup:lookup-word-dictionary ((kkc kkc))
   (kkc-word-dictionary kkc))

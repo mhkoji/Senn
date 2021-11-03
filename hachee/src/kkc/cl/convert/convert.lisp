@@ -8,16 +8,15 @@
            :entry-unit
 
            :compute-score
+           :make-score-calc-dto
 
            :convert-n-gram-model
            :convert-vocabulary
            :convert-word-dictionary
-           :convert-char-dictionary
            :convert-sum-probabilities-of-vocabulary-words
            :convert-unknown-word-vocabulary
            :convert-unknown-word-n-gram-model
            :convert-extended-dictionary
-
            :execute))
 (in-package :hachee.kkc.convert)
 
@@ -30,14 +29,13 @@
 (defun entry-pron (entry)
   (hachee.kkc.dictionary:unit-pron (entry-unit entry)))
 
-(defgeneric convert-n-gram-model (mixin))
-(defgeneric convert-vocabulary (mixin))
-(defgeneric convert-word-dictionary (mixin))
-(defgeneric convert-char-dictionary (mixin))
-(defgeneric convert-sum-probabilities-of-vocabulary-words (mixin))
-(defgeneric convert-unknown-word-vocabulary (mixin))
-(defgeneric convert-unknown-word-n-gram-model (mixin))
-(defgeneric convert-extended-dictionary (mixin))
+
+(defstruct score-calc-dto
+  n-gram-model
+  unknown-word-vocabulary
+  unknown-word-n-gram-model
+  sum-probabilities-of-vocabulary-words
+  extended-dictionary)
 
 (defun from-vocabulary-p (entry)
   (eql (entry-origin entry)
@@ -52,48 +50,47 @@
    :pron pron
    :form (hachee.ja:hiragana->katakana pron)))
 
-(defun unknown-word-log-probability (entry
-                                     unknown-word-vocabulary
-                                     unknown-word-n-gram-model
-                                     sum-probabilities-of-vocabulary-words
-                                     extended-dictionary)
-  (let ((pron-bos-token (hachee.language-model.vocabulary:to-int
-                         unknown-word-vocabulary
-                         hachee.language-model.vocabulary:+BOS+))
-        (pron-eos-token (hachee.language-model.vocabulary:to-int
-                         unknown-word-vocabulary
-                         hachee.language-model.vocabulary:+EOS+))
-        (pron-sentence (hachee.kkc.util:unit->sentence
-                        (entry-unit entry)
-                        unknown-word-vocabulary)))
-    (let ((log-prob-by-unknown-word-n-gram
-           (hachee.language-model.n-gram:sentence-log-probability
-            unknown-word-n-gram-model pron-sentence
-            :BOS pron-bos-token
-            :EOS pron-eos-token))
-          (extended-dictionary-size
-           (hachee.kkc.dictionary:size extended-dictionary)))
-      (if (and (from-extended-dictionary-p entry)
-               (< 0 extended-dictionary-size)
-               (< 0 sum-probabilities-of-vocabulary-words))
-          (let ((probability-for-extended-dictionary-words
-                 (/ sum-probabilities-of-vocabulary-words
-                    extended-dictionary-size)))
-            (log (+ (exp log-prob-by-unknown-word-n-gram)
-                    probability-for-extended-dictionary-words)))
-          log-prob-by-unknown-word-n-gram))))
-
-(defun compute-score (curr-entry
-                      prev-entry
-                      n-gram-model
-                      unknown-word-vocabulary
-                      unknown-word-n-gram-model
-                      sum-probabilities-of-vocabulary-words
-                      extended-dictionary)
+(defun unknown-word-log-probability (score-calc-dto entry)
+  (with-accessors ((unknown-word-vocabulary
+                    score-calc-dto-unknown-word-vocabulary)
+                   (unknown-word-n-gram-model
+                    score-calc-dto-unknown-word-n-gram-model)
+                   (sum-probabilities-of-vocabulary-words
+                    score-calc-dto-sum-probabilities-of-vocabulary-words)
+                   (extended-dictionary
+                    score-calc-dto-extended-dictionary))
+      score-calc-dto
+    (let ((pron-bos-token (hachee.language-model.vocabulary:to-int
+                           unknown-word-vocabulary
+                           hachee.language-model.vocabulary:+BOS+))
+          (pron-eos-token (hachee.language-model.vocabulary:to-int
+                           unknown-word-vocabulary
+                           hachee.language-model.vocabulary:+EOS+))
+          (pron-sentence (hachee.kkc.util:unit->sentence
+                          (entry-unit entry)
+                          unknown-word-vocabulary)))
+      (let ((log-prob-by-unknown-word-n-gram
+             (hachee.language-model.n-gram:sentence-log-probability
+              unknown-word-n-gram-model pron-sentence
+              :BOS pron-bos-token
+              :EOS pron-eos-token))
+            (extended-dictionary-size
+             (hachee.kkc.dictionary:size extended-dictionary)))
+        (if (and (from-extended-dictionary-p entry)
+                 (< 0 extended-dictionary-size)
+                 (< 0 sum-probabilities-of-vocabulary-words))
+            (let ((probability-for-extended-dictionary-words
+                    (/ sum-probabilities-of-vocabulary-words
+                       extended-dictionary-size)))
+              (log (+ (exp log-prob-by-unknown-word-n-gram)
+                      probability-for-extended-dictionary-words)))
+            log-prob-by-unknown-word-n-gram)))))
+  
+(defun compute-score (score-calc-dto curr-entry prev-entry)
   (let ((curr-token (entry-token curr-entry))
         (prev-token (entry-token prev-entry)))
     (let ((p (hachee.language-model.n-gram:transition-probability
-              n-gram-model
+              (score-calc-dto-n-gram-model score-calc-dto)
               curr-token
               (list prev-token))))
       (cond ((= p 0)
@@ -105,12 +102,10 @@
              (log p))
             (t
              (+ (log p)
-                (unknown-word-log-probability
-                 curr-entry
-                 unknown-word-vocabulary
-                 unknown-word-n-gram-model
-                 extended-dictionary
-                 sum-probabilities-of-vocabulary-words)))))))
+                (unknown-word-log-probability score-calc-dto
+                                              curr-entry)))))))
+                 
+                 
 
 (defun list-entries (sub-pron &key dictionaries vocabulary)
   (labels ((dictionary-entry->convert-entry (dictionary-entry)
@@ -144,6 +139,14 @@
                   entries))))
       (nreverse entries))))
 
+(defgeneric convert-n-gram-model (mixin))
+(defgeneric convert-vocabulary (mixin))
+(defgeneric convert-word-dictionary (mixin))
+(defgeneric convert-sum-probabilities-of-vocabulary-words (mixin))
+(defgeneric convert-unknown-word-vocabulary (mixin))
+(defgeneric convert-unknown-word-n-gram-model (mixin))
+(defgeneric convert-extended-dictionary (mixin))
+
 (defun execute (convert pronunciation &key 1st-boundary-index)
   (hachee.kkc.convert.viterbi:execute pronunciation
    :begin-entry (make-entry
@@ -160,24 +163,20 @@
                        hachee.language-model.vocabulary:+EOS+)
                :origin hachee.kkc.origin:+vocabulary+)
 
-   :score-fn (let ((n-gram-model
-                    (convert-n-gram-model convert))
-                   (unknown-word-vocabulary
-                    (convert-unknown-word-vocabulary convert))
-                   (unknown-word-n-gram-model
-                    (convert-unknown-word-n-gram-model convert))
-                   (sum-probabilities-of-vocabulary-words
-                    (convert-sum-probabilities-of-vocabulary-words convert))
-                   (extended-dictionary
-                    (convert-extended-dictionary convert)))
+   :score-fn (let ((score-calc-dto
+                    (make-score-calc-dto
+                     :n-gram-model
+                     (convert-n-gram-model convert)
+                     :unknown-word-vocabulary
+                     (convert-unknown-word-vocabulary convert)
+                     :unknown-word-n-gram-model
+                     (convert-unknown-word-n-gram-model convert)
+                     :sum-probabilities-of-vocabulary-words
+                     (convert-sum-probabilities-of-vocabulary-words convert)
+                     :extended-dictionary
+                     (convert-extended-dictionary convert))))
                (lambda (curr-entry prev-entry)
-                 (compute-score curr-entry
-                                prev-entry
-                                n-gram-model
-                                unknown-word-vocabulary
-                                unknown-word-n-gram-model
-                                sum-probabilities-of-vocabulary-words
-                                extended-dictionary)))
+                 (compute-score score-calc-dto curr-entry prev-entry)))
 
    :list-entries-fn
    (let ((vocab (convert-vocabulary convert))
