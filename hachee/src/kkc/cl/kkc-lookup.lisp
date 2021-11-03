@@ -14,7 +14,7 @@
           (next-entry (unit->entry
                        next-unit
                        hachee.kkc.origin:+runtime-none+))
-          (score-calc-dto (hachee.kkc.convert:make-score-calc-dto
+          (score-calc-dto (make-score-calc-dto
                            :n-gram-model
                            (kkc-n-gram-model kkc)
                            :unknown-word-vocabulary
@@ -33,9 +33,9 @@
                     (hachee.kkc.lookup:item-unit curr-item))))
           (or (gethash key score-cache)
               (setf (gethash key score-cache)
-                    (+ (hachee.kkc.convert:compute-score
+                    (+ (compute-convert-score
                         score-calc-dto curr-entry prev-entry)
-                       (hachee.kkc.convert:compute-score
+                       (compute-convert-score
                         score-calc-dto next-entry curr-entry)))))))))
 
 (defmethod hachee.kkc.lookup:lookup-word-dictionary ((kkc kkc))
