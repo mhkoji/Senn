@@ -10,13 +10,13 @@ namespace senn_win {
 namespace text_service {
 namespace candidate_window {
 
-static const UINT kPageSize = 9;
+static const int kPageSize = 9;
 
 class View {
 public:
   virtual const std::vector<std::wstring> *candidates() const = 0;
 
-  virtual UINT current_index() const = 0;
+  virtual int current_index() const = 0;
 
   UINT candidate_count() const {
     return static_cast<UINT>(candidates()->size());

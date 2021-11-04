@@ -208,6 +208,16 @@ HRESULT KeyEventHandler::HandleIMEView(
                              composition_sink_, &composition_holder_);
   ObjectReleaser<ITfEditSession> edit_session_releaser(edit_session);
 
+  if (!candidate_list_ui_) {
+    candidate_list_state_ = new CandidateListState();
+    candidate_list_ui_ =
+        CandidateListUI::Create(context, thread_mgr_, candidate_list_state_,
+                                static_cast<CandidateListUI::Handlers *>(this));
+  }
+
+  candidate_list_state_->Update(view);
+  candidate_list_ui_->NotifyUpdateUI();
+
   HRESULT result;
   return context->RequestEditSession(client_id_, edit_session,
                                      TF_ES_SYNC | TF_ES_READWRITE, &result);
@@ -382,9 +392,23 @@ bool IsSameCandidateList(const std::vector<std::wstring> &c1,
 } // namespace
 
 void CandidateListState::Update(
+    const senn::senn_win::ime::views::Editing &view) {
+  current_index_ = -1;
+
+  if (!IsSameCandidateList(candidates_, view.predictions)) {
+    candidates_.clear();
+    for (std::vector<std::wstring>::const_iterator it =
+             view.predictions.begin();
+         it != view.predictions.end(); ++it) {
+      candidates_.push_back(*it);
+    }
+  }
+}
+
+void CandidateListState::Update(
     const senn::senn_win::ime::views::Converting &view) {
   // Update candidate index
-  current_index_ = static_cast<UINT>(view.cursor_form_candidate_index);
+  current_index_ = view.cursor_form_candidate_index;
 
   // Update candidates
   // If the updated candidate list is the same as the current one, we don't

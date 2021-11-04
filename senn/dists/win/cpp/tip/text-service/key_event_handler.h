@@ -162,6 +162,7 @@ class CandidateListState : public candidate_window::View {
 public:
   CandidateListState() : candidates_(std::vector<std::wstring>()) {}
 
+  void Update(const senn::senn_win::ime::views::Editing &);
   void Update(const senn::senn_win::ime::views::Converting &);
 
   // candidate_window::View
@@ -169,12 +170,12 @@ public:
     return &candidates_;
   }
 
-  virtual UINT current_index() const override { return current_index_; }
+  virtual int current_index() const override { return current_index_; }
 
 private:
   std::vector<std::wstring> candidates_;
 
-  UINT current_index_ = 0;
+  int current_index_ = 0;
 };
 
 class KeyEventHandler : public CandidateListUI::Handlers {

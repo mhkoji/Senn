@@ -10,13 +10,14 @@ namespace views {
 
 struct Editing {
   std::wstring input;
+  std::vector<std::wstring> predictions;
 };
 
 struct Converting {
   std::vector<std::wstring> forms;
   size_t cursor_form_index;
   std::vector<std::wstring> cursor_form_candidates;
-  size_t cursor_form_candidate_index;
+  int cursor_form_candidate_index;
 };
 
 struct Committed {

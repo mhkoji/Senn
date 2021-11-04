@@ -181,21 +181,38 @@ bool StatefulIMEProxy::ProcessInput(
     iss >> type;
 
     if (type == "EDITING") {
+      std::string content;
+      std::getline(iss, content);
+
       views::Editing editing;
-      std::string char_text;
-      iss >> char_text;
-      ToWString(char_text, &editing.input);
+      {
+        picojson::value v;
+        picojson::parse(v, content);
+
+        const std::string input =
+            v.get<picojson::object>()["input"].get<std::string>();
+        ToWString(input, &editing.input);
+
+        const picojson::array predictions =
+            v.get<picojson::object>()["predictions"].get<picojson::array>();
+        for (picojson::array::const_iterator it = predictions.begin();
+             it != predictions.end(); ++it) {
+          std::wstring prediction;
+          ToWString(it->get<std::string>(), &prediction);
+          editing.predictions.push_back(prediction);
+        }
+      }
+
       on_editing(editing);
     } else if (type == "CONVERTING") {
       std::string content;
       std::getline(iss, content);
 
       views::Converting converting;
-
-      picojson::value v;
-      picojson::parse(v, content);
-
       {
+        picojson::value v;
+        picojson::parse(v, content);
+
         const picojson::array forms =
             v.get<picojson::object>()["forms"].get<picojson::array>();
         for (picojson::array::const_iterator it = forms.begin();
@@ -204,28 +221,28 @@ bool StatefulIMEProxy::ProcessInput(
           ToWString(it->get<std::string>(), &form);
           converting.forms.push_back(form);
         }
-      }
 
-      converting.cursor_form_index = static_cast<size_t>(
-          v.get<picojson::object>()["cursor-form-index"].get<double>());
+        converting.cursor_form_index = static_cast<size_t>(
+            v.get<picojson::object>()["cursor-form-index"].get<double>());
 
-      {
-        const picojson::array candidates =
-            v.get<picojson::object>()["cursor-form"]
-                .get<picojson::object>()["candidates"]
-                .get<picojson::array>();
-        for (picojson::array::const_iterator it = candidates.begin();
-             it != candidates.end(); ++it) {
-          std::wstring str;
-          ToWString(it->get<std::string>(), &str);
-          converting.cursor_form_candidates.push_back(str);
+        {
+          const picojson::array candidates =
+              v.get<picojson::object>()["cursor-form"]
+                  .get<picojson::object>()["candidates"]
+                  .get<picojson::array>();
+          for (picojson::array::const_iterator it = candidates.begin();
+               it != candidates.end(); ++it) {
+            std::wstring str;
+            ToWString(it->get<std::string>(), &str);
+            converting.cursor_form_candidates.push_back(str);
+          }
         }
-      }
 
-      converting.cursor_form_candidate_index =
-          static_cast<size_t>(v.get<picojson::object>()["cursor-form"]
-                                  .get<picojson::object>()["candidate-index"]
-                                  .get<double>());
+        converting.cursor_form_candidate_index =
+            static_cast<int>(v.get<picojson::object>()["cursor-form"]
+                                    .get<picojson::object>()["candidate-index"]
+                                    .get<double>());
+      }
 
       on_converting(converting);
     } else if (type == "COMMITTED") {
@@ -233,13 +250,14 @@ bool StatefulIMEProxy::ProcessInput(
       std::getline(iss, content);
 
       views::Committed committed;
+      {
+        picojson::value v;
+        picojson::parse(v, content);
 
-      picojson::value v;
-      picojson::parse(v, content);
-
-      const std::string char_input =
-          v.get<picojson::object>()["input"].get<std::string>();
-      ToWString(char_input, &committed.input);
+        const std::string char_input =
+            v.get<picojson::object>()["input"].get<std::string>();
+        ToWString(char_input, &committed.input);
+      }
 
       on_committed(committed);
     }
