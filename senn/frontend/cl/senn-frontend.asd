@@ -1,6 +1,6 @@
-(asdf:defsystem :senn-gui
+(asdf:defsystem :senn-frontend
   :serial t
-  :pathname "src/cl/gui"
+  :pathname "src"
   :components
   ((:file "menu/about"))
   :depends-on (:cl-cffi-gtk))

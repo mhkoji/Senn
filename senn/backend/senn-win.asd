@@ -1,6 +1,6 @@
 (asdf:defsystem :senn-win
   :serial t
-  :pathname "src/cl/win"
+  :pathname "src/win"
   :components
   ((:file "keys")
 

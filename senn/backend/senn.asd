@@ -1,6 +1,6 @@
 (asdf:defsystem :senn
   :serial t
-  :pathname "src/cl"
+  :pathname "src"
   :components
   ((:file "ja")
    (:file "buffer")

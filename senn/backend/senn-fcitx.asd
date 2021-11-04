@@ -1,6 +1,6 @@
 (asdf:defsystem :senn-fcitx
   :serial t
-  :pathname "src/cl/fcitx"
+  :pathname "src/fcitx"
   :components
   ((:module :input-processor
     :pathname "input-processor"
