@@ -27,10 +27,11 @@ public:
   TextService()
       : clsid_text_service_(kClsid), thread_mgr_(nullptr),
         client_id_(TF_CLIENTID_NULL), input_mode_toggle_button_(nullptr),
-        key_event_handler_(nullptr),
+        ime_(nullptr), key_event_handler_(nullptr),
         editing_display_attribute_atom_(TF_INVALID_GUIDATOM),
         converting_display_attribute_atoms_(
-            {TF_INVALID_GUIDATOM, TF_INVALID_GUIDATOM}) {}
+            {TF_INVALID_GUIDATOM, TF_INVALID_GUIDATOM}),
+        ref_count_(1) {}
 
   // IUnknow
   HRESULT __stdcall QueryInterface(REFIID riid, void **ppvObject) {
@@ -125,7 +126,7 @@ private:
   EditSessionConverting::DisplayAttributeAtoms
       converting_display_attribute_atoms_;
 
-  ULONG ref_count_ = 1;
+  ULONG ref_count_;
 };
 
 class TextServiceFactory

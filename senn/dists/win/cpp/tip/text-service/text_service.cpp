@@ -253,7 +253,9 @@ void TextService::OnToggleInputModeKeyDown() { ToggleInputMode(); }
 
 void TextService::ToggleInputMode() {
   assert(ime_ != nullptr);
+  // Update state
   ime_->ToggleInputMode();
+  // Update ui (UI calls GetIcon to get the current state of input mode.)
   input_mode_toggle_button_->item_sink()->OnUpdate(TF_LBI_ICON);
 }
 
