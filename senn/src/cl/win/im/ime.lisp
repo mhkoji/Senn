@@ -3,6 +3,7 @@
   (:export :make-editing
            :editing
            :editing-buffer
+           :editing-predictions
            :make-converting
            :converting
            :converting-segments
@@ -13,7 +14,8 @@
 ;; input state
 
 (defstruct editing
-  (buffer (senn.buffer:make-buffer)))
+  (buffer (senn.buffer:make-buffer))
+  predictions)
 
 (defstruct converting
   segments

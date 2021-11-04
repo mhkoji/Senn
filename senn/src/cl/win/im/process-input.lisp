@@ -32,11 +32,11 @@
 ;;; view
 
 ;; May be viewed as the side-effect to the system by process-input
-(defun editing-view (editing-state &key predictions)
+(defun editing-view (editing-state)
   (let ((json (jsown:new-js
                 ("input" (senn.buffer:buffer-string
                           (editing-buffer editing-state)))
-                ("predictions" predictions))))
+                ("predictions" (editing-predictions editing-state)))))
     (format nil "EDITING ~A" (jsown:to-json json))))
 
 (defun converting-view (converting-state)
@@ -123,55 +123,71 @@
   (with-accessors ((buffer editing-buffer)) state
     (setf buffer (senn.buffer:insert-char buffer char))))
 
+(defun editing-update-predictions (state ime)
+  (let ((input (senn.buffer:buffer-string (editing-buffer state))))
+    (setf (editing-predictions state) (senn.im:predict ime input))))
+
 (defmethod execute ((ime senn.im:ime) (s editing) (mode (eql :hiragana))
                     (key senn.win.keys:key))
   (cond ((senn.win.keys:oem-minus-p key)
          (editing-insert-char
           s (if (senn.win.keys:key-shift-p key) #\＝ #\ー))
+         (editing-update-predictions s ime)
          (result t (editing-view s) :state s))
         ((senn.win.keys:oem-7-p key)
          (editing-insert-char
           s (if (senn.win.keys:key-shift-p key) #\〜  #\＾))
+         (editing-update-predictions s ime)
          (result t (editing-view s) :state s))
         ((senn.win.keys:oem-5-p key)
          (editing-insert-char
           s (if (senn.win.keys:key-shift-p key) #\｜ #\￥))
+         (editing-update-predictions s ime)
          (result t (editing-view s) :state s))
         ((senn.win.keys:oem-3-p key)
          (editing-insert-char
           s (if (senn.win.keys:key-shift-p key) #\｀ #\＠))
+         (editing-update-predictions s ime)
          (result t (editing-view s) :state s))
         ((senn.win.keys:oem-4-p key)
          (editing-insert-char
           s (if (senn.win.keys:key-shift-p key) #\｛ #\「))
+         (editing-update-predictions s ime)
          (result t (editing-view s) :state s))
         ((senn.win.keys:oem-plus-p key)
          (editing-insert-char
           s (if (senn.win.keys:key-shift-p key) #\＋ #\；))
+         (editing-update-predictions s ime)
          (result t (editing-view s) :state s))
         ((senn.win.keys:oem-1-p key)
          (editing-insert-char
           s (if (senn.win.keys:key-shift-p key) #\＊ #\：))
+         (editing-update-predictions s ime)
          (result t (editing-view s) :state s))
         ((senn.win.keys:oem-6-p key)
          (editing-insert-char
           s (if (senn.win.keys:key-shift-p key) #\｝ #\」))
+         (editing-update-predictions s ime)
          (result t (editing-view s) :state s))
         ((senn.win.keys:oem-comma-p key)
          (editing-insert-char
           s (if (senn.win.keys:key-shift-p key) #\＜ #\、))
+         (editing-update-predictions s ime)
          (result t (editing-view s) :state s))
         ((senn.win.keys:oem-period-p key)
          (editing-insert-char
           s (if (senn.win.keys:key-shift-p key) #\＞ #\。))
+         (editing-update-predictions s ime)
          (result t (editing-view s) :state s))
         ((senn.win.keys:oem-2-p key)
          (editing-insert-char
           s (if (senn.win.keys:key-shift-p key) #\？ #\・))
+         (editing-update-predictions s ime)
          (result t (editing-view s) :state s))
         ((senn.win.keys:oem-102-p key)
          (editing-insert-char
           s (if (senn.win.keys:key-shift-p key) #\＿ #\￥))
+         (editing-update-predictions s ime)
          (result t (editing-view s) :state s))
 
         ((senn.win.keys:number-p key)
@@ -192,23 +208,23 @@
                         ((= code (char-code #\9)) #\）)
                         (t (code-char (+ #xFEE0 code))))
                   (code-char (+ #xFEE0 code)))))
+         (editing-update-predictions s ime)
          (result t (editing-view s) :state s))
 
         ((senn.win.keys:alphabet-p key)
          (editing-insert-char
           ;; to lower case by adding #x20
           s (code-char (+ #x20 (senn.win.keys:key-code key))))
-         (let ((predictions (senn.im:predict
-                             ime (senn.buffer:buffer-string
-                                  (editing-buffer s)))))
-           (let ((view (editing-view s :predictions predictions)))
-             (result t view :state s))))
+         (editing-update-predictions s ime)
+         (result t (editing-view s) :state s))
 
         ((senn.win.keys:backspace-p key)
          (let ((pron (senn.buffer:buffer-string (editing-buffer s))))
            (if (string/= pron "")
-               (with-accessors ((buffer editing-buffer)) s
-                 (setf buffer (senn.buffer:delete-char buffer))
+               (progn
+                 (with-accessors ((buffer editing-buffer)) s
+                   (setf buffer (senn.buffer:delete-char buffer)))
+                 (editing-update-predictions s ime)
                  (result t (editing-view s) :state s))
                ;; IMEが文字を削除していない -> OSに文字を削除してもらう
                (result nil nil))))
