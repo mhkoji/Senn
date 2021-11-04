@@ -32,10 +32,12 @@
 ;;; view
 
 ;; May be viewed as the side-effect to the system by process-input
-(defun editing-view (editing-state)
-  (let ((string (senn.buffer:buffer-string
-                 (editing-buffer editing-state))))
-    (format nil "EDITING ~A" string)))
+(defun editing-view (editing-state &key predictions)
+  (let ((json (jsown:new-js
+                ("input" (senn.buffer:buffer-string
+                          (editing-buffer editing-state)))
+                ("predictions" predictions))))
+    (format nil "EDITING ~A" (jsown:to-json json))))
 
 (defun converting-view (converting-state)
   (let ((json-string
@@ -196,7 +198,11 @@
          (editing-insert-char
           ;; to lower case by adding #x20
           s (code-char (+ #x20 (senn.win.keys:key-code key))))
-         (result t (editing-view s) :state s))
+         (let ((predictions (senn.im:predict
+                             ime (senn.buffer:buffer-string
+                                  (editing-buffer s)))))
+           (let ((view (editing-view s :predictions predictions)))
+             (result t view :state s))))
 
         ((senn.win.keys:backspace-p key)
          (let ((pron (senn.buffer:buffer-string (editing-buffer s))))

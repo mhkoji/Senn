@@ -119,6 +119,9 @@
   (with-accessors ((kkc effected-ime-kkc)) ime
     (senn.im.kkc:lookup kkc pron :next next :prev prev)))
 
+(defmethod senn.im:predict append ((ime effected-ime) (pron string))
+  (list pron))
+
 ;;;
 
 (defclass stateful-effected-ime (stateful-ime

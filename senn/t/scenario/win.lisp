@@ -19,6 +19,12 @@
          :current-index 0
          :has-more-candidates-p t)))
 
+(defun editing-view (input)
+  (let ((json (jsown:new-js
+                ("input" input)
+                ("predictions" nil))))
+    (format nil "EDITING ~A" (jsown:to-json json))))
+
 (defun converting-view (&key forms cursor-form-index cursor-form)
   (let ((json-string
          (jsown:to-json
@@ -41,19 +47,19 @@
      (,test (string= (senn.win.stateful-ime:process-input
                       ime (senn.win.keys:make-key
                            :code (char-code #\S)))
-                     (resp t "EDITING s")))
+                     (resp t (editing-view "s"))))
      (,test (string= (senn.win.stateful-ime:process-input
                       ime (senn.win.keys:make-key
                            :code (char-code #\O)))
-                     (resp t "EDITING そ")))
+                     (resp t (editing-view "そ"))))
      (,test (string= (senn.win.stateful-ime:process-input
                       ime (senn.win.keys:make-key
                            :code (char-code #\R)))
-                     (resp t "EDITING そr")))
+                     (resp t (editing-view "そr"))))
      (,test (string= (senn.win.stateful-ime:process-input
                       ime (senn.win.keys:make-key
                            :code (char-code #\A)))
-                     (resp t "EDITING そら")))
+                     (resp t (editing-view "そら"))))
      (,test (string= (senn.win.stateful-ime:process-input
                       ime (senn.win.keys:make-key
                            :code (char-code #\Space)))
