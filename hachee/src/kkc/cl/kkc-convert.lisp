@@ -26,55 +26,60 @@
   (with-accessors ((unknown-word-vocabulary
                     score-calc-dto-unknown-word-vocabulary)
                    (unknown-word-n-gram-model
-                    score-calc-dto-unknown-word-n-gram-model)
-                   (sum-probabilities-of-vocabulary-words
+                    score-calc-dto-unknown-word-n-gram-model)) score-calc-dto
+    (let ((sentence (hachee.kkc.util:unit->sentence
+                     (hachee.kkc.convert:entry-unit entry)
+                     unknown-word-vocabulary))
+          (bos (hachee.language-model.vocabulary:to-int
+                unknown-word-vocabulary
+                hachee.language-model.vocabulary:+BOS+))
+          (eos (hachee.language-model.vocabulary:to-int
+                unknown-word-vocabulary
+                 hachee.language-model.vocabulary:+EOS+)))
+      (hachee.language-model.n-gram:sentence-log-probability
+       unknown-word-n-gram-model sentence :BOS bos :EOS eos))))
+
+(defun extended-dictionary-word-probability (score-calc-dto entry)
+  (with-accessors ((sum-probabilities-of-vocabulary-words
                     score-calc-dto-sum-probabilities-of-vocabulary-words)
                    (extended-dictionary
-                    score-calc-dto-extended-dictionary))
-      score-calc-dto
-    (let ((pron-bos-token (hachee.language-model.vocabulary:to-int
-                           unknown-word-vocabulary
-                           hachee.language-model.vocabulary:+BOS+))
-          (pron-eos-token (hachee.language-model.vocabulary:to-int
-                           unknown-word-vocabulary
-                           hachee.language-model.vocabulary:+EOS+))
-          (pron-sentence (hachee.kkc.util:unit->sentence
-                          (hachee.kkc.convert:entry-unit entry)
-                          unknown-word-vocabulary)))
-      (let ((log-prob-by-unknown-word-n-gram
-             (hachee.language-model.n-gram:sentence-log-probability
-              unknown-word-n-gram-model pron-sentence
-              :BOS pron-bos-token
-              :EOS pron-eos-token))
-            (extended-dictionary-size
-             (hachee.kkc.dictionary:size extended-dictionary)))
-        (if (and (from-extended-dictionary-p entry)
-                 (< 0 extended-dictionary-size)
-                 (< 0 sum-probabilities-of-vocabulary-words))
-            (let ((probability-for-extended-dictionary-words
-                   (/ sum-probabilities-of-vocabulary-words
-                      extended-dictionary-size)))
-              (log (+ (exp log-prob-by-unknown-word-n-gram)
-                      probability-for-extended-dictionary-words)))
-            log-prob-by-unknown-word-n-gram)))))
-  
-(defun compute-convert-score (score-calc-dto curr-entry prev-entry)
+                    score-calc-dto-extended-dictionary)) score-calc-dto
+    (let ((extended-dictionary-size
+           (hachee.kkc.dictionary:size extended-dictionary)))
+      (if (and (from-extended-dictionary-p entry)
+               (< 0 extended-dictionary-size)
+               (< 0 sum-probabilities-of-vocabulary-words))
+          (/ sum-probabilities-of-vocabulary-words
+             extended-dictionary-size)
+          0))))
+
+(defun transit-probability (score-calc-dto curr-entry prev-entry)
   (let ((curr-token (hachee.kkc.convert:entry-token curr-entry))
-        (prev-token (hachee.kkc.convert:entry-token prev-entry)))
-    (let ((p (hachee.language-model.n-gram:transition-probability
-              (score-calc-dto-n-gram-model score-calc-dto)
-              curr-token
-              (list prev-token))))
-      (cond ((= p 0)
-             ;; The n-gram model was not able to predict the current token
-             ;; For example, if the current token is unknown, and the model
-             ;; can't predict unknown tokens, the probability will be 0.
-             -10000)
-            ((from-vocabulary-p curr-entry)
-             (log p))
-            (t
-             (+ (log p) (unknown-word-log-probability
-                         score-calc-dto curr-entry)))))))
+        (prev-token (hachee.kkc.convert:entry-token prev-entry))
+        (n-gram-model (score-calc-dto-n-gram-model score-calc-dto)))
+    (hachee.language-model.n-gram:transition-probability
+     n-gram-model curr-token (list prev-token))))
+
+(defun compute-convert-score (score-calc-dto curr-entry prev-entry)
+  (let ((prob-transit (transit-probability
+                       score-calc-dto curr-entry prev-entry)))
+    (cond ((= prob-transit 0)
+           ;; The n-gram model was not able to predict the current token
+           ;; For example, if the current token is unknown, and the model
+           ;; can't predict unknown tokens, the probability will be 0.
+           -10000)
+          ((from-vocabulary-p curr-entry)
+           (log prob-transit))
+          (t
+           (+ (log prob-transit)
+              (let ((log-prob-unknown (unknown-word-log-probability
+                                       score-calc-dto curr-entry))
+                    (prob-extended (extended-dictionary-word-probability
+                                    score-calc-dto curr-entry)))
+                (if (< 0 prob-extended)
+                    (log (+ (exp log-prob-unknown)
+                            prob-extended))
+                    log-prob-unknown)))))))
 
 ;;;
 
@@ -122,8 +127,7 @@
    :unit hachee.language-model.vocabulary:+BOS+
    :token (hachee.language-model.vocabulary:to-int
            (kkc-vocabulary kkc)
-           (hachee.kkc.dictionary:unit->key
-            hachee.language-model.vocabulary:+BOS+))
+           hachee.language-model.vocabulary:+BOS+)
    :origin hachee.kkc.origin:+vocabulary+))
 
 (defmethod hachee.kkc.convert:convert-end-entry ((kkc kkc))
@@ -131,8 +135,7 @@
    :unit hachee.language-model.vocabulary:+EOS+
    :token (hachee.language-model.vocabulary:to-int
            (kkc-vocabulary kkc)
-           (hachee.kkc.dictionary:unit->key
-            hachee.language-model.vocabulary:+EOS+))
+           hachee.language-model.vocabulary:+EOS+)
    :origin hachee.kkc.origin:+vocabulary+))
 
 (defmethod hachee.kkc.convert:convert-score-fn ((kkc kkc))

@@ -116,8 +116,8 @@
 
 (defmethod senn.im:lookup ((ime effected-ime) (pron string)
                            &key next prev)
-  (senn.im.kkc:lookup (effected-ime-kkc ime) pron
-                      :next next :prev prev))
+  (with-accessors ((kkc effected-ime-kkc)) ime
+    (senn.im.kkc:lookup kkc pron :next next :prev prev)))
 
 ;;;
 
