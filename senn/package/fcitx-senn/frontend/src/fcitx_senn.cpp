@@ -53,6 +53,8 @@ void ResetIM(void *arg) {
   FcitxSennIM *senn = (FcitxSennIM *)arg;
   FcitxInstance *instance = senn->fcitx;
 
+  senn->ime->ResetIM();
+
   senn::fcitx::views::Editing editing_view;
   editing_view.input = "";
   editing_view.cursor_pos = 0;

@@ -15,7 +15,10 @@
       stateful-ime
       (senn.fcitx.keys:make-key
        :sym (hachee.ipc.op:expr-arg expr "sym")
-       :state (hachee.ipc.op:expr-arg expr "state"))))))
+       :state (hachee.ipc.op:expr-arg expr "state"))))
+    (:reset-im
+     (senn.fcitx.stateful-ime:reset-im
+      stateful-ime))))
 
 (defun loop-handling-request (stateful-ime client)
   (loop for expr = (read-request client) while expr

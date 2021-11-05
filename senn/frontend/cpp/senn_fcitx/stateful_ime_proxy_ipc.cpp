@@ -1,5 +1,6 @@
 #include <fcitx/instance.h>
 #include <sstream>
+#include <cassert>
 
 #include "stateful_ime_proxy_ipc.h"
 #include "stateful_ime_proxy_ipc_json.h"
@@ -20,7 +21,6 @@ INPUT_RETURN_VALUE ParseInputReturnValue(const std::string &s) {
   return IRV_TO_PROCESS;
 }
 
-
 std::string ProcessInputRequest(FcitxKeySym sym,
                                 uint32_t keycode,
                                 uint32_t state) {
@@ -30,6 +30,15 @@ std::string ProcessInputRequest(FcitxKeySym sym,
      << "\"args\": {" << "\"sym\": " << sym << ","
      << "\"keycode\": " << keycode << ","
      << "\"state\": " << state << "}"
+     << "}\n";
+  return ss.str();
+}
+
+std::string ResetIMRequest() {
+  std::stringstream ss;
+  ss << "{"
+     << "\"op\": \"reset-im\","
+     << "\"args\": {}"
      << "}\n";
   return ss.str();
 }
@@ -44,6 +53,13 @@ StatefulIMEProxyIPC::StatefulIMEProxyIPC(
 
 StatefulIMEProxyIPC::~StatefulIMEProxyIPC() {
   requester_.reset();
+}
+
+void
+StatefulIMEProxyIPC::ResetIM() {
+  std::string response = "";
+  requester_->Request(ResetIMRequest(), &response);
+  assert(resonse == "OK");
 }
 
 INPUT_RETURN_VALUE

@@ -14,6 +14,8 @@ public:
   StatefulIMEProxyIPC(std::unique_ptr<senn::ipc::RequesterInterface>);
   ~StatefulIMEProxyIPC();
 
+  void ResetIM() override;
+
   INPUT_RETURN_VALUE ProcessInput(
       FcitxKeySym, uint32_t, uint32_t,
       std::function<void(const senn::fcitx::views::Converting*)>,

@@ -12,6 +12,8 @@ class StatefulIME {
 public:
   virtual ~StatefulIME() {}
 
+  virtual void ResetIM() = 0;
+
   virtual INPUT_RETURN_VALUE ProcessInput(
       FcitxKeySym, uint32_t, uint32_t,
       std::function<void(const senn::fcitx::views::Converting*)>,
