@@ -3,7 +3,7 @@
 
 namespace senn {
 namespace fcitx {
-namespace stateful_im_proxy_ipc_json {
+namespace stateful_ime_proxy_ipc_json {
 
 inline void Parse(
     const std::string &string_content,
@@ -63,6 +63,6 @@ inline void Parse(
     .get<picojson::object>()["prediction-index"].get<double>();
 }
 
-} // stateful_im_proxy_ipc_json
+} // stateful_ime_proxy_ipc_json
 } // fcitx
 } // senn

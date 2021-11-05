@@ -8,8 +8,8 @@
 
 #include "process/process.h"
 #include "senn_fcitx/ui.h"
-#include "senn_fcitx/stateful_im_proxy_ipc.h"
-#include "senn_fcitx/stateful_im_proxy_ipc_server.h"
+#include "senn_fcitx/stateful_ime_proxy_ipc.h"
+#include "senn_fcitx/stateful_ime_proxy_ipc_server.h"
 
 namespace {
 
@@ -23,8 +23,8 @@ public:
 typedef struct _FcitxSennIM {
   FcitxInstance *fcitx;
 
-  senn::fcitx::StatefulIMProxyIPC *im;
-  senn::fcitx::StatefulIMProxyIPCServerLauncher *launcher;
+  senn::fcitx::StatefulIMEProxyIPC *ime;
+  senn::fcitx::StatefulIMEProxyIPCServerLauncher *launcher;
 
   FcitxUIMenu menu;
   MenuHandler *menu_handler;
@@ -97,7 +97,7 @@ INPUT_RETURN_VALUE DoInput(void *arg,
   uint32_t state = FcitxInputStateGetKeyState(input);
   // std::cout << sym << " " << keycode << " " << state << std::endl;
 
-  return senn->im->ProcessInput(sym, keycode, state,
+  return senn->ime->ProcessInput(sym, keycode, state,
     [&](const senn::fcitx::views::Converting *view) {
       senn::fcitx::ui::Show(instance, view);
     },
@@ -124,7 +124,7 @@ void ReloadConfig(void *arg) {
 static void FcitxSennDestroy(void *arg) {
   FcitxSennIM *senn_im = (FcitxSennIM *)arg;
 
-  delete senn_im->im;
+  delete senn_im->ime;
   delete senn_im->launcher;
 
   senn::fcitx::ui::DestoryMenu(senn_im->fcitx, &senn_im->menu);
@@ -143,13 +143,13 @@ static void* FcitxSennCreate(FcitxInstance *fcitx) {
 
   senn_im->fcitx = fcitx;
 
-  // StatefulIM
-  senn_im->launcher = new senn::fcitx::StatefulIMProxyIPCServerLauncher(
+  // StatefulIME
+  senn_im->launcher = new senn::fcitx::StatefulIMEProxyIPCServerLauncher(
       "/usr/lib/senn/server");
   senn_im->launcher->Spawn();
-  senn_im->im = new senn::fcitx::StatefulIMProxyIPC(
+  senn_im->ime = new senn::fcitx::StatefulIMEProxyIPC(
     std::unique_ptr<senn::ipc::RequesterInterface>(
-      new senn::fcitx::ReconnectableStatefulIMRequester(senn_im->launcher)));
+      new senn::fcitx::ReconnectableStatefulIMERequester(senn_im->launcher)));
 
   // Menu
   senn_im->menu_handler = new MenuHandler();

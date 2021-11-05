@@ -6,11 +6,11 @@
 namespace senn {
 namespace fcitx {
 
-class StatefulIMProxyIPCServerLauncher
-  : public senn::ipc::ServerLauncher<StatefulIMProxyIPCServerLauncher>,
+class StatefulIMEProxyIPCServerLauncher
+  : public senn::ipc::ServerLauncher<StatefulIMEProxyIPCServerLauncher>,
     public senn::ipc::ConnectionFactory {
 public:
-  StatefulIMProxyIPCServerLauncher(const std::string&);
+  StatefulIMEProxyIPCServerLauncher(const std::string&);
 
   void Spawn() const;
 
@@ -27,16 +27,16 @@ private:
 
 
 // TODO: Define an independent requester.
-class ReconnectableStatefulIMRequester
+class ReconnectableStatefulIMERequester
   : public senn::ipc::RequesterInterface {
 public:
-  ReconnectableStatefulIMRequester(StatefulIMProxyIPCServerLauncher*);
-  ~ReconnectableStatefulIMRequester();
+  ReconnectableStatefulIMERequester(StatefulIMEProxyIPCServerLauncher*);
+  ~ReconnectableStatefulIMERequester();
 
   void Request(const std::string&, std::string*);
 
 private:
-  const StatefulIMProxyIPCServerLauncher *launcher_;
+  const StatefulIMEProxyIPCServerLauncher *launcher_;
 
   senn::ipc::Connection *conn_;
 };

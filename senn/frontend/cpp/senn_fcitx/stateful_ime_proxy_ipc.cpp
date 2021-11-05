@@ -1,8 +1,8 @@
 #include <fcitx/instance.h>
 #include <sstream>
 
-#include "stateful_im_proxy_ipc.h"
-#include "stateful_im_proxy_ipc_json.h"
+#include "stateful_ime_proxy_ipc.h"
+#include "stateful_ime_proxy_ipc_json.h"
 
 namespace senn {
 namespace fcitx {
@@ -21,9 +21,9 @@ INPUT_RETURN_VALUE ParseInputReturnValue(const std::string &s) {
 }
 
 
-std::string MakeRequest(FcitxKeySym sym,
-                        uint32_t keycode,
-                        uint32_t state) {
+std::string ProcessInputRequest(FcitxKeySym sym,
+                                uint32_t keycode,
+                                uint32_t state) {
   std::stringstream ss;
   ss << "{"
      << "\"op\": \"process-input\","
@@ -37,22 +37,22 @@ std::string MakeRequest(FcitxKeySym sym,
 } // namespace
 
 
-StatefulIMProxyIPC::StatefulIMProxyIPC(
+StatefulIMEProxyIPC::StatefulIMEProxyIPC(
     std::unique_ptr<senn::ipc::RequesterInterface> requester)
   : requester_(std::move(requester)) {
 }
 
-StatefulIMProxyIPC::~StatefulIMProxyIPC() {
+StatefulIMEProxyIPC::~StatefulIMEProxyIPC() {
   requester_.reset();
 }
 
 INPUT_RETURN_VALUE
-StatefulIMProxyIPC::ProcessInput(
+StatefulIMEProxyIPC::ProcessInput(
     FcitxKeySym sym, uint32_t keycode, uint32_t state,
     std::function<void(const senn::fcitx::views::Converting*)> on_converting,
     std::function<void(const senn::fcitx::views::Editing*)> on_editing) {
   std::string response = "";
-  requester_->Request(MakeRequest(sym, keycode, state), &response);
+  requester_->Request(ProcessInputRequest(sym, keycode, state), &response);
 
   std::istringstream iss(response);
   std::string input_return_value, type;
@@ -64,14 +64,14 @@ StatefulIMProxyIPC::ProcessInput(
     std::getline(iss, content);
 
     senn::fcitx::views::Converting converting;
-    senn::fcitx::stateful_im_proxy_ipc_json::Parse(content, &converting);
+    senn::fcitx::stateful_ime_proxy_ipc_json::Parse(content, &converting);
     on_converting(&converting);
   } else {
     std::string content;
     std::getline(iss, content);
 
     senn::fcitx::views::Editing editing;
-    senn::fcitx::stateful_im_proxy_ipc_json::Parse(content, &editing);
+    senn::fcitx::stateful_ime_proxy_ipc_json::Parse(content, &editing);
     on_editing(&editing);
   }
 

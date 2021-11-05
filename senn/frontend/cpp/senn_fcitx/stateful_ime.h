@@ -8,9 +8,9 @@
 namespace senn {
 namespace fcitx {
 
-class InputProcessor {
+class StatefulIME {
 public:
-  virtual ~InputProcessor() {}
+  virtual ~StatefulIME() {}
 
   virtual INPUT_RETURN_VALUE ProcessInput(
       FcitxKeySym, uint32_t, uint32_t,
