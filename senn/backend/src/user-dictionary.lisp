@@ -22,8 +22,6 @@
                     collect (make-item :pron (first row)
                                        :form (second row)))))))
 
-
-
 (defun item-unit (item)
   (hachee.kkc.dictionary:make-unit :form (item-form item)
                                    :pron (item-pron item)))

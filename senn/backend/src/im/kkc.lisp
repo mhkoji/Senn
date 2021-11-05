@@ -2,10 +2,10 @@
   (:use :cl)
   (:export :convert
            :lookup
-           :lookup-impl
-           :lookup-impl-get
-           :convert-impl
-           :convert-impl-get
+           :lookup-mixin
+           :lookup-mixin-impl
+           :convert-mixin
+           :convert-mixin-impl
            :get-kkc
            :load-kkc))
 (in-package :senn.im.kkc)
@@ -25,14 +25,14 @@
            convert pron
            :1st-boundary-index 1st-boundary-index)))
 
-(defclass convert-impl ()
-  ((convert-impl
+(defclass convert-mixin ()
+  ((impl
     :initarg :convert-impl
-    :reader convert-impl-get)))
+    :reader convert-mixin-impl)))
 
-(defmethod senn.im:convert ((mixin convert-impl) (pron string)
+(defmethod senn.im:convert ((mixin convert-mixin) (pron string)
                             &key 1st-boundary-index)
-  (convert (convert-impl-get mixin) pron
+  (convert (convert-mixin-impl mixin) pron
            :1st-boundary-index 1st-boundary-index))
 
 
@@ -43,14 +43,14 @@
              :origin (hachee.kkc.lookup:item-origin item)))
           (hachee.kkc.lookup:execute lookup pron :prev prev :next next)))
                        
-(defclass lookup-impl ()
-  ((lookup-impl
+(defclass lookup-mixin ()
+  ((impl
     :initarg :lookup-impl
-    :reader lookup-impl-get)))
+    :reader lookup-mixin-impl)))
 
-(defmethod senn.im:lookup ((mixin lookup-impl) (pron string)
+(defmethod senn.im:lookup ((mixin lookup-mixin) (pron string)
                            &key prev next)
-  (lookup (lookup-impl-get mixin) pron :next next :prev prev))
+  (lookup (lookup-mixin-impl mixin) pron :next next :prev prev))
 
 
 (defun load-user-kkc (senn-homedir-pathname)

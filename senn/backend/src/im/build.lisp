@@ -4,8 +4,8 @@
 (in-package :senn.im.build)
 
 (defclass ime (senn.im.predictors:katakana
-               senn.im.kkc:convert-impl
-               senn.im.kkc:lookup-impl
+               senn.im.kkc:convert-mixin
+               senn.im.kkc:lookup-mixin
                senn.im:ime) ())
 
 (defun ime (kkc)
