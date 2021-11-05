@@ -12,13 +12,14 @@
     :components
     ((:file "im")
      (:file "kkc")
+     (:file "prefix-dictionary")
+     (:file "mixin")
+     (:file "build")
      (:file "net/client")
      (:file "net/server")
      #+linux
      (:file "net/ipc/unix")
-     (:file "net/stdio")
-     (:file "predictors")
-     (:file "build"))))
+     (:file "net/stdio"))))
   :depends-on (:hachee
                :cl-trie
                :cl-csv))
