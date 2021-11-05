@@ -14,7 +14,6 @@
      (:file "kkc")
      (:file "prefix-dictionary")
      (:file "mixin")
-     (:file "build")
      (:file "net/client")
      (:file "net/server")
      #+linux

@@ -2,22 +2,16 @@
   :serial t
   :pathname "src/fcitx"
   :components
-  ((:module :input-processor
-    :pathname "input-processor"
-    :components
-    ((:file "keys")
-     (:file "input-processor")
-     (:file "im/states")
-     (:file "im/im")))
-
+  ((:file "keys")
+   (:file "irv")
+   (:file "im/ime")
+   (:file "im/process-input")
+   (:file "stateful-ime")
    (:module :ipc
-    :pathname "ipc"
+    :pathname "server"
     :components
-    ((:file "ipc")
+    ((:file "server")
      (:file "unix")
-     (:file "tcp")))
-
-   (:file "stateful-im"))
+     (:file "tcp"))))
   :depends-on (:senn
-
                :usocket))

@@ -1,107 +1,153 @@
-(defpackage :senn.fcitx.t.scenario.transit
+(defpackage :senn.t.scenario.fcitx
   (:use :cl))
-(in-package :senn.fcitx.t.scenario.transit)
+(in-package :senn.t.scenario.fcitx)
 
-(defmacro assert-ops (ops &key test)
-  `(let ((ime (make-instance 'senn.im:ime))
-         (state (senn.fcitx.transit.states:make-inputting)))
-     (loop for (sym expected-view) in ,ops
-           do (destructuring-bind (new-state actual-view)
-                  (let ((key (senn.fcitx.transit.keys:make-key
-                              :sym sym :state 0)))
-                    (senn.fcitx.transit:transit ime state key))
-                (,test (string= expected-view actual-view))
-                (setq state new-state)))))
+(defun resp (irv view)
+  (format nil "~A ~A" irv view))
 
-(defvar *ops-tests* nil)
+(defun editing-view (&key cursor-pos
+                          input
+                          predictions
+                          prediction-index
+                          committed-input)
+  (let ((json (jsown:new-js
+                ("cursor-pos"       cursor-pos)
+                ("input"            input)
+                ("predictions"      predictions)
+                ("prediction-index" (or prediction-index -1))
+                ("committed-input"  committed-input))))
+    (format nil "EDITING ~A" (jsown:to-json json))))
 
-(defmacro def-keys-test (name ops)
-  `(progn
-     (defmacro ,name (&key test)
-       `(assert-ops ,',ops :test ,test))
-     (pushnew ',name *ops-tests*)))
+(defclass ime (senn.im:ime
+               senn.fcitx.stateful-ime:stateful-ime)
+  ())
 
+(defun make-ime ()
+  (let ((state (senn.fcitx.stateful-ime:make-initial-state)))
+    (make-instance 'ime :state state)))
 
-(defun editing-view (input-return-value-string
-                     &key cursor-pos input committed-input)
-  (let ((json-string (jsown:to-json
-                      (jsown:new-js
-                       ("cursor-pos"      cursor-pos)
-                       ("input"           input)
-                       ("committed-input" committed-input)))))
-    (format nil "~A EDITING ~A" input-return-value-string json-string)))
+(defmacro when-space-key-is-first-inputted-then-full-width-space-is-inserted
+    (&key test)
+  `(let ((ime (make-ime)))
+     (,test (string=
+             (senn.fcitx.stateful-ime:process-input
+              ime (senn.fcitx.keys:make-key :sym 32 :state 0))
+             (resp "IRV_TO_PROCESS"
+                   (editing-view
+                    :cursor-pos 0
+                    :input ""
+                    :committed-input "　"))))))
 
-#+nil
-(progn
-  (defmacro when-space-key-is-first-inputted-then-full-width-space (&key test)
-    `(assert-ops '((32 "<expected-view>")) :test ,test))
-  (pushnew 'when-space-key-is-first-inputted-then-full-width-space
-           *ops-tests*))
+(defmacro cursor-can-move-around-in-the-buffer (&key test)
+  `(let ((ime (make-ime)))
+     (,test (string=
+             (senn.fcitx.stateful-ime:process-input
+              ime (senn.fcitx.keys:make-key :sym 97 :state 0))
+             (resp  "IRV_DO_NOTHING"
+                    (editing-view
+                     :cursor-pos 3
+                     :input "あ"
+                     :committed-input ""))))
+     (,test (string=
+             (senn.fcitx.stateful-ime:process-input
+              ime (senn.fcitx.keys:make-key :sym 97 :state 0))
+             (resp  "IRV_DO_NOTHING"
+                    (editing-view
+                     :cursor-pos 6
+                     :input "ああ"
+                     :committed-input ""))))
+     (,test (string=
+             (senn.fcitx.stateful-ime:process-input
+              ime (senn.fcitx.keys:make-key :sym 65361 :state 0))
+             (resp  "IRV_DO_NOTHING"
+                    (editing-view
+                     :cursor-pos 3
+                     :input "ああ"
+                     :committed-input ""))))
+     (,test (string=
+             (senn.fcitx.stateful-ime:process-input
+              ime (senn.fcitx.keys:make-key :sym 65361 :state 0))
+             (resp  "IRV_DO_NOTHING"
+                    (editing-view
+                     :cursor-pos 0
+                     :input "ああ"
+                             :committed-input ""))))
+     (,test (string=
+             (senn.fcitx.stateful-ime:process-input
+              ime (senn.fcitx.keys:make-key :sym 65363 :state 0))
+             (resp  "IRV_DO_NOTHING"
+                    (editing-view
+                     :cursor-pos 3
+                     :input "ああ"
+                     :committed-input ""))))
+     (,test (string=
+             (senn.fcitx.stateful-ime:process-input
+              ime (senn.fcitx.keys:make-key :sym 65363 :state 0))
+             (resp  "IRV_DO_NOTHING"
+                    (editing-view
+                     :cursor-pos 6
+                     :input "ああ"
+                     :committed-input ""))))))
 
-(def-keys-test
-    when-space-key-is-first-inputted-then-full-width-space-is-inserted
-    `((32 ,(editing-view "IRV_TO_PROCESS"
-                         :cursor-pos 0
-                         :input ""
-                         :committed-input "　"))))
+(defmacro cursor-does-not-go-beyond-the-left-end (&key test)
+  `(let ((ime (make-ime)))
+     (,test (string=
+             (senn.fcitx.stateful-ime:process-input
+              ime (senn.fcitx.keys:make-key :sym 97 :state 0))
+             (resp  "IRV_DO_NOTHING"
+                    (editing-view
+                     :cursor-pos 3
+                     :input "あ"
+                     :committed-input ""))))
+     (,test (string=
+             (senn.fcitx.stateful-ime:process-input
+              ime (senn.fcitx.keys:make-key :sym 65361 :state 0))
+             (resp  "IRV_DO_NOTHING"
+                    (editing-view
+                     :cursor-pos 0
+                     :input "あ"
+                     :committed-input ""))))
+     (,test (string=
+             (senn.fcitx.stateful-ime:process-input
+              ime (senn.fcitx.keys:make-key :sym 65361 :state 0))
+             (resp  "IRV_DO_NOTHING"
+                    (editing-view
+                     :cursor-pos 0
+                     :input "あ"
+                     :committed-input ""))))))
 
-(def-keys-test cursor-can-move-around-in-the-buffer
-    `((97 ,(editing-view "IRV_TO_PROCESS"
-                         :cursor-pos 3
-                         :input "あ"
-                         :committed-input ""))
-      (97 ,(editing-view "IRV_TO_PROCESS"
-                         :cursor-pos 6
-                         :input "ああ"
-                         :committed-input ""))
-      (65361 ,(editing-view "IRV_TO_PROCESS"
-                            :cursor-pos 3
-                            :input "ああ"
-                            :committed-input ""))
-      (65361 ,(editing-view "IRV_TO_PROCESS"
-                            :cursor-pos 0
-                            :input "ああ"
-                            :committed-input ""))
-      (65363 ,(editing-view "IRV_TO_PROCESS"
-                            :cursor-pos 3
-                            :input "ああ"
-                            :committed-input ""))
-      (65363 ,(editing-view "IRV_TO_PROCESS"
-                            :cursor-pos 6
-                            :input "ああ"
-                            :committed-input ""))))
-
-(def-keys-test cursor-does-not-go-beyond-the-left-end
-    `((97 ,(editing-view "IRV_TO_PROCESS"
-                         :cursor-pos 3
-                         :input "あ"
-                         :committed-input ""))
-      (65361 ,(editing-view "IRV_TO_PROCESS"
-                            :cursor-pos 0
-                            :input "あ"
-                            :committed-input ""))
-      (65361 ,(editing-view "IRV_TO_PROCESS"
-                            :cursor-pos 0
-                            :input "あ"
-                            :committed-input ""))))
-
-(def-keys-test cursor-does-not-go-beyond-the-right-end
-    `((97 ,(editing-view "IRV_TO_PROCESS"
-                         :cursor-pos 3
-                         :input "あ"
-                         :committed-input ""))
-      (65363 ,(editing-view "IRV_TO_PROCESS"
-                            :cursor-pos 3
-                            :input "あ"
-                            :committed-input ""))))
-
+(defmacro cursor-does-not-go-beyond-the-right-end (&key test)
+  `(let ((ime (make-ime)))
+     (,test (string=
+             (senn.fcitx.stateful-ime:process-input
+              ime (senn.fcitx.keys:make-key :sym 97 :state 0))
+             (resp  "IRV_DO_NOTHING"
+                    (editing-view
+                     :cursor-pos 3
+                     :input "あ"
+                     :committed-input ""))))
+     (,test (string=
+             (senn.fcitx.stateful-ime:process-input
+              ime (senn.fcitx.keys:make-key :sym 65363 :state 0))
+             (resp  "IRV_DO_NOTHING"
+                    (editing-view
+                     :cursor-pos 3
+                     :input "あ"
+                     :committed-input ""))))))
 
 (fiveam:def-suite :senn.fcitx)
-(fiveam:in-suite* :senn.fcitx)
+(fiveam:in-suite* :senn.fcitx.stateful-ime :in :senn.fcitx)
 
-(progn
-  #.(cons 'progn
-          (mapcar (lambda (ops-test)
-                    `(test ,(intern (symbol-name ops-test))
-                       (,ops-test :test fiveam:is)))
-                  senn.fcitx.t.scenario.transit:*ops-tests*)))
+(fiveam:test
+    when-space-key-is-first-inputted-then-full-width-space-is-inserted
+  (when-space-key-is-first-inputted-then-full-width-space-is-inserted
+   :test fiveam:is))
+
+(fiveam:test cursor-can-move-around-in-the-buffer
+  (cursor-can-move-around-in-the-buffer :test fiveam:is))
+
+(fiveam:test cursor-does-not-go-beyond-the-left-end
+  (cursor-does-not-go-beyond-the-left-end :test fiveam:is))
+
+(fiveam:test cursor-does-not-go-beyond-the-right-end
+  (cursor-does-not-go-beyond-the-right-end :test fiveam:is))
