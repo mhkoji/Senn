@@ -48,8 +48,8 @@ fcitx-senn-0.0.1-Linux.deb
 % sudo mv bin/server /usr/lib/senn
 
 % sudo apt install -y fcitx-libs-dev
-% mkdir <path/to/Hachee>/senn/dists/fcitx-senn/frontend/build
-% cd <path/to/Hachee>/senn/dists/fcitx-senn/frontend/build
+% mkdir <path/to/Hachee>/senn/package/fcitx-senn/frontend/build
+% cd <path/to/Hachee>/senn/package/fcitx-senn/frontend/build
 % sudo make install
 
 % /usr/lib/senn/server

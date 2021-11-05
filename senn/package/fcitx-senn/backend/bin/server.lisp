@@ -11,6 +11,4 @@
 
 (defun main (&rest argv)
   (declare (ignorable argv))
-  (senn.fcitx.ipc.unix:start-server
-   (make-instance 'senn.im.kkc:ime :kkc *kkc*)
-   #'senn.fcitx.stateful-im:loop-handling-request))
+  (senn.fcitx.server.unix:start-server *kkc*))
