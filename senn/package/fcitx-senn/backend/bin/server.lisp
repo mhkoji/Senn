@@ -2,7 +2,9 @@
   (:use :cl)
   (:export :main))
 (in-package :senn.fcitx-senn.backend.bin)
-(ql:quickload :senn-fcitx :silent t)
+(ql:quickload (list :senn-fcitx
+                    :senn-server-unix)
+              :silent t)
 
 (defvar *kkc*
   ;; There is no user home directory
@@ -11,4 +13,10 @@
 
 (defun main (&rest argv)
   (declare (ignorable argv))
-  (senn.fcitx.server.unix:start-server *kkc*))
+  (senn.server.unix:start-server
+   (lambda (client)
+     (senn.fcitx.server:loop-handling-request kkc
+      :read-fn (lambda ()
+                 (senn.server.unix:read-request client))
+      :send-fn (lambda (resp)
+                 (senn.server.unix:send-response client resp))))))

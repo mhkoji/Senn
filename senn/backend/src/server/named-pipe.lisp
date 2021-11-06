@@ -1,10 +1,15 @@
-(defpackage :senn.win.server.named-pipe
+(defpackage :senn.server.named-pipe
   (:use :cl)
-  (:export :start-server)
+  (:export :read-request
+           :send-response
+           :start-server)
   (:import-from :alexandria
                 :if-let
                 :when-let))
-(in-package :senn.win.server.named-pipe)
+(in-package :senn.server.named-pipe)
+
+(defgeneric read-request (c))
+(defgeneric send-response (c resp))
 
 (defstruct client id pipe)
 
@@ -13,35 +18,31 @@
              (client-id ,client)
              ,@args))
 
-(defmethod senn.win.server:read-request ((client client))
+(defmethod read-request ((client client))
   (when-let ((octets (hachee.ipc.named-pipe:read-file (client-pipe client))))
     (let ((string (babel:octets-to-string octets :encoding :utf-8)))
       (hachee.ipc.op:as-expr string))))
 
-(defmethod senn.win.server:send-response ((client client) (resp string))
+(defmethod send-response ((client client) (resp string))
   (let ((octets (babel:string-to-octets resp :encoding :utf-8)))
     (hachee.ipc.named-pipe:write-file (client-pipe client) octets)))
 
-(defmethod senn.win.server:read-request :around ((client client))
+(defmethod read-request :around ((client client))
   (let ((req (call-next-method)))
     (log/info client "Read: ~A" req)
     req))
 
-(defmethod senn.win.server:send-response :after ((client client) resp)
+(defmethod send-response :after ((client client) resp)
   (log/info client "Written: ~A" resp))
 
-
-(defun spawn-client-thread (ime client)
+(defun spawn-client-thread (client-loop-fn client)
   (log/info client "Connected")
   (bordeaux-threads:make-thread
    (lambda ()
-     (handler-case
-         (senn.win.server:loop-handling-request ime client)
-       (error (e)
-         (log:info "~A" e)))
+     (funcall client-loop-fn client)
      (log/info client "Disconnected"))))
 
-(defun start-server (kkc &key (pipe-name "\\\\.\\Pipe\\senn"))
+(defun enter-loop (client-loop-fn &key (pipe-name "\\\\.\\Pipe\\senn"))
   (let ((threads nil)
         (clients nil))
     (unwind-protect
@@ -52,10 +53,10 @@
             do (progn
                  (log:info "Waiting for client...")
                  (hachee.ipc.named-pipe:connect pipe)
-                 (let ((ime (senn.win.stateful-ime:make-from-kkc kkc))
-                       (client (make-client :id client-id :pipe pipe)))
+                 (let ((client (make-client :id client-id :pipe pipe)))
                    (push client clients)
-                   (push (spawn-client-thread client ime) threads))))
+                   (push (spawn-client-thread client-loop-fn client)
+                         threads))))
       (mapc #'hachee.ipc.named-pipe:disconnect-and-close
             (mapcar #'client-pipe clients))
       (mapc #'bordeaux-threads:destroy-thread threads))))

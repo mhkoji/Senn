@@ -11,13 +11,22 @@ exec ros -Q -- $0 "$@"
 (defpackage :ros.script.server.3755635753
   (:use :cl))
 (in-package :ros.script.server.3755635753)
-(ql:quickload :senn-fcitx :silent t)
+(ql:quickload (list :senn-fcitx
+                    :senn-server-unix)
+              :silent t)
 
 (defvar *kkc*
-  (senn.im.kkc:load-kkc (merge-pathnames ".senn/" (user-homedir-pathname))))
+  (senn.im.kkc:load-kkc
+   (merge-pathnames ".senn/" (user-homedir-pathname))))
 
 (defun main (&rest argv)
   (declare (ignorable argv))
-  (senn.fcitx.server.unix:start-server *kkc*))
+  (senn.server.unix:start-server
+   (lambda (client)
+     (senn.fcitx.server:loop-handling-request *kkc*
+      :read-fn (lambda ()
+                 (senn.server.unix:read-request client))
+      :send-fn (lambda (resp)
+                 (senn.server.unix:send-response client resp))))))
 
 ;;; vim: set ft=lisp lisp:

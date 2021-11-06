@@ -8,13 +8,6 @@
    (:file "im/process-input")
    (:file "im/can-process")
    (:file "stateful-ime")
-
-   (:file "server/server")
-   #+windows
-   (:file "server/named-pipe")
-   #+linux
-   (:file "server/tcp"))
+   (:file "server"))
   :depends-on (:senn
-               :jsown
-               #+linux
-               :usocket))
+               :jsown))

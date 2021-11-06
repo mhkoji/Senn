@@ -1,12 +1,7 @@
 (defpackage :senn.fcitx.server
   (:use :cl)
-  (:export :read-request
-           :send-response
-           :loop-handling-request))
+  (:export :loop-handling-request))
 (in-package :senn.fcitx.server)
-
-(defgeneric read-request (c))
-(defgeneric send-response (c resp))
 
 (defun handle-request (stateful-ime expr)
   (ecase (hachee.ipc.op:expr-op expr)
@@ -20,7 +15,11 @@
      (senn.fcitx.stateful-ime:reset-im
       stateful-ime))))
 
-(defun loop-handling-request (stateful-ime client)
-  (loop for expr = (read-request client) while expr
-        do (let ((resp (handle-request stateful-ime expr)))
-             (send-response client resp))))
+(defun loop-handling-request (kkc &key read-fn send-fn)
+  (handler-case
+      (let ((sf-ime (senn.fcitx.stateful-ime:make-from-kkc kkc)))
+        (loop for expr = (funcall read-fn) while expr
+              do (let ((resp (handle-request sf-ime expr)))
+                   (funcall send-fn resp))))
+    (error (c)
+      (log:warn "~A" c))))

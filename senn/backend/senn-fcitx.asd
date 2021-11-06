@@ -7,11 +7,5 @@
    (:file "im/ime")
    (:file "im/process-input")
    (:file "stateful-ime")
-   (:module :ipc
-    :pathname "server"
-    :components
-    ((:file "server")
-     (:file "unix")
-     (:file "tcp"))))
-  :depends-on (:senn
-               :usocket))
+   (:file "server"))
+  :depends-on (:senn))

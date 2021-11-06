@@ -1,9 +1,14 @@
-(defpackage :senn.fcitx.server.tcp
+(defpackage :senn.server.tcp
   (:use :cl)
-  (:export :start-server)
+  (:export :read-request
+           :send-response
+           :start-server)
   (:import-from :alexandria
                 :when-let))
-(in-package :senn.fcitx.server.tcp)
+(in-package :senn.server.tcp)
+
+(defgeneric read-request (c))
+(defgeneric send-response (c resp))
 
 (defstruct client id usocket)
 
@@ -12,37 +17,30 @@
              (client-id ,client)
              ,@args))
 
-(defmethod senn.fcitx.server:read-request ((client client))
+(defmethod read-request ((client client))
   (let ((stream (usocket:socket-stream (client-usocket client))))
     (when-let ((line (read-line stream nil nil nil)))
+      (log/info client "Read: ~A" line)
       (hachee.ipc.op:as-expr line))))
 
-(defmethod senn.fcitx.server:send-response ((client client) resp)
+(defmethod send-response ((client client) resp)
   (let ((stream (usocket:socket-stream (client-usocket client))))
     (write-line resp stream)
     (force-output stream)))
 
-(defmethod senn.fcitx.server:read-request :around ((client client))
-  (let ((req (call-next-method)))
-    (log/info client "Read: ~A" req)
-    req))
-
-(defmethod senn.fcitx.server:send-response :after ((client client) resp)
+(defmethod send-response :after ((client client) resp)
   (log/info client "Written: ~A" resp))
 
-(defun spawn-client-thread (sf-ime client)
+(defun spawn-client-thread (client-loop-fn client)
   (log/info client "Connected")
   (bordeaux-threads:make-thread
    (lambda ()
-     (handler-case
-         (senn.fcitx.server:loop-handling-request sf-ime client)
-       (error (c)
-         (log:warn "~A" c)))
+     (funcall client-loop-fn client)
      (ignore-errors
        (usocket:socket-close (client-usocket client)))
      (log/info client "Disconnected"))))
 
-(defun start-server (kkc &key (port 5678))
+(defun start-server (client-loop-fn &key (port 5678))
   (usocket:with-server-socket
       (server-socket (usocket:socket-listen "0.0.0.0" port))
     (let ((threads nil))
@@ -50,7 +48,6 @@
       (unwind-protect
            (loop for client-id from 1 do
              (let* ((socket (usocket:socket-accept server-socket))
-                    (client (make-client :id client-id :usocket socket))
-                    (sf-ime (senn.fcitx.stateful-ime:make-from-kkc kkc)))
-               (push (spawn-client-thread sf-ime client) threads)))
+                    (client (make-client :id client-id :usocket socket)))
+               (push (spawn-client-thread client-loop-fn client) threads)))
         (mapc #'bordeaux-threads:destroy-thread threads)))))
