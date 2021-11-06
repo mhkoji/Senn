@@ -43,11 +43,13 @@
                 ("committed-input"  committed-string))))
     (format nil "EDITING ~A" (jsown:to-json json))))
 
-(defun editing-view/inputing-state (s &key predictions committed-string)
+(defun editing-view/inputing-state (s &key committed-string)
   (let ((buffer (inputting-buffer s)))
     (make-editing-view (buffer-cursor-pos-utf8 buffer)
                        (senn.buffer:buffer-string buffer)
-                       predictions nil (or committed-string ""))))
+                       (inputting-predictions s)
+                       nil
+                       (or committed-string ""))))
 
 (defun editing-view/katakana-state (s)
   (let ((katakana-input (katakana-input s)))
@@ -202,6 +204,14 @@
                   new-state :committed-string committed-string)
                  :state new-state)))))
 
+(defun inputting-update-predictions (s ime)
+  (setf (inputting-predictions s)
+        (let ((buffer (inputting-buffer s)))
+          (if (buffer-empty-p buffer)
+              nil
+              (senn.im:predict
+               ime (senn.buffer:buffer-string buffer))))))
+
 (defmethod execute ((ime senn.im:ime) (s inputting)
                     (key senn.fcitx.keys:key))
   (cond ((/= (logand (senn.fcitx.keys:key-state key)
@@ -224,30 +234,26 @@
                (editing-view/inputing-state s)))
 
         ((senn.fcitx.keys:tab-p key)
-         (let ((inputted-string
-                (senn.buffer:buffer-string (inputting-buffer s))))
-           (let ((predictions (senn.im:predict ime inputted-string)))
-             (if (null predictions)
+         (let ((predictions (inputting-predictions s)))
+           (if (null predictions)
                  ;;; Do nothing
-                 (resp senn.fcitx.irv:+TO-PROCESS+
-                       (editing-view/inputing-state s))
-                 (let ((new-state (make-selecting-from-predictions
-                                   :predictions predictions
-                                   :current-index 0)))
-                   (resp senn.fcitx.irv:+DO-NOTHING+
-                         (editing-view/selecting-from-predictions new-state)
-                         :state new-state))))))
+               (resp senn.fcitx.irv:+TO-PROCESS+
+                     (editing-view/inputing-state s))
+               (let ((new-state (make-selecting-from-predictions
+                                 :predictions predictions
+                                 :current-index 0)))
+                 (resp senn.fcitx.irv:+DO-NOTHING+
+                       (editing-view/selecting-from-predictions new-state)
+                       :state new-state)))))
 
         ((senn.fcitx.keys:char-p key)
          (let ((char (code-char (senn.fcitx.keys:key-sym key))))
            (setf (inputting-buffer s)
                  (senn.buffer:insert-char (inputting-buffer s) char))
-           (let ((inputted-string
-                  (senn.buffer:buffer-string (inputting-buffer s))))
-             (let ((predictions (senn.im:predict ime inputted-string)))
-               (resp senn.fcitx.irv:+DO-NOTHING+
-                     (editing-view/inputing-state s :predictions predictions)
-                     :state s)))))
+           (inputting-update-predictions s ime)
+           (resp senn.fcitx.irv:+DO-NOTHING+
+                 (editing-view/inputing-state s)
+                 :state s)))
 
         ((and (senn.fcitx.keys:f7-p key)
               (not (inputting-buffer-empty-p s)))
@@ -305,6 +311,7 @@
              (progn
                (setf (inputting-buffer s)
                      (senn.buffer:delete-char (inputting-buffer s)))
+               (inputting-update-predictions s ime)
                ;; IMEが文字を削除した -> OSが文字が削除するのを抑制
                (list senn.fcitx.irv:+DO-NOTHING+
                      (editing-view/inputing-state s)

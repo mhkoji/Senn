@@ -3,6 +3,7 @@
   (:export :inputting
            :make-inputting
            :inputting-buffer
+           :inputting-predictions
 
            :katakana
            :make-katakana
@@ -26,7 +27,8 @@
 (in-package :senn.fcitx.im)
 
 (defstruct inputting
-  (buffer (senn.buffer:make-buffer)))
+  (buffer (senn.buffer:make-buffer))
+  predictions)
 
 
 (defstruct (katakana (:constructor %make-katakana))
