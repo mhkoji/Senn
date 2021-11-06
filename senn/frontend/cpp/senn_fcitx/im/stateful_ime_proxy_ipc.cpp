@@ -71,7 +71,7 @@ void
 StatefulIMEProxyIPC::ResetIM() {
   std::string response = "";
   requester_->Request(ResetIMRequest(), &response);
-  assert(resonse == "OK");
+  assert(response == "OK");
 }
 
 boolean
