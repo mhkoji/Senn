@@ -5,9 +5,6 @@
            :start-server))
 (in-package :senn.server.named-pipe)
 
-(defgeneric read-request (c))
-(defgeneric send-response (c resp))
-
 (defstruct client id pipe)
 
 (defmacro log/info (client format-str &rest args)
