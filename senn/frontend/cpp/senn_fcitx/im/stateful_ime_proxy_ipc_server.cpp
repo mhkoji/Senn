@@ -7,7 +7,8 @@
 
 namespace senn {
 namespace fcitx {
-
+namespace im {
+  
 StatefulIMEProxyIPCServerLauncher::StatefulIMEProxyIPCServerLauncher(
     const std::string &server_program_path)
   : server_program_path_(server_program_path),
@@ -52,5 +53,6 @@ void ReconnectableStatefulIMERequester::Request(const std::string &req,
       ->Execute(req, res);
 }
 
+} // im
 } // fcitx
 } // senn

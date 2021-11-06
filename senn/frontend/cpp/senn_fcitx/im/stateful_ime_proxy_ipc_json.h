@@ -3,11 +3,12 @@
 
 namespace senn {
 namespace fcitx {
+namespace im {
 namespace stateful_ime_proxy_ipc_json {
 
 inline void Parse(
     const std::string &string_content,
-    senn::fcitx::views::Converting *output) {
+    senn::fcitx::im::views::Converting *output) {
   picojson::value content;
   picojson::parse(content, string_content);
 
@@ -40,7 +41,7 @@ inline void Parse(
 
 inline void Parse(
     const std::string &string_content,
-    senn::fcitx::views::Editing *output) {
+    senn::fcitx::im::views::Editing *output) {
   picojson::value content;
   picojson::parse(content, string_content);
 
@@ -63,6 +64,7 @@ inline void Parse(
     .get<picojson::object>()["prediction-index"].get<double>();
 }
 
+} // im
 } // stateful_ime_proxy_ipc_json
 } // fcitx
 } // senn

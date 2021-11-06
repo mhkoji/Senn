@@ -2,12 +2,12 @@
 #include <fcitx/instance.h>
 #include <string>
 #include <sstream>
-
-#include "ui.h"
+#include "input.h"
 
 namespace senn {
 namespace fcitx {
 namespace ui {
+namespace input {
 
 namespace {
 
@@ -53,7 +53,7 @@ void ShowCandidateWordList(
 } // namespace
 
 void Show(FcitxInstance *instance,
-          const senn::fcitx::views::Converting *converting) {
+          const senn::fcitx::im::views::Converting *converting) {
   // 表示している文字列を削除
   FcitxInstanceCleanInputWindow(instance);
 
@@ -89,7 +89,7 @@ void Show(FcitxInstance *instance,
 }
 
 void Show(FcitxInstance *instance,
-          const senn::fcitx::views::Editing *editing) {
+          const senn::fcitx::im::views::Editing *editing) {
   FcitxInputContext *ic = FcitxInstanceGetCurrentIC(instance);
 
   if (editing->committed_input != "") {
@@ -128,58 +128,7 @@ void Show(FcitxInstance *instance,
   FcitxUIUpdateInputWindow(instance);
 }
 
-namespace {
-
-const char* GetMenuIconName(void* arg) {
-  return "";
-}
-
-void UpdateMenu(FcitxUIMenu *menu) {
-}
-
-
-boolean MenuAction(FcitxUIMenu *menu, int index) {
-  return ((MenuHandlerInterface*)menu->priv)->OnAbout();
-}
-
-} // namespace
-
-void SetupMenu(FcitxInstance *fcitx,
-               FcitxUIMenu *menu,
-               MenuHandlerInterface *menu_handler) {
-  FcitxUIRegisterComplexStatus(
-      fcitx,
-      NULL,
-      "senn-menu",
-      "メニュー",
-      "メニュー",
-      NULL,
-      GetMenuIconName);
-
-  FcitxMenuInit(menu);
-  menu->name = strdup("メニュー");
-  menu->candStatusBind = strdup("senn-menu");
-  menu->UpdateMenu = UpdateMenu;
-  menu->MenuAction = MenuAction;
-  menu->priv = menu_handler;
-  menu->isSubMenu = false;
-  FcitxMenuAddMenuItem(menu, "Senn について", MENUTYPE_SIMPLE, NULL);
-  FcitxUIRegisterMenu(fcitx, menu);
-
-  SetMenuVisibility(fcitx, false);
-}
-
-void DestoryMenu(FcitxInstance *fcitx, FcitxUIMenu *menu) {
-  FcitxUIUnRegisterMenu(fcitx, menu);
-  fcitx_utils_free(menu->name);
-  fcitx_utils_free(menu->candStatusBind);
-  FcitxMenuFinalize(menu);
-}
-
-void SetMenuVisibility(FcitxInstance *fcitx, boolean vis) {
-  FcitxUISetStatusVisable(fcitx, "senn-menu", vis);
-}
-
+} // input
 } // ui
 } // fcitx
 } // senn

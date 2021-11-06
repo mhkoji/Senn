@@ -5,6 +5,7 @@
 
 namespace senn {
 namespace fcitx {
+namespace im {
 
 class StatefulIMEProxyIPCServerLauncher
   : public senn::ipc::ServerLauncher<StatefulIMEProxyIPCServerLauncher>,
@@ -41,5 +42,6 @@ private:
   senn::ipc::Connection *conn_;
 };
 
+} // im
 } // fcitx
 } // senn

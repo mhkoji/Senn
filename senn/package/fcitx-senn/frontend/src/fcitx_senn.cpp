@@ -7,34 +7,71 @@
 #include <fcitx/context.h>
 
 #include "process/process.h"
-#include "senn_fcitx/ui.h"
-#include "senn_fcitx/stateful_ime_proxy_ipc.h"
-#include "senn_fcitx/stateful_ime_proxy_ipc_server.h"
+#include "senn_fcitx/ui/input.h"
+#include "senn_fcitx/im/stateful_ime_proxy_ipc.h"
+#include "senn_fcitx/im/stateful_ime_proxy_ipc_server.h"
 
 namespace {
 
-class MenuHandler : public senn::fcitx::ui::MenuHandlerInterface {
-public:
-  boolean OnAbout() {
-    return senn::process::Spawn("/usr/lib/senn/menu-about");
-  }
-};
-
 typedef struct _FcitxSennIM {
   FcitxInstance *fcitx;
-
-  senn::fcitx::StatefulIMEProxyIPC *ime;
-  senn::fcitx::StatefulIMEProxyIPCServerLauncher *launcher;
-
   FcitxUIMenu menu;
-  MenuHandler *menu_handler;
-} FcitxSennIM;
 
+  senn::fcitx::im::StatefulIMEProxyIPC *ime;
+  senn::fcitx::im::StatefulIMEProxyIPCServerLauncher *launcher;
+} FcitxSennIM;
 
 } // namespace
 
 namespace senn {
 namespace fcitx_senn_im {
+namespace menu {
+
+const char* GetIconName(void* arg) {
+  return "";
+}
+
+void Update(FcitxUIMenu *menu) {}
+
+boolean Action(FcitxUIMenu *menu, int index) {
+  return senn::process::Spawn("/usr/lib/senn/menu-about");
+}
+
+void SetVisibility(FcitxInstance *fcitx, boolean vis) {
+  FcitxUISetStatusVisable(fcitx, "senn-menu", vis);
+}
+
+void Setup(FcitxInstance *fcitx, FcitxUIMenu *menu) {
+  FcitxUIRegisterComplexStatus(
+      fcitx,
+      NULL,
+      "senn-menu",
+      "メニュー",
+      "メニュー",
+      NULL,
+      GetIconName);
+
+  FcitxMenuInit(menu);
+  menu->name = strdup("メニュー");
+  menu->candStatusBind = strdup("senn-menu");
+  menu->UpdateMenu = Update;
+  menu->MenuAction = Action;
+  menu->priv = nullptr;
+  menu->isSubMenu = false;
+  FcitxMenuAddMenuItem(menu, "Senn について", MENUTYPE_SIMPLE, NULL);
+  FcitxUIRegisterMenu(fcitx, menu);
+
+  SetVisibility(fcitx, false);
+}
+
+void Destory(FcitxInstance *fcitx, FcitxUIMenu *menu) {
+  FcitxUIUnRegisterMenu(fcitx, menu);
+  fcitx_utils_free(menu->name);
+  fcitx_utils_free(menu->candStatusBind);
+  FcitxMenuFinalize(menu);
+}
+
+} // menu
 
 static void ResetInput(void *arg) {
   FcitxSennIM *senn = (FcitxSennIM *)arg;
@@ -42,9 +79,9 @@ static void ResetInput(void *arg) {
 
   FcitxIM *im = FcitxInstanceGetCurrentIM(instance);
   if (im && strcmp(im->uniqueName, "senn") == 0) {
-    senn::fcitx::ui::SetMenuVisibility(instance, true);
+    menu::SetVisibility(instance, true);
   } else {
-    senn::fcitx::ui::SetMenuVisibility(instance, false);
+    menu::SetVisibility(instance, false);
   }
 }
 
@@ -55,10 +92,10 @@ void ResetIM(void *arg) {
 
   senn->ime->ResetIM();
 
-  senn::fcitx::views::Editing editing_view;
+  senn::fcitx::im::views::Editing editing_view;
   editing_view.input = "";
   editing_view.cursor_pos = 0;
-  senn::fcitx::ui::Show(instance, &editing_view);
+  senn::fcitx::ui::input::Show(instance, &editing_view);
 }
 
 
@@ -100,12 +137,12 @@ INPUT_RETURN_VALUE DoInput(void *arg,
   // std::cout << sym << " " << keycode << " " << state << std::endl;
 
   return senn->ime->ProcessInput(sym, keycode, state,
-    [&](const senn::fcitx::views::Converting *view) {
-      senn::fcitx::ui::Show(instance, view);
+    [&](const senn::fcitx::im::views::Converting *view) {
+      senn::fcitx::ui::input::Show(instance, view);
     },
 
-    [&](const senn::fcitx::views::Editing *view) {
-      senn::fcitx::ui::Show(instance, view);
+    [&](const senn::fcitx::im::views::Editing *view) {
+      senn::fcitx::ui::input::Show(instance, view);
     });
 }
 
@@ -129,8 +166,7 @@ static void FcitxSennDestroy(void *arg) {
   delete senn_im->ime;
   delete senn_im->launcher;
 
-  senn::fcitx::ui::DestoryMenu(senn_im->fcitx, &senn_im->menu);
-  delete senn_im->menu_handler;
+  senn::fcitx_senn_im::menu::Destory(senn_im->fcitx, &senn_im->menu);
 
   free(senn_im);
 
@@ -146,32 +182,33 @@ static void* FcitxSennCreate(FcitxInstance *fcitx) {
   senn_im->fcitx = fcitx;
 
   // StatefulIME
-  senn_im->launcher = new senn::fcitx::StatefulIMEProxyIPCServerLauncher(
+  senn_im->launcher =
+    new senn::fcitx::im::StatefulIMEProxyIPCServerLauncher(
       "/usr/lib/senn/server");
   senn_im->launcher->Spawn();
-  senn_im->ime = new senn::fcitx::StatefulIMEProxyIPC(
-    std::unique_ptr<senn::ipc::RequesterInterface>(
-      new senn::fcitx::ReconnectableStatefulIMERequester(senn_im->launcher)));
 
-  // Menu
-  senn_im->menu_handler = new MenuHandler();
-  senn::fcitx::ui::SetupMenu(senn_im->fcitx,
-                             &senn_im->menu,
-                             senn_im->menu_handler);
+  senn_im->ime =
+    new senn::fcitx::im::StatefulIMEProxyIPC(
+      std::unique_ptr<senn::ipc::RequesterInterface>(
+        new senn::fcitx::im::ReconnectableStatefulIMERequester(
+          senn_im->launcher)));
 
   FcitxIMEventHook hk;
   hk.arg = senn_im;
   hk.func = senn::fcitx_senn_im::ResetInput;
   FcitxInstanceRegisterResetInputHook(fcitx, hk);
+  
+  // Menu
+  senn::fcitx_senn_im::menu::Setup(senn_im->fcitx, &senn_im->menu);
 
   // Register
   FcitxIMIFace iface;
   memset(&iface, 0, sizeof(FcitxIMIFace));
-  iface.Init = senn::fcitx_senn_im::Init;
-  iface.ResetIM = senn::fcitx_senn_im::ResetIM;
-  iface.DoInput = senn::fcitx_senn_im::DoInput;
+  iface.Init           = senn::fcitx_senn_im::Init;
+  iface.ResetIM        = senn::fcitx_senn_im::ResetIM;
+  iface.DoInput        = senn::fcitx_senn_im::DoInput;
   iface.DoReleaseInput = senn::fcitx_senn_im::DoReleaseInput;
-  iface.ReloadConfig = senn::fcitx_senn_im::ReloadConfig;
+  iface.ReloadConfig   = senn::fcitx_senn_im::ReloadConfig;
   FcitxInstanceRegisterIMv2(
       fcitx,
       senn_im,

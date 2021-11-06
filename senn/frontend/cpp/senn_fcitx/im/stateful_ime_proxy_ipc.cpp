@@ -7,6 +7,7 @@
 
 namespace senn {
 namespace fcitx {
+namespace im {
 
 namespace {
 
@@ -65,8 +66,8 @@ StatefulIMEProxyIPC::ResetIM() {
 INPUT_RETURN_VALUE
 StatefulIMEProxyIPC::ProcessInput(
     FcitxKeySym sym, uint32_t keycode, uint32_t state,
-    std::function<void(const senn::fcitx::views::Converting*)> on_converting,
-    std::function<void(const senn::fcitx::views::Editing*)> on_editing) {
+    std::function<void(const senn::fcitx::im::views::Converting*)> on_conv,
+    std::function<void(const senn::fcitx::im::views::Editing*)> on_editing) {
   std::string response = "";
   requester_->Request(ProcessInputRequest(sym, keycode, state), &response);
 
@@ -79,20 +80,21 @@ StatefulIMEProxyIPC::ProcessInput(
     std::string content;
     std::getline(iss, content);
 
-    senn::fcitx::views::Converting converting;
-    senn::fcitx::stateful_ime_proxy_ipc_json::Parse(content, &converting);
-    on_converting(&converting);
+    senn::fcitx::im::views::Converting converting;
+    senn::fcitx::im::stateful_ime_proxy_ipc_json::Parse(content, &converting);
+    on_conv(&converting);
   } else {
     std::string content;
     std::getline(iss, content);
 
-    senn::fcitx::views::Editing editing;
-    senn::fcitx::stateful_ime_proxy_ipc_json::Parse(content, &editing);
+    senn::fcitx::im::views::Editing editing;
+    senn::fcitx::im::stateful_ime_proxy_ipc_json::Parse(content, &editing);
     on_editing(&editing);
   }
 
   return ParseInputReturnValue(input_return_value);
 }
 
+} // im
 } // fcitx
 } // senn

@@ -4,6 +4,7 @@
 
 namespace senn {
 namespace fcitx {
+namespace im {
 namespace views {
 
 struct Editing {
@@ -23,5 +24,6 @@ struct Converting {
 };
 
 } // views
+} // im
 } // fcitx
 } // senn
