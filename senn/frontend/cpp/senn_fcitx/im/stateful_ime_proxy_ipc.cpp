@@ -94,24 +94,29 @@ StatefulIMEProxyIPC::ProcessInput(
   requester_->Request(ProcessInputRequest(sym, keycode, state), &response);
 
   std::istringstream iss(response);
-  std::string input_return_value, type;
-  iss >> input_return_value;
-  iss >> type;
+  std::string input_return_value;
+  boolean has_view;
+  iss >> input_return_value >> has_view;
 
-  if (type == "CONVERTING") {
-    std::string content;
-    std::getline(iss, content);
+  if (has_view) {
+    std::string type;
+    iss >> type;
+    if (type == "CONVERTING") {
+      std::string content;
+      std::getline(iss, content);
 
-    senn::fcitx::im::views::Converting converting;
-    senn::fcitx::im::stateful_ime_proxy_ipc_json::Parse(content, &converting);
-    on_conv(&converting);
-  } else {
-    std::string content;
-    std::getline(iss, content);
+      senn::fcitx::im::views::Converting converting;
+      senn::fcitx::im::stateful_ime_proxy_ipc_json::Parse(content,
+                                                          &converting);
+      on_conv(&converting);
+    } else {
+      std::string content;
+      std::getline(iss, content);
 
-    senn::fcitx::im::views::Editing editing;
-    senn::fcitx::im::stateful_ime_proxy_ipc_json::Parse(content, &editing);
-    on_editing(&editing);
+      senn::fcitx::im::views::Editing editing;
+      senn::fcitx::im::stateful_ime_proxy_ipc_json::Parse(content, &editing);
+      on_editing(&editing);
+    }
   }
 
   return ParseInputReturnValue(input_return_value);

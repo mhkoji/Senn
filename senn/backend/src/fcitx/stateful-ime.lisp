@@ -22,7 +22,7 @@
         (senn.fcitx.im.process-input:execute stateful-ime s key)
       (when state
         (setf s state))
-      (format nil "~A ~A" irv view))))
+      (format nil "~A ~A ~A" irv (if view 1 0) (or view "")))))
 
 (defun reset-im (stateful-ime)
   (setf (stateful-ime-state stateful-ime) (make-initial-state))

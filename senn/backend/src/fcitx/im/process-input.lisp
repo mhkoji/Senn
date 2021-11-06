@@ -218,8 +218,7 @@
                      #b1000000)
              0)
          ;; When FcitxKeyState_Super is on. we cannot hanndle.
-         (resp senn.fcitx.irv:+TO-PROCESS+
-               (editing-view/inputing-state s)))
+         (resp senn.fcitx.irv:+TO-PROCESS+ nil))
         ((/= (logand (senn.fcitx.keys:key-state key)
                      #b100)
              0)
@@ -306,8 +305,7 @@
         ((senn.fcitx.keys:backspace-p key)
          (if (inputting-buffer-empty-p s)
              ;; IMEが文字を削除していない -> OSに文字を削除してもらう
-             (resp senn.fcitx.irv:+TO-PROCESS+
-                   (editing-view/inputing-state s))
+             (resp senn.fcitx.irv:+TO-PROCESS+ nil)
              (progn
                (setf (inputting-buffer s)
                      (senn.buffer:delete-char (inputting-buffer s)))
@@ -333,13 +331,7 @@
                (editing-view/inputing-state s)
                :state s))
 
-        ((inputting-buffer-empty-p s)
-         ;; バッファが空の状態での、上下左右の矢印キー対応
-         ;; とりあえずこれで動くか様子見
-         (resp senn.fcitx.irv:+FLAG-FORWARD-KEY+
-               (editing-view/inputing-state s)
-               :state s))
-
         (t
-         (list senn.fcitx.irv:+DO-NOTHING+
-               (editing-view/inputing-state s)))))
+         ;; バッファが空の状態での、上下左右の矢印キー対応
+         ;; TO-PROCESSだとなぜか動かない
+         (resp senn.fcitx.irv:+FLAG-FORWARD-KEY+ nil))))

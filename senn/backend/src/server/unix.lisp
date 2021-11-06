@@ -9,31 +9,30 @@
 
 (defstruct client id socket)
 
-(defmacro log/info (client format-str &rest args)
-  `(log:info ,(concatenate 'string "[~A]: " format-str)
-             (client-id ,client)
-             ,@args))
+(defmacro client-log-info (client &rest args)
+  `(with-accessors ((client-id client-id)) ,client
+     (log:info client-id ,@args)))
 
 (defun read-request (client)
   (let ((stream (hachee.ipc.unix:socket-stream (client-socket client))))
     (let ((line (read-line stream nil nil nil)))
-      (log/info client "Read: ~A" line)
+      (client-log-info client line)
       line)))
 
 (defun send-response (client resp)
   (let ((stream (hachee.ipc.unix:socket-stream (client-socket client))))
     (write-line resp stream)
     (force-output stream)
-    (log/info client "Written: ~A" resp)))
+    (client-log-info client resp)))
 
 (defun spawn-client-thread (client-loop-fn client)
-  (log/info client "Connected")
+  (client-log-info client "Connected")
   (bordeaux-threads:make-thread
    (lambda ()
      (funcall client-loop-fn client)
      (ignore-errors
        (hachee.ipc.unix:socket-close (client-socket client)))
-     (log/info client "Disconnected"))))
+     (client-log-info client "Disconnected"))))
 
 
 (defun start-server (client-loop-fn
