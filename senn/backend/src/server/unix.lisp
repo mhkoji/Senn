@@ -7,9 +7,6 @@
                 :when-let))
 (in-package :senn.server.unix)
 
-(defgeneric read-request (c))
-(defgeneric send-response (c resp))
-
 (defstruct client id socket)
 
 (defmacro log/info (client format-str &rest args)
@@ -17,24 +14,17 @@
              (client-id ,client)
              ,@args))
 
-(defmethod read-request ((client client))
+(defun read-request (client)
   (let ((stream (hachee.ipc.unix:socket-stream (client-socket client))))
-    (when-let ((line (read-line stream nil nil nil)))
-      (hachee.ipc.op:as-expr line))))
+    (let ((line (read-line stream nil nil nil)))
+      (log/info client "Read: ~A" line)
+      line)))
 
-(defmethod send-response ((client client) resp)
+(defun send-response (client resp)
   (let ((stream (hachee.ipc.unix:socket-stream (client-socket client))))
     (write-line resp stream)
-    (force-output stream)))
-
-(defmethod read-request :around ((client client))
-  (let ((req (call-next-method)))
-    (log/info client "Read: ~A" req)
-    req))
-
-(defmethod send-response :after ((client client) resp)
-  (log/info client "Written: ~A" resp))
-
+    (force-output stream)
+    (log/info client "Written: ~A" resp)))
 
 (defun spawn-client-thread (client-loop-fn client)
   (log/info client "Connected")

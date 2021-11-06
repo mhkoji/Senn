@@ -17,6 +17,8 @@ public:
 
   void ResetIM() override;
 
+  boolean SelectCandidate(int index) override;
+
   INPUT_RETURN_VALUE ProcessInput(
       FcitxKeySym, uint32_t, uint32_t,
       std::function<void(const senn::fcitx::im::views::Converting*)>,

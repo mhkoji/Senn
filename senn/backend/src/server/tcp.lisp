@@ -2,13 +2,8 @@
   (:use :cl)
   (:export :read-request
            :send-response
-           :start-server)
-  (:import-from :alexandria
-                :when-let))
+           :start-server))
 (in-package :senn.server.tcp)
-
-(defgeneric read-request (c))
-(defgeneric send-response (c resp))
 
 (defstruct client id usocket)
 
@@ -17,19 +12,17 @@
              (client-id ,client)
              ,@args))
 
-(defmethod read-request ((client client))
+(defun read-request (client)
   (let ((stream (usocket:socket-stream (client-usocket client))))
-    (when-let ((line (read-line stream nil nil nil)))
+    (let ((line (read-line stream nil nil nil)))
       (log/info client "Read: ~A" line)
-      (hachee.ipc.op:as-expr line))))
+      line)))
 
-(defmethod send-response ((client client) resp)
+(defun send-response (client resp)
   (let ((stream (usocket:socket-stream (client-usocket client))))
     (write-line resp stream)
-    (force-output stream)))
-
-(defmethod send-response :after ((client client) resp)
-  (log/info client "Written: ~A" resp))
+    (force-output stream)
+    (log/info client "Written: ~A" resp)))
 
 (defun spawn-client-thread (client-loop-fn client)
   (log/info client "Connected")

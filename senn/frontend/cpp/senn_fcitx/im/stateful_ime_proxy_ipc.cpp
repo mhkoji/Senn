@@ -28,9 +28,20 @@ std::string ProcessInputRequest(FcitxKeySym sym,
   std::stringstream ss;
   ss << "{"
      << "\"op\": \"process-input\","
-     << "\"args\": {" << "\"sym\": " << sym << ","
+     << "\"args\": {"
+     << "\"sym\": " << sym << ","
      << "\"keycode\": " << keycode << ","
      << "\"state\": " << state << "}"
+     << "}\n";
+  return ss.str();
+}
+
+std::string SelectCandidateRequest(int index) {
+  std::stringstream ss;
+  ss << "{"
+     << "\"op\": \"select-candidate\","
+     << "\"args\": {"
+     << "\"index\": " << index << "}"
      << "}\n";
   return ss.str();
 }
@@ -62,6 +73,17 @@ StatefulIMEProxyIPC::ResetIM() {
   requester_->Request(ResetIMRequest(), &response);
   assert(resonse == "OK");
 }
+
+boolean
+StatefulIMEProxyIPC::SelectCandidate(int index) {
+  std::string response = "";
+  requester_->Request(SelectCandidateRequest(index), &response);
+  std::istringstream iss(response);
+  boolean ok;
+  iss >> ok;
+  return ok;
+}
+
 
 INPUT_RETURN_VALUE
 StatefulIMEProxyIPC::ProcessInput(

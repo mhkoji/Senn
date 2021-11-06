@@ -2,10 +2,7 @@
   (:use :cl)
   (:export :read-request
            :send-response
-           :start-server)
-  (:import-from :alexandria
-                :if-let
-                :when-let))
+           :start-server))
 (in-package :senn.server.named-pipe)
 
 (defgeneric read-request (c))
@@ -18,21 +15,16 @@
              (client-id ,client)
              ,@args))
 
-(defmethod read-request ((client client))
-  (when-let ((octets (hachee.ipc.named-pipe:read-file (client-pipe client))))
-    (let ((string (babel:octets-to-string octets :encoding :utf-8)))
-      (hachee.ipc.op:as-expr string))))
+(defun read-request (client)
+  (let ((octets (hachee.ipc.named-pipe:read-file (client-pipe client))))
+    (let ((line (when octets
+                  (babel:octets-to-string octets :encoding :utf-8))))
+      (log/info client "Read: ~A" line)
+      line)))
 
-(defmethod send-response ((client client) (resp string))
+(defun send-response (client resp)
   (let ((octets (babel:string-to-octets resp :encoding :utf-8)))
-    (hachee.ipc.named-pipe:write-file (client-pipe client) octets)))
-
-(defmethod read-request :around ((client client))
-  (let ((req (call-next-method)))
-    (log/info client "Read: ~A" req)
-    req))
-
-(defmethod send-response :after ((client client) resp)
+    (hachee.ipc.named-pipe:write-file (client-pipe client) octets))
   (log/info client "Written: ~A" resp))
 
 (defun spawn-client-thread (client-loop-fn client)

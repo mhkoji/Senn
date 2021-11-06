@@ -11,9 +11,9 @@ set(FCITX_SENN_SRC
   ../../../../frontend/cpp/ipc/ipc.cpp
   ../../../../frontend/cpp/ipc/request.cpp
   ../../../../frontend/cpp/process/process.cpp
-  ../../../../frontend/cpp/senn_fcitx/stateful_ime_proxy_ipc.cpp
-  ../../../../frontend/cpp/senn_fcitx/stateful_ime_proxy_ipc_server.cpp
-  ../../../../frontend/cpp/senn_fcitx/ui.cpp)
+  ../../../../frontend/cpp/senn_fcitx/im/stateful_ime_proxy_ipc.cpp
+  ../../../../frontend/cpp/senn_fcitx/im/stateful_ime_proxy_ipc_server.cpp
+  )
 
 ## A macro for easy building of the shared object library.
 fcitx_add_addon_full(senn

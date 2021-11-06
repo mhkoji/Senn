@@ -14,6 +14,8 @@ public:
 
   virtual void ResetIM() = 0;
 
+  virtual boolean SelectCandidate(int index) = 0;
+
   virtual INPUT_RETURN_VALUE ProcessInput(
       FcitxKeySym, uint32_t, uint32_t,
       std::function<void(const senn::fcitx::im::views::Converting*)>,
