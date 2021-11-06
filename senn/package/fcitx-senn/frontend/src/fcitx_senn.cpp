@@ -16,7 +16,7 @@ namespace {
 class MenuHandler : public senn::fcitx::ui::MenuHandlerInterface {
 public:
   boolean OnAbout() {
-    return senn::process::Spawn("/usr/lib/senn/menu");
+    return senn::process::Spawn("/usr/lib/senn/menu-about");
   }
 };
 

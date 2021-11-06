@@ -9,7 +9,7 @@
 ```
 % cd <path/to/Hachee>
 % git submodule update -i
-% docker build . -t fcitx-deb -f senn/dists/fcitx-senn/docker/deb.dockerfile
+% docker build . -t fcitx-deb -f senn/package/fcitx-senn/docker/deb.dockerfile
 % docker run -v $PWD/output:/output -t fcitx-deb
 % ls output
 fcitx-senn-0.0.1-Linux.deb
@@ -18,7 +18,7 @@ fcitx-senn-0.0.1-Linux.deb
 #### Command Line
 
 ```
-% cd <path/to/Hachee>/senn/dists/fcitx-senn/
+% cd <path/to/Hachee>/senn/package/fcitx-senn/
 % ros dump executable backend/bin/server.ros -o backend/bin/server
 % mkdir frontned/build
 % cd frontned/build
@@ -41,7 +41,7 @@ fcitx-senn-0.0.1-Linux.deb
 ## Install from Command Line
 
 ```
-% cd <path/to/Hachee>/dists/fcitx-senn/backend
+% cd <path/to/Hachee>/package/fcitx-senn/backend
 % ros dump executable bin/server.ros -o bin/server
 % chmod +x bin/server
 % sudo mkdir /usr/lib/senn

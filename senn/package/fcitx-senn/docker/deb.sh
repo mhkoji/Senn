@@ -7,11 +7,11 @@ sbcl --noinform \
      --no-sysinit \
      --non-interactive \
      --load "/root/quicklisp/setup.lisp" \
-     --load "/app/senn/bin/menu.lisp" \
+     --load "/app/senn/frontend/cl/bin/menu-about.lisp" \
      --eval "(sb-ext:save-lisp-and-die
-              \"/app/senn/bin/menu\"
+              \"/app/senn/bin/menu-about\"
               :executable t
-              :toplevel #'senn.bin.menu:main)"
+              :toplevel #'senn.bin.menu-about:main)"
 
 sbcl --noinform \
      --no-userinit \

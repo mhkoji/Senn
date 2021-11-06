@@ -1,12 +1,12 @@
-(defpackage :senn.bin.menu
+(defpackage :senn.bin.menu-about
   (:use :cl)
   (:export :main))
-(in-package :senn.bin.menu)
-(ql:quickload :senn-gui :silent t)
+(in-package :senn.bin.menu-about)
+(ql:quickload :senn-about :silent t)
 
 (defun main ()
   (funcall #+sbcl
            #'sb-thread:join-thread
            #+ccl
            #'ccl:join-process
-           (senn.gui.menu.about:show)))
+           (senn.menu.about:show)))

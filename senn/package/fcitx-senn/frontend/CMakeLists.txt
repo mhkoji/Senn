@@ -28,7 +28,7 @@ install(
   RUNTIME DESTINATION "/usr/lib/senn")
 
 install(
-  PROGRAMS ${CMAKE_CURRENT_SOURCE_DIR}/../../../bin/menu
+  PROGRAMS ${CMAKE_CURRENT_SOURCE_DIR}/../../../frontend/cl/bin/menu-about
   CONFIGURATIONS Release
   RUNTIME DESTINATION "/usr/lib/senn")
 

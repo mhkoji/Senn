@@ -1,4 +1,4 @@
-(asdf:defsystem :senn-frontend
+(asdf:defsystem :senn-about
   :serial t
   :pathname "src"
   :components
