@@ -19,7 +19,7 @@ public:
 
   boolean SelectCandidate(int index) override;
 
-  INPUT_RETURN_VALUE ProcessInput(
+  boolean ProcessInput(
       FcitxKeySym, uint32_t, uint32_t,
       std::function<void(const senn::fcitx::im::views::Converting*)>,
       std::function<void(const senn::fcitx::im::views::Editing*)>) override;

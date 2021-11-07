@@ -18,11 +18,13 @@
 
 (defun process-input (stateful-ime key)
   (with-accessors ((s stateful-ime-state)) stateful-ime
-    (destructuring-bind (irv view &key state)
+    (destructuring-bind (consumed-p view &key state)
         (senn.fcitx.im.process-input:execute stateful-ime s key)
       (when state
         (setf s state))
-      (format nil "~A ~A ~A" irv (if view 1 0) (or view "")))))
+      (format nil "~A ~A"
+              (if consumed-p 1 0)
+              (if (and consumed-p view) view "NONE")))))
 
 (defun reset-im (stateful-ime)
   (setf (stateful-ime-state stateful-ime) (make-initial-state))

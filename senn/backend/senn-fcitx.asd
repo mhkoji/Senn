@@ -3,7 +3,6 @@
   :pathname "src/fcitx"
   :components
   ((:file "keys")
-   (:file "irv")
    (:file "im/ime")
    (:file "im/process-input")
    (:file "stateful-ime")

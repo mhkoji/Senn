@@ -23,7 +23,8 @@
   (let ((stream (hachee.ipc.unix:socket-stream (client-socket client))))
     (write-line resp stream)
     (force-output stream)
-    (client-log-info client resp)))
+    (let ((line (format nil "~A~%" resp)))
+      (client-log-info client line))))
 
 (defun spawn-client-thread (client-loop-fn client)
   (client-log-info client "Connected")
