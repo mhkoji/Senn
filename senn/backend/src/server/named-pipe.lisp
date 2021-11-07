@@ -1,6 +1,7 @@
 (defpackage :senn.server.named-pipe
   (:use :cl)
-  (:export :read-request
+  (:export :client
+           :read-request
            :send-response
            :start-server))
 (in-package :senn.server.named-pipe)

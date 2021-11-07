@@ -1,8 +1,6 @@
 (defpackage :senn.win.server
   (:use :cl)
-  (:export :loop-handling-request)
-  (:import-from :alexandria
-                :when-let))
+  (:export :handle-request))
 (in-package :senn.win.server)
 
 (defun handle-request (stateful-ime line)
@@ -25,12 +23,3 @@
         stateful-ime
         (senn.win.keys:make-key
          :code (hachee.ipc.op:expr-arg expr "keycode")))))))
-
-(defun loop-handling-request (kkc &key read-fn send-fn)
-  (handler-case
-      (let ((sf-ime (senn.win.stateful-ime:make-from-kkc kkc)))
-        (loop for req = (funcall read-fn) while req
-              do (let ((resp (handle-request sf-ime req)))
-                   (funcall send-fn resp))))
-    (error (c)
-      (log:warn "~A" c))))

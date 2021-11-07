@@ -1,7 +1,6 @@
 (defpackage :senn.server.tcp
   (:use :cl)
-  (:export :read-request
-           :send-response
+  (:export :handle-request
            :start-server))
 (in-package :senn.server.tcp)
 
@@ -24,16 +23,27 @@
     (force-output stream)
     (log/info client "Written: ~A" resp)))
 
-(defun spawn-client-thread (client-loop-fn client)
+(defgeneric handle-request (handler req))
+  
+(defun loop-handling-request (handler client)
+  (handler-case
+      (loop for req = (read-request client)
+            while req
+            do (let ((resp (handle-request handler req)))
+                 (send-response client resp)))
+    (error (c)
+      (log:warn "~A" c))))
+
+(defun spawn-client-thread (handler client)
   (log/info client "Connected")
   (bordeaux-threads:make-thread
    (lambda ()
-     (funcall client-loop-fn client)
+     (loop-handling-request handler client)
      (ignore-errors
        (usocket:socket-close (client-usocket client)))
      (log/info client "Disconnected"))))
 
-(defun start-server (client-loop-fn &key (port 5678))
+(defun start-server (create-handler-fn &key (port 5678))
   (usocket:with-server-socket
       (server-socket (usocket:socket-listen "0.0.0.0" port))
     (let ((threads nil))
@@ -41,6 +51,7 @@
       (unwind-protect
            (loop for client-id from 1 do
              (let* ((socket (usocket:socket-accept server-socket))
-                    (client (make-client :id client-id :usocket socket)))
-               (push (spawn-client-thread client-loop-fn client) threads)))
+                    (client (make-client :id client-id :usocket socket))
+                    (handler (funcall create-handler-fn)))
+               (push (spawn-client-thread handler client) threads)))
         (mapc #'bordeaux-threads:destroy-thread threads)))))

@@ -3,11 +3,13 @@
   (:export :run))
 (in-package :senn.bin.win-server-unix)
 
+(defstruct handler stateful-ime)
+
+(defmethod senn.server.tcp:handle-request ((handler handler) req)
+  (senn.win.server:handle-request (handler-stateful-ime handler) req))
+
 (defun run (kkc)
   (senn.server.tcp:start-server
-   (lambda (client)
-     (senn.win.server:loop-handling-request kkc
-      :read-fn (lambda ()
-                 (senn.server.tcp:read-request client))
-      :send-fn (lambda (resp)
-                 (senn.server.tcp:send-response client resp))))))
+   (lambda ()
+     (let ((sf-ime (senn.win.stateful-ime:make-from-kkc kkc)))
+       (make-handler :stateful-ime sf-ime)))))

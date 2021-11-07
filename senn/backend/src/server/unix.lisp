@@ -1,6 +1,7 @@
 (defpackage :senn.server.unix
   (:use :cl)
-  (:export :read-request
+  (:export :client
+           :read-request
            :send-response
            :start-server)
   (:import-from :alexandria
@@ -26,11 +27,22 @@
     (let ((line (format nil "~A~%" resp)))
       (client-log-info client line))))
 
-(defun spawn-client-thread (client-loop-fn client)
+(defgeneric handle-request (handler req))
+  
+(defun loop-handling-request (handler client)
+  (handler-case
+      (loop for req = (read-request client)
+            while req
+            do (let ((resp (handle-request handler req)))
+                 (send-response client resp)))
+    (error (c)
+      (log:warn "~A" c))))
+
+(defun spawn-client-thread (handler client)
   (client-log-info client "Connected")
   (bordeaux-threads:make-thread
    (lambda ()
-     (funcall client-loop-fn client)
+     (loop-handling-request handler client)
      (ignore-errors
        (hachee.ipc.unix:socket-close (client-socket client)))
      (client-log-info client "Disconnected"))))
