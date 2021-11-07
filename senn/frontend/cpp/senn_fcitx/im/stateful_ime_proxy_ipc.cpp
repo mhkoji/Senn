@@ -1,6 +1,6 @@
+#include <cassert>
 #include <fcitx/instance.h>
 #include <sstream>
-#include <cassert>
 
 #include "stateful_ime_proxy_ipc.h"
 #include "stateful_ime_proxy_ipc_json.h"
@@ -11,8 +11,7 @@ namespace im {
 
 namespace {
 
-std::string ProcessInputRequest(FcitxKeySym sym,
-                                uint32_t keycode,
+std::string ProcessInputRequest(FcitxKeySym sym, uint32_t keycode,
                                 uint32_t state) {
   std::stringstream ss;
   ss << "{"
@@ -46,25 +45,19 @@ std::string ResetIMRequest() {
 
 } // namespace
 
-
 StatefulIMEProxyIPC::StatefulIMEProxyIPC(
     std::unique_ptr<senn::ipc::RequesterInterface> requester)
-  : requester_(std::move(requester)) {
-}
+    : requester_(std::move(requester)) {}
 
-StatefulIMEProxyIPC::~StatefulIMEProxyIPC() {
-  requester_.reset();
-}
+StatefulIMEProxyIPC::~StatefulIMEProxyIPC() { requester_.reset(); }
 
-void
-StatefulIMEProxyIPC::ResetIM() {
+void StatefulIMEProxyIPC::ResetIM() {
   std::string response = "";
   requester_->Request(ResetIMRequest(), &response);
   assert(response == "OK");
 }
 
-boolean
-StatefulIMEProxyIPC::SelectCandidate(int index) {
+boolean StatefulIMEProxyIPC::SelectCandidate(int index) {
   std::string response = "";
   requester_->Request(SelectCandidateRequest(index), &response);
   std::istringstream iss(response);
@@ -73,11 +66,10 @@ StatefulIMEProxyIPC::SelectCandidate(int index) {
   return ok;
 }
 
-boolean
-StatefulIMEProxyIPC::ProcessInput(
+boolean StatefulIMEProxyIPC::ProcessInput(
     FcitxKeySym sym, uint32_t keycode, uint32_t state,
-    std::function<void(const senn::fcitx::im::views::Converting*)> on_conv,
-    std::function<void(const senn::fcitx::im::views::Editing*)> on_editing) {
+    std::function<void(const senn::fcitx::im::views::Converting *)> on_conv,
+    std::function<void(const senn::fcitx::im::views::Editing *)> on_editing) {
   std::string response = "";
   requester_->Request(ProcessInputRequest(sym, keycode, state), &response);
 
@@ -105,6 +97,6 @@ StatefulIMEProxyIPC::ProcessInput(
   return consumed;
 }
 
-} // im
-} // fcitx
-} // senn
+} // namespace im
+} // namespace fcitx
+} // namespace senn

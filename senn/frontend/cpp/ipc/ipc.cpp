@@ -1,12 +1,12 @@
-#include <sys/socket.h>
-#include <sys/un.h>
-#include <sys/types.h>
 #include <arpa/inet.h>
-#include <netinet/in.h>
 #include <cstdlib>
+#include <netinet/in.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <sys/un.h>
 
-#include <iostream>
 #include <algorithm>
+#include <iostream>
 
 #include "ipc.h"
 
@@ -43,58 +43,55 @@ bool IsReadTimeout(int socket, int timeout_msec) {
 
 } // namespace
 
-Connection* Connection::ConnectTo(unsigned short port) {
+Connection *Connection::ConnectTo(unsigned short port) {
   int socket_fd = MakeStreamSocketOrDie(PF_INET);
 
   sockaddr_in addr;
   addr.sin_family = AF_INET;
   addr.sin_port = htons(port);
   addr.sin_addr.s_addr = inet_addr("127.0.0.1");
-  int connect_return_value = connect(
-      socket_fd,
-      reinterpret_cast<const struct sockaddr*>(&addr),
-      sizeof(addr));
+  int connect_return_value =
+      connect(socket_fd, reinterpret_cast<const struct sockaddr *>(&addr),
+              sizeof(addr));
   if (connect_return_value < 0) {
     close(socket_fd);
-    std::cerr << "ConnectTo: Failed to connect: "
-              << connect_return_value << std::endl;
+    std::cerr << "ConnectTo: Failed to connect: " << connect_return_value
+              << std::endl;
     std::exit(1);
   }
 
   return new Connection(socket_fd);
 }
 
-Connection* Connection::ConnectLocalTo(const std::string &path) {
+Connection *Connection::ConnectLocalTo(const std::string &path) {
   int socket_fd = MakeStreamSocketOrDie(PF_LOCAL);
 
   sockaddr_un addr;
   addr.sun_family = AF_LOCAL;
   strcpy(addr.sun_path, path.c_str());
-  int connect_return_value = connect(
-      socket_fd,
-      reinterpret_cast<const struct sockaddr*>(&addr),
-      sizeof(addr));
+  int connect_return_value =
+      connect(socket_fd, reinterpret_cast<const struct sockaddr *>(&addr),
+              sizeof(addr));
   if (connect_return_value < 0) {
     close(socket_fd);
-    std::cerr << "ConnectTo: Failed to connect: "
-              << connect_return_value << std::endl;
+    std::cerr << "ConnectTo: Failed to connect: " << connect_return_value
+              << std::endl;
     std::exit(1);
   }
 
   return new Connection(socket_fd);
 }
 
-Connection* Connection::ConnectLocalAbstractTo(const std::string &path) {
+Connection *Connection::ConnectLocalAbstractTo(const std::string &path) {
   int socket_fd = MakeStreamSocketOrDie(PF_LOCAL);
 
   sockaddr_un addr;
   addr.sun_family = AF_LOCAL;
   addr.sun_path[0] = '\0';
   path.copy(&addr.sun_path[1], path.size());
-  int connect_return_value = connect(
-      socket_fd,
-      reinterpret_cast<const struct sockaddr*>(&addr),
-      sizeof(addr) - sizeof(addr.sun_path) + path.size() + 1);
+  int connect_return_value =
+      connect(socket_fd, reinterpret_cast<const struct sockaddr *>(&addr),
+              sizeof(addr) - sizeof(addr.sun_path) + path.size() + 1);
   if (connect_return_value < 0) {
     close(socket_fd);
     std::cerr << "ConnectAbstractTo: Failed to connect: "
@@ -105,16 +102,11 @@ Connection* Connection::ConnectLocalAbstractTo(const std::string &path) {
   return new Connection(socket_fd);
 }
 
-
-Connection::Connection(const int socket_fd)
-  : socket_fd_(socket_fd) {
-}
-
+Connection::Connection(const int socket_fd) : socket_fd_(socket_fd) {}
 
 void Connection::Write(const std::string &content) {
   write(socket_fd_, content.c_str(), content.size());
 }
-
 
 bool Connection::ReadLine(int timeout_msec, std::string *output) {
   char buffer[1024];
@@ -138,11 +130,9 @@ bool Connection::ReadLine(int timeout_msec, std::string *output) {
     *output += std::string(buffer, size_t(bytes_read));
 
     if (buffer[bytes_read - 1] == '\n') {
-      output->erase(std::find_if(
-                        output->rbegin(),
-                        output->rend(),
-                        [](int ch) { return !std::isspace(ch); }
-                    ).base(),
+      output->erase(std::find_if(output->rbegin(), output->rend(),
+                                 [](int ch) { return !std::isspace(ch); })
+                        .base(),
                     output->end());
       return true;
     } else if (bytes_read == sizeof(buffer)) {
@@ -152,31 +142,21 @@ bool Connection::ReadLine(int timeout_msec, std::string *output) {
   }
 }
 
-
-void Connection::Close() {
-  close(socket_fd_);
-}
-
+void Connection::Close() { close(socket_fd_); }
 
 LocalAbstractSocketConnectionFactory::LocalAbstractSocketConnectionFactory(
     const std::string &socket_path)
-  : socket_path_(socket_path) {
-}
+    : socket_path_(socket_path) {}
 
-Connection*
-LocalAbstractSocketConnectionFactory::Create() {
+Connection *LocalAbstractSocketConnectionFactory::Create() {
   return Connection::ConnectLocalAbstractTo(socket_path_);
 }
 
+TcpConnectionFactory::TcpConnectionFactory(unsigned short port) : port_(port) {}
 
-TcpConnectionFactory::TcpConnectionFactory(unsigned short port)
-  : port_(port) {
-}
-
-Connection*
-TcpConnectionFactory::Create() {
+Connection *TcpConnectionFactory::Create() {
   return Connection::ConnectTo(port_);
 }
 
-} // ipc
-} // senn
+} // namespace ipc
+} // namespace senn

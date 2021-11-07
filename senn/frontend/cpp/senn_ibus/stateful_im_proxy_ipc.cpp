@@ -1,8 +1,8 @@
-#include <sstream>
 #include <iostream>
+#include <sstream>
 
-#include "stateful_im_proxy_ipc.h"
 #include "senn_fcitx/stateful_im_proxy_ipc_json.h"
+#include "stateful_im_proxy_ipc.h"
 
 namespace senn {
 namespace ibus {
@@ -20,13 +20,13 @@ bool ParseInputReturnValue(const std::string &s) {
   return false;
 }
 
-std::string MakeRequest(unsigned int sym,
-                        unsigned int keycode,
+std::string MakeRequest(unsigned int sym, unsigned int keycode,
                         unsigned int state) {
   std::stringstream ss;
   ss << "{"
      << "\"op\": \"transit\","
-     << "\"args\": {" << "\"sym\": " << sym << ","
+     << "\"args\": {"
+     << "\"sym\": " << sym << ","
      << "\"keycode\": " << keycode << ","
      << "\"state\": " << state << "}"
      << "}\n";
@@ -35,17 +35,14 @@ std::string MakeRequest(unsigned int sym,
 
 } // namespace
 
-
 StatefulIMProxyIPC::StatefulIMProxyIPC(
     std::unique_ptr<senn::ipc::RequesterInterface> requester)
-  : requester_(std::move(requester)) {
-}
+    : requester_(std::move(requester)) {}
 
-bool
-StatefulIMProxyIPC::Transit(
-    unsigned int sym, unsigned int  keycode, unsigned int state,
-    std::function<void(const senn::fcitx::views::Converting*)> on_converting,
-    std::function<void(const senn::fcitx::views::Editing*)> on_editing) {
+bool StatefulIMProxyIPC::Transit(
+    unsigned int sym, unsigned int keycode, unsigned int state,
+    std::function<void(const senn::fcitx::views::Converting *)> on_converting,
+    std::function<void(const senn::fcitx::views::Editing *)> on_editing) {
   std::string response = "";
   requester_->Request(MakeRequest(sym, keycode, state), &response);
 
@@ -73,9 +70,7 @@ StatefulIMProxyIPC::Transit(
   return ParseInputReturnValue(input_return_value);
 }
 
-StatefulIMProxyIPC::~StatefulIMProxyIPC() {
-  requester_.reset();
-}
+StatefulIMProxyIPC::~StatefulIMProxyIPC() { requester_.reset(); }
 
-} // ibus
-} // senn
+} // namespace ibus
+} // namespace senn

@@ -4,8 +4,7 @@ namespace senn {
 namespace ipc {
 
 Requester::Requester(ConnectionFactory *factory)
-  : factory_(factory), conn_(nullptr) {
-}
+    : factory_(factory), conn_(nullptr) {}
 
 Requester::~Requester() {
   if (conn_) {
@@ -25,5 +24,5 @@ void Requester::Request(const std::string &req, std::string *res) {
   }
 }
 
-} // ipc
-} // senn
+} // namespace ipc
+} // namespace senn

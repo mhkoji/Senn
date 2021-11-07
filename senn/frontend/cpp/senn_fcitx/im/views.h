@@ -15,7 +15,6 @@ struct Editing {
   std::string committed_input;
 };
 
-
 struct Converting {
   std::vector<std::string> forms;
   int cursor_form_index;
@@ -23,7 +22,7 @@ struct Converting {
   int cursor_form_candidate_index;
 };
 
-} // views
-} // im
-} // fcitx
-} // senn
+} // namespace views
+} // namespace im
+} // namespace fcitx
+} // namespace senn

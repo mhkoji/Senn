@@ -1,7 +1,7 @@
 #pragma once
-#include <unistd.h>
 #include <iostream>
 #include <string>
+#include <unistd.h>
 
 namespace senn {
 namespace ipc {
@@ -9,17 +9,17 @@ namespace ipc {
 class Connection {
 public:
   // Connection by a tcp socket
-  static Connection* ConnectTo(unsigned short port);
+  static Connection *ConnectTo(unsigned short port);
 
   // Connection by a local domain socket (unix-domain socket)
-  static Connection* ConnectLocalTo(const std::string&);
+  static Connection *ConnectLocalTo(const std::string &);
 
   // Connection by an abstract local domain socket
-  static Connection* ConnectLocalAbstractTo(const std::string&);
+  static Connection *ConnectLocalAbstractTo(const std::string &);
 
-  void Write(const std::string&);
+  void Write(const std::string &);
 
-  bool ReadLine(int, std::string*);
+  bool ReadLine(int, std::string *);
 
   void Close();
 
@@ -33,33 +33,31 @@ class ConnectionFactory {
 public:
   virtual ~ConnectionFactory() {}
 
-  virtual Connection* Create() = 0;
+  virtual Connection *Create() = 0;
 };
 
 class LocalAbstractSocketConnectionFactory : public ConnectionFactory {
 public:
-  LocalAbstractSocketConnectionFactory(const std::string&);
+  LocalAbstractSocketConnectionFactory(const std::string &);
 
-  Connection* Create();
+  Connection *Create();
 
 private:
   const std::string socket_path_;
 };
 
- class TcpConnectionFactory : public ConnectionFactory {
+class TcpConnectionFactory : public ConnectionFactory {
 public:
   TcpConnectionFactory(unsigned short);
 
-  Connection* Create();
+  Connection *Create();
 
 private:
   const unsigned short port_;
 };
 
-
 // Trying a kind of DCI implementation.
-template <class ConcreteDerived>
-class ServerLauncher {
+template <class ConcreteDerived> class ServerLauncher {
 public:
   Connection *ReconnectOnFailure() const {
     // Ensure that the server is started because the failure may be
@@ -70,34 +68,29 @@ public:
     return self()->GetConnection();
   }
 
-  virtual Connection* GetConnection() const = 0;
+  virtual Connection *GetConnection() const = 0;
 
 private:
-  const ConcreteDerived* self() const {
-    return static_cast<const ConcreteDerived*>(this);
+  const ConcreteDerived *self() const {
+    return static_cast<const ConcreteDerived *>(this);
   }
 
   static const int kWaitIntervalForServerMsec = 1000;
 };
 
-
-template <class ConcreteDerived>
-class ReconnectableServerRequest {
+template <class ConcreteDerived> class ReconnectableServerRequest {
 public:
   ReconnectableServerRequest(
-      const ServerLauncher<ConcreteDerived>* const launcher,
+      const ServerLauncher<ConcreteDerived> *const launcher,
       Connection **server_conn)
-    : launcher_(launcher),
-      server_conn_(server_conn) {
-  }
+      : launcher_(launcher), server_conn_(server_conn) {}
 
   void Execute(const std::string &request, std::string *response) {
     TryExecuting(0, request, response);
   }
 
 private:
-  void TryExecuting(int try_count,
-                    const std::string &request,
+  void TryExecuting(int try_count, const std::string &request,
                     std::string *response) {
     (*server_conn_)->Write(request);
 
@@ -117,13 +110,12 @@ private:
     std::exit(1);
   }
 
-  const ServerLauncher<ConcreteDerived>* const launcher_;
+  const ServerLauncher<ConcreteDerived> *const launcher_;
 
   Connection **server_conn_;
 
   static const int kReadTimeoutMsec = 1000;
 };
 
-
-} // ipc
-} // senn
+} // namespace ipc
+} // namespace senn

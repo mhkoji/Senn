@@ -9,23 +9,22 @@ namespace ipc {
 
 class RequesterInterface {
 public:
-  virtual ~RequesterInterface() {};
+  virtual ~RequesterInterface(){};
 
-  virtual void Request(const std::string&, std::string*) = 0;
+  virtual void Request(const std::string &, std::string *) = 0;
 };
-
 
 class Requester : public RequesterInterface {
 public:
-  Requester(ConnectionFactory*);
+  Requester(ConnectionFactory *);
   ~Requester();
 
-  void Request(const std::string&, std::string*);
+  void Request(const std::string &, std::string *);
 
 private:
-  ConnectionFactory* const factory_;
+  ConnectionFactory *const factory_;
   Connection *conn_;
 };
 
-} // ipc
-} // senn
+} // namespace ipc
+} // namespace senn

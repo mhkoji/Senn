@@ -11,15 +11,13 @@ public:
   StatefulIMProxyIPC(std::unique_ptr<senn::ipc::RequesterInterface>);
   ~StatefulIMProxyIPC();
 
-  bool Transit(
-      unsigned int, unsigned int, unsigned int,
-      std::function<void(const senn::fcitx::views::Converting*)>,
-      std::function<void(const senn::fcitx::views::Editing*)>);
+  bool Transit(unsigned int, unsigned int, unsigned int,
+               std::function<void(const senn::fcitx::views::Converting *)>,
+               std::function<void(const senn::fcitx::views::Editing *)>);
 
 private:
   std::unique_ptr<senn::ipc::RequesterInterface> requester_;
 };
 
-
-} // ibus
-} // senn
+} // namespace ibus
+} // namespace senn

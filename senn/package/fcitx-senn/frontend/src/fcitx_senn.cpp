@@ -1,11 +1,11 @@
 #include <sys/stat.h>
 // #include <iostream>
 
-#include <fcitx/ime.h>
-#include <fcitx/hook.h>
-#include <fcitx/instance.h>
 #include <fcitx/candidate.h>
 #include <fcitx/context.h>
+#include <fcitx/hook.h>
+#include <fcitx/ime.h>
+#include <fcitx/instance.h>
 
 #include "process/process.h"
 #include "senn_fcitx/im/stateful_ime_proxy_ipc.h"
@@ -27,9 +27,7 @@ namespace senn {
 namespace fcitx_senn {
 namespace menu {
 
-const char* GetIconName(void* arg) {
-  return "";
-}
+const char *GetIconName(void *arg) { return ""; }
 
 void Update(FcitxUIMenu *menu) {}
 
@@ -42,14 +40,8 @@ void SetVisibility(FcitxInstance *fcitx, boolean vis) {
 }
 
 void Setup(FcitxInstance *fcitx, FcitxUIMenu *menu) {
-  FcitxUIRegisterComplexStatus(
-      fcitx,
-      NULL,
-      "senn-menu",
-      "メニュー",
-      "メニュー",
-      NULL,
-      GetIconName);
+  FcitxUIRegisterComplexStatus(fcitx, NULL, "senn-menu", "メニュー", "メニュー",
+                               NULL, GetIconName);
 
   FcitxMenuInit(menu);
   menu->name = strdup("メニュー");
@@ -71,23 +63,21 @@ void Destory(FcitxInstance *fcitx, FcitxUIMenu *menu) {
   FcitxMenuFinalize(menu);
 }
 
-} // menu
+} // namespace menu
 
 namespace im {
 
 INPUT_RETURN_VALUE
-CandidateWordCallback(void* arg, FcitxCandidateWord* word) {
+CandidateWordCallback(void *arg, FcitxCandidateWord *word) {
   FcitxSenn *senn = (FcitxSenn *)arg;
-  int index = *(int*)word->priv;
+  int index = *(int *)word->priv;
   bool selected = senn->ime->SelectCandidate(index);
   return selected ? IRV_DISPLAY_CANDWORDS : IRV_TO_PROCESS;
 }
 
-void ShowCandidateWordList(
-    FcitxSenn *senn,
-    FcitxInputState *input,
-    const std::vector<std::string> &word_strings,
-    const int index) {
+void ShowCandidateWordList(FcitxSenn *senn, FcitxInputState *input,
+                           const std::vector<std::string> &word_strings,
+                           const int index) {
   FcitxCandidateWordList *word_list = FcitxInputStateGetCandidateList(input);
   FcitxCandidateWordReset(word_list);
   FcitxCandidateWordSetLayoutHint(word_list, CLH_Vertical);
@@ -99,7 +89,7 @@ void ShowCandidateWordList(
     word.callback = CandidateWordCallback;
     word.extraType = MSG_OTHER;
     word.owner = senn;
-    word.priv = (void*) p;
+    word.priv = (void *)p;
     word.strExtra = NULL;
     word.strWord = strdup(it->c_str());
     word.wordType = (i == index) ? MSG_CANDIATE_CURSOR : MSG_OTHER;
@@ -110,10 +100,10 @@ void ShowCandidateWordList(
     // Set page by word index
     FcitxCandidateWordSetFocus(word_list, index);
 
-    FcitxMessages* aux = FcitxInputStateGetAuxUp(input);
+    FcitxMessages *aux = FcitxInputStateGetAuxUp(input);
     FcitxMessagesSetMessageCount(aux, 0);
-    FcitxMessagesAddMessageAtLast(aux, MSG_TIPS, "(%d / %d)",
-                                  index + 1, word_strings.size());
+    FcitxMessagesAddMessageAtLast(aux, MSG_TIPS, "(%d / %d)", index + 1,
+                                  word_strings.size());
   }
 }
 
@@ -122,7 +112,7 @@ void Show(FcitxSenn *senn, const senn::fcitx::im::views::Converting *view) {
 
   // 表示している文字列, candidate windowを削除
   FcitxInstanceCleanInputWindow(instance);
-      
+
   FcitxInputContext *ic = FcitxInstanceGetCurrentIC(instance);
   FcitxInputState *input = FcitxInstanceGetInputState(instance);
   FcitxMessages *preedit = FcitxInputStateGetPreedit(input);
@@ -134,9 +124,10 @@ void Show(FcitxSenn *senn, const senn::fcitx::im::views::Converting *view) {
     int i = 0, cursor_form_index = view->cursor_form_index;
     std::vector<std::string>::const_iterator it = view->forms.begin();
     for (; it != view->forms.end(); ++it, ++i) {
-      FcitxMessageType type = (i == cursor_form_index) ?
-        (FcitxMessageType) (MSG_HIGHLIGHT | MSG_CANDIATE_CURSOR) :
-        (FcitxMessageType) (MSG_INPUT);
+      FcitxMessageType type =
+          (i == cursor_form_index)
+              ? (FcitxMessageType)(MSG_HIGHLIGHT | MSG_CANDIATE_CURSOR)
+              : (FcitxMessageType)(MSG_INPUT);
       if (!support_preedit) {
         FcitxMessagesAddMessageAtLast(preedit, type, "%s", it->c_str());
       }
@@ -146,8 +137,7 @@ void Show(FcitxSenn *senn, const senn::fcitx::im::views::Converting *view) {
 
   // candidate windowを表示
   if (0 < view->cursor_form_candidates.size()) {
-    ShowCandidateWordList(senn, input,
-                          view->cursor_form_candidates,
+    ShowCandidateWordList(senn, input, view->cursor_form_candidates,
                           view->cursor_form_candidate_index);
   }
 }
@@ -178,15 +168,14 @@ void Show(FcitxSenn *senn, const senn::fcitx::im::views::Editing *view) {
 
   // 下線付きの文字列を表示
   if (!support_preedit) {
-    FcitxMessagesAddMessageAtLast(
-        preedit, MSG_INPUT, "%s", view->input.c_str());
+    FcitxMessagesAddMessageAtLast(preedit, MSG_INPUT, "%s",
+                                  view->input.c_str());
   }
-  FcitxMessagesAddMessageAtLast(
-      client_preedit, MSG_INPUT, "%s", view->input.c_str());
+  FcitxMessagesAddMessageAtLast(client_preedit, MSG_INPUT, "%s",
+                                view->input.c_str());
 
   if (0 < view->predictions.size()) {
-    ShowCandidateWordList(senn, input,
-                          view->predictions,
+    ShowCandidateWordList(senn, input, view->predictions,
                           view->prediction_index);
   }
 
@@ -206,7 +195,6 @@ void ResetInput(void *arg) {
   }
 }
 
-
 void ResetIM(void *arg) {
   FcitxSenn *senn = (FcitxSenn *)arg;
 
@@ -220,23 +208,15 @@ void ResetIM(void *arg) {
   }
 }
 
-
 boolean Init(void *arg) {
   FcitxSenn *senn = (FcitxSenn *)arg;
 
   boolean flag = true;
-  FcitxInstanceSetContext(senn->fcitx,
-                          CONTEXT_IM_KEYBOARD_LAYOUT,
-                          "jp");
-  FcitxInstanceSetContext(senn->fcitx,
-                          CONTEXT_DISABLE_AUTO_FIRST_CANDIDATE_HIGHTLIGHT,
-                          &flag);
-  FcitxInstanceSetContext(senn->fcitx,
-                          CONTEXT_DISABLE_AUTOENG,
-                          &flag);
-  FcitxInstanceSetContext(senn->fcitx,
-                          CONTEXT_DISABLE_QUICKPHRASE,
-                          &flag);
+  FcitxInstanceSetContext(senn->fcitx, CONTEXT_IM_KEYBOARD_LAYOUT, "jp");
+  FcitxInstanceSetContext(
+      senn->fcitx, CONTEXT_DISABLE_AUTO_FIRST_CANDIDATE_HIGHTLIGHT, &flag);
+  FcitxInstanceSetContext(senn->fcitx, CONTEXT_DISABLE_AUTOENG, &flag);
+  FcitxInstanceSetContext(senn->fcitx, CONTEXT_DISABLE_QUICKPHRASE, &flag);
 
   // std::cout << "senn-fcitx: initialized:"
   //           << " [" << std::hex << arg << "]"
@@ -245,28 +225,27 @@ boolean Init(void *arg) {
   return true;
 }
 
-INPUT_RETURN_VALUE DoInput(void *arg,
-                           FcitxKeySym _sym,
-                           uint32_t _state) {
+INPUT_RETURN_VALUE DoInput(void *arg, FcitxKeySym _sym, uint32_t _state) {
   FcitxSenn *senn = (FcitxSenn *)arg;
   FcitxInstance *instance = senn->fcitx;
   FcitxInputState *input = FcitxInstanceGetInputState(instance);
 
-  FcitxKeySym sym = (FcitxKeySym) FcitxInputStateGetKeySym(input);
+  FcitxKeySym sym = (FcitxKeySym)FcitxInputStateGetKeySym(input);
   uint32_t keycode = FcitxInputStateGetKeyCode(input);
   uint32_t state = FcitxInputStateGetKeyState(input);
   // std::cout << sym << " " << keycode << " " << state << std::endl;
 
   boolean has_view = false;
-  boolean consumed = senn->ime->ProcessInput(sym, keycode, state,
-    [&](const fcitx::im::views::Converting *view) {
-      has_view = true;
-      Show(senn, view);
-    },
-    [&](const fcitx::im::views::Editing *view) {
-      has_view = true;
-      Show(senn, view);
-    });
+  boolean consumed = senn->ime->ProcessInput(
+      sym, keycode, state,
+      [&](const fcitx::im::views::Converting *view) {
+        has_view = true;
+        Show(senn, view);
+      },
+      [&](const fcitx::im::views::Editing *view) {
+        has_view = true;
+        Show(senn, view);
+      });
 
   if (consumed) {
     return has_view ? IRV_DISPLAY_CANDWORDS : IRV_DO_NOTHING;
@@ -274,20 +253,15 @@ INPUT_RETURN_VALUE DoInput(void *arg,
   return IRV_TO_PROCESS;
 }
 
-INPUT_RETURN_VALUE DoReleaseInput(void *arg,
-                                  FcitxKeySym sym,
-                                  uint32_t state) {
+INPUT_RETURN_VALUE DoReleaseInput(void *arg, FcitxKeySym sym, uint32_t state) {
   return IRV_TO_PROCESS;
 }
 
+void ReloadConfig(void *arg) {}
 
-void ReloadConfig(void *arg) {
-}
-
-} // im
-} // fcitx_senn
-} // senn
-
+} // namespace im
+} // namespace fcitx_senn
+} // namespace senn
 
 static void FcitxSennDestroy(void *arg) {
   FcitxSenn *senn = (FcitxSenn *)arg;
@@ -304,50 +278,39 @@ static void FcitxSennDestroy(void *arg) {
   //           << std::endl;
 }
 
-static void* FcitxSennCreate(FcitxInstance *fcitx) {
-  FcitxSenn *senn =
-    (FcitxSenn*) fcitx_utils_malloc0(sizeof(FcitxSenn));
+static void *FcitxSennCreate(FcitxInstance *fcitx) {
+  FcitxSenn *senn = (FcitxSenn *)fcitx_utils_malloc0(sizeof(FcitxSenn));
 
   senn->fcitx = fcitx;
 
   // StatefulIME
-  senn->launcher =
-    new senn::fcitx::im::StatefulIMEProxyIPCServerLauncher(
+  senn->launcher = new senn::fcitx::im::StatefulIMEProxyIPCServerLauncher(
       "/usr/lib/senn/server");
   senn->launcher->Spawn();
 
-  senn->ime =
-    new senn::fcitx::im::StatefulIMEProxyIPC(
+  senn->ime = new senn::fcitx::im::StatefulIMEProxyIPC(
       std::unique_ptr<senn::ipc::RequesterInterface>(
-        new senn::fcitx::im::ReconnectableStatefulIMERequester(
-          senn->launcher)));
+          new senn::fcitx::im::ReconnectableStatefulIMERequester(
+              senn->launcher)));
 
   FcitxIMEventHook hk;
   hk.arg = senn;
   hk.func = senn::fcitx_senn::im::ResetInput;
   FcitxInstanceRegisterResetInputHook(fcitx, hk);
-  
+
   // Menu
   senn::fcitx_senn::menu::Setup(senn->fcitx, &senn->menu);
 
   // Register
   FcitxIMIFace iface;
   memset(&iface, 0, sizeof(FcitxIMIFace));
-  iface.Init           = senn::fcitx_senn::im::Init;
-  iface.ResetIM        = senn::fcitx_senn::im::ResetIM;
-  iface.DoInput        = senn::fcitx_senn::im::DoInput;
+  iface.Init = senn::fcitx_senn::im::Init;
+  iface.ResetIM = senn::fcitx_senn::im::ResetIM;
+  iface.DoInput = senn::fcitx_senn::im::DoInput;
   iface.DoReleaseInput = senn::fcitx_senn::im::DoReleaseInput;
-  iface.ReloadConfig   = senn::fcitx_senn::im::ReloadConfig;
-  FcitxInstanceRegisterIMv2(
-      fcitx,
-      senn,
-      "senn",
-      "Senn",
-      "senn",
-      iface,
-      10,
-      "ja"
-  );
+  iface.ReloadConfig = senn::fcitx_senn::im::ReloadConfig;
+  FcitxInstanceRegisterIMv2(fcitx, senn, "senn", "Senn", "senn", iface, 10,
+                            "ja");
 
   // std::cout << "senn-fcitx: created:"
   //           << " [" << std::hex << senn << "]"
@@ -359,10 +322,7 @@ static void* FcitxSennCreate(FcitxInstance *fcitx) {
 extern "C" {
 
 FCITX_EXPORT_API
-FcitxIMClass ime = {
-  FcitxSennCreate,
-  FcitxSennDestroy
-};
+FcitxIMClass ime = {FcitxSennCreate, FcitxSennDestroy};
 
 FCITX_EXPORT_API
 int ABI_VERSION = FCITX_ABI_VERSION;
