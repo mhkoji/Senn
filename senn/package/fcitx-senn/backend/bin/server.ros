@@ -11,7 +11,7 @@ exec ros -Q -- $0 "$@"
 (defpackage :ros.script.server.3755635753
   (:use :cl))
 (in-package :ros.script.server.3755635753)
-(ql:quickload :senn-fcitx-server-unix :silent t)
+(ql:quickload :senn-bin-fcitx-server-unix :silent t)
 
 (defvar *kkc*
   (senn.im.kkc:load-kkc

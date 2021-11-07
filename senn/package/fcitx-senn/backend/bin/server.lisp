@@ -2,7 +2,7 @@
   (:use :cl)
   (:export :main))
 (in-package :senn.fcitx-senn.backend.bin)
-(ql:quickload :senn-fcitx-server-unix :silent t)
+(ql:quickload :senn-bin-fcitx-server-unix :silent t)
 
 (defvar *kkc*
   ;; There is no user home directory

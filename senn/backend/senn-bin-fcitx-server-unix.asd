@@ -1,4 +1,4 @@
-(asdf:defsystem :senn-fcitx-server-unix
+(asdf:defsystem :senn-bin-fcitx-server-unix
   :serial t
   :components
   ((:file "src/bin/fcitx-server-unix"))
