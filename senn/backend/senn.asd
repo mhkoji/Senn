@@ -13,12 +13,7 @@
     ((:file "im")
      (:file "kkc")
      (:file "prefix-dictionary")
-     (:file "mixin")
-     (:file "net/client")
-     (:file "net/server")
-     #+linux
-     (:file "net/ipc/unix")
-     (:file "net/stdio"))))
+     (:file "mixin"))))
   :depends-on (:hachee
                :cl-trie
                :cl-csv))
