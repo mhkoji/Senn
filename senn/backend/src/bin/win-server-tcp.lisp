@@ -1,7 +1,7 @@
-(defpackage :senn.bin.win-server-unix
+(defpackage :senn.bin.win-server-tcp
   (:use :cl)
   (:export :run))
-(in-package :senn.bin.win-server-unix)
+(in-package :senn.bin.win-server-tcp)
 
 (defstruct handler stateful-ime)
 
