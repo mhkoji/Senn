@@ -5,7 +5,7 @@
 
 (defstruct handler stateful-ime)
 
-(defmethod senn.server.tcp:handle-request ((handler handler) req)
+(defmethod senn.server:handle-request ((handler handler) req)
   (senn.fcitx.server:handle-request (handler-stateful-ime handler) req))
 
 (defun run (kkc)

@@ -1,7 +1,6 @@
 (defpackage :senn.server.tcp
   (:use :cl)
-  (:export :handle-request
-           :start-server))
+  (:export :start-server))
 (in-package :senn.server.tcp)
 
 (defstruct client id usocket)
@@ -11,34 +10,23 @@
              (client-id ,client)
              ,@args))
 
-(defun read-request (client)
+(defmethod senn.server:read-request ((client client))
   (let ((stream (usocket:socket-stream (client-usocket client))))
     (let ((line (read-line stream nil nil nil)))
       (log/info client "Read: ~A" line)
       line)))
 
-(defun send-response (client resp)
+(defmethod senn.server:send-response ((client client) resp)
   (let ((stream (usocket:socket-stream (client-usocket client))))
     (write-line resp stream)
     (force-output stream)
     (log/info client "Written: ~A" resp)))
 
-(defgeneric handle-request (handler req))
-  
-(defun loop-handling-request (handler client)
-  (handler-case
-      (loop for req = (read-request client)
-            while req
-            do (let ((resp (handle-request handler req)))
-                 (send-response client resp)))
-    (error (c)
-      (log:warn "~A" c))))
-
 (defun spawn-client-thread (handler client)
   (log/info client "Connected")
   (bordeaux-threads:make-thread
    (lambda ()
-     (loop-handling-request handler client)
+     (senn.server:client-loop handler client)
      (ignore-errors
        (usocket:socket-close (client-usocket client)))
      (log/info client "Disconnected"))))
