@@ -25,10 +25,9 @@
   (length (babel:string-to-octets string :encoding :utf-8)))
 
 (defun buffer-cursor-pos-utf8 (buffer)
-  (let ((subseq (subseq (senn.buffer:buffer-string buffer)
-                        0
-                        (senn.buffer:buffer-cursor-pos buffer))))
-    (length-utf8 subseq)))
+  (let ((string (senn.buffer:buffer-string buffer))
+        (cursor-pos (senn.buffer:buffer-cursor-pos buffer)))
+    (length-utf8 (subseq string 0 cursor-pos))))
 
 (defun make-editing-view (cursor-pos
                           input
