@@ -113,14 +113,15 @@ void Show(FcitxSenn *senn, const senn::fcitx::im::views::Converting *view) {
   // 表示している文字列, candidate windowを削除
   FcitxInstanceCleanInputWindow(instance);
 
-  FcitxInputContext *ic = FcitxInstanceGetCurrentIC(instance);
   FcitxInputState *input = FcitxInstanceGetInputState(instance);
-  FcitxMessages *preedit = FcitxInputStateGetPreedit(input);
-  FcitxMessages *client_preedit = FcitxInputStateGetClientPreedit(input);
-  boolean support_preedit = FcitxInstanceICSupportPreedit(instance, ic);
 
   // 下線付きの文字列を表示
   {
+    FcitxInputContext *ic = FcitxInstanceGetCurrentIC(instance);
+    FcitxMessages *preedit = FcitxInputStateGetPreedit(input);
+    FcitxMessages *client_preedit = FcitxInputStateGetClientPreedit(input);
+    boolean support_preedit = FcitxInstanceICSupportPreedit(instance, ic);
+
     int i = 0, cursor_form_index = view->cursor_form_index;
     std::vector<std::string>::const_iterator it = view->forms.begin();
     for (; it != view->forms.end(); ++it, ++i) {
@@ -162,18 +163,21 @@ void Show(FcitxSenn *senn, const senn::fcitx::im::views::Editing *view) {
     return;
   }
 
-  FcitxMessages *preedit = FcitxInputStateGetPreedit(input);
-  FcitxMessages *client_preedit = FcitxInputStateGetClientPreedit(input);
-  boolean support_preedit = FcitxInstanceICSupportPreedit(instance, ic);
-
   // 下線付きの文字列を表示
-  if (!support_preedit) {
-    FcitxMessagesAddMessageAtLast(preedit, MSG_INPUT, "%s",
+  {
+    FcitxMessages *preedit = FcitxInputStateGetPreedit(input);
+    FcitxMessages *client_preedit = FcitxInputStateGetClientPreedit(input);
+    boolean support_preedit = FcitxInstanceICSupportPreedit(instance, ic);
+
+    if (!support_preedit) {
+      FcitxMessagesAddMessageAtLast(preedit, MSG_INPUT, "%s",
+                                    view->input.c_str());
+    }
+    FcitxMessagesAddMessageAtLast(client_preedit, MSG_INPUT, "%s",
                                   view->input.c_str());
   }
-  FcitxMessagesAddMessageAtLast(client_preedit, MSG_INPUT, "%s",
-                                view->input.c_str());
 
+  // candidate windowを表示
   if (0 < view->predictions.size()) {
     ShowCandidateWordList(senn, input, view->predictions,
                           view->prediction_index);
@@ -230,7 +234,7 @@ INPUT_RETURN_VALUE DoInput(void *arg, FcitxKeySym _sym, uint32_t _state) {
   FcitxInstance *instance = senn->fcitx;
   FcitxInputState *input = FcitxInstanceGetInputState(instance);
 
-  FcitxKeySym sym = (FcitxKeySym)FcitxInputStateGetKeySym(input);
+  uint32_t sym = FcitxInputStateGetKeySym(input);
   uint32_t keycode = FcitxInputStateGetKeyCode(input);
   uint32_t state = FcitxInputStateGetKeyState(input);
   // std::cout << sym << " " << keycode << " " << state << std::endl;

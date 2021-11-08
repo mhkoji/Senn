@@ -1,5 +1,4 @@
 #include <cassert>
-#include <fcitx/instance.h>
 #include <sstream>
 
 #include "stateful_ime_proxy_ipc.h"
@@ -11,7 +10,7 @@ namespace im {
 
 namespace {
 
-std::string ProcessInputRequest(FcitxKeySym sym, uint32_t keycode,
+std::string ProcessInputRequest(uint32_t sym, uint32_t keycode,
                                 uint32_t state) {
   std::stringstream ss;
   ss << "{"
@@ -57,24 +56,24 @@ void StatefulIMEProxyIPC::ResetIM() {
   assert(response == "OK");
 }
 
-boolean StatefulIMEProxyIPC::SelectCandidate(int index) {
+bool StatefulIMEProxyIPC::SelectCandidate(int index) {
   std::string response = "";
   requester_->Request(SelectCandidateRequest(index), &response);
   std::istringstream iss(response);
-  boolean ok;
+  bool ok;
   iss >> ok;
   return ok;
 }
 
-boolean StatefulIMEProxyIPC::ProcessInput(
-    FcitxKeySym sym, uint32_t keycode, uint32_t state,
+bool StatefulIMEProxyIPC::ProcessInput(
+    uint32_t sym, uint32_t keycode, uint32_t state,
     std::function<void(const senn::fcitx::im::views::Converting *)> on_conv,
     std::function<void(const senn::fcitx::im::views::Editing *)> on_editing) {
   std::string response = "";
   requester_->Request(ProcessInputRequest(sym, keycode, state), &response);
 
   std::istringstream iss(response);
-  boolean consumed;
+  bool consumed;
   std::string type;
   iss >> consumed >> type;
 

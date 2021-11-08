@@ -1,6 +1,5 @@
 #pragma once
 #include "views.h"
-#include <fcitx/instance.h>
 #include <functional>
 #include <string>
 
@@ -14,10 +13,10 @@ public:
 
   virtual void ResetIM() = 0;
 
-  virtual boolean SelectCandidate(int index) = 0;
+  virtual bool SelectCandidate(int index) = 0;
 
-  virtual boolean ProcessInput(
-      FcitxKeySym, uint32_t, uint32_t,
+  virtual bool ProcessInput(
+      uint32_t, uint32_t, uint32_t,
       std::function<void(const senn::fcitx::im::views::Converting *)>,
       std::function<void(const senn::fcitx::im::views::Editing *)>) = 0;
 };
