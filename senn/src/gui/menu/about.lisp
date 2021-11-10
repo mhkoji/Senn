@@ -1,4 +1,4 @@
-(defpackage :senn.menu.about
+(defpackage :senn.gui.menu.about
   (:use :cl
         :gtk
         :gdk
@@ -9,7 +9,7 @@
         :pango
         :cairo)
   (:export :show))
-(in-package :senn.menu.about)
+(in-package :senn.gui.menu.about)
 
 (defun show ()
   (within-main-loop
