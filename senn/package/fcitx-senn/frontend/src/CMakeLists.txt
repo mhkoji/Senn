@@ -1,18 +1,17 @@
-
 include_directories(${FCITX4_FCITX_INCLUDE_DIRS})
 include_directories(${FCITX4_FCITX_CONFIG_INCLUDE_DIRS})
 include_directories(${FCITX4_FCITX_UTILS_INCLUDE_DIRS})
 
 include_directories(../../../../third-party/)
-include_directories(../../../../frontend/cpp/)
+include_directories(../../../../frontend/)
 
 set(FCITX_SENN_SRC
   fcitx_senn.cpp
-  ../../../../frontend/cpp/ipc/ipc.cpp
-  ../../../../frontend/cpp/ipc/request.cpp
-  ../../../../frontend/cpp/process/process.cpp
-  ../../../../frontend/cpp/senn_fcitx/im/stateful_ime_proxy_ipc.cpp
-  ../../../../frontend/cpp/senn_fcitx/im/stateful_ime_proxy_ipc_server.cpp
+  ../../../../frontend/ipc/ipc.cpp
+  ../../../../frontend/ipc/request.cpp
+  ../../../../frontend/process/process.cpp
+  ../../../../frontend/senn_fcitx/im/stateful_ime_proxy_ipc.cpp
+  ../../../../frontend/senn_fcitx/im/stateful_ime_proxy_ipc_server.cpp
   )
 
 ## A macro for easy building of the shared object library.
