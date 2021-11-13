@@ -17,7 +17,10 @@ public:
 
   void ResetIM() override;
 
-  bool SelectCandidate(int index) override;
+  bool SelectCandidate(
+      int index,
+      std::function<void(const senn::fcitx::im::views::Converting *)>,
+      std::function<void(const senn::fcitx::im::views::Editing *)>) override;
 
   bool ProcessInput(
       uint32_t, uint32_t, uint32_t,

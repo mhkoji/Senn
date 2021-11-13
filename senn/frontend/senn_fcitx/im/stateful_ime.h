@@ -13,7 +13,10 @@ public:
 
   virtual void ResetIM() = 0;
 
-  virtual bool SelectCandidate(int index) = 0;
+  virtual bool SelectCandidate(
+      int index,
+      std::function<void(const senn::fcitx::im::views::Converting *)>,
+      std::function<void(const senn::fcitx::im::views::Editing *)>) = 0;
 
   virtual bool ProcessInput(
       uint32_t, uint32_t, uint32_t,

@@ -15,7 +15,8 @@
            :make-segment
 
            :append-forms!
-           :try-move-cursor-pos!))
+           :try-move-cursor-pos!
+           :try-set-cursor-pos!))
 (in-package :senn.segment)
 
 (defstruct candidate
@@ -46,4 +47,11 @@
                    (current-index segment-current-index)) segment
     (setf current-index (mod (+ current-index diff)
                              (length forms))))
+  segment)
+
+(defun try-set-cursor-pos! (segment index)
+  (with-accessors ((forms segment-forms)
+                   (current-index segment-current-index)) segment
+    (when (< -1 index (length forms))
+      (setf current-index index)))
   segment)

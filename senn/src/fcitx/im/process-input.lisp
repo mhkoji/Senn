@@ -12,80 +12,11 @@
   (senn.im:append-candidates ime seg)
   (senn.segment:try-move-cursor-pos! seg diff))
 
-
 (defun buffer-empty-p (buffer)
   (string= (senn.buffer:buffer-string buffer) ""))
 
 (defun inputting-buffer-empty-p (inputting)
   (buffer-empty-p (inputting-buffer inputting)))
-
-
-;;; Views
-(defun length-utf8 (string)
-  (length (babel:string-to-octets string :encoding :utf-8)))
-
-(defun buffer-cursor-pos-utf8 (buffer)
-  (let ((string (senn.buffer:buffer-string buffer))
-        (cursor-pos (senn.buffer:buffer-cursor-pos buffer)))
-    (length-utf8 (subseq string 0 cursor-pos))))
-
-(defun make-editing-view (cursor-pos
-                          input
-                          predictions
-                          prediction-index
-                          committed-string)
-  (let ((json (jsown:new-js
-                ("cursor-pos"       cursor-pos)
-                ("input"            input)
-                ("predictions"      predictions)
-                ("prediction-index" (or prediction-index -1))
-                ("committed-input"  committed-string))))
-    (format nil "EDITING ~A" (jsown:to-json json))))
-
-(defun editing-view/inputing-state (s &key committed-string)
-  (let ((buffer (inputting-buffer s)))
-    (make-editing-view (buffer-cursor-pos-utf8 buffer)
-                       (senn.buffer:buffer-string buffer)
-                       (inputting-predictions s)
-                       nil
-                       (or committed-string ""))))
-
-(defun editing-view/katakana-state (s)
-  (let ((katakana-input (katakana-input s)))
-    (make-editing-view (length-utf8 katakana-input)
-                       katakana-input nil nil "")))
-
-(defun editing-view/selecting-from-predictions (s)
-  (let ((input (selecting-from-predictions-current-input s)))
-    (make-editing-view (length-utf8 input)
-                       input
-                       (selecting-from-predictions-predictions s)
-                       (selecting-from-predictions-current-index s)
-                       "")))
-
-(defun converting-view/converting-state (s)
-  (let ((json
-         (jsown:new-js
-           ("forms"
-            (mapcar #'senn.segment:segment-current-form
-                    (converting-segments s)))
-           ("cursor-form-index"
-            (converting-current-segment-index s))
-           ("cursor-form"
-            (let ((segment (converting-current-segment s)))
-              (if (senn.segment:segment-shows-katakana-p segment)
-                  (jsown:new-js
-                    ("candidates"      nil)
-                    ("candidate-index" -1))
-                  (jsown:new-js
-                    ("candidates"
-                     (if (senn.segment:segment-has-more-candidates-p segment)
-                         nil
-                         (senn.segment:segment-forms segment)))
-                    ("candidate-index"
-                     (senn.segment:segment-current-index segment)))))))))
-    (format nil "CONVERTING ~A" (jsown:to-json json))))
-
 
 ;;; Execute
 (defgeneric execute (ime state key))

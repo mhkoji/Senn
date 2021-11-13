@@ -16,4 +16,6 @@
        (senn.fcitx.stateful-ime:reset-im
         stateful-ime))
       (:select-candidate
-       "1"))))
+       (senn.fcitx.stateful-ime:select-candidate
+        stateful-ime
+        (hachee.ipc.op:expr-arg expr "index"))))))

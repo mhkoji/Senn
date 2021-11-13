@@ -56,13 +56,35 @@ void StatefulIMEProxyIPC::ResetIM() {
   assert(response == "OK");
 }
 
-bool StatefulIMEProxyIPC::SelectCandidate(int index) {
+bool StatefulIMEProxyIPC::SelectCandidate(
+    int index,
+    std::function<void(const senn::fcitx::im::views::Converting *)> on_conv,
+    std::function<void(const senn::fcitx::im::views::Editing *)> on_editing) {
   std::string response = "";
   requester_->Request(SelectCandidateRequest(index), &response);
+
   std::istringstream iss(response);
-  bool ok;
-  iss >> ok;
-  return ok;
+  bool consumed;
+  std::string type;
+  iss >> consumed >> type;
+
+  if (type == "CONVERTING") {
+    std::string content;
+    std::getline(iss, content);
+
+    senn::fcitx::im::views::Converting v;
+    senn::fcitx::im::stateful_ime_proxy_ipc_json::Parse(content, &v);
+    on_conv(&v);
+  } else if (type == "EDITING") {
+    std::string content;
+    std::getline(iss, content);
+
+    senn::fcitx::im::views::Editing v;
+    senn::fcitx::im::stateful_ime_proxy_ipc_json::Parse(content, &v);
+    on_editing(&v);
+  }
+
+  return consumed;
 }
 
 bool StatefulIMEProxyIPC::ProcessInput(

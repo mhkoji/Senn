@@ -68,12 +68,7 @@ void Destory(FcitxInstance *fcitx, FcitxUIMenu *menu) {
 namespace im {
 
 INPUT_RETURN_VALUE
-CandidateWordCallback(void *arg, FcitxCandidateWord *word) {
-  FcitxSenn *senn = (FcitxSenn *)arg;
-  int index = *(int *)word->priv;
-  bool selected = senn->ime->SelectCandidate(index);
-  return selected ? IRV_DISPLAY_CANDWORDS : IRV_TO_PROCESS;
-}
+CandidateWordCallback(void *arg, FcitxCandidateWord *word);
 
 void ShowCandidateWordList(FcitxSenn *senn, FcitxInputState *input,
                            const std::vector<std::string> &word_strings,
@@ -185,6 +180,17 @@ void Show(FcitxSenn *senn, const senn::fcitx::im::views::Editing *view) {
 
   // カーソルの表示
   FcitxInputStateSetClientCursorPos(input, view->cursor_pos);
+}
+
+INPUT_RETURN_VALUE
+CandidateWordCallback(void *arg, FcitxCandidateWord *word) {
+  FcitxSenn *senn = (FcitxSenn *)arg;
+  int index = *(int *)word->priv;
+  bool consumed = senn->ime->SelectCandidate(
+      index,
+      [&](const fcitx::im::views::Converting *view) { Show(senn, view); },
+      [&](const fcitx::im::views::Editing *view) { Show(senn, view); });
+  return consumed ? IRV_DISPLAY_CANDWORDS : IRV_TO_PROCESS;
 }
 
 void ResetInput(void *arg) {
