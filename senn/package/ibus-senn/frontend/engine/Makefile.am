@@ -5,12 +5,12 @@ AUTOMAKE_OPTIONS = \
 	$(NULL)
 
 AM_CPPFLAGS = \
-  -I/usr/include/ibus-1.0/ \
-  -I/usr/include/glib-2.0/ \
-  -I/usr/lib/x86_64-linux-gnu/glib-2.0/include \
+	-I/usr/include/ibus-1.0/ \
+	-I/usr/include/glib-2.0/ \
+	-I/usr/lib/x86_64-linux-gnu/glib-2.0/include \
 	-I../../../../third-party/ \
-  -I../../../../src/cpp/ \
-  -std=c++11 \
+	-I../../../../frontend/ \
+	-std=c++11 \
 	$(NULL)
 
 AM_CFLAGS = \
@@ -37,10 +37,11 @@ libexec_PROGRAMS = \
 
 ibus_engine_senn_SOURCES = \
 	main.cpp \
-  ../../../../src/cpp/ipc/ipc.cpp \
-  ../../../../src/cpp/ipc/request.cpp \
-  ../../../../src/cpp/senn_ibus/stateful_im_proxy_ipc.cpp \
-  ../../../../src/cpp/senn_fcitx/stateful_im_proxy_ipc_server.cpp \
+	../../../../frontend/ipc/ipc.cpp \
+	../../../../frontend/ipc/request.cpp \
+	../../../../frontend/process/process.cpp \
+	../../../../frontend/senn_fcitx/im/stateful_ime_proxy_ipc.cpp \
+	../../../../frontend/senn_fcitx/im/stateful_ime_proxy_ipc_server.cpp \
 	$(NULL)
 ibus_engine_senn_CFLAGS = \
 	$(AM_CFLAGS) \

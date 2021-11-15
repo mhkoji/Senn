@@ -25,3 +25,11 @@ ibus-senn_0.0.1_all.deb
 % make && sudo make install
 % ibus-daemon -drx
 ```
+
+## Debug info
+
+Connect to a server listening on port 5678:
+
+```
+% /usr/lib/ibus/ibus-engine-senn --backend-commm connect
+```
