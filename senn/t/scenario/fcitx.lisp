@@ -19,7 +19,7 @@
     (format nil "EDITING ~A" (jsown:to-json json))))
 
 (defclass ime (senn.im:ime
-               senn.fcitx.stateful-ime:stateful-ime)
+               senn.fcitx.stateful-ime:stateful)
   ())
 
 (defun make-ime ()

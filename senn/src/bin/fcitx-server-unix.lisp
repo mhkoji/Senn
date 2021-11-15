@@ -6,7 +6,7 @@
 (defun run (kkc)
   (senn.server.unix:start-server
    (lambda (client)
-     (let ((sf-ime (senn.fcitx.stateful-ime:make-from-kkc kkc)))
+     (let ((sf-ime (senn.fcitx.stateful-ime:make-kkc-ime kkc)))
        (labels ((handle (req)
                   (senn.fcitx.server:handle-request sf-ime req)))
          (senn.server:client-loop client :handle-fn #'handle))))))

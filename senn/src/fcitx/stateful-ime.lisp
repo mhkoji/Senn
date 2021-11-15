@@ -1,56 +1,68 @@
 (defpackage :senn.fcitx.stateful-ime
   (:use :cl)
-  (:export :stateful-ime
+  (:export :ime-state
+           :set-ime-state
            :process-input
-           :reset-im
            :select-candidate
+           :reset-im
 
+           :stateful
            :make-initial-state
-           :make-from-kkc))
+           :make-kkc-ime))
 (in-package :senn.fcitx.stateful-ime)
 
-(defclass stateful-ime (senn.im:ime)
-  ((state
-    :initarg :state
-    :accessor stateful-ime-state)))
+(defgeneric ime-state (ime))
+(defgeneric set-ime-state (ime state))
 
 (defun make-initial-state ()
   (senn.fcitx.im:make-inputting))
 
-(defun process-input (stateful-ime key)
-  (with-accessors ((s stateful-ime-state)) stateful-ime
+(defun process-input (ime key)
+  (with-accessors ((s ime-state)) ime
     (destructuring-bind (consumed-p view &key state)
-        (senn.fcitx.im.process-input:execute stateful-ime s key)
+        (senn.fcitx.im.process-input:execute ime s key)
       (when state
-        (setf s state))
+        (set-ime-state ime state))
       (format nil "~A ~A"
               (if consumed-p 1 0)
               (if (and consumed-p view) view "NONE")))))
 
-(defun select-candidate (stateful-ime index)
-  (with-accessors ((s stateful-ime-state)) stateful-ime
+(defun select-candidate (ime index)
+  (with-accessors ((s ime-state)) ime
     (destructuring-bind (consumed-p view &key state)
         (senn.fcitx.im.select-candidate:execute s index)
       (when state
-        (setf s state))
+        (set-ime-state ime state))
       (format nil "~A ~A"
               (if consumed-p 1 0)
               (if (and consumed-p view) view "NONE")))))
 
-(defun reset-im (stateful-ime)
-  (setf (stateful-ime-state stateful-ime) (make-initial-state))
+(defun reset-im (ime)
+  (set-ime-state ime (make-initial-state))
   "OK")
 
 ;;;
 
-(defclass ime (stateful-ime
-               senn.im.mixin:convert-kkc
-               senn.im.mixin:lookup-kkc
-               senn.im.mixin:predict-katakana)
+(defclass stateful ()
+  ((state :initarg :state)))
+
+(defmethod ime-state ((ime stateful))
+  (slot-value ime 'state))
+
+(defmethod set-ime-state ((ime stateful) state)
+  (setf (slot-value ime 'state) state))
+
+;;;
+
+(defclass stateful-kkc-ime (stateful
+                            senn.im:ime
+                            senn.im.mixin:convert-kkc
+                            senn.im.mixin:lookup-kkc
+                            senn.im.mixin:predict-katakana)
   ())
 
-(defun make-from-kkc (kkc)
-  (make-instance 'ime
+(defun make-kkc-ime (kkc)
+  (make-instance 'stateful-kkc-ime
+                 :state (make-initial-state)
                  :lookup-kkc-impl kkc
-                 :convert-kkc-impl kkc
-                 :state (make-initial-state)))
+                 :convert-kkc-impl kkc))
