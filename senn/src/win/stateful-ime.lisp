@@ -1,13 +1,14 @@
 (defpackage :senn.win.stateful-ime
   (:use :cl)
-  (:export :stateful-ime
+  (:export :ime-state
            :get-input-mode
            :toggle-input-mode
            :can-process
            :process-input
 
+           :stateful
            :make-initial-state
-           :make-from-kkc))
+           :make-ime))
 (in-package :senn.win.stateful-ime)
 
 (defstruct history
@@ -41,43 +42,46 @@
   history
   extended-dictionary)
 
-(defclass stateful-ime ()
-  ((state
-    :initarg :state
-    :accessor stateful-ime-state)))
+(defun make-initial-state ()
+  (make-state
+   :input-mode :direct
+   :input-state nil
+   :history (make-history)
+   :extended-dictionary
+   (hachee.kkc.dictionary:make-dictionary)))
 
-(defun get-input-mode (stateful-ime)
-  (format nil "~A~%" (state-input-mode (stateful-ime-state stateful-ime))))
+(defgeneric ime-state (ime))
 
-(defun toggle-input-mode (stateful-ime)
-  (with-accessors ((state stateful-ime-state)) stateful-ime
-    (with-accessors ((input-mode state-input-mode)
-                     (input-state state-input-state)) state
-      (ecase input-mode
-        (:hiragana
-         (setf input-mode :direct)
-         (setf input-state nil))
-        (:direct
-         (setf input-mode :hiragana)
-         (setf input-state (senn.win.im:make-editing))))))
+
+(defun get-input-mode (ime)
+  (format nil "~A~%" (state-input-mode (ime-state ime))))
+
+(defun toggle-input-mode (ime)
+  (with-accessors ((input-mode state-input-mode)
+                   (input-state state-input-state)) (ime-state ime)
+    (ecase input-mode
+      (:hiragana
+       (setf input-mode :direct)
+       (setf input-state nil))
+      (:direct
+       (setf input-mode :hiragana)
+       (setf input-state (senn.win.im:make-editing)))))
   ;; It seems to need to consume output buffer..
   (format nil "OK~%"))
 
-(defun can-process (stateful-ime key)
+(defun can-process (ime key)
   (with-accessors ((input-mode state-input-mode)
-                   (input-state state-input-state))
-      (stateful-ime-state stateful-ime)
+                   (input-state state-input-state)) (ime-state ime)
     (let ((can-process (senn.win.im.can-process:execute
-                        stateful-ime input-state input-mode key)))
+                        ime input-state input-mode key)))
       (format nil "~A~%" (if can-process 1 0)))))
 
-(defun process-input (stateful-ime key)
+(defun process-input (ime key)
   (with-accessors ((history state-history)
-                   (input-state state-input-state)
-                   (input-mode state-input-mode))
-      (stateful-ime-state stateful-ime)
+                   (input-mode state-input-mode)
+                   (input-state state-input-state)) (ime-state ime)
     (let ((result (senn.win.im.process-input:execute
-                   stateful-ime input-state input-mode key)))
+                   ime input-state input-mode key)))
       (destructuring-bind (can-process view
                            &key state committed-segments)
           result
@@ -104,7 +108,7 @@
 (defmethod senn.im:convert ((ime effected-ime) (pron string)
                             &key 1st-boundary-index)
   (with-accessors ((kkc effected-ime-kkc)
-                   (state stateful-ime-state)) ime
+                   (state ime-state)) ime
     (let ((kkc-convert (hachee.kkc:make-kkc-convert
                         :kkc kkc
                         :extended-dictionary
@@ -124,19 +128,19 @@
 
 ;;;
 
-(defclass stateful-effected-ime (stateful-ime
+(defclass stateful ()
+  ((state :initarg :state)))
+
+(defmethod ime-state ((ime stateful))
+  (slot-value ime 'state))
+
+;;;
+
+(defclass stateful-effected-ime (stateful
                                  effected-ime)
   ())
 
-(defun make-initial-state ()
-  (make-state
-   :input-mode :direct
-   :input-state nil
-   :history (make-history)
-   :extended-dictionary
-   (hachee.kkc.dictionary:make-dictionary)))
-
-(defun make-from-kkc (kkc)
+(defun make-ime (kkc state)
   (make-instance 'stateful-effected-ime
-                 :state (make-initial-state)
-                 :kkc kkc))
+                 :kkc kkc
+                 :state state))

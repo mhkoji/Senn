@@ -3,7 +3,7 @@
 (in-package :senn.t.scenario.win)
 
 (defclass ime (senn.im:ime
-               senn.win.stateful-ime:stateful-ime)
+               senn.win.stateful-ime:stateful)
   ())
 
 (defmethod senn.im:convert ((ime ime)
