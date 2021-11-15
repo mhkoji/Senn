@@ -23,16 +23,16 @@
     (let ((line (format nil "~A~%" resp)))
       (client-log-info client line))))
 
-(defun spawn-client-thread (handler client)
-  (client-log-info client "Connected")
+
+(defun spawn-client-thread (client client-loop-fn)
   (bordeaux-threads:make-thread
    (lambda ()
-     (senn.server:client-loop handler client)
+     (funcall client-loop-fn client)
      (ignore-errors
-       (hachee.ipc.unix:socket-close (client-socket client)))
+      (hachee.ipc.unix:socket-close (client-socket client)))
      (client-log-info client "Disconnected"))))
 
-(defun start-server (create-handler-fn
+(defun start-server (client-loop-fn
                      &key (socket-name "/tmp/senn-server-socket")
                           (use-abstract t))
   (when (and (not use-abstract)
@@ -47,8 +47,9 @@
         (unwind-protect
              (loop for client-id from 1 do
                (let* ((socket (hachee.ipc.unix:socket-accept server-socket))
-                      (client (make-client :id client-id :socket socket))
-                      (handler (funcall create-handler-fn)))
-                 (push (spawn-client-thread handler client) threads)))
+                      (client (make-client :id client-id :socket socket)))
+                 (client-log-info client "Connected")
+                 (push (spawn-client-thread client client-loop-fn)
+                       threads)))
           (mapc #'bordeaux-threads:destroy-thread threads)
           (hachee.ipc.unix:socket-close server-socket))))))
