@@ -1,3 +1,4 @@
+;; convert/lookup depending on hachee kkc
 (defpackage :senn.im.kkc
   (:use :cl)
   (:export :convert

@@ -8,7 +8,8 @@
 
            :stateful
            :make-initial-state
-           :make-ime))
+           :make-ime
+           :make-engine-ime))
 (in-package :senn.win.stateful-ime)
 
 (defstruct history
@@ -143,4 +144,18 @@
 (defun make-ime (kkc state)
   (make-instance 'stateful-effected-ime
                  :kkc kkc
+                 :state state))
+
+;;;
+
+(defclass stateful-engine-ime (stateful
+                               senn.im:ime
+                               senn.im.mixin:convert-engine
+                               senn.im.mixin:lookup-engine)
+  ())
+
+(defun make-engine-ime (engine state)
+  (make-instance 'stateful-engine-ime
+                 :convert-engine-impl engine
+                 :lookup-engine-impl engine
                  :state state))

@@ -12,6 +12,8 @@
     :components
     ((:file "im")
      (:file "kkc")
+     #+sbcl
+     (:file "engine")
      (:file "prefix-dictionary")
      (:file "mixin"))))
   :depends-on (:hachee
