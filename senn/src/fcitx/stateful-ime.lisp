@@ -8,7 +8,8 @@
 
            :stateful
            :make-initial-state
-           :make-kkc-ime))
+           :make-kkc-ime
+           :make-engine-ime))
 (in-package :senn.fcitx.stateful-ime)
 
 (defgeneric ime-state (ime))
@@ -66,3 +67,17 @@
                  :state (make-initial-state)
                  :lookup-kkc-impl kkc
                  :convert-kkc-impl kkc))
+
+;;;
+
+(defclass stateful-engine-ime (stateful
+                               senn.im:ime
+                               senn.im.mixin:convert-engine
+                               senn.im.mixin:lookup-engine)
+  ())
+
+(defun make-engine-ime (engine)
+  (make-instance 'stateful-engine-ime
+                 :convert-engine-impl engine
+                 :lookup-engine-impl engine
+                 :state (make-initial-state)))

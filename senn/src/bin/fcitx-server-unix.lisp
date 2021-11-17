@@ -1,6 +1,7 @@
 (defpackage :senn.bin.fcitx-server-unix
   (:use :cl)
-  (:export :run))
+  (:export :run
+           :run-engine))
 (in-package :senn.bin.fcitx-server-unix)
 
 (defun run (kkc)
@@ -10,3 +11,12 @@
        (labels ((handle (req)
                   (senn.fcitx.server:handle-request sf-ime req)))
          (senn.server:client-loop client :handle-fn #'handle))))))
+
+(defun run-engine (runner)
+  (senn.server.unix:start-server
+   (lambda (client)
+     (senn.im.engine:with-engine (engine runner)
+       (let ((sf-ime (senn.fcitx.stateful-ime:make-engine-ime engine)))
+         (labels ((handle (req)
+                    (senn.fcitx.server:handle-request sf-ime req)))
+           (senn.server:client-loop client :handle-fn #'handle)))))))
