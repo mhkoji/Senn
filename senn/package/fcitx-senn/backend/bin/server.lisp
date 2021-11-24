@@ -7,7 +7,7 @@
 (defvar *kkc*
   ;; There is no user home directory
   ;; because this script is supposed to be run by Docker.
-  (senn.im.kkc:load-kkc))
+  (senn.im.mixin.kkc:load-kkc))
 
 (defun main (&rest argv)
   (declare (ignorable argv))

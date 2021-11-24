@@ -1,11 +1,10 @@
 ;; convert/lookup depending on hachee kkc
-(defpackage :senn.im.kkc
+(defpackage :senn.im.mixin.kkc
   (:use :cl)
   (:export :convert
            :lookup
-           :get-kkc
            :load-kkc))
-(in-package :senn.im.kkc)
+(in-package :senn.im.mixin.kkc)
 
 (defun convert (convert pron &key 1st-boundary-index)
   (mapcar (lambda (e)
@@ -47,3 +46,25 @@
 (defun load-kkc (&optional senn-homedir-pathname)
   (or (load-user-kkc senn-homedir-pathname)
       (create-system-kkc)))
+
+;;;
+
+
+(defclass convert ()
+  ((kkc-impl
+    :initarg :convert-kkc-impl
+    :reader convert-kkc-impl)))
+
+(defmethod senn.im:convert ((mixin convert) (pron string)
+                            &key 1st-boundary-index)
+  (convert (convert-kkc-impl mixin) pron
+           :1st-boundary-index 1st-boundary-index))
+
+(defclass lookup ()
+  ((kkc-impl
+    :initarg :lookup-kkc-impl
+    :reader lookup-kkc-impl)))
+
+(defmethod senn.im:lookup ((mixin lookup) (pron string)
+                           &key prev next)
+  (lookup (lookup-kkc-impl mixin) pron :next next :prev prev))

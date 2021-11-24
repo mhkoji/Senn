@@ -7,15 +7,19 @@
    (:file "segment")
    (:file "prefix-dictionary")
    (:file "user-dictionary")
+
    (:module :im
-    :pathname "im/"
+    :pathname "im"
     :components
     ((:file "im")
-     (:file "kkc")
-     #+sbcl
-     (:file "engine")
-     (:file "prefix-dictionary")
-     (:file "mixin"))))
-  :depends-on (:hachee
+     (:module :mixin
+      :pathname "mixin"
+      :components
+      ((:file "kkc")
+       #+sbcl
+       (:file "engine")
+       (:file "prefix")
+       (:file "katakana"))))))
+  :depends-on (:hachee-kkc
                :cl-trie
                :cl-csv))

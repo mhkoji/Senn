@@ -12,6 +12,7 @@
                   (senn.fcitx.server:handle-request sf-ime req)))
          (senn.server:client-loop client :handle-fn #'handle))))))
 
+#+sbcl
 (defun run-engine (runner)
   (senn.server.unix:start-server
    (lambda (client)

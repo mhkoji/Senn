@@ -1,11 +1,11 @@
 ;; convert/lookup depending on a certain third-party kkc engine
-(defpackage :senn.im.engine
+(defpackage :senn.im.mixin.engine
   (:use :cl)
   (:export :convert
            :lookup
            :with-engine
            :make-engine-runner))
-(in-package :senn.im.engine)
+(in-package :senn.im.mixin.engine)
 
 (defstruct engine
   process)
@@ -85,3 +85,25 @@
               (engine-list-candidate engine pron))
     (error ()
       (list (senn.segment:make-candidate :form pron :origin :um)))))
+
+;;;
+
+(defclass convert ()
+  ((engine-impl
+    :initarg :convert-engine-impl
+    :reader convert-engine-impl)))
+
+(defmethod senn.im:convert ((mixin convert) (pron string)
+                            &key 1st-boundary-index)
+  (declare (ignore 1st-boundary-index))
+  (convert (convert-engine-impl mixin) pron))
+
+(defclass lookup ()
+  ((engine-impl
+    :initarg :lookup-engine-impl
+    :reader lookup-engine-impl)))
+
+(defmethod senn.im:lookup ((mixin lookup) (pron string)
+                           &key prev next)
+  (declare (ignore next prev))
+  (lookup (lookup-engine-impl mixin) pron))

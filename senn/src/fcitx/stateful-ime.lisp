@@ -57,9 +57,9 @@
 
 (defclass stateful-kkc-ime (stateful
                             senn.im:ime
-                            senn.im.mixin:convert-kkc
-                            senn.im.mixin:lookup-kkc
-                            senn.im.mixin:predict-katakana)
+                            senn.im.mixin.kkc:convert
+                            senn.im.mixin.kkc:lookup
+                            senn.im.mixin.katakana:predict)
   ())
 
 (defun make-kkc-ime (kkc)
@@ -70,12 +70,14 @@
 
 ;;;
 
+#+sbcl
 (defclass stateful-engine-ime (stateful
                                senn.im:ime
-                               senn.im.mixin:convert-engine
-                               senn.im.mixin:lookup-engine)
+                               senn.im.mixin.engine:convert
+                               senn.im.mixin.engine:lookup)
   ())
 
+#+sbcl
 (defun make-engine-ime (engine)
   (make-instance 'stateful-engine-ime
                  :convert-engine-impl engine

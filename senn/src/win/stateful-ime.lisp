@@ -114,7 +114,7 @@
                         :kkc kkc
                         :extended-dictionary
                         (state-extended-dictionary state))))
-      (let ((segs (senn.im.kkc:convert
+      (let ((segs (senn.im.mixin.kkc:convert
                    kkc-convert pron
                    :1st-boundary-index 1st-boundary-index)))
         (history-apply (state-history state) segs)))))
@@ -122,7 +122,7 @@
 (defmethod senn.im:lookup ((ime effected-ime) (pron string)
                            &key next prev)
   (with-accessors ((kkc effected-ime-kkc)) ime
-    (senn.im.kkc:lookup kkc pron :next next :prev prev)))
+    (senn.im.mixin.kkc:lookup kkc pron :next next :prev prev)))
 
 (defmethod senn.im:predict append ((ime effected-ime) (pron string))
   (list pron))
@@ -148,12 +148,14 @@
 
 ;;;
 
+#+sbcl
 (defclass stateful-engine-ime (stateful
                                senn.im:ime
-                               senn.im.mixin:convert-engine
-                               senn.im.mixin:lookup-engine)
+                               senn.im.mixin.engine:convert
+                               senn.im.mixin.engine:lookup)
   ())
 
+#+sbcl
 (defun make-engine-ime (engine state)
   (make-instance 'stateful-engine-ime
                  :convert-engine-impl engine
