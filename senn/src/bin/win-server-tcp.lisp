@@ -16,7 +16,7 @@
 (defun run-engine (runner)
   (senn.server.tcp:start-server
    (lambda (client)
-     (senn.im.engine:with-engine (engine runner)
+     (senn.im.mixin.engine:with-engine (engine runner)
        (let ((state (senn.win.stateful-ime:make-initial-state)))
          (let ((sf-ime (senn.win.stateful-ime:make-engine-ime
                         engine

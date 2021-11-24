@@ -16,7 +16,7 @@
 (defun run-engine (runner)
   (senn.server.unix:start-server
    (lambda (client)
-     (senn.im.engine:with-engine (engine runner)
+     (senn.im.mixin.engine:with-engine (engine runner)
        (let ((sf-ime (senn.fcitx.stateful-ime:make-engine-ime engine)))
          (labels ((handle (req)
                     (senn.fcitx.server:handle-request sf-ime req)))
