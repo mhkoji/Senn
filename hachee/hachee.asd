@@ -45,10 +45,13 @@
      (:file "kkc")
      (:file "kkc-convert")
      (:file "kkc-lookup")
+     #+sbcl
      (:file "profile")
      (:file "eval")))
 
+   #+nil
    (:file "util/stream")
+   #+nil
    (:module :dependency-parsing
     :pathname "dependency-parsing"
     :components
@@ -59,6 +62,7 @@
   :depends-on (:alexandria
                :anaphora
                :bordeaux-threads
+               #+nil
                :clazy
                :cl-annot
                :cl-fad

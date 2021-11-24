@@ -29,21 +29,25 @@
 
 ;;;
 
+#+sbcl
 (defclass convert-engine ()
   ((impl
     :initarg :convert-engine-impl
     :reader convert-engine-impl)))
 
+#+sbcl
 (defmethod senn.im:convert ((mixin convert-engine) (pron string)
                             &key 1st-boundary-index)
   (declare (ignore 1st-boundary-index))
   (senn.im.engine:convert (convert-engine-impl mixin) pron))
 
+#+sbcl
 (defclass lookup-engine ()
   ((impl
     :initarg :lookup-engine-impl
     :reader lookup-engine-impl)))
 
+#+sbcl
 (defmethod senn.im:lookup ((mixin lookup-engine) (pron string)
                            &key prev next)
   (declare (ignore next prev))

@@ -40,6 +40,8 @@
          (cl-fad:list-directory
           (merge-pathnames
            "src/kkc/data/aozora/word-pron-utf8/"
+           #P"/home/koji/git/Hachee/hachee/"
+           #+nil
            (asdf:system-source-directory :hachee)))))
     (log:debug "Loading: ~A" corpus-pathnames)
     (hachee.kkc:build-kkc-simple corpus-pathnames)))
