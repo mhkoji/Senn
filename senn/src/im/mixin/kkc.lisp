@@ -39,7 +39,8 @@
          (cl-fad:list-directory
           (merge-pathnames
            "src/kkc/data/aozora/word-pron-utf8/"
-           (asdf:system-source-directory :hachee)))))
+           (funcall (read-from-string "asdf:system-source-directory")
+                    :hachee-kkc)))))
     (log:debug "Loading: ~A" corpus-pathnames)
     (hachee.kkc:build-kkc-simple corpus-pathnames)))
 
