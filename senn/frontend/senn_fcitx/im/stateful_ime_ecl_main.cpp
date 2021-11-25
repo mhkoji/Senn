@@ -14,7 +14,7 @@ void PrintEditing(const views::Editing *view) {
   std::cout << "Editing: " << view->input;
 }
 
-// g++ `~/.roswell/impls/x86-64/linux/ecl/21.2.1/bin/ecl-config --cflags` -I../../../third-party stateful_ime_ecl.cpp stateful_ime_ecl_main.cpp senn-bin-fcitx-lib--all-systems.a `~/.roswell/impls/x86-64/linux/ecl/21.2.1/bin/ecl-config --ldflags` -lecl -o main
+// g++ `~/.roswell/impls/x86-64/linux/ecl/21.2.1/bin/ecl-config --cflags` -I../../../third-party -I../../ stateful_ime_ecl.cpp stateful_ime_proxy_ipc.cpp stateful_ime_ecl_main.cpp senn-bin-fcitx-lib--all-systems.a `~/.roswell/impls/x86-64/linux/ecl/21.2.1/bin/ecl-config --ldflags` -lecl -o main
 int main(void) {
   StatefulIMEEcl::ClBoot();
   StatefulIMEEcl::EclInitModule();
