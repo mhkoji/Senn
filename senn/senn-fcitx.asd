@@ -6,6 +6,5 @@
    (:file "im/ime")
    (:file "im/process-input")
    (:file "im/select-candidate")
-   (:file "stateful-ime")
-   (:file "server"))
+   (:file "stateful-ime"))
   :depends-on (:senn))
