@@ -6,8 +6,8 @@
            :handle-request))
 (in-package :senn.bin.fcitx-lib)
 
-;; TODO: Find a way to build kkc at compile time
-(defvar *kkc* nil)
+(defvar *kkc*
+  (senn.im.mixin.kkc:load-kkc))
 
 (defun make-ime ()
   (senn.fcitx.stateful-ime:make-kkc-ime *kkc*))

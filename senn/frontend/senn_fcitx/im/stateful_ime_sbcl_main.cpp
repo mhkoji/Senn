@@ -1,4 +1,4 @@
-#include "stateful_ime_ecl.h"
+#include "stateful_ime_sbcl.h"
 #include <iostream>
 
 using namespace senn::fcitx::im;
@@ -14,12 +14,15 @@ void PrintEditing(const views::Editing *view) {
   std::cout << "Editing: " << view->input;
 }
 
-// g++ `~/.roswell/impls/x86-64/linux/ecl/21.2.1/bin/ecl-config --cflags` -I../../../third-party -I../../ stateful_ime_ecl.cpp stateful_ime_proxy_ipc.cpp stateful_ime_ecl_main.cpp senn-bin-fcitx-lib--all-systems.a `~/.roswell/impls/x86-64/linux/ecl/21.2.1/bin/ecl-config --ldflags` -lecl -o main
+// ros run -s senn-bin-fcitx-lib -s sbcl-librarian -l ../../../src/bin/fcitx-lib-sbcl.lisp
+// gcc -c -fpic libsennfcitx.c
+// gcc --shared libsennfcitx.o -o libsennfcitx.so -lsbcl -L ~/.roswell/src/sbcl-2.1.10/src/runtime/
+// g++ stateful_ime_sbcl_main.cpp stateful_ime_sbcl.cpp stateful_ime_proxy_ipc.cpp -o main -lsbcl -lsennfcitx -L ./ -L ~/.roswell/src/sbcl-2.1.10/src/runtime/ -I ../../ -I ../../../third-party/
+// LD_LIBRARY_PATH=.:~/.roswell/src/sbcl-2.1.10/src/runtime/ ./main
 int main(void) {
-  StatefulIMEEcl::ClBoot();
-  StatefulIMEEcl::EclInitModule();
+  StatefulIMESbcl::Init("libsennfcitx.core");
 
-  StatefulIME *ime = StatefulIMEEcl::Create();
+  StatefulIME *ime = StatefulIMESbcl::Create();
 
   std::vector<uint32_t> syms = {116, 111, 117, 107, 121, 111, 117,
                                 110, 105, 105, 107, 105, 109, 97,
@@ -32,7 +35,5 @@ int main(void) {
     ime->ProcessInput(sym, 0, 0, PrintConverting, PrintEditing);
     std::cout << std::endl;
   }
-
-  StatefulIMEEcl::ClShutdown();
   return 0;
 }
