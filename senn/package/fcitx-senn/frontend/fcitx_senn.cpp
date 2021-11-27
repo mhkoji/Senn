@@ -276,6 +276,9 @@ static void FcitxSennDestroy(void *arg) {
   FcitxSenn *senn = (FcitxSenn *)arg;
 
   delete senn->ime;
+  /*
+  senn::fcitx::im::StatefulIMEEcl::ClShutdown();
+  */
 
   senn::fcitx_senn::menu::Destory(senn->fcitx, &senn->menu);
 
