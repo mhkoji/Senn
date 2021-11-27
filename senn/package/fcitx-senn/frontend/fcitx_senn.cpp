@@ -9,6 +9,8 @@
 
 #include "process/process.h"
 #include "senn_fcitx/im/stateful_ime_ipc.h"
+// #include "senn_fcitx/im/stateful_ime_ecl.h"
+// #include "senn_fcitx/im/stateful_ime_sbcl.h"
 
 namespace {
 
@@ -292,6 +294,15 @@ static void *FcitxSennCreate(FcitxInstance *fcitx) {
   // StatefulIME
   senn->ime =
       senn::fcitx::im::StatefulIMEIPC::SpawnAndCreate("/usr/lib/senn/server");
+  /*
+  senn::fcitx::im::StatefulIMESbcl::Init("/usr/lib/senn/libsennfcitx.core");
+  senn->ime = senn::fcitx::im::StatefulIMESbcl::Create()
+  */
+  /*
+  senn::fcitx::im::StatefulIMEEcl::ClBoot();
+  senn::fcitx::im::StatefulIMEEcl::EclInitModule();
+  senn->ime = senn::fcitx::im::StatefulIMEEcl::Create();
+  */
 
   FcitxIMEventHook hk;
   hk.arg = senn;
