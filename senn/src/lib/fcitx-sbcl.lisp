@@ -1,4 +1,4 @@
-(in-package :senn.bin.fcitx-lib)
+(in-package :senn.lib.fcitx)
 
 (sbcl-librarian:define-handle-type ime-t "ime_t")
 

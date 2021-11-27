@@ -29,7 +29,7 @@ void StatefulIMEEcl::Requester::Request(const std::string &req,
                                         std::string *res) {
   // std::cout << req << std::endl;
   cl_object response = cl_funcall(
-      3, cl_eval(c_string_to_object("'senn.bin.fcitx-lib:handle-request")),
+      3, cl_eval(c_string_to_object("'senn.lib.fcitx:handle-request")),
       ime_, ecl_make_constant_base_string(req.c_str(), -1));
   EclToString(response, res);
 }
@@ -46,7 +46,7 @@ void StatefulIMEEcl::EclInitModule() { ecl_init_module(NULL, init_senn); }
 void StatefulIMEEcl::ClShutdown() { cl_shutdown(); }
 
 StatefulIME *StatefulIMEEcl::Create() {
-  cl_object ime = cl_eval(c_string_to_object("(senn.bin.fcitx-lib:make-ime)"));
+  cl_object ime = cl_eval(c_string_to_object("(senn.lib.fcitx:make-ime)"));
   return new StatefulIMEProxy(std::unique_ptr<senn::RequesterInterface>(
       new StatefulIMEEcl::Requester(ime)));
 }
