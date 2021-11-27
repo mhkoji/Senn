@@ -1,19 +1,16 @@
 #pragma once
-#include "ipc/ipc.h"
-#include "ipc/request.h"
+#include "request.h"
 #include "stateful_ime.h"
-#include "stateful_ime_proxy_ipc_server.h"
-#include "views.h"
 #include <memory>
 
 namespace senn {
 namespace fcitx {
 namespace im {
 
-class StatefulIMEProxyIPC : public StatefulIME {
+class StatefulIMEProxy : public StatefulIME {
 public:
-  StatefulIMEProxyIPC(std::unique_ptr<senn::ipc::RequesterInterface>);
-  ~StatefulIMEProxyIPC();
+  StatefulIMEProxy(std::unique_ptr<senn::RequesterInterface>);
+  ~StatefulIMEProxy();
 
   void ResetIM() override;
 
@@ -28,7 +25,7 @@ public:
       std::function<void(const senn::fcitx::im::views::Editing *)>) override;
 
 private:
-  std::unique_ptr<senn::ipc::RequesterInterface> requester_;
+  std::unique_ptr<senn::RequesterInterface> requester_;
 };
 
 } // namespace im

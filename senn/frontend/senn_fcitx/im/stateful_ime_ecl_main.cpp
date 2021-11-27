@@ -14,7 +14,11 @@ void PrintEditing(const views::Editing *view) {
   std::cout << "Editing: " << view->input;
 }
 
-// g++ `~/.roswell/impls/x86-64/linux/ecl/21.2.1/bin/ecl-config --cflags` -I../../../third-party -I../../ stateful_ime_ecl.cpp stateful_ime_proxy_ipc.cpp stateful_ime_ecl_main.cpp senn-bin-fcitx-lib--all-systems.a `~/.roswell/impls/x86-64/linux/ecl/21.2.1/bin/ecl-config --ldflags` -lecl -o main
+// clang-format off
+// ros run -e '(asdf:make-build :senn-bin-fcitx-lib :type :static-library :move-here #P"./" :monolithic t :init-name "init_senn")' -q
+// g++ `~/.roswell/impls/x86-64/linux/ecl/21.2.1/bin/ecl-config --cflags` -I../../../third-party -I../../ stateful_ime_ecl.cpp stateful_ime_proxy.cpp stateful_ime_ecl_main.cpp senn-bin-fcitx-lib--all-systems.a `~/.roswell/impls/x86-64/linux/ecl/21.2.1/bin/ecl-config --ldflags` -lecl -o main
+// ./main
+// clang-format on
 int main(void) {
   StatefulIMEEcl::ClBoot();
   StatefulIMEEcl::EclInitModule();

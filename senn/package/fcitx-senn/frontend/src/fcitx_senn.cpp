@@ -8,17 +8,14 @@
 #include <fcitx/instance.h>
 
 #include "process/process.h"
-#include "senn_fcitx/im/stateful_ime_proxy_ipc.h"
-#include "senn_fcitx/im/stateful_ime_proxy_ipc_server.h"
+#include "senn_fcitx/im/stateful_ime_ipc.h"
 
 namespace {
 
 typedef struct _FcitxSenn {
   FcitxInstance *fcitx;
   FcitxUIMenu menu;
-
-  senn::fcitx::im::StatefulIMEProxyIPC *ime;
-  senn::fcitx::im::StatefulIMEProxyIPCServerLauncher *launcher;
+  senn::fcitx::im::StatefulIME *ime;
 } FcitxSenn;
 
 } // namespace
@@ -277,7 +274,6 @@ static void FcitxSennDestroy(void *arg) {
   FcitxSenn *senn = (FcitxSenn *)arg;
 
   delete senn->ime;
-  delete senn->launcher;
 
   senn::fcitx_senn::menu::Destory(senn->fcitx, &senn->menu);
 
@@ -294,14 +290,8 @@ static void *FcitxSennCreate(FcitxInstance *fcitx) {
   senn->fcitx = fcitx;
 
   // StatefulIME
-  senn->launcher = new senn::fcitx::im::StatefulIMEProxyIPCServerLauncher(
-      "/usr/lib/senn/server");
-  senn->launcher->Spawn();
-
-  senn->ime = new senn::fcitx::im::StatefulIMEProxyIPC(
-      std::unique_ptr<senn::ipc::RequesterInterface>(
-          new senn::fcitx::im::ReconnectableStatefulIMERequester(
-              senn->launcher)));
+  senn->ime =
+      senn::fcitx::im::StatefulIMEIPC::SpawnAndCreate("/usr/lib/senn/server");
 
   FcitxIMEventHook hk;
   hk.arg = senn;

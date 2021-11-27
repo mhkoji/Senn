@@ -144,19 +144,5 @@ bool Connection::ReadLine(int timeout_msec, std::string *output) {
 
 void Connection::Close() { close(socket_fd_); }
 
-LocalAbstractSocketConnectionFactory::LocalAbstractSocketConnectionFactory(
-    const std::string &socket_path)
-    : socket_path_(socket_path) {}
-
-Connection *LocalAbstractSocketConnectionFactory::Create() {
-  return Connection::ConnectLocalAbstractTo(socket_path_);
-}
-
-TcpConnectionFactory::TcpConnectionFactory(unsigned short port) : port_(port) {}
-
-Connection *TcpConnectionFactory::Create() {
-  return Connection::ConnectTo(port_);
-}
-
 } // namespace ipc
 } // namespace senn

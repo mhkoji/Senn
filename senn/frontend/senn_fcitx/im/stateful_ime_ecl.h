@@ -1,7 +1,6 @@
 #pragma once
-#include "ipc/request.h"
+#include "request.h"
 #include "stateful_ime.h"
-#include "views.h"
 #include <ecl/ecl.h>
 #include <memory>
 
@@ -11,7 +10,7 @@ namespace im {
 
 class StatefulIMEEcl {
 private:
-  class Requester : public senn::ipc::RequesterInterface {
+  class Requester : public senn::RequesterInterface {
   public:
     Requester(cl_object);
     ~Requester();

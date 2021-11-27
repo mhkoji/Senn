@@ -1,5 +1,5 @@
 #include "stateful_ime_sbcl.h"
-#include "stateful_ime_proxy_ipc.h"
+#include "stateful_ime_proxy.h"
 #include <cstring>
 
 namespace senn {
@@ -19,12 +19,12 @@ void StatefulIMESbcl::Requester::Request(const std::string &req,
   }
 }
 
-int StatefulIMESbcl::Init(const char* core) { return senn_init(core); }
+int StatefulIMESbcl::Init(const char *core) { return senn_init(core); }
 
 StatefulIME *StatefulIMESbcl::Create() {
   ime_t ime = nullptr;
   senn_make_ime(&ime);
-  return new StatefulIMEProxyIPC(std::unique_ptr<senn::ipc::RequesterInterface>(
+  return new StatefulIMEProxy(std::unique_ptr<senn::RequesterInterface>(
       new StatefulIMESbcl::Requester(ime)));
 }
 

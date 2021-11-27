@@ -1,5 +1,5 @@
+#include "stateful_ime_proxy.h"
 #include "stateful_ime_ecl.h"
-#include "stateful_ime_proxy_ipc.h"
 #include <cstring>
 
 extern "C" {
@@ -47,7 +47,7 @@ void StatefulIMEEcl::ClShutdown() { cl_shutdown(); }
 
 StatefulIME *StatefulIMEEcl::Create() {
   cl_object ime = cl_eval(c_string_to_object("(senn.bin.fcitx-lib:make-ime)"));
-  return new StatefulIMEProxyIPC(std::unique_ptr<senn::ipc::RequesterInterface>(
+  return new StatefulIMEProxy(std::unique_ptr<senn::RequesterInterface>(
       new StatefulIMEEcl::Requester(ime)));
 }
 

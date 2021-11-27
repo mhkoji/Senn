@@ -14,11 +14,13 @@ void PrintEditing(const views::Editing *view) {
   std::cout << "Editing: " << view->input;
 }
 
+// clang-format off
 // cp ~/.roswell/src/sbcl-2.1.10/src/runtime/libsbcl.so ./
 // ros run -s senn-bin-fcitx-lib -s sbcl-librarian -l ../../../src/bin/fcitx-lib-sbcl.lisp
-// gcc --shared -fpic libsennfcitx.c -o libsennfcitx.so -lsbcl -L.  -Wl,-R ./
-// g++ -I ../../ -I ../../../third-party/ stateful_ime_sbcl_main.cpp stateful_ime_sbcl.cpp stateful_ime_proxy_ipc.cpp -o main -lsbcl -lsennfcitx -L.  -Wl,-R ./
+// gcc --shared -fpic libsennfcitx.c -o libsennfcitx.so  -lsbcl -L.  -Wl,-R ./ 
+// g++ -I ../../ -I ../../../third-party/ stateful_ime_sbcl_main.cpp stateful_ime_sbcl.cpp stateful_ime_proxy.cpp -o main -lsbcl -lsennfcitx -L.  -Wl,-R ./
 // ./main
+// clang-format on
 int main(void) {
   StatefulIMESbcl::Init("libsennfcitx.core");
 

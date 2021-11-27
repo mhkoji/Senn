@@ -1,5 +1,5 @@
 #pragma once
-#include "ipc/request.h"
+#include "request.h"
 #include "stateful_ime.h"
 #include "views.h"
 
@@ -15,7 +15,7 @@ extern err_t (*senn_make_ime)(ime_t *result);
 extern err_t (*senn_handle_request)(ime_t ime, char *req, char **result);
 
 extern void (*release_handle)(void *handle);
-extern int senn_init(const char*);
+extern int senn_init(const char *);
 }
 
 namespace senn {
@@ -24,7 +24,7 @@ namespace im {
 
 class StatefulIMESbcl {
 private:
-  class Requester : public senn::ipc::RequesterInterface {
+  class Requester : public senn::RequesterInterface {
   public:
     Requester(ime_t);
     ~Requester();

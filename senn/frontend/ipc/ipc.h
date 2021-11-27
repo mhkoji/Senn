@@ -1,4 +1,5 @@
 #pragma once
+#include "request.h"
 #include <iostream>
 #include <string>
 #include <unistd.h>
@@ -29,32 +30,6 @@ private:
   const int socket_fd_;
 };
 
-class ConnectionFactory {
-public:
-  virtual ~ConnectionFactory() {}
-
-  virtual Connection *Create() = 0;
-};
-
-class LocalAbstractSocketConnectionFactory : public ConnectionFactory {
-public:
-  LocalAbstractSocketConnectionFactory(const std::string &);
-
-  Connection *Create();
-
-private:
-  const std::string socket_path_;
-};
-
-class TcpConnectionFactory : public ConnectionFactory {
-public:
-  TcpConnectionFactory(unsigned short);
-
-  Connection *Create();
-
-private:
-  const unsigned short port_;
-};
 
 // Trying a kind of DCI implementation.
 template <class ConcreteDerived> class ServerLauncher {
