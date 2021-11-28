@@ -1,10 +1,10 @@
 ;; convert/lookup depending on hachee kkc
-(defpackage :senn.im.mixin.kkc
+(defpackage :senn.im.mixin.hachee
   (:use :cl)
   (:export :convert
            :lookup
-           :load-kkc))
-(in-package :senn.im.mixin.kkc)
+           :build-kkc))
+(in-package :senn.im.mixin.hachee)
 
 (defun convert (convert pron &key 1st-boundary-index)
   (mapcar (lambda (e)
@@ -28,13 +28,7 @@
              :origin (hachee.kkc.lookup:item-origin item)))
           (hachee.kkc.lookup:execute lookup pron :prev prev :next next)))
 
-(defun load-user-kkc (senn-homedir-pathname)
-  (when senn-homedir-pathname
-    (let ((kkc-path (merge-pathnames "kkc.zip" senn-homedir-pathname)))
-      (when (cl-fad:file-exists-p kkc-path)
-        (hachee.kkc:load-kkc kkc-path)))))
-
-(defun create-system-kkc ()
+(defun build-kkc ()
   (let ((corpus-pathnames
          (cl-fad:list-directory
           (merge-pathnames
@@ -44,12 +38,7 @@
     (log:debug "Loading: ~A" corpus-pathnames)
     (hachee.kkc:build-kkc-simple corpus-pathnames)))
 
-(defun load-kkc (&optional senn-homedir-pathname)
-  (or (load-user-kkc senn-homedir-pathname)
-      (create-system-kkc)))
-
 ;;;
-
 
 (defclass convert ()
   ((kkc-impl

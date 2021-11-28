@@ -15,7 +15,7 @@
      (:module :mixin
       :pathname "mixin"
       :components
-      ((:file "kkc")
+      ((:file "hachee")
        (:file "engine")
        (:file "prefix")
        (:file "katakana"))))))

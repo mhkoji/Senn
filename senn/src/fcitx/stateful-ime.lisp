@@ -8,7 +8,7 @@
 
            :stateful
            :make-initial-state
-           :make-kkc-ime
+           :make-hachee-ime
            :make-engine-ime))
 (in-package :senn.fcitx.stateful-ime)
 
@@ -55,15 +55,15 @@
 
 ;;;
 
-(defclass stateful-kkc-ime (stateful
-                            senn.im:ime
-                            senn.im.mixin.kkc:convert
-                            senn.im.mixin.kkc:lookup
-                            senn.im.mixin.katakana:predict)
+(defclass stateful-hachee-ime (stateful
+                               senn.im:ime
+                               senn.im.mixin.hachee:convert
+                               senn.im.mixin.hachee:lookup
+                               senn.im.mixin.katakana:predict)
   ())
 
-(defun make-kkc-ime (kkc)
-  (make-instance 'stateful-kkc-ime
+(defun make-hachee-ime (kkc)
+  (make-instance 'stateful-hachee-ime
                  :state (make-initial-state)
                  :lookup-kkc-impl kkc
                  :convert-kkc-impl kkc))
