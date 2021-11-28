@@ -118,7 +118,6 @@ gboolean ProcessKeyEvent(IBusEngine *p, guint keyval, guint keycode,
   return ENGINE(p)->ime->ProcessInput(
       keyval, keycode, modifiers,
       [&](const senn::fcitx::im::views::Converting *view) { Show(p, view); },
-
       [&](const senn::fcitx::im::views::Editing *view) { Show(p, view); });
 }
 

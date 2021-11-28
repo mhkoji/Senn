@@ -16,7 +16,6 @@
       :pathname "mixin"
       :components
       ((:file "kkc")
-       #+sbcl
        (:file "engine")
        (:file "prefix")
        (:file "katakana"))))))

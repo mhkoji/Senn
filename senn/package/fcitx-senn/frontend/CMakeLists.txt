@@ -13,7 +13,6 @@ set(CMAKE_MODULE_LINKER_FLAGS "-Wl,--as-needed ${CMAKE_MODULE_LINKER_FLAGS}")
 ## Without this, CMake sets runtime path of "/usr/lib/x86_64-linux-gnu/fcitx/fcitx-senn.so" to ""
 set(CMAKE_INSTALL_RPATH "/usr/lib/senn")
 
-# $ ros run -e '(asdf:make-build :senn-lib-fcitx :type :static-library :move-here #P"./" :monolithic t :init-name "init_senn")' -q
 include_directories(
   ${FCITX4_FCITX_INCLUDE_DIRS}
   ${FCITX4_FCITX_CONFIG_INCLUDE_DIRS}
@@ -23,6 +22,16 @@ include_directories(
 #  $ENV{HOME}/.roswell/impls/x86-64/linux/ecl/21.2.1/include
   )
 
+
+# $ ros use sbcl
+# $ ros dump executable ../../../bin/kkc-engine.ros
+# $ mv ../../../bin/kkc-engine ./
+
+# $ sudo mkdir -p /usr/lib/senn/
+# $ sudo cp ~/.roswell/impls/x86-64/linux/ecl/21.2.1/lib/libecl.so* /usr/lib/senn/
+
+# $ ros use ecl
+# $ ros run -e '(asdf:make-build :senn-lib-fcitx :type :static-library :move-here #P"./" :monolithic t :init-name "init_senn")' -q
 ## A macro for easy building of the shared object library.
 fcitx_add_addon_full(senn
   SOURCES fcitx_senn.cpp
@@ -35,15 +44,20 @@ fcitx_add_addon_full(senn
 #            /usr/lib/senn/libecl.so
   IM_CONFIG senn.conf)
 
-install(
-  PROGRAMS ${CMAKE_CURRENT_SOURCE_DIR}/../backend/bin/server
-  CONFIGURATIONS Release
-  RUNTIME DESTINATION "/usr/lib/senn")
+#install(
+#  PROGRAMS ${CMAKE_CURRENT_SOURCE_DIR}/kkc-engine
+#  CONFIGURATIONS Release
+#  RUNTIME DESTINATION "/usr/lib/senn")
 
-install(
-  PROGRAMS ${CMAKE_CURRENT_SOURCE_DIR}/../../../frontend/cl/bin/menu-about
-  CONFIGURATIONS Release
-  RUNTIME DESTINATION "/usr/lib/senn")
+#install(
+#  PROGRAMS /usr/lib/senn/libecl.so.21.2 ## Seems that CMake add this specific file of dependency
+#  CONFIGURATIONS Release
+#  RUNTIME DESTINATION "/usr/lib/senn")
+
+# install(
+#   PROGRAMS ${CMAKE_CURRENT_SOURCE_DIR}/../../../frontend/cl/bin/menu-about
+#   CONFIGURATIONS Release
+#   RUNTIME DESTINATION "/usr/lib/senn")
 
 ## configuration of CPack for generating deb
 set(CPACK_GENERATOR "DEB")

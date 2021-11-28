@@ -70,14 +70,12 @@
 
 ;;;
 
-#+sbcl
 (defclass stateful-engine-ime (stateful
                                senn.im:ime
                                senn.im.mixin.engine:convert
                                senn.im.mixin.engine:lookup)
   ())
 
-#+sbcl
 (defun make-engine-ime (engine)
   (make-instance 'stateful-engine-ime
                  :convert-engine-impl engine

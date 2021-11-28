@@ -1,5 +1,11 @@
 (in-package :senn.lib.fcitx)
 
+(defvar *kkc*
+  (senn.im.mixin.kkc:load-kkc))
+
+(defun make-ime ()
+  (senn.fcitx.stateful-ime:make-kkc-ime *kkc*))
+
 (sbcl-librarian:define-handle-type ime-t "ime_t")
 
 (sbcl-librarian:define-enum-type error-type "err_t"
