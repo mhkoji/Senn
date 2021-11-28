@@ -16,7 +16,7 @@ void PrintEditing(const views::Editing *view) {
 
 // clang-format off
 // cp ~/.roswell/src/sbcl-2.1.10/src/runtime/libsbcl.so ./
-// ros run -s senn-lib-fcitx -s sbcl-librarian -l ../../../src/lib/fcitx-sbcl.lisp
+// ros run -s senn-lib-fcitx -l ../../../src/lib/fcitx-sbcl.lisp
 // gcc -c -fpic libsennfcitx.c
 // gcc -shared libsennfcitx.o -o libsennfcitx.so -lsbcl -L. -Wl,-R ./
 // g++ -I ../../ -I ../../../third-party/ stateful_ime_sbcl_main.cpp stateful_ime_sbcl.cpp stateful_ime_proxy.cpp -o main -lsbcl -lsennfcitx -L. -Wl,-R ./

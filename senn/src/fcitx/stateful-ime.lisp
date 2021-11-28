@@ -9,7 +9,8 @@
            :stateful
            :make-initial-state
            :make-hachee-ime
-           :make-engine-ime))
+           :make-engine-ime
+           :close-engine-ime))
 (in-package :senn.fcitx.stateful-ime)
 
 (defgeneric ime-state (ime))
@@ -74,10 +75,14 @@
                                senn.im:ime
                                senn.im.mixin.engine:convert
                                senn.im.mixin.engine:lookup)
-  ())
+  ((engine :initarg :engine)))
 
 (defun make-engine-ime (engine)
   (make-instance 'stateful-engine-ime
                  :convert-engine-impl engine
                  :lookup-engine-impl engine
+                 :engine engine
                  :state (make-initial-state)))
+
+(defun close-engine-ime (ime)
+  (senn.im.mixin.engine:kill-engine (slot-value ime 'engine)))

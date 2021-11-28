@@ -2,6 +2,8 @@
   :serial t
   :components
   ((:file "src/lib/fcitx")
-   #+nil
+   #+ecl
    (:file "src/lib/fcitx-engine"))
-  :depends-on (:senn-fcitx))
+  :depends-on (:senn-fcitx
+               #+sbcl
+               :sbcl-librarian))

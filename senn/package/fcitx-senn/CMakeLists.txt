@@ -22,16 +22,14 @@ include_directories(
 #  $ENV{HOME}/.roswell/impls/x86-64/linux/ecl/21.2.1/include
   )
 
-
+# $ mkdir dep
 # $ ros use sbcl
 # $ ros dump executable ../../bin/kkc-engine.ros
-# $ mv ../../bin/kkc-engine ./
-
-# $ sudo mkdir -p /usr/lib/senn/
-# $ sudo cp ~/.roswell/impls/x86-64/linux/ecl/21.2.1/lib/libecl.so* /usr/lib/senn/
+# $ mv ../../bin/kkc-engine ./dep
 
 # $ ros use ecl
-# $ ros run -e '(asdf:make-build :senn-lib-fcitx :type :static-library :move-here #P"./" :monolithic t :init-name "init_senn")' -q
+# $ ros run -e '(asdf:make-build :senn-lib-fcitx :type :static-library :move-here #P"./dep" :monolithic t :init-name "init_senn")' -q
+# $ cp ~/.roswell/impls/x86-64/linux/ecl/21.2.1/lib/libecl.so* ./dep
 ## A macro for easy building of the shared object library.
 fcitx_add_addon_full(senn
   SOURCES fcitx_senn.cpp
@@ -40,19 +38,19 @@ fcitx_add_addon_full(senn
           ../../frontend/senn_fcitx/im/stateful_ime_proxy.cpp
           ../../frontend/senn_fcitx/im/stateful_ime_ipc.cpp
 #          ../../frontend/senn_fcitx/im/stateful_ime_ecl.cpp
-#  LINK_LIBS ${CMAKE_CURRENT_SOURCE_DIR}/senn-lib-fcitx--all-systems.a
-#            /usr/lib/senn/libecl.so
+#  LINK_LIBS ${CMAKE_CURRENT_SOURCE_DIR}/dep/senn-lib-fcitx--all-systems.a
+#            ${CMAKE_CURRENT_SOURCE_DIR}/dep/libecl.so
   IM_CONFIG senn.conf)
 
-#install(
-#  PROGRAMS ${CMAKE_CURRENT_SOURCE_DIR}/kkc-engine
-#  CONFIGURATIONS Release
-#  RUNTIME DESTINATION "/usr/lib/senn")
+# install(
+#   PROGRAMS ${CMAKE_CURRENT_SOURCE_DIR}/dep/kkc-engine
+#   CONFIGURATIONS Release
+#   RUNTIME DESTINATION "/usr/lib/senn")
 
-#install(
-#  PROGRAMS /usr/lib/senn/libecl.so.21.2 ## Seems that CMake add this specific file of dependency
-#  CONFIGURATIONS Release
-#  RUNTIME DESTINATION "/usr/lib/senn")
+# install(
+#   PROGRAMS ${CMAKE_CURRENT_SOURCE_DIR}/dep/libecl.so.21.2 ## Seems that CMake add this specific file of dependency
+#   CONFIGURATIONS Release
+#   RUNTIME DESTINATION "/usr/lib/senn")
 
 # install(
 #   PROGRAMS ${CMAKE_CURRENT_SOURCE_DIR}/../../../frontend/cl/bin/menu-about

@@ -1,20 +1,13 @@
 (in-package :senn.lib.fcitx)
 
-(defun create-system-kkc ()
-  (let ((corpus-pathnames
-         (cl-fad:list-directory
-          (merge-pathnames
-           "src/kkc/data/aozora/word-pron-utf8/"
-           (funcall (read-from-string "asdf:system-source-directory")
-                    :hachee-kkc)))))
-    (log:debug "Loading: ~A" corpus-pathnames)
-    (hachee.kkc:build-kkc-simple corpus-pathnames)))
-
 (defvar *kkc*
-  (create-system-kkc))
+  (senn.im.mixin.hachee:build-kkc))
 
 (defun make-ime ()
-  (senn.fcitx.stateful-ime:make-kkc-ime *kkc*))
+  (senn.fcitx.stateful-ime:make-hachee-ime *kkc*))
+
+(defun close-ime (ime)
+  (declare (ignore ime)))
 
 (sbcl-librarian:define-handle-type ime-t "ime_t")
 

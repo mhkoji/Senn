@@ -1,5 +1,5 @@
-#include "stateful_ime_proxy.h"
 #include "stateful_ime_ecl.h"
+#include "stateful_ime_proxy.h"
 #include <cstring>
 
 extern "C" {
@@ -23,14 +23,17 @@ namespace im {
 
 StatefulIMEEcl::Requester::Requester(cl_object ime) : ime_(ime) {}
 
-StatefulIMEEcl::Requester::~Requester() {}
+StatefulIMEEcl::Requester::~Requester() {
+  // TODO: StatefulIMEEcl should call close-ime
+  cl_funcall(2, cl_eval(c_string_to_object("'senn.lib.fcitx:close-ime")), ime_);
+}
 
 void StatefulIMEEcl::Requester::Request(const std::string &req,
                                         std::string *res) {
   // std::cout << req << std::endl;
   cl_object response = cl_funcall(
-      3, cl_eval(c_string_to_object("'senn.lib.fcitx:handle-request")),
-      ime_, ecl_make_constant_base_string(req.c_str(), -1));
+      3, cl_eval(c_string_to_object("'senn.lib.fcitx:handle-request")), ime_,
+      ecl_make_constant_base_string(req.c_str(), -1));
   EclToString(response, res);
 }
 
