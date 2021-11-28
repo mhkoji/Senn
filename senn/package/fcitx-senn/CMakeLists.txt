@@ -17,15 +17,15 @@ include_directories(
   ${FCITX4_FCITX_INCLUDE_DIRS}
   ${FCITX4_FCITX_CONFIG_INCLUDE_DIRS}
   ${FCITX4_FCITX_UTILS_INCLUDE_DIRS}
-  ../../../third-party/
-  ../../../frontend/
+  ../../third-party/
+  ../../frontend/
 #  $ENV{HOME}/.roswell/impls/x86-64/linux/ecl/21.2.1/include
   )
 
 
 # $ ros use sbcl
-# $ ros dump executable ../../../bin/kkc-engine.ros
-# $ mv ../../../bin/kkc-engine ./
+# $ ros dump executable ../../bin/kkc-engine.ros
+# $ mv ../../bin/kkc-engine ./
 
 # $ sudo mkdir -p /usr/lib/senn/
 # $ sudo cp ~/.roswell/impls/x86-64/linux/ecl/21.2.1/lib/libecl.so* /usr/lib/senn/
@@ -35,11 +35,11 @@ include_directories(
 ## A macro for easy building of the shared object library.
 fcitx_add_addon_full(senn
   SOURCES fcitx_senn.cpp
-          ../../../frontend/ipc/ipc.cpp
-          ../../../frontend/process/process.cpp
-          ../../../frontend/senn_fcitx/im/stateful_ime_proxy.cpp
-          ../../../frontend/senn_fcitx/im/stateful_ime_ipc.cpp
-#          ../../../frontend/senn_fcitx/im/stateful_ime_ecl.cpp
+          ../../frontend/ipc/ipc.cpp
+          ../../frontend/process/process.cpp
+          ../../frontend/senn_fcitx/im/stateful_ime_proxy.cpp
+          ../../frontend/senn_fcitx/im/stateful_ime_ipc.cpp
+#          ../../frontend/senn_fcitx/im/stateful_ime_ecl.cpp
 #  LINK_LIBS ${CMAKE_CURRENT_SOURCE_DIR}/senn-lib-fcitx--all-systems.a
 #            /usr/lib/senn/libecl.so
   IM_CONFIG senn.conf)
