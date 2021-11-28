@@ -144,5 +144,19 @@ bool Connection::ReadLine(int timeout_msec, std::string *output) {
 
 void Connection::Close() { close(socket_fd_); }
 
+Requester::Requester(Connection *conn) : conn_(conn) {}
+
+Requester::~Requester() {
+  conn_->Close();
+}
+
+void Requester::Request(const std::string &req, std::string *res) {
+  conn_->Write(req);
+  if (!conn_->ReadLine(1000, res)) {
+    std::cerr << "Failed to request" << std::endl;
+    std::exit(1);
+  }
+}
+
 } // namespace ipc
 } // namespace senn

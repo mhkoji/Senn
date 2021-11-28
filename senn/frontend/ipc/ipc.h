@@ -31,6 +31,18 @@ private:
 };
 
 
+class Requester : public senn::RequesterInterface {
+public:
+  Requester(Connection *);
+  ~Requester();
+
+  void Request(const std::string &, std::string *);
+
+private:
+  Connection* const conn_;
+};
+
+
 // Trying a kind of DCI implementation.
 template <class ConcreteDerived> class ServerLauncher {
 public:

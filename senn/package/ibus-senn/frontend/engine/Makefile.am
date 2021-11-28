@@ -23,8 +23,15 @@ AM_CFLAGS = \
 	-Wno-unused-function \
 	$(NULL)
 
+# AM_LDFLAGS = \
+# 	-lsbcl \
+# 	-lsennfcitx \
+# 	-L/usr/lib/senn/ \
+# 	-Wl,-R /usr/lib/senn/ \
+# 	$(NULL)
+
 AM_LDADD = \
-  @IBUS_LIBS@ \
+	@IBUS_LIBS@ \
 	@GOBJECT2_LIBS@ \
 	@GLIB2_LIBS@ \
 	@GIO2_LIBS@ \
@@ -38,10 +45,10 @@ libexec_PROGRAMS = \
 ibus_engine_senn_SOURCES = \
 	main.cpp \
 	../../../../frontend/ipc/ipc.cpp \
-	../../../../frontend/ipc/request.cpp \
 	../../../../frontend/process/process.cpp \
-	../../../../frontend/senn_fcitx/im/stateful_ime_proxy_ipc.cpp \
-	../../../../frontend/senn_fcitx/im/stateful_ime_proxy_ipc_server.cpp \
+	../../../../frontend/senn_fcitx/im/stateful_ime_proxy.cpp \
+	../../../../frontend/senn_fcitx/im/stateful_ime_ipc.cpp
+#	../../../../frontend/senn_fcitx/im/stateful_ime_sbcl.cpp \
 	$(NULL)
 ibus_engine_senn_CFLAGS = \
 	$(AM_CFLAGS) \

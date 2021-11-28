@@ -9,25 +9,23 @@
 #include <iostream>
 
 #include "ipc/ipc.h"
-#include "ipc/request.h"
-#include "senn_fcitx/im/stateful_ime.h"
-#include "senn_fcitx/im/stateful_ime_proxy_ipc.h"
-#include "senn_fcitx/im/stateful_ime_proxy_ipc_server.h"
+#include "senn_fcitx/im/stateful_ime_ipc.h"
+// #include "senn_fcitx/im/stateful_ime_sbcl.h"
 
 namespace senn {
 namespace ibus_senn {
 namespace engine {
 
-class BackendCommunication {
+class IMEFactory {
 public:
-  virtual ~BackendCommunication() {}
+  virtual ~IMEFactory() {}
 
-  virtual senn::ipc::RequesterInterface *GetRequester() = 0;
+  virtual senn::fcitx::im::StatefulIME *CreateIME() = 0;
 };
 
 struct EngineClass {
   IBusEngineClass parent;
-  BackendCommunication *backend_comm;
+  IMEFactory *ime_factory;
 };
 
 struct Engine {
@@ -41,9 +39,7 @@ void Init(GTypeInstance *p, gpointer klass) {
   Engine *engine = ENGINE(p);
   EngineClass *engine_class =
       G_TYPE_CHECK_CLASS_CAST(klass, IBUS_TYPE_ENGINE, EngineClass);
-  engine->ime = new senn::fcitx::im::StatefulIMEProxyIPC(
-      std::unique_ptr<senn::ipc::RequesterInterface>(
-          engine_class->backend_comm->GetRequester()));
+  engine->ime = engine_class->ime_factory->CreateIME();
 }
 
 void Show(IBusEngine *engine,
@@ -121,77 +117,67 @@ gboolean ProcessKeyEvent(IBusEngine *p, guint keyval, guint keycode,
 
   return ENGINE(p)->ime->ProcessInput(
       keyval, keycode, modifiers,
-      [&](const senn::fcitx::im::views::Converting *view) {
-        Show(p, view);
-      },
+      [&](const senn::fcitx::im::views::Converting *view) { Show(p, view); },
 
-      [&](const senn::fcitx::im::views::Editing *view) {
-        Show(p, view);
-      });
+      [&](const senn::fcitx::im::views::Editing *view) { Show(p, view); });
 }
 
 } // namespace engine
 } // namespace ibus_senn
 } // namespace senn
 
+class ProxyConnectToIMEFactory : public senn::ibus_senn::engine::IMEFactory {
+public:
+  senn::fcitx::im::StatefulIME *CreateIME() {
+    return new senn::fcitx::im::StatefulIMEProxy(
+        std::unique_ptr<senn::RequesterInterface>(
+            new senn::ipc::Requester(senn::ipc::Connection::ConnectTo(5678))));
+  }
+
+  static senn::ibus_senn::engine::IMEFactory *Create() {
+    return new ProxyConnectToIMEFactory();
+  }
+};
+
+class IPCIMEFactory : public senn::ibus_senn::engine::IMEFactory {
+public:
+  ~IPCIMEFactory() { delete ime_; }
+
+  senn::fcitx::im::StatefulIME *CreateIME() { return ime_; }
+
+private:
+  IPCIMEFactory(senn::fcitx::im::StatefulIMEIPC *ime) : ime_(ime) {}
+
+  senn::fcitx::im::StatefulIMEIPC *ime_;
+
+public:
+  static senn::ibus_senn::engine::IMEFactory *Create() {
+    return new IPCIMEFactory(senn::fcitx::im::StatefulIMEIPC::SpawnAndCreate(
+        "/usr/lib/senn/server"));
+  }
+};
+
+/*
+class SbclIMEFactory : public senn::ibus_senn::engine::IMEFactory {
+public:
+  senn::fcitx::im::StatefulIME *CreateIME() {
+    return senn::fcitx::im::StatefulIMESbcl::Create();
+  }
+
+public:
+  static senn::ibus_senn::engine::IMEFactory *Create() {
+    senn::fcitx::im::StatefulIMESbcl::Init("/usr/lib/senn/libsennfcitx.core");
+    return new SbclIMEFactory();
+  }
+};
+*/
+
 namespace {
-
-class BackendCommunicationConnect
-    : public senn::ibus_senn::engine::BackendCommunication {
-public:
-  ~BackendCommunicationConnect() { delete factory_; }
-
-  senn::ipc::RequesterInterface *GetRequester() {
-    return new senn::ipc::Requester(factory_);
-  }
-
-private:
-  BackendCommunicationConnect(senn::ipc::ConnectionFactory *factory)
-      : factory_(factory) {}
-
-  senn::ipc::ConnectionFactory *factory_;
-
-public:
-  static BackendCommunication *Create() {
-    return new BackendCommunicationConnect(
-        new senn::ipc::TcpConnectionFactory(5678));
-  }
-};
-
-class BackendCommunicationLaunch
-    : public senn::ibus_senn::engine::BackendCommunication {
-public:
-  ~BackendCommunicationLaunch() { delete launcher_; }
-
-  senn::ipc::RequesterInterface *GetRequester() {
-    return new senn::fcitx::im::ReconnectableStatefulIMERequester(launcher_);
-  }
-
-private:
-  BackendCommunicationLaunch(
-                             senn::fcitx::im::StatefulIMEProxyIPCServerLauncher *launcher)
-      : launcher_(launcher) {}
-
-  senn::fcitx::im::StatefulIMEProxyIPCServerLauncher *launcher_;
-
-public:
-  static BackendCommunication *Create() {
-    senn::fcitx::im::StatefulIMEProxyIPCServerLauncher *launcher =
-      new senn::fcitx::im::StatefulIMEProxyIPCServerLauncher(
-            "/usr/lib/senn/server");
-
-    launcher->Spawn();
-
-    return new BackendCommunicationLaunch(launcher);
-  }
-};
-
-typedef senn::ibus_senn::engine::BackendCommunication *(
-    *CreatBackendCommunication)();
 
 IBusEngineClass *g_parent_class = NULL;
 
-CreatBackendCommunication g_create_backend_comm_fn = NULL;
+// A global variable used during senn::ibus::engine::Init
+senn::ibus_senn::engine::IMEFactory *g_ime_factory = nullptr;
 
 GObject *
 SennEngineClassConstructor(GType type, guint n_construct_properties,
@@ -221,7 +207,7 @@ void SennEngineClassInit(gpointer klass, gpointer class_data) {
   senn::ibus_senn::engine::EngineClass *senn_engine_class =
       G_TYPE_CHECK_CLASS_CAST(klass, IBUS_TYPE_ENGINE,
                               senn::ibus_senn::engine::EngineClass);
-  senn_engine_class->backend_comm = g_create_backend_comm_fn();
+  senn_engine_class->ime_factory = g_ime_factory;
 }
 
 GType GetType() {
@@ -289,13 +275,13 @@ void StartEngine(bool exec_by_daemon) {
 namespace {
 
 gboolean g_option_ibus = FALSE;
-gchar *g_option_backend_init = NULL;
+gchar *g_option_ime_factory = NULL;
 
 const GOptionEntry g_option_entries[] = {
     {"ibus", 'i', 0, G_OPTION_ARG_NONE, &g_option_ibus,
      "Component is executed by ibus", NULL},
-    {"backend-comm", 0, 0, G_OPTION_ARG_STRING, &g_option_backend_init,
-     "Specify a way to communicate with the backend server", NULL},
+    {"ime-factory", 0, 0, G_OPTION_ARG_STRING, &g_option_ime_factory,
+     "Specify a way to create an ime", NULL},
     {NULL},
 };
 
@@ -312,27 +298,25 @@ private:
 } // namespace
 
 int main(gint argc, gchar **argv) {
-  // A global variable used during senn::ibus::engine::Init
-  g_create_backend_comm_fn = BackendCommunicationLaunch::Create;
-  {
-    GOptionContext *context =
-        g_option_context_new("- ibus senn engine component");
-    ContextReleaser releaser(context);
+  GOptionContext *context =
+      g_option_context_new("- ibus senn engine component");
+  ContextReleaser releaser(context);
 
-    g_option_context_add_main_entries(context, g_option_entries, "ibus-senn");
-    GError *error = NULL;
-    if (!g_option_context_parse(context, &argc, &argv, &error)) {
-      g_print("Option parsing failed: %s\n", error->message);
-      std::exit(1);
+  g_option_context_add_main_entries(context, g_option_entries, "ibus-senn");
+  GError *error = NULL;
+  if (!g_option_context_parse(context, &argc, &argv, &error)) {
+    g_print("Option parsing failed: %s\n", error->message);
+    std::exit(1);
+  }
+
+  if (g_option_ime_factory) {
+    if (strcmp(g_option_ime_factory, "connect-to") == 0) {
+      g_ime_factory = ProxyConnectToIMEFactory::Create();
     }
-
-    if (g_option_backend_init) {
-      if (strcmp(g_option_backend_init, "connect") == 0) {
-        g_create_backend_comm_fn = BackendCommunicationConnect::Create;
-      }
-
-      g_free(g_option_backend_init);
-    }
+    g_free(g_option_ime_factory);
+  } else {
+    g_ime_factory = IPCIMEFactory::Create();
+    // g_ime_factory = SbclIMEFactory::Create();
   }
 
   StartEngine(g_option_ibus);

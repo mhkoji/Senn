@@ -31,5 +31,5 @@ ibus-senn_0.0.1_all.deb
 Connect to a server listening on port 5678:
 
 ```
-% /usr/lib/ibus/ibus-engine-senn --backend-commm connect
+% /usr/lib/ibus/ibus-engine-senn --ime-factory connect-to
 ```
