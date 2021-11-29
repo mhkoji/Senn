@@ -9,8 +9,8 @@
 #include <iostream>
 
 #include "ipc/ipc.h"
-#include "senn_fcitx/im/stateful_ime_ipc.h"
-// #include "senn_fcitx/im/stateful_ime_sbcl.h"
+#include "fcitx/im/stateful_ime_ipc.h"
+// #include "fcitx/im/stateful_ime_sbcl.h"
 
 namespace senn {
 namespace ibus_senn {

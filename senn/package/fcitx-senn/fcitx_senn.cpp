@@ -8,9 +8,9 @@
 #include <fcitx/instance.h>
 
 #include "process/process.h"
-#include "senn_fcitx/im/stateful_ime_ipc.h"
-// #include "senn_fcitx/im/stateful_ime_ecl.h"
-// #include "senn_fcitx/im/stateful_ime_sbcl.h"
+#include "fcitx/im/stateful_ime_ipc.h"
+// #include "fcitx/im/stateful_ime_ecl.h"
+// #include "fcitx/im/stateful_ime_sbcl.h"
 
 namespace {
 

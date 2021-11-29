@@ -37,9 +37,9 @@ fcitx_add_addon_full(senn
   SOURCES fcitx_senn.cpp
           ${SENN_CPP_DIR}/ipc/ipc.cpp
           ${SENN_CPP_DIR}/process/process.cpp
-          ${SENN_CPP_DIR}/senn_fcitx/im/stateful_ime_proxy.cpp
-          ${SENN_CPP_DIR}/senn_fcitx/im/stateful_ime_ipc.cpp
-#          ${SENN_CPP_DIR}/senn_fcitx/im/stateful_ime_ecl.cpp
+          ${SENN_CPP_DIR}/fcitx/im/stateful_ime_proxy.cpp
+          ${SENN_CPP_DIR}/fcitx/im/stateful_ime_ipc.cpp
+#          ${SENN_CPP_DIR}/fcitx/im/stateful_ime_ecl.cpp
 #  LINK_LIBS ${CMAKE_CURRENT_SOURCE_DIR}/dep/senn-lib-fcitx--all-systems.a
 #            ${CMAKE_CURRENT_SOURCE_DIR}/dep/libecl.so
   IM_CONFIG senn.conf)
