@@ -42,6 +42,7 @@ fcitx_add_addon_full(senn
 #            ${CMAKE_CURRENT_SOURCE_DIR}/dep/libecl.so
   IM_CONFIG senn.conf)
 
+
 # install(
 #   PROGRAMS ${CMAKE_CURRENT_SOURCE_DIR}/dep/kkc-engine
 #   CONFIGURATIONS Release
@@ -52,10 +53,11 @@ fcitx_add_addon_full(senn
 #   CONFIGURATIONS Release
 #   RUNTIME DESTINATION "/usr/lib/senn")
 
-# install(
-#   PROGRAMS ${CMAKE_CURRENT_SOURCE_DIR}/../../../frontend/cl/bin/menu-about
-#   CONFIGURATIONS Release
-#   RUNTIME DESTINATION "/usr/lib/senn")
+install(
+  PROGRAMS ${CMAKE_CURRENT_SOURCE_DIR}/../../frontend/gui/menu/about/about
+  RENAME menu-about
+  CONFIGURATIONS Release
+  RUNTIME DESTINATION "/usr/lib/senn")
 
 ## configuration of CPack for generating deb
 set(CPACK_GENERATOR "DEB")
