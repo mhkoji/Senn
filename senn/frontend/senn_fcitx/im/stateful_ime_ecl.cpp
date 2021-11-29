@@ -11,7 +11,7 @@ namespace {
 void EclToString(cl_object obj, std::string *str) {
   struct ecl_string ecl_str = obj->string;
   for (int i = 0; i < ecl_str.fillp; i += 1) {
-    *str += (typeof(ecl_str.elttype))ecl_str.self[i];
+    *str += (__typeof(ecl_str.elttype))ecl_str.self[i];
   }
 }
 
