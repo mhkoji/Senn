@@ -1,5 +1,5 @@
 diff --git a/senn/package/fcitx-senn/CMakeLists.txt b/senn/package/fcitx-senn/CMakeLists.txt
-index 2cb997a..ec7e258 100644
+index 6ca937b..329cfc0 100644
 --- a/senn/package/fcitx-senn/CMakeLists.txt
 +++ b/senn/package/fcitx-senn/CMakeLists.txt
 @@ -19,7 +19,7 @@ include_directories(
@@ -11,7 +11,7 @@ index 2cb997a..ec7e258 100644
    )
  
  # $ mkdir dep
-@@ -36,21 +36,21 @@ fcitx_add_addon_full(senn
+@@ -36,22 +36,22 @@ fcitx_add_addon_full(senn
            ../../frontend/ipc/ipc.cpp
            ../../frontend/process/process.cpp
            ../../frontend/senn_fcitx/im/stateful_ime_proxy.cpp
@@ -24,6 +24,7 @@ index 2cb997a..ec7e258 100644
 +  LINK_LIBS ${CMAKE_CURRENT_SOURCE_DIR}/dep/senn-lib-fcitx--all-systems.a
 +            ${CMAKE_CURRENT_SOURCE_DIR}/dep/libecl.so
    IM_CONFIG senn.conf)
+ 
  
 -# install(
 -#   PROGRAMS ${CMAKE_CURRENT_SOURCE_DIR}/dep/kkc-engine
@@ -43,8 +44,8 @@ index 2cb997a..ec7e258 100644
 +  CONFIGURATIONS Release
 +  RUNTIME DESTINATION "/usr/lib/senn")
  
- # install(
- #   PROGRAMS ${CMAKE_CURRENT_SOURCE_DIR}/../../../frontend/cl/bin/menu-about
+ install(
+   PROGRAMS ${CMAKE_CURRENT_SOURCE_DIR}/../../frontend/gui/menu/about/about
 diff --git a/senn/package/fcitx-senn/fcitx_senn.cpp b/senn/package/fcitx-senn/fcitx_senn.cpp
 index 62ba068..bab4e0b 100644
 --- a/senn/package/fcitx-senn/fcitx_senn.cpp
@@ -90,3 +91,100 @@ index 62ba068..bab4e0b 100644
  
    FcitxIMEventHook hk;
    hk.arg = senn;
+diff --git a/senn/patch/ecl.patch b/senn/patch/ecl.patch
+index ffb73cb..e69de29 100644
+--- a/senn/patch/ecl.patch
++++ b/senn/patch/ecl.patch
+@@ -1,92 +0,0 @@
+-diff --git a/senn/package/fcitx-senn/CMakeLists.txt b/senn/package/fcitx-senn/CMakeLists.txt
+-index 2cb997a..ec7e258 100644
+---- a/senn/package/fcitx-senn/CMakeLists.txt
+-+++ b/senn/package/fcitx-senn/CMakeLists.txt
+-@@ -19,7 +19,7 @@ include_directories(
+-   ${FCITX4_FCITX_UTILS_INCLUDE_DIRS}
+-   ../../third-party/
+-   ../../frontend/
+--#  $ENV{HOME}/.roswell/impls/x86-64/linux/ecl/21.2.1/include
+-+  $ENV{HOME}/.roswell/impls/x86-64/linux/ecl/21.2.1/include
+-   )
+- 
+- # $ mkdir dep
+-@@ -36,21 +36,21 @@ fcitx_add_addon_full(senn
+-           ../../frontend/ipc/ipc.cpp
+-           ../../frontend/process/process.cpp
+-           ../../frontend/senn_fcitx/im/stateful_ime_proxy.cpp
+--          ../../frontend/senn_fcitx/im/stateful_ime_ipc.cpp
+--#          ../../frontend/senn_fcitx/im/stateful_ime_ecl.cpp
+--#  LINK_LIBS ${CMAKE_CURRENT_SOURCE_DIR}/dep/senn-lib-fcitx--all-systems.a
+--#            ${CMAKE_CURRENT_SOURCE_DIR}/dep/libecl.so
+-+#          ../../frontend/senn_fcitx/im/stateful_ime_ipc.cpp
+-+          ../../frontend/senn_fcitx/im/stateful_ime_ecl.cpp
+-+  LINK_LIBS ${CMAKE_CURRENT_SOURCE_DIR}/dep/senn-lib-fcitx--all-systems.a
+-+            ${CMAKE_CURRENT_SOURCE_DIR}/dep/libecl.so
+-   IM_CONFIG senn.conf)
+- 
+--# install(
+--#   PROGRAMS ${CMAKE_CURRENT_SOURCE_DIR}/dep/kkc-engine
+--#   CONFIGURATIONS Release
+--#   RUNTIME DESTINATION "/usr/lib/senn")
+-+install(
+-+  PROGRAMS ${CMAKE_CURRENT_SOURCE_DIR}/dep/kkc-engine
+-+  CONFIGURATIONS Release
+-+  RUNTIME DESTINATION "/usr/lib/senn")
+- 
+--# install(
+--#   PROGRAMS ${CMAKE_CURRENT_SOURCE_DIR}/dep/libecl.so.21.2 ## Seems that CMake add this specific file of dependency
+--#   CONFIGURATIONS Release
+--#   RUNTIME DESTINATION "/usr/lib/senn")
+-+install(
+-+  PROGRAMS ${CMAKE_CURRENT_SOURCE_DIR}/dep/libecl.so.21.2 ## Seems that CMake add this specific file of dependency
+-+  CONFIGURATIONS Release
+-+  RUNTIME DESTINATION "/usr/lib/senn")
+- 
+- # install(
+- #   PROGRAMS ${CMAKE_CURRENT_SOURCE_DIR}/../../../frontend/cl/bin/menu-about
+-diff --git a/senn/package/fcitx-senn/fcitx_senn.cpp b/senn/package/fcitx-senn/fcitx_senn.cpp
+-index 62ba068..bab4e0b 100644
+---- a/senn/package/fcitx-senn/fcitx_senn.cpp
+-+++ b/senn/package/fcitx-senn/fcitx_senn.cpp
+-@@ -8,8 +8,8 @@
+- #include <fcitx/instance.h>
+- 
+- #include "process/process.h"
+--#include "senn_fcitx/im/stateful_ime_ipc.h"
+--// #include "senn_fcitx/im/stateful_ime_ecl.h"
+-+// #include "senn_fcitx/im/stateful_ime_ipc.h"
+-+#include "senn_fcitx/im/stateful_ime_ecl.h"
+- // #include "senn_fcitx/im/stateful_ime_sbcl.h"
+- 
+- namespace {
+-@@ -276,9 +276,7 @@ static void FcitxSennDestroy(void *arg) {
+-   FcitxSenn *senn = (FcitxSenn *)arg;
+- 
+-   delete senn->ime;
+--  /*
+-   senn::fcitx::im::StatefulIMEEcl::ClShutdown();
+--  */
+- 
+-   senn::fcitx_senn::menu::Destory(senn->fcitx, &senn->menu);
+- 
+-@@ -295,17 +293,17 @@ static void *FcitxSennCreate(FcitxInstance *fcitx) {
+-   senn->fcitx = fcitx;
+- 
+-   // StatefulIME
+-+  /*
+-   senn->ime =
+-       senn::fcitx::im::StatefulIMEIPC::SpawnAndCreate("/usr/lib/senn/server");
+-+  */
+-   /*
+-   senn::fcitx::im::StatefulIMESbcl::Init("/usr/lib/senn/libsennfcitx.core");
+-   senn->ime = senn::fcitx::im::StatefulIMESbcl::Create()
+-   */
+--  /*
+-   senn::fcitx::im::StatefulIMEEcl::ClBoot();
+-   senn::fcitx::im::StatefulIMEEcl::EclInitModule();
+-   senn->ime = senn::fcitx::im::StatefulIMEEcl::Create();
+--  */
+- 
+-   FcitxIMEventHook hk;
+-   hk.arg = senn;
