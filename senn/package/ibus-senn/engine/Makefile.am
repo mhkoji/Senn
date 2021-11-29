@@ -8,8 +8,8 @@ AM_CPPFLAGS = \
 	-I/usr/include/ibus-1.0/ \
 	-I/usr/include/glib-2.0/ \
 	-I/usr/lib/x86_64-linux-gnu/glib-2.0/include \
-	-I../../../../third-party/ \
-	-I../../../../src-cpp/ \
+	-I../../../third-party/ \
+	-I../../../src-cpp/ \
 	-std=c++11 \
 	$(NULL)
 
@@ -44,11 +44,11 @@ libexec_PROGRAMS = \
 
 ibus_engine_senn_SOURCES = \
 	main.cpp \
-	../../../../src-cpp/ipc/ipc.cpp \
-	../../../../src-cpp/process/process.cpp \
-	../../../../src-cpp/senn_fcitx/im/stateful_ime_proxy.cpp \
-	../../../../src-cpp/senn_fcitx/im/stateful_ime_ipc.cpp
-#	../../../../src-cpp/senn_fcitx/im/stateful_ime_sbcl.cpp \
+	../../../src-cpp/ipc/ipc.cpp \
+	../../../src-cpp/process/process.cpp \
+	../../../src-cpp/senn_fcitx/im/stateful_ime_proxy.cpp \
+	../../../src-cpp/senn_fcitx/im/stateful_ime_ipc.cpp
+#	../../../src-cpp/senn_fcitx/im/stateful_ime_sbcl.cpp \
 	$(NULL)
 ibus_engine_senn_CFLAGS = \
 	$(AM_CFLAGS) \
