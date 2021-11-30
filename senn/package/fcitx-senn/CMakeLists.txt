@@ -24,14 +24,6 @@ include_directories(
 #  $ENV{HOME}/.roswell/impls/x86-64/linux/ecl/21.2.1/include
   )
 
-# $ mkdir dep
-# $ ros use sbcl
-# $ ros dump executable ../../bin/kkc-engine.ros
-# $ mv ../../bin/kkc-engine ./dep
-
-# $ ros use ecl
-# $ ros run -e '(asdf:make-build :senn-lib-fcitx :type :static-library :move-here #P"./dep" :monolithic t :init-name "init_senn")' -q
-# $ cp ~/.roswell/impls/x86-64/linux/ecl/21.2.1/lib/libecl.so* ./dep
 ## A macro for easy building of the shared object library.
 fcitx_add_addon_full(senn
   SOURCES fcitx_senn.cpp
@@ -40,26 +32,25 @@ fcitx_add_addon_full(senn
           ${SENN_CPP_DIR}/fcitx/im/stateful_ime_proxy.cpp
           ${SENN_CPP_DIR}/fcitx/im/stateful_ime_ipc.cpp
 #          ${SENN_CPP_DIR}/fcitx/im/stateful_ime_ecl.cpp
-#  LINK_LIBS ${CMAKE_CURRENT_SOURCE_DIR}/dep/senn-lib-fcitx--all-systems.a
-#            ${CMAKE_CURRENT_SOURCE_DIR}/dep/libecl.so
+#  LINK_LIBS ${CMAKE_CURRENT_SOURCE_DIR}/dep-ecl/senn-lib-fcitx--all-systems.a
+#            ${CMAKE_CURRENT_SOURCE_DIR}/dep-ecl/libecl.so
   IM_CONFIG senn.conf)
 
-
 # install(
-#   PROGRAMS ${CMAKE_CURRENT_SOURCE_DIR}/dep/kkc-engine
+#   PROGRAMS ${CMAKE_CURRENT_SOURCE_DIR}/dep-ecl/libecl.so.21.2 ## Seems that CMake add this specific file of dependency
 #   CONFIGURATIONS Release
 #   RUNTIME DESTINATION "/usr/lib/senn")
 
 # install(
-#   PROGRAMS ${CMAKE_CURRENT_SOURCE_DIR}/dep/libecl.so.21.2 ## Seems that CMake add this specific file of dependency
+#   PROGRAMS ${CMAKE_CURRENT_SOURCE_DIR}/dep-kkc/kkc-engine
 #   CONFIGURATIONS Release
 #   RUNTIME DESTINATION "/usr/lib/senn")
 
-install(
-  PROGRAMS ${SENN_CPP_DIR}/gui/menu/about/about
-  RENAME menu-about
-  CONFIGURATIONS Release
-  RUNTIME DESTINATION "/usr/lib/senn")
+# install(
+#   PROGRAMS ${CMAKE_CURRENT_SOURCE_DIR}/dep-menu/menu-about
+#   RENAME menu-about
+#   CONFIGURATIONS Release
+#   RUNTIME DESTINATION "/usr/lib/senn")
 
 ## configuration of CPack for generating deb
 set(CPACK_GENERATOR "DEB")

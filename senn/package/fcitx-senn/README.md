@@ -56,6 +56,23 @@ fcitx-senn-0.0.1-Linux.deb
 % fcitx restart
 ```
 
+Integrate with ecl
+
+```
+% mkdir dep-ecl dep-kkc
+% ros use sbcl
+% ros dump executable ../../bin/kkc-engine.ros
+% mv ../../bin/kkc-engine ./dep-kkc
+
+% ros use ecl
+% ros run -e '(asdf:make-build :senn-lib-fcitx :type :static-library :move-here #P"./dep-ecl" :monolithic t :init-name "init_senn")' -q
+% cp ~/.roswell/impls/x86-64/linux/ecl/21.2.1/lib/libecl.so* ./dep-ecl
+
+% mkdir rbuild
+% cd rbuild
+% cmake -DCMAKE_BUILD_TYPE=Release .. make && make package
+```
+
 ### Uninstall
 
 Manually delete the objects installed by `sudo make install` as well as `/usr/lib/senn`, which you created explicitly.
