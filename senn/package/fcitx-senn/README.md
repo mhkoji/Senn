@@ -61,8 +61,8 @@ Integrate with ecl
 ```
 % mkdir dep-ecl dep-kkc
 % ros use sbcl
-% ros dump executable ../../bin/kkc-engine.ros
-% mv ../../bin/kkc-engine ./dep-kkc
+% ros dump executable ../../src/bin/kkc-engine.ros
+% mv ../../src/bin/kkc-engine ./dep-kkc
 
 % ros use ecl
 % ros run -e '(asdf:make-build :senn-lib-fcitx :type :static-library :move-here #P"./dep-ecl" :monolithic t :init-name "init_senn")' -q
