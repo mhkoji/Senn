@@ -9,7 +9,8 @@ namespace fcitx {
 namespace im {
 
 class StatefulIMEIPC : public StatefulIMEProxy {
-  class IMEServerLauncher : public senn::ipc::ServerLauncher<IMEServerLauncher> {
+  class IMEServerLauncher
+      : public senn::ipc::ServerLauncher<IMEServerLauncher> {
   public:
     IMEServerLauncher(const std::string &);
     virtual ~IMEServerLauncher() {}
