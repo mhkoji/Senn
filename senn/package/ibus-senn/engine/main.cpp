@@ -9,8 +9,8 @@
 #include <iostream>
 
 #include "ipc/ipc.h"
-#include "fcitx/im/stateful_ime_ipc.h"
-// #include "fcitx/im/stateful_ime_sbcl.h"
+#include "ibus/im/stateful_ime_ipc.h"
+// #include "ibus/im/stateful_ime_sbcl.h"
 
 namespace senn {
 namespace ibus_senn {
@@ -20,7 +20,7 @@ class IMEFactory {
 public:
   virtual ~IMEFactory() {}
 
-  virtual senn::fcitx::im::StatefulIME *CreateIME() = 0;
+  virtual senn::ibus::im::StatefulIME *CreateIME() = 0;
 };
 
 struct EngineClass {
@@ -30,7 +30,7 @@ struct EngineClass {
 
 struct Engine {
   IBusEngine parent;
-  senn::fcitx::im::StatefulIME *ime;
+  senn::ibus::im::StatefulIME *ime;
 };
 
 #define ENGINE(ptr) (reinterpret_cast<Engine *>(ptr))
@@ -115,7 +115,14 @@ gboolean ProcessKeyEvent(IBusEngine *p, guint keyval, guint keycode,
     return FALSE;
   }
 
-  return ENGINE(p)->ime->ProcessInput(
+  Engine *engine = ENGINE(p);
+  if (keyval == IBUS_KEY_Zenkaku_Hankaku) {
+    engine->ime->ToggleInputMode();
+    ibus_engine_hide_preedit_text(p);
+    return true;
+  }
+
+  return engine->ime->ProcessInput(
       keyval, keycode, modifiers,
       [&](const senn::fcitx::im::views::Converting *view) { Show(p, view); },
       [&](const senn::fcitx::im::views::Editing *view) { Show(p, view); });
@@ -127,8 +134,8 @@ gboolean ProcessKeyEvent(IBusEngine *p, guint keyval, guint keycode,
 
 class ProxyConnectToIMEFactory : public senn::ibus_senn::engine::IMEFactory {
 public:
-  senn::fcitx::im::StatefulIME *CreateIME() {
-    return new senn::fcitx::im::StatefulIMEProxy(
+  senn::ibus::im::StatefulIME *CreateIME() {
+    return new senn::ibus::im::StatefulIMEProxy(
         std::unique_ptr<senn::RequesterInterface>(
             new senn::ipc::Requester(senn::ipc::Connection::ConnectTo(5678))));
   }
@@ -142,16 +149,16 @@ class IPCIMEFactory : public senn::ibus_senn::engine::IMEFactory {
 public:
   ~IPCIMEFactory() { delete ime_; }
 
-  senn::fcitx::im::StatefulIME *CreateIME() { return ime_; }
+  senn::ibus::im::StatefulIME *CreateIME() { return ime_; }
 
 private:
-  IPCIMEFactory(senn::fcitx::im::StatefulIMEIPC *ime) : ime_(ime) {}
+  IPCIMEFactory(senn::ibus::im::StatefulIMEIPC *ime) : ime_(ime) {}
 
-  senn::fcitx::im::StatefulIMEIPC *ime_;
+  senn::ibus::im::StatefulIMEIPC *ime_;
 
 public:
   static senn::ibus_senn::engine::IMEFactory *Create() {
-    return new IPCIMEFactory(senn::fcitx::im::StatefulIMEIPC::SpawnAndCreate(
+    return new IPCIMEFactory(senn::ibus::im::StatefulIMEIPC::SpawnAndCreate(
         "/usr/lib/senn/server"));
   }
 };
@@ -159,13 +166,13 @@ public:
 /*
 class SbclIMEFactory : public senn::ibus_senn::engine::IMEFactory {
 public:
-  senn::fcitx::im::StatefulIME *CreateIME() {
-    return senn::fcitx::im::StatefulIMESbcl::Create();
+  senn::ibus::im::StatefulIME *CreateIME() {
+    return senn::ibus::im::StatefulIMESbcl::Create();
   }
 
 public:
   static senn::ibus_senn::engine::IMEFactory *Create() {
-    senn::fcitx::im::StatefulIMESbcl::Init("/usr/lib/senn/libsennfcitx.core");
+    senn::ibus::im::StatefulIMESbcl::Init("/usr/lib/senn/libsennibus.core");
     return new SbclIMEFactory();
   }
 };

@@ -46,9 +46,9 @@ ibus_engine_senn_SOURCES = \
 	main.cpp \
 	../../../src-cpp/ipc/ipc.cpp \
 	../../../src-cpp/process/process.cpp \
-	../../../src-cpp/fcitx/im/stateful_ime_proxy.cpp \
-	../../../src-cpp/fcitx/im/stateful_ime_ipc.cpp
-#	../../../src-cpp/fcitx/im/stateful_ime_sbcl.cpp \
+	../../../src-cpp/ibus/im/stateful_ime_proxy.cpp \
+	../../../src-cpp/ibus/im/stateful_ime_ipc.cpp
+#	../../../src-cpp/ibus/im/stateful_ime_sbcl.cpp \
 	$(NULL)
 ibus_engine_senn_CFLAGS = \
 	$(AM_CFLAGS) \
