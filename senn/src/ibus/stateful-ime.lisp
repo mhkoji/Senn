@@ -21,14 +21,17 @@
    :input-mode :direct))
 
 (defun process-input (ime key)
-  (with-accessors ((input-state state-input-state)) (ime-state ime)
-    (destructuring-bind (consumed-p view &key state)
-        (senn.fcitx.im.process-input:execute ime input-state key)
-      (when state
-        (setf input-state state))
-      (format nil "~A ~A"
-              (if consumed-p 1 0)
-              (if (and consumed-p view) view "NONE")))))
+  (with-accessors ((input-mode state-input-mode)
+                   (input-state state-input-state)) (ime-state ime)
+    (if (eq input-mode :hiragana)
+        (destructuring-bind (consumed-p view &key state)
+            (senn.fcitx.im.process-input:execute ime input-state key)
+          (when state
+            (setf input-state state))
+          (format nil "~A ~A"
+                  (if consumed-p 1 0)
+                  (if (and consumed-p view) view "NONE")))
+        (format nil "~A ~A" 0 "NONE"))))
 
 (defun toggle-input-mode (ime)
   (with-accessors ((input-mode state-input-mode)
