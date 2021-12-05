@@ -53,8 +53,10 @@ StatefulIMEProxy::~StatefulIMEProxy() { requester_.reset(); }
 InputMode StatefulIMEProxy::ToggleInputMode() {
   std::string response = "";
   requester_->Request(ToggleInputModeRequest(), &response);
-  assert(response == "OK");
-  return InputMode::kDirect; // TODO
+  if (response == "HIRAGANA") {
+    return InputMode::kHiragana;
+  }
+  return InputMode::kDirect;
 }
 
 bool StatefulIMEProxy::SelectCandidate(
