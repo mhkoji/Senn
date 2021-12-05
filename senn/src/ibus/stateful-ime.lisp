@@ -42,8 +42,8 @@
        (setf input-state nil))
       (:direct
        (setf input-mode :hiragana)
-       (setf input-state (senn.fcitx.im:make-inputting)))))
-  (format nil "OK~%"))
+       (setf input-state (senn.fcitx.im:make-inputting))))
+    (format nil "~A~%" input-mode)))
 
 ;;;
 
