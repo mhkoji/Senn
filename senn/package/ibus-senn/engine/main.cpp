@@ -9,7 +9,6 @@
 #include <iostream>
 
 #include "ibus/im/stateful_ime_ipc.h"
-#include "ipc/ipc.h"
 // #include "ibus/im/stateful_ime_sbcl.h"
 
 namespace senn {
