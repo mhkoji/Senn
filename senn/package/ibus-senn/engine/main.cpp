@@ -8,10 +8,10 @@
 #include <cstring>
 #include <iostream>
 
-// #include "ibus/im/stateful_ime_ecl.h"
+#include "ibus/im/stateful_ime_ecl.h"
 // #include "ibus/im/stateful_ime_ipc.h"
 // #include "ibus/im/stateful_ime_sbcl.h"
-#include "ibus/im/stateful_ime_exec.h"
+// #include "ibus/im/stateful_ime_exec.h"
 
 namespace senn {
 namespace ibus_senn {
@@ -225,7 +225,7 @@ public:
   }
 };
 */
-/*
+
 class EclIMEFactory : public senn::ibus_senn::engine::IMEFactory {
 public:
   senn::ibus::im::StatefulIME *CreateIME() {
@@ -234,12 +234,14 @@ public:
 
 public:
   static senn::ibus_senn::engine::IMEFactory *Create() {
+    setenv("ECLDIR", "/usr/lib/senn/ecl-21.2.1/", 1);
     senn::ibus::im::StatefulIMEEcl::ClBoot();
     senn::ibus::im::StatefulIMEEcl::EclInitModule();
     return new EclIMEFactory();
   }
 };
-*/
+
+/*
 class ExecIMEFactory : public senn::ibus_senn::engine::IMEFactory {
 public:
   senn::ibus::im::StatefulIME *CreateIME() {
@@ -251,6 +253,7 @@ public:
     return new ExecIMEFactory();
   }
 };
+*/
 
 namespace {
 
@@ -401,7 +404,7 @@ int main(gint argc, gchar **argv) {
     // g_ime_factory = SbclIMEFactory::Create();
   }
   */
-  g_ime_factory = ExecIMEFactory::Create();
+  g_ime_factory = EclIMEFactory::Create();
   
   StartEngine(g_option_ibus);
   return 0;

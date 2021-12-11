@@ -1,9 +1,13 @@
 #!/usr/bin/make -f
 
+## Avoid To help dpkg-shlibdeps find private libraries, you might need to use -l.
+export LD_LIBRARY_PATH=/usr/lib/senn:$LD_LIBRARY_PATH
+
 include /usr/share/cdbs/1/rules/debhelper.mk
 include /usr/share/cdbs/1/class/autotools.mk
 
 install/ibus-senn::
 	install -d $(DEB_DESTDIR)/usr/lib/senn
-	install -p ./dep-kkc/kkc-engine $(DEB_DESTDIR)/usr/lib/senn
-	install -p ./dep-senn-ibus/senn-ibus  $(DEB_DESTDIR)/usr/lib/senn
+	install -p ./dep-kkc/kkc-engine $(DEB_DESTDIR)/usr/lib/senn/
+	install -p ./dep-ecl/libecl.so.21.2 $(DEB_DESTDIR)/usr/lib/senn/
+	cp -r  ./dep-ecl/ecl-21.2.1 $(DEB_DESTDIR)/usr/lib/senn/

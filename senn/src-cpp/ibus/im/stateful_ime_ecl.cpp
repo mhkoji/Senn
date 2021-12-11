@@ -1,6 +1,7 @@
 #include "stateful_ime_ecl.h"
 #include "stateful_ime_proxy.h"
 #include <cstring>
+// #include <iostream>
 
 extern "C" {
 void init_senn(cl_object);
@@ -35,6 +36,7 @@ void StatefulIMEEcl::Requester::Request(const std::string &req,
       3, cl_eval(c_string_to_object("'senn.lib.ibus:handle-request")), ime_,
       ecl_make_constant_base_string(req.c_str(), -1));
   EclToString(response, res);
+  // std::cout << *res << std::endl;
 }
 
 void StatefulIMEEcl::ClBoot() {
