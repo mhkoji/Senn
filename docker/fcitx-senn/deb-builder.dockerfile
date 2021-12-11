@@ -16,8 +16,7 @@ COPY --from=kkc-builder /output /app/senn/package/fcitx-senn/dep-kkc
 COPY --from=ecl-builder /output /app/senn/package/fcitx-senn/dep-ecl
 COPY --from=ecl-builder /usr/local/include/ecl /usr/local/include/ecl
 
-RUN cd /app && \
-    cd /output-build && \
+RUN cd /output-build && \
     cmake -DCMAKE_BUILD_TYPE=Release /app/senn/package/fcitx-senn/ && \
     make && \
     make package && \
