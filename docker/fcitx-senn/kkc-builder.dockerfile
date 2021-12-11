@@ -32,8 +32,8 @@ RUN sbcl \
       --eval '(push "/app/hachee/" ql:*local-project-directories*)' \
       --eval '(ql:quickload :senn-bin-kkc-engine)' \
       --eval "(sb-ext:save-lisp-and-die \"/output/kkc-engine\" :toplevel #'senn.bin.kkc-engine:main :executable t)" && \
-    echo "#!/bin/bash"        > /app/cmd.sh && \
-    echo "cp /output/* /host" >> /app/cmd.sh \ && \
+    echo "#!/bin/bash"         > /app/cmd.sh && \
+    echo "cp /output/* /host" >> /app/cmd.sh && \
     chmod +x /app/cmd.sh
 
 CMD ["/app/cmd.sh"]

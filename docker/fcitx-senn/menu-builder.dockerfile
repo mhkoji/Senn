@@ -11,8 +11,8 @@ RUN mkdir /output && \
     qmake && \
     make && \
     mv about /output/menu-about && \
-    echo "#!/bin/bash"        > /app/cmd.sh && \
-    echo "cp /output/* /host" >> /app/cmd.sh \ && \
+    echo "#!/bin/bash"         > /app/cmd.sh && \
+    echo "cp /output/* /host" >> /app/cmd.sh && \
     chmod +x /app/cmd.sh
 
 CMD ["/app/cmd.sh"]

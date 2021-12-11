@@ -7,9 +7,9 @@
 #include <fcitx/ime.h>
 #include <fcitx/instance.h>
 
+#include "fcitx/im/stateful_ime_ecl.h"
 #include "process/process.h"
-#include "fcitx/im/stateful_ime_ipc.h"
-// #include "fcitx/im/stateful_ime_ecl.h"
+// #include "fcitx/im/stateful_ime_socket.h"
 // #include "fcitx/im/stateful_ime_sbcl.h"
 
 namespace {
@@ -245,16 +245,16 @@ INPUT_RETURN_VALUE DoInput(void *arg, FcitxKeySym _sym, uint32_t _state) {
   // std::cout << sym << " " << keycode << " " << state << std::endl;
 
   boolean has_view = false;
-  boolean consumed = senn->ime->ProcessInput(
-      sym, keycode, state,
-      [&](const fcitx::im::views::Converting *view) {
-        has_view = true;
-        Show(senn, view);
-      },
-      [&](const fcitx::im::views::Editing *view) {
-        has_view = true;
-        Show(senn, view);
-      });
+  boolean consumed =
+      senn->ime->ProcessInput(sym, keycode, state,
+                              [&](const fcitx::im::views::Converting *view) {
+                                has_view = true;
+                                Show(senn, view);
+                              },
+                              [&](const fcitx::im::views::Editing *view) {
+                                has_view = true;
+                                Show(senn, view);
+                              });
 
   if (consumed) {
     return has_view ? IRV_DISPLAY_CANDWORDS : IRV_DO_NOTHING;
@@ -276,9 +276,7 @@ static void FcitxSennDestroy(void *arg) {
   FcitxSenn *senn = (FcitxSenn *)arg;
 
   delete senn->ime;
-  /*
   senn::fcitx::im::StatefulIMEEcl::ClShutdown();
-  */
 
   senn::fcitx_senn::menu::Destory(senn->fcitx, &senn->menu);
 
@@ -295,17 +293,17 @@ static void *FcitxSennCreate(FcitxInstance *fcitx) {
   senn->fcitx = fcitx;
 
   // StatefulIME
+  /*
   senn->ime =
-      senn::fcitx::im::StatefulIMEIPC::SpawnAndCreate("/usr/lib/senn/server");
+      senn::fcitx::im::StatefulIMESocket::SpawnAndCreate("/usr/lib/senn/server");
+  */
   /*
   senn::fcitx::im::StatefulIMESbcl::Init("/usr/lib/senn/libsennfcitx.core");
   senn->ime = senn::fcitx::im::StatefulIMESbcl::Create()
   */
-  /*
   senn::fcitx::im::StatefulIMEEcl::ClBoot();
   senn::fcitx::im::StatefulIMEEcl::EclInitModule();
   senn->ime = senn::fcitx::im::StatefulIMEEcl::Create();
-  */
 
   FcitxIMEventHook hk;
   hk.arg = senn;

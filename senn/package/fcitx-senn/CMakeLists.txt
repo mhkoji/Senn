@@ -27,30 +27,28 @@ include_directories(
 ## A macro for easy building of the shared object library.
 fcitx_add_addon_full(senn
   SOURCES fcitx_senn.cpp
-          ${SENN_CPP_DIR}/ipc/ipc.cpp
           ${SENN_CPP_DIR}/process/process.cpp
           ${SENN_CPP_DIR}/fcitx/im/stateful_ime_proxy.cpp
-          ${SENN_CPP_DIR}/fcitx/im/stateful_ime_ipc.cpp
-#          ${SENN_CPP_DIR}/fcitx/im/stateful_ime_ecl.cpp
-#  LINK_LIBS ${CMAKE_CURRENT_SOURCE_DIR}/dep-ecl/senn-lib-fcitx--all-systems.a
-#            ${CMAKE_CURRENT_SOURCE_DIR}/dep-ecl/libecl.so
+          ${SENN_CPP_DIR}/fcitx/im/stateful_ime_ecl.cpp
+  LINK_LIBS ${CMAKE_CURRENT_SOURCE_DIR}/dep-ecl/senn-lib-fcitx--all-systems.a
+            ${CMAKE_CURRENT_SOURCE_DIR}/dep-ecl/libecl.so
   IM_CONFIG senn.conf)
 
-# install(
-#   PROGRAMS ${CMAKE_CURRENT_SOURCE_DIR}/dep-ecl/libecl.so.21.2 ## Seems that CMake add this specific file of dependency
-#   CONFIGURATIONS Release
-#   RUNTIME DESTINATION "/usr/lib/senn")
+install(
+  PROGRAMS ${CMAKE_CURRENT_SOURCE_DIR}/dep-ecl/libecl.so.21.2 ## Seems that CMake add this specific file of dependency
+  CONFIGURATIONS Release
+  RUNTIME DESTINATION "/usr/lib/senn")
 
-# install(
-#   PROGRAMS ${CMAKE_CURRENT_SOURCE_DIR}/dep-kkc/kkc-engine
-#   CONFIGURATIONS Release
-#   RUNTIME DESTINATION "/usr/lib/senn")
+install(
+  PROGRAMS ${CMAKE_CURRENT_SOURCE_DIR}/dep-kkc/kkc-engine
+  CONFIGURATIONS Release
+  RUNTIME DESTINATION "/usr/lib/senn")
 
-# install(
-#   PROGRAMS ${CMAKE_CURRENT_SOURCE_DIR}/dep-menu/menu-about
-#   RENAME menu-about
-#   CONFIGURATIONS Release
-#   RUNTIME DESTINATION "/usr/lib/senn")
+install(
+  PROGRAMS ${CMAKE_CURRENT_SOURCE_DIR}/dep-menu/menu-about
+  RENAME menu-about
+  CONFIGURATIONS Release
+  RUNTIME DESTINATION "/usr/lib/senn")
 
 ## configuration of CPack for generating deb
 set(CPACK_GENERATOR "DEB")

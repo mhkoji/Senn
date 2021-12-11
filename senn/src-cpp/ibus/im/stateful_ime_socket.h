@@ -1,23 +1,23 @@
 #pragma once
-#include "ipc/ipc.h"
+#include "ipc/socket.h"
 #include "request.h"
 #include "stateful_ime_proxy.h"
 #include <string>
 
 namespace senn {
-namespace fcitx {
+namespace ibus {
 namespace im {
 
-class StatefulIMEIPC : public StatefulIMEProxy {
+class StatefulIMESocket : public StatefulIMEProxy {
   class IMEServerLauncher
-      : public senn::ipc::ServerLauncher<IMEServerLauncher> {
+      : public senn::ipc::socket::ServerLauncher<IMEServerLauncher> {
   public:
     IMEServerLauncher(const std::string &);
     virtual ~IMEServerLauncher() {}
 
     void Spawn() const;
 
-    senn::ipc::Connection *GetConnection() const;
+    senn::ipc::socket::Connection *GetConnection() const;
 
   private:
     // The server must prevent the double startup by itself.
@@ -28,29 +28,30 @@ class StatefulIMEIPC : public StatefulIMEProxy {
 
   class ReconnectableRequester : public senn::RequesterInterface {
   public:
-    ReconnectableRequester(IMEServerLauncher *, senn::ipc::Connection **conn);
+    ReconnectableRequester(IMEServerLauncher *,
+                           senn::ipc::socket::Connection **conn);
 
     void Request(const std::string &, std::string *);
 
   private:
     const IMEServerLauncher *launcher_;
 
-    senn::ipc::Connection **conn_;
+    senn::ipc::socket::Connection **conn_;
   };
 
 public:
-  StatefulIMEIPC(IMEServerLauncher *);
-  ~StatefulIMEIPC();
+  StatefulIMESocket(IMEServerLauncher *);
+  ~StatefulIMESocket();
 
 private:
   const IMEServerLauncher *launcher_;
 
-  senn::ipc::Connection *conn_;
+  senn::ipc::socket::Connection *conn_;
 
 public:
-  static StatefulIMEIPC *SpawnAndCreate(const std::string &path);
+  static StatefulIMESocket *SpawnAndCreate(const std::string &path);
 };
 
 } // namespace im
-} // namespace fcitx
+} // namespace ibus
 } // namespace senn

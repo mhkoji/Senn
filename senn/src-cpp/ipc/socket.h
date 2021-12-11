@@ -6,6 +6,7 @@
 
 namespace senn {
 namespace ipc {
+namespace socket {
 
 class Connection {
 public:
@@ -30,7 +31,6 @@ private:
   const int socket_fd_;
 };
 
-
 class Requester : public senn::RequesterInterface {
 public:
   Requester(Connection *);
@@ -39,9 +39,8 @@ public:
   void Request(const std::string &, std::string *);
 
 private:
-  Connection* const conn_;
+  Connection *const conn_;
 };
-
 
 // Trying a kind of DCI implementation.
 template <class ConcreteDerived> class ServerLauncher {
@@ -104,5 +103,6 @@ private:
   static const int kReadTimeoutMsec = 1000;
 };
 
+} // namespace socket
 } // namespace ipc
 } // namespace senn

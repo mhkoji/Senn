@@ -37,8 +37,8 @@ RUN ecl \
       -eval '(ql:quickload :senn-lib-fcitx)' \
       -eval '(asdf:make-build :senn-lib-fcitx :type :static-library :move-here #P"/output" :monolithic t :init-name "init_senn")' && \
     cp /usr/local/lib/libecl* /output && \
-    echo "#!/bin/bash"        > /app/cmd.sh && \
-    echo "cp /output/* /host" >> /app/cmd.sh \ && \
+    echo "#!/bin/bash"         > /app/cmd.sh && \
+    echo "cp /output/* /host" >> /app/cmd.sh && \
     chmod +x /app/cmd.sh
 
 CMD ["/app/cmd.sh"]

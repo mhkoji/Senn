@@ -8,10 +8,11 @@
 #include <algorithm>
 #include <iostream>
 
-#include "ipc.h"
+#include "socket.h"
 
 namespace senn {
 namespace ipc {
+namespace socket {
 
 namespace {
 
@@ -146,9 +147,7 @@ void Connection::Close() { close(socket_fd_); }
 
 Requester::Requester(Connection *conn) : conn_(conn) {}
 
-Requester::~Requester() {
-  conn_->Close();
-}
+Requester::~Requester() { conn_->Close(); }
 
 void Requester::Request(const std::string &req, std::string *res) {
   conn_->Write(req);
@@ -158,5 +157,6 @@ void Requester::Request(const std::string &req, std::string *res) {
   }
 }
 
+} // namespace socket
 } // namespace ipc
 } // namespace senn
