@@ -50,12 +50,12 @@ libexec_PROGRAMS = \
 
 ibus_engine_senn_SOURCES = \
 	main.cpp \
-	../../../src-cpp/ipc/ipc.cpp \
 	../../../src-cpp/process/process.cpp \
 	../../../src-cpp/ibus/im/stateful_ime_proxy.cpp \
 	../../../src-cpp/ibus/im/stateful_ime_exec.cpp \
 	$(NULL)
-#	../../../src-cpp/ibus/im/stateful_ime_ipc.cpp \
+#	../../../src-cpp/ipc/socket.cpp \
+#	../../../src-cpp/ibus/im/stateful_ime_socket.cpp \
 #	../../../src-cpp/ibus/im/stateful_ime_sbcl.cpp \
 #	../../../src-cpp/ibus/im/stateful_ime_ecl.cpp
 ibus_engine_senn_CFLAGS = \
