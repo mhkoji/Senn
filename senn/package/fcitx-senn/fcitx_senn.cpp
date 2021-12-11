@@ -301,6 +301,7 @@ static void *FcitxSennCreate(FcitxInstance *fcitx) {
   senn::fcitx::im::StatefulIMESbcl::Init("/usr/lib/senn/libsennfcitx.core");
   senn->ime = senn::fcitx::im::StatefulIMESbcl::Create()
   */
+  setenv("ECLDIR", "/usr/lib/senn/ecl-21.2.1/", 1);
   senn::fcitx::im::StatefulIMEEcl::ClBoot();
   senn::fcitx::im::StatefulIMEEcl::EclInitModule();
   senn->ime = senn::fcitx::im::StatefulIMEEcl::Create();

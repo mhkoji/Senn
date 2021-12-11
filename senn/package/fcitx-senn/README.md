@@ -70,7 +70,7 @@ Integrate with ecl
 
 % mkdir rbuild
 % cd rbuild
-% cmake -DCMAKE_BUILD_TYPE=Release .. make && make package
+% cmake -DCMAKE_BUILD_TYPE=Release .. && make && make package
 ```
 
 ### Uninstall

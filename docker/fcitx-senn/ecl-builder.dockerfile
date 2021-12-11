@@ -36,7 +36,8 @@ RUN ecl \
       -eval '(push "/app/hachee/" ql:*local-project-directories*)' \
       -eval '(ql:quickload :senn-lib-fcitx)' \
       -eval '(asdf:make-build :senn-lib-fcitx :type :static-library :move-here #P"/output" :monolithic t :init-name "init_senn")' && \
-    cp /usr/local/lib/libecl* /output && \
+    cp    /usr/local/lib/libecl*    /output && \
+    cp -r /usr/local/lib/ecl-21.2.1 /output && \
     echo "#!/bin/bash"         > /app/cmd.sh && \
     echo "cp /output/* /host" >> /app/cmd.sh && \
     chmod +x /app/cmd.sh

@@ -40,6 +40,11 @@ install(
   RUNTIME DESTINATION "/usr/lib/senn")
 
 install(
+  DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/dep-ecl/ecl-21.2.1
+  CONFIGURATIONS Release
+  RUNTIME DESTINATION "/usr/lib/senn")
+
+install(
   PROGRAMS ${CMAKE_CURRENT_SOURCE_DIR}/dep-kkc/kkc-engine
   CONFIGURATIONS Release
   RUNTIME DESTINATION "/usr/lib/senn")
