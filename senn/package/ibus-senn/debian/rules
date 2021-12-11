@@ -5,4 +5,5 @@ include /usr/share/cdbs/1/class/autotools.mk
 
 install/ibus-senn::
 	install -d $(DEB_DESTDIR)/usr/lib/senn
-	install -p ../../fcitx-senn/backend/bin/server $(DEB_DESTDIR)/usr/lib/senn
+	install -p ./dep-kkc/kkc-engine $(DEB_DESTDIR)/usr/lib/senn
+	install -p ./dep-senn-ibus/senn-ibus  $(DEB_DESTDIR)/usr/lib/senn

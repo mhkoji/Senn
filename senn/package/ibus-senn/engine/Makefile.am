@@ -24,8 +24,14 @@ AM_CFLAGS = \
 	$(NULL)
 
 # AM_LDFLAGS = \
-# 	-lsbcl \
-# 	-lsennfcitx \
+# 	../dep-ecl/senn-lib-ibus--all-systems.a \
+# 	-L/usr/lib/senn/ \
+# 	-Wl,-rpath /usr/lib/senn/ \
+# 	-lecl \
+# 	$(NULL)
+
+# AM_LDFLAGS = \
+# 	-lsenn_ibus \
 # 	-L/usr/lib/senn/ \
 # 	-Wl,-R /usr/lib/senn/ \
 # 	$(NULL)
@@ -47,9 +53,11 @@ ibus_engine_senn_SOURCES = \
 	../../../src-cpp/ipc/ipc.cpp \
 	../../../src-cpp/process/process.cpp \
 	../../../src-cpp/ibus/im/stateful_ime_proxy.cpp \
-	../../../src-cpp/ibus/im/stateful_ime_ipc.cpp
-#	../../../src-cpp/ibus/im/stateful_ime_sbcl.cpp \
+	../../../src-cpp/ibus/im/stateful_ime_exec.cpp \
 	$(NULL)
+#	../../../src-cpp/ibus/im/stateful_ime_ipc.cpp \
+#	../../../src-cpp/ibus/im/stateful_ime_sbcl.cpp \
+#	../../../src-cpp/ibus/im/stateful_ime_ecl.cpp
 ibus_engine_senn_CFLAGS = \
 	$(AM_CFLAGS) \
 	$(NULL)

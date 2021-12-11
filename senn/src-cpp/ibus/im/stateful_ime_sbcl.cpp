@@ -8,7 +8,7 @@ namespace im {
 
 StatefulIMESbcl::Requester::Requester(ime_t ime) : ime_(ime) {}
 
-StatefulIMESbcl::Requester::~Requester() {}
+StatefulIMESbcl::Requester::~Requester() { senn_close_ime(&ime_); }
 
 void StatefulIMESbcl::Requester::Request(const std::string &req,
                                          std::string *res) {

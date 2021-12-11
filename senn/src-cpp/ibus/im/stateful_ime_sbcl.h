@@ -1,7 +1,6 @@
 #pragma once
 #include "request.h"
 #include "stateful_ime.h"
-#include "views.h"
 
 extern "C" {
 
@@ -12,6 +11,7 @@ typedef enum {
 } err_t;
 
 extern err_t (*senn_make_ime)(ime_t *result);
+extern err_t (*senn_close_ime)(ime_t *result);
 extern err_t (*senn_handle_request)(ime_t ime, char *req, char **result);
 
 extern void (*release_handle)(void *handle);

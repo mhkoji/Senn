@@ -8,8 +8,10 @@
 #include <cstring>
 #include <iostream>
 
-#include "ibus/im/stateful_ime_ipc.h"
+// #include "ibus/im/stateful_ime_ecl.h"
+// #include "ibus/im/stateful_ime_ipc.h"
 // #include "ibus/im/stateful_ime_sbcl.h"
+#include "ibus/im/stateful_ime_exec.h"
 
 namespace senn {
 namespace ibus_senn {
@@ -176,6 +178,7 @@ void FocusIn(IBusEngine *p) {
 } // namespace ibus_senn
 } // namespace senn
 
+/*
 class ProxyConnectToIMEFactory : public senn::ibus_senn::engine::IMEFactory {
 public:
   senn::ibus::im::StatefulIME *CreateIME() {
@@ -206,6 +209,7 @@ public:
         senn::ibus::im::StatefulIMEIPC::SpawnAndCreate("/usr/lib/senn/server"));
   }
 };
+*/
 
 /*
 class SbclIMEFactory : public senn::ibus_senn::engine::IMEFactory {
@@ -216,11 +220,37 @@ public:
 
 public:
   static senn::ibus_senn::engine::IMEFactory *Create() {
-    senn::ibus::im::StatefulIMESbcl::Init("/usr/lib/senn/libsennibus.core");
+    senn::ibus::im::StatefulIMESbcl::Init("/usr/lib/senn/libsenn_ibus.core");
     return new SbclIMEFactory();
   }
 };
 */
+/*
+class EclIMEFactory : public senn::ibus_senn::engine::IMEFactory {
+public:
+  senn::ibus::im::StatefulIME *CreateIME() {
+    return senn::ibus::im::StatefulIMEEcl::Create();
+  }
+
+public:
+  static senn::ibus_senn::engine::IMEFactory *Create() {
+    senn::ibus::im::StatefulIMEEcl::ClBoot();
+    senn::ibus::im::StatefulIMEEcl::EclInitModule();
+    return new EclIMEFactory();
+  }
+};
+*/
+class ExecIMEFactory : public senn::ibus_senn::engine::IMEFactory {
+public:
+  senn::ibus::im::StatefulIME *CreateIME() {
+    return senn::ibus::im::StatefulIMEExec::Create();
+  }
+
+public:
+  static senn::ibus_senn::engine::IMEFactory *Create() {
+    return new ExecIMEFactory();
+  }
+};
 
 namespace {
 
@@ -360,6 +390,7 @@ int main(gint argc, gchar **argv) {
     std::exit(1);
   }
 
+  /*
   if (g_option_ime_factory) {
     if (strcmp(g_option_ime_factory, "connect-to") == 0) {
       g_ime_factory = ProxyConnectToIMEFactory::Create();
@@ -369,7 +400,9 @@ int main(gint argc, gchar **argv) {
     g_ime_factory = IPCIMEFactory::Create();
     // g_ime_factory = SbclIMEFactory::Create();
   }
-
+  */
+  g_ime_factory = ExecIMEFactory::Create();
+  
   StartEngine(g_option_ibus);
   return 0;
 }
