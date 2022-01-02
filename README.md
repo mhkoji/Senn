@@ -1,4 +1,3 @@
-# Hachee
-Utilities for NLP written in Common Lisp
+# Senn Input Method
 
-Tests for KKC use a text from [Aozora Bunko](https://www.aozora.gr.jp/).
+Input method based on Hachee for the Japanese language
