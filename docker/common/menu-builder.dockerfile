@@ -2,14 +2,13 @@ FROM ubuntu:18.04 AS menu-builder
 
 RUN apt update && apt install -y \
     build-essential \
-    qt5-default
+    libgtk-3-dev
 
-COPY senn /app
+COPY senn/src-cpp/gtk/menu /app
 
 RUN mkdir /output && \
-    cd /app/src-cpp/gui/menu/about && \
-    qmake && \
-    make && \
+    cd /app && \
+    g++ about.cpp -o about `pkg-config --cflags --libs gtk+-3.0` && \
     mv about /output/menu-about && \
     echo "#!/bin/bash"         > /app/cmd.sh && \
     echo "cp /output/* /host" >> /app/cmd.sh && \
