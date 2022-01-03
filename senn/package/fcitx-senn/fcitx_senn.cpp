@@ -16,7 +16,6 @@ namespace {
 
 typedef struct _FcitxSenn {
   FcitxInstance *fcitx;
-  FcitxUIMenu menu;
   senn::fcitx::im::StatefulIME *ime;
 } FcitxSenn;
 
@@ -24,46 +23,6 @@ typedef struct _FcitxSenn {
 
 namespace senn {
 namespace fcitx_senn {
-namespace menu {
-
-const char *GetIconName(void *arg) { return ""; }
-
-void Update(FcitxUIMenu *menu) {}
-
-boolean Action(FcitxUIMenu *menu, int index) {
-  return senn::process::Spawn("/usr/lib/senn/menu-about");
-}
-
-void SetVisibility(FcitxInstance *fcitx, boolean vis) {
-  FcitxUISetStatusVisable(fcitx, "senn-menu", vis);
-}
-
-void Setup(FcitxInstance *fcitx, FcitxUIMenu *menu) {
-  FcitxUIRegisterComplexStatus(fcitx, NULL, "senn-menu", "メニュー", "メニュー",
-                               NULL, GetIconName);
-
-  FcitxMenuInit(menu);
-  menu->name = strdup("メニュー");
-  menu->candStatusBind = strdup("senn-menu");
-  menu->UpdateMenu = Update;
-  menu->MenuAction = Action;
-  menu->priv = nullptr;
-  menu->isSubMenu = false;
-  FcitxMenuAddMenuItem(menu, "Senn について", MENUTYPE_SIMPLE, NULL);
-  FcitxUIRegisterMenu(fcitx, menu);
-
-  SetVisibility(fcitx, false);
-}
-
-void Destory(FcitxInstance *fcitx, FcitxUIMenu *menu) {
-  FcitxUIUnRegisterMenu(fcitx, menu);
-  fcitx_utils_free(menu->name);
-  fcitx_utils_free(menu->candStatusBind);
-  FcitxMenuFinalize(menu);
-}
-
-} // namespace menu
-
 namespace im {
 
 INPUT_RETURN_VALUE
@@ -193,15 +152,6 @@ CandidateWordCallback(void *arg, FcitxCandidateWord *word) {
 }
 
 void ResetInput(void *arg) {
-  FcitxSenn *senn = (FcitxSenn *)arg;
-  FcitxInstance *instance = senn->fcitx;
-
-  FcitxIM *im = FcitxInstanceGetCurrentIM(instance);
-  if (im && strcmp(im->uniqueName, "senn") == 0) {
-    menu::SetVisibility(instance, true);
-  } else {
-    menu::SetVisibility(instance, false);
-  }
 }
 
 void ResetIM(void *arg) {
@@ -278,8 +228,6 @@ static void FcitxSennDestroy(void *arg) {
   delete senn->ime;
   senn::fcitx::im::StatefulIMEEcl::ClShutdown();
 
-  senn::fcitx_senn::menu::Destory(senn->fcitx, &senn->menu);
-
   free(senn);
 
   // std::cout << "senn-fcitx: destroyed:"
@@ -310,9 +258,6 @@ static void *FcitxSennCreate(FcitxInstance *fcitx) {
   hk.arg = senn;
   hk.func = senn::fcitx_senn::im::ResetInput;
   FcitxInstanceRegisterResetInputHook(fcitx, hk);
-
-  // Menu
-  senn::fcitx_senn::menu::Setup(senn->fcitx, &senn->menu);
 
   // Register
   FcitxIMIFace iface;

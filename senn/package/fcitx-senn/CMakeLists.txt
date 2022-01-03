@@ -60,11 +60,11 @@ install(
   CONFIGURATIONS Release
   RUNTIME DESTINATION "/usr/lib/senn")
 
-install(
-  PROGRAMS ${CMAKE_CURRENT_SOURCE_DIR}/dep-menu/menu-about
-  RENAME menu-about
-  CONFIGURATIONS Release
-  RUNTIME DESTINATION "/usr/lib/senn")
+# install(
+#   PROGRAMS ${CMAKE_CURRENT_SOURCE_DIR}/dep-menu/menu-about
+#   RENAME menu-about
+#   CONFIGURATIONS Release
+#   RUNTIME DESTINATION "/usr/lib/senn")
 
 ## configuration of CPack for generating deb
 set(CPACK_GENERATOR "DEB")
