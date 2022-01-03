@@ -6,7 +6,6 @@
    (:file "buffer")
    (:file "segment")
    (:file "prefix-dictionary")
-   (:file "user-dictionary")
 
    (:module :im
     :pathname "im"
@@ -20,5 +19,4 @@
        (:file "prefix")
        (:file "katakana"))))))
   :depends-on (:hachee-kkc
-               :cl-trie
-               :cl-csv))
+               :cl-trie))
