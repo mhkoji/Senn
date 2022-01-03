@@ -24,7 +24,7 @@ include_directories(
 #  $ENV{HOME}/.roswell/impls/x86-64/linux/ecl/21.2.1/include
   )
 
-## A macro for easy building of the shared object library.
+## A macro to build the shared object library easily.
 fcitx_add_addon_full(senn
   SOURCES fcitx_senn.cpp
           ${SENN_CPP_DIR}/process/process.cpp
@@ -34,8 +34,19 @@ fcitx_add_addon_full(senn
             ${CMAKE_CURRENT_SOURCE_DIR}/dep-ecl/libecl.so
   IM_CONFIG senn.conf)
 
+## This fcitx-senn.png is displayed in the tray as the senn icon.
 install(
-  PROGRAMS ${CMAKE_CURRENT_SOURCE_DIR}/dep-ecl/libecl.so.21.2 ## Seems that CMake add this specific file of dependency
+  FILES ../../icon/senn.png
+  DESTINATION share/icons/hicolor/48x48/apps
+  RENAME fcitx-senn.png)
+
+install(
+  FILES ../../icon/senn.png
+  DESTINATION share/fcitx/imicon)
+
+install(
+  ## CMake adds this file to the dependencies of the shared object.
+  PROGRAMS ${CMAKE_CURRENT_SOURCE_DIR}/dep-ecl/libecl.so.21.2
   CONFIGURATIONS Release
   RUNTIME DESTINATION "/usr/lib/senn")
 
