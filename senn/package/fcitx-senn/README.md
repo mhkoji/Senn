@@ -1,64 +1,13 @@
 # fcitx-senn
 
-## Install via dpkg
+Roswell needs to be installed first.
 
-### Build the Deb file
-
-#### Docker
+## Setup
 
 ```
-% cd <path/to/Hachee>
-% git submodule update -i
-% docker build . -t fcitx-deb -f senn/package/fcitx-senn/docker/deb.dockerfile
-% docker run -v $PWD/output:/output -t fcitx-deb
-% ls output
-fcitx-senn-0.0.1-Linux.deb
-```
+% sudo apt install -y fcitx-libs-dev cmake
 
-#### Command Line
-
-```
-% cd <path/to/Hachee>/senn/package/fcitx-senn/
-% ros dump executable backend/bin/server.ros -o backend/bin/server
-% mkdir frontned/build
-% cd frontned/build
-% cmake -DCMAKE_BUILD_TYPE=Release ..
-% make && make package
-```
-
-### Install
-
-```
-% sudo dpkg -i fcitx-senn-0.0.1-Linux.deb
-```
-
-### Uninstall
-
-```
-% sudo dpkg -P fcitx-senn
-```
-
-## Install from Command Line
-
-```
-% cd <path/to/Hachee>/package/fcitx-senn/backend
-% ros dump executable bin/server.ros -o bin/server
-% chmod +x bin/server
-% sudo mkdir /usr/lib/senn
-% sudo mv bin/server /usr/lib/senn
-
-% sudo apt install -y fcitx-libs-dev
-% mkdir <path/to/Hachee>/senn/package/fcitx-senn/frontend/build
-% cd <path/to/Hachee>/senn/package/fcitx-senn/frontend/build
-% sudo make install
-
-% /usr/lib/senn/server
-% fcitx restart
-```
-
-Integrate with ecl
-
-```
+% cd <path/to/senn>/senn/package/fcitx-senn/
 % mkdir dep-ecl dep-kkc
 % ros use sbcl
 % ros dump executable ../../src/bin/kkc-engine.ros
@@ -66,11 +15,33 @@ Integrate with ecl
 
 % ros use ecl
 % ros run -e '(asdf:make-build :senn-lib-fcitx :type :static-library :move-here #P"./dep-ecl" :monolithic t :init-name "init_senn")' -q
+% cp -r ~/.roswell/impls/x86-64/linux/ecl/21.2.1/lib/ecl-21.2.1 ./dep-ecl
 % cp ~/.roswell/impls/x86-64/linux/ecl/21.2.1/lib/libecl.so* ./dep-ecl
+```
 
-% mkdir rbuild
-% cd rbuild
+Remove the following comment out in CMakeLists.txt:
+```
+#  $ENV{HOME}/.roswell/impls/x86-64/linux/ecl/21.2.1/include 
+```
+
+## Install by dpkg
+
+```
+% cd <path/to/senn>/senn/package/fcitx-senn/
+% mkdir build
+% cd build
 % cmake -DCMAKE_BUILD_TYPE=Release .. && make && make package
+% sudo dpkg -i fcitx-senn-0.0.1-Linux.deb
+```
+
+## Install by CMake
+
+```
+% cd <path/to/senn>/senn/package/fcitx-senn/
+% mkdir build
+% cd build
+% cmake -DCMAKE_BUILD_TYPE=Release .. && make
+% sudo make install
 ```
 
 ### Uninstall
@@ -95,4 +66,3 @@ Thus, you can uninstall fcitx-senn by the following commands:
 % sudo rm -rf /usr/share/fcitx/inputmethod/senn.conf
 % sudo rm -rf /usr/lib/x86_64-linux-gnu/fcitx/fcitx-senn.so
 ```
-
