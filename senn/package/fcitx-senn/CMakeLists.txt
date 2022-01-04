@@ -10,10 +10,12 @@ set(CMAKE_C_FLAGS "-Wall -Wextra -Wno-sign-compare -Wno-unused-parameter")
 set(CMAKE_CXX_FLAGS "-std=c++11 -Wall -Wextra -Wno-sign-compare -Wno-unused-parameter")
 set(CMAKE_SHARED_LINKER_FLAGS "-Wl,--as-needed ${CMAKE_SHARED_LINKER_FLAGS}")
 set(CMAKE_MODULE_LINKER_FLAGS "-Wl,--as-needed ${CMAKE_MODULE_LINKER_FLAGS}")
-## Without this, CMake sets runtime path of "/usr/lib/x86_64-linux-gnu/fcitx/fcitx-senn.so" to ""
-set(CMAKE_INSTALL_RPATH "/usr/lib/senn")
 
 set(SENN_CPP_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../src-cpp)
+set(FCITX_SENN_INSTALL_DIR /usr/lib/senn/fcitx)
+
+## Without this, CMake sets runtime path of the shared object to "".
+set(CMAKE_INSTALL_RPATH ${FCITX_SENN_INSTALL_DIR})
 
 include_directories(
   ${FCITX4_FCITX_INCLUDE_DIRS}
@@ -48,23 +50,23 @@ install(
   ## CMake adds this file to the dependencies of the shared object.
   PROGRAMS ${CMAKE_CURRENT_SOURCE_DIR}/dep-ecl/libecl.so.21.2
   CONFIGURATIONS Release
-  RUNTIME DESTINATION "/usr/lib/senn")
+  RUNTIME DESTINATION ${FCITX_SENN_INSTALL_DIR})
 
 install(
   DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/dep-ecl/ecl-21.2.1
   CONFIGURATIONS Release
-  RUNTIME DESTINATION "/usr/lib/senn")
+  RUNTIME DESTINATION ${FCITX_SENN_INSTALL_DIR})
 
 install(
   PROGRAMS ${CMAKE_CURRENT_SOURCE_DIR}/dep-kkc/kkc-engine
   CONFIGURATIONS Release
-  RUNTIME DESTINATION "/usr/lib/senn")
+  RUNTIME DESTINATION ${FCITX_SENN_INSTALL_DIR})
 
 # install(
 #   PROGRAMS ${CMAKE_CURRENT_SOURCE_DIR}/dep-menu/menu-about
 #   RENAME menu-about
 #   CONFIGURATIONS Release
-#   RUNTIME DESTINATION "/usr/lib/senn")
+#   RUNTIME DESTINATION ${FCITX_SENN_INSTALL_DIR})
 
 ## configuration of CPack for generating deb
 set(CPACK_GENERATOR "DEB")

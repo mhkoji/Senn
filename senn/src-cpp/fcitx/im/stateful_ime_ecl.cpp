@@ -48,8 +48,10 @@ void StatefulIMEEcl::EclInitModule() { ecl_init_module(NULL, init_senn); }
 
 void StatefulIMEEcl::ClShutdown() { cl_shutdown(); }
 
-StatefulIME *StatefulIMEEcl::Create() {
-  cl_object ime = cl_eval(c_string_to_object("(senn.lib.fcitx:make-ime)"));
+StatefulIME *StatefulIMEEcl::Create(const std::string &engine_path) {
+  cl_object ime =
+      cl_funcall(2, cl_eval(c_string_to_object("'senn.lib.fcitx:make-ime")),
+                 ecl_make_constant_base_string(engine_path.c_str(), -1));
   return new StatefulIMEProxy(std::unique_ptr<senn::RequesterInterface>(
       new StatefulIMEEcl::Requester(ime)));
 }

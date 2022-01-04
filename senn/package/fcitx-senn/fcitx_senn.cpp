@@ -12,6 +12,9 @@
 // #include "fcitx/im/stateful_ime_socket.h"
 // #include "fcitx/im/stateful_ime_sbcl.h"
 
+const char *kECLDIR = "/usr/lib/senn/fcitx/ecl-21.2.1/";
+const std::string kKkcEnginePath = "/usr/lib/senn/fcitx/kkc-engine";
+
 namespace {
 
 typedef struct _FcitxSenn {
@@ -151,8 +154,7 @@ CandidateWordCallback(void *arg, FcitxCandidateWord *word) {
   return consumed ? IRV_DISPLAY_CANDWORDS : IRV_TO_PROCESS;
 }
 
-void ResetInput(void *arg) {
-}
+void ResetInput(void *arg) {}
 
 void ResetIM(void *arg) {
   FcitxSenn *senn = (FcitxSenn *)arg;
@@ -195,16 +197,16 @@ INPUT_RETURN_VALUE DoInput(void *arg, FcitxKeySym _sym, uint32_t _state) {
   // std::cout << sym << " " << keycode << " " << state << std::endl;
 
   boolean has_view = false;
-  boolean consumed =
-      senn->ime->ProcessInput(sym, keycode, state,
-                              [&](const fcitx::im::views::Converting *view) {
-                                has_view = true;
-                                Show(senn, view);
-                              },
-                              [&](const fcitx::im::views::Editing *view) {
-                                has_view = true;
-                                Show(senn, view);
-                              });
+  boolean consumed = senn->ime->ProcessInput(
+      sym, keycode, state,
+      [&](const fcitx::im::views::Converting *view) {
+        has_view = true;
+        Show(senn, view);
+      },
+      [&](const fcitx::im::views::Editing *view) {
+        has_view = true;
+        Show(senn, view);
+      });
 
   if (consumed) {
     return has_view ? IRV_DISPLAY_CANDWORDS : IRV_DO_NOTHING;
@@ -249,10 +251,10 @@ static void *FcitxSennCreate(FcitxInstance *fcitx) {
   senn::fcitx::im::StatefulIMESbcl::Init("/usr/lib/senn/libsennfcitx.core");
   senn->ime = senn::fcitx::im::StatefulIMESbcl::Create()
   */
-  setenv("ECLDIR", "/usr/lib/senn/ecl-21.2.1/", 1);
+  setenv("ECLDIR", kECLDIR, 1);
   senn::fcitx::im::StatefulIMEEcl::ClBoot();
   senn::fcitx::im::StatefulIMEEcl::EclInitModule();
-  senn->ime = senn::fcitx::im::StatefulIMEEcl::Create();
+  senn->ime = senn::fcitx::im::StatefulIMEEcl::Create(kKkcEnginePath);
 
   FcitxIMEventHook hk;
   hk.arg = senn;
