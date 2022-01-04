@@ -3,6 +3,7 @@ FROM ubuntu:18.04 AS kkc-builder
 RUN apt update && apt install -y \
     build-essential \
     cmake \
+    debhelper \
     fcitx-libs-dev
 
 RUN mkdir \

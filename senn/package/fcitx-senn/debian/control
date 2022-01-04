@@ -2,7 +2,7 @@ Source: fcitx-senn
 Section: utils
 Priority: optional
 Maintainer: mhkoji <mhkoji2@gmail.com>
-Build-Depends: debhelper-compat (= 12), cmake, fcitx-libs-dev
+Build-Depends: debhelper (>= 10), cmake, fcitx-libs-dev
 Standards-Version: 4.4.1
 Homepage: https://github.com/mhkoji/Senn
 #Vcs-Browser: https://salsa.debian.org/debian/fcitx-senn
