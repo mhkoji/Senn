@@ -49,18 +49,15 @@ install(
 install(
   ## CMake adds this file to the dependencies of the shared object.
   PROGRAMS ${CMAKE_CURRENT_SOURCE_DIR}/dep-ecl/libecl.so.21.2
-  CONFIGURATIONS Release
-  RUNTIME DESTINATION ${FCITX_SENN_INSTALL_DIR})
+  DESTINATION ${FCITX_SENN_INSTALL_DIR})
 
 install(
   DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/dep-ecl/ecl-21.2.1
-  CONFIGURATIONS Release
-  RUNTIME DESTINATION ${FCITX_SENN_INSTALL_DIR})
+  DESTINATION ${FCITX_SENN_INSTALL_DIR})
 
 install(
   PROGRAMS ${CMAKE_CURRENT_SOURCE_DIR}/dep-kkc/kkc-engine
-  CONFIGURATIONS Release
-  RUNTIME DESTINATION ${FCITX_SENN_INSTALL_DIR})
+  DESTINATION ${FCITX_SENN_INSTALL_DIR})
 
 # install(
 #   PROGRAMS ${CMAKE_CURRENT_SOURCE_DIR}/dep-menu/menu-about
@@ -68,15 +65,3 @@ install(
 #   CONFIGURATIONS Release
 #   RUNTIME DESTINATION ${FCITX_SENN_INSTALL_DIR})
 
-## configuration of CPack for generating deb
-set(CPACK_GENERATOR "DEB")
-set(CPACK_PACKAGE_VERSION_MAJOR "0")
-set(CPACK_PACKAGE_VERSION_MINOR "0")
-set(CPACK_PACKAGE_VERSION_PATCH "1")
-set(CPACK_DEBIAN_PACKAGE_MAINTAINER "mkoji")
-set(CPACK_DEBIAN_PACKAGE_DEPENDS "fcitx-bin, fcitx-data, fcitx-modules, libc6, libgcc-s1, libcstdc++6")
-set(CPACK_DEBIAN_PACKAGE_SECTION "utils")
-set(CPACK_DEBIAN_PACKAGE_HOMEPAGE "https://github.com/mhkoji/Senn")
-set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Senn support for Fcitx")
-
-include(CPack)
