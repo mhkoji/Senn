@@ -1,3 +1,9 @@
+fcitx-senn (0.0.2-1) unstable; urgency=medium
+
+  * v0.0.2
+
+ -- mhkoji <mhkoji2@gmail.com>  Wed, 05 Jan 2022 10:53:45 +0900
+
 fcitx-senn (0.0.1-1) unstable; urgency=medium
 
   * Initial release
