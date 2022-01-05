@@ -11,7 +11,7 @@ RUN mkdir \
     /output
 
 COPY . /app
-COPY --from=menu-builder /output /app/senn/package/fcitx-senn/dep-menu
+# COPY --from=menu-builder /output /app/senn/package/fcitx-senn/dep-menu
 COPY --from=kkc-builder /output /app/senn/package/fcitx-senn/dep-kkc
 COPY --from=ecl-builder /output /app/senn/package/fcitx-senn/dep-ecl
 COPY --from=ecl-builder /usr/local/include/ecl /usr/local/include/ecl
