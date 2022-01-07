@@ -22,7 +22,8 @@ def write_svg(outpath, fontpath, ch):
         <svg xmlns="http://www.w3.org/2000/svg"
              viewBox="0 {-ascender} {width} {height}"
              fill="#FFF"
-             stroke="#FFF">
+             stroke="#000"
+             stroke-width="50">
           <g transform="scale(1, -1)">
             <path d="{pen.getCommands()}"/>
           </g>
@@ -35,7 +36,7 @@ def main():
     ch = 12379 ## 'せ'
     fontpath = os.path.join(
         os.getcwd(),
-        '../third-party/MPLUS_FONTS/Mplus1-Regular.ttf')
+        '../third-party/MPLUS_FONTS/Mplus1-Bold.ttf')
     write_svg('./senn.svg', fontpath, ch)
 
     subprocess.run(['convert',
