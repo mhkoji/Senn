@@ -54,7 +54,8 @@
       (make-engine :process p)))
 
   (defun kill-engine (engine)
-    (sb-ext:process-kill (engine-process engine) 9)))
+    (ignore-errors
+     (sb-ext:process-kill (engine-process engine) 9))))
 
 ;;;
 
@@ -76,7 +77,8 @@
       (make-engine :stream stream :process process)))
 
   (defun kill-engine (engine)
-    (ext:terminate-process (engine-process engine) t))
+    (ignore-errors
+     (ext:terminate-process (engine-process engine) t)))
 
   (defun engine-send-recv (engine line)
     (let ((stream (engine-stream engine)))
@@ -127,40 +129,58 @@
                                   :origin origin))
                :current-index 0
                :has-more-candidates-p t)))
-          (handler-case
-              (cdr (engine-convert engine pron))
-            (error ()
-              (list (list pron pron :um))))))
+          (cdr (engine-convert engine pron))))
 
 (defun lookup (engine pron)
-  (handler-case
-      (mapcar (lambda (cand)
-                (destructuring-bind (form origin) (cdr cand)
-                  (senn.segment:make-candidate
-                   :form form
-                   :origin origin)))
-              (engine-list-candidate engine pron))
-    (error ()
-      (list (senn.segment:make-candidate :form pron :origin :um)))))
+  (mapcar (lambda (cand)
+            (destructuring-bind (form origin) (cdr cand)
+              (senn.segment:make-candidate
+               :form form
+               :origin origin)))
+          (engine-list-candidate engine pron)))
 
 ;;;
 
 (defclass convert ()
-  ((engine-impl
-    :initarg :convert-engine-impl
-    :reader convert-engine-impl)))
+  ((engine
+    :initarg :convert-engine
+    :accessor convert-engine)
+   (engine-runner
+    :initarg :convert-eingine-runner
+    :reader convert-engine-runner)))
 
 (defmethod senn.im:convert ((mixin convert) (pron string)
                             &key 1st-boundary-index)
   (declare (ignore 1st-boundary-index))
-  (convert (convert-engine-impl mixin) pron))
+  (with-accessors ((engine convert-engine)
+                   (runner convert-engine-runner)) mixin
+    (handler-case (convert engine pron)
+      (error ()
+        (kill-engine engine)
+        (setf engine (run-engine runner))
+        (list (senn.segment:make-segment
+               :pron pron
+               :candidates (list (senn.segment:make-candidate
+                                  :form pron :origin :um))
+               :current-index 0
+               :has-more-candidates-p t))))))
 
 (defclass lookup ()
-  ((engine-impl
-    :initarg :lookup-engine-impl
-    :reader lookup-engine-impl)))
+  ((engine
+    :initarg :lookup-engine
+    :accessor lookup-engine)
+   (engine-runner
+    :initarg :lookup-eingine-runner
+    :reader lookup-engine-runner)))
 
 (defmethod senn.im:lookup ((mixin lookup) (pron string)
                            &key prev next)
   (declare (ignore next prev))
-  (lookup (lookup-engine-impl mixin) pron))
+  (with-accessors ((engine lookup-engine)
+                   (runner lookup-engine-runner)) mixin
+    (handler-case (lookup engine pron)
+      (error ()
+        (kill-engine engine)
+        (setf engine (run-engine runner))
+        (list (senn.segment:make-candidate
+               :form pron :origin :um))))))

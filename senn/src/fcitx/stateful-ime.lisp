@@ -77,12 +77,15 @@
                                senn.im.mixin.engine:lookup)
   ((engine :initarg :engine)))
 
-(defun make-engine-ime (engine)
-  (make-instance 'stateful-engine-ime
-                 :convert-engine-impl engine
-                 :lookup-engine-impl engine
-                 :engine engine
-                 :state (make-initial-state)))
+(defun make-engine-ime (engine-runner)
+  (let ((engine (senn.im.mixin.engine:run-engine engine-runner)))
+    (make-instance 'stateful-engine-ime
+                   :convert-engine engine
+                   :convert-engine-runner engine-runner
+                   :lookup-engine engine
+                   :lookup-engine-runner engine-runner
+                   :engine engine
+                   :state (make-initial-state))))
 
 (defun close-engine-ime (ime)
   (senn.im.mixin.engine:kill-engine (slot-value ime 'engine)))
