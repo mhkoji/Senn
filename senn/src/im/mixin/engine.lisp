@@ -79,8 +79,10 @@
       (make-engine :stream stream :process process)))
 
   (defun kill-engine (engine)
-    (ignore-errors
-      (ext:terminate-process (engine-process engine) t)))
+    (let ((process (engine-process engine)))
+      (ext:terminate-process process t)
+      ;; Wait the process to finish to prevent it from becoming a zombie.
+      (ext:external-process-wait process t)))
 
   (defun engine-send-recv (engine line)
     (let ((stream (engine-stream engine)))
