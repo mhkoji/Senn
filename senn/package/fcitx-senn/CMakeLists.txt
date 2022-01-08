@@ -29,7 +29,6 @@ include_directories(
 ## A macro to build the shared object library easily.
 fcitx_add_addon_full(senn
   SOURCES fcitx_senn.cpp
-          ${SENN_CPP_DIR}/process/process.cpp
           ${SENN_CPP_DIR}/fcitx/im/stateful_ime_proxy.cpp
           ${SENN_CPP_DIR}/fcitx/im/stateful_ime_ecl.cpp
   LINK_LIBS ${CMAKE_CURRENT_SOURCE_DIR}/dep-ecl/senn-lib-fcitx--all-systems.a
