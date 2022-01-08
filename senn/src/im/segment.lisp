@@ -2,7 +2,6 @@
   (:use :cl)
   (:export :candidate
            :candidate-form
-           :candidate-origin
            :make-candidate
 
            :segment-candidates
@@ -20,8 +19,7 @@
 (in-package :senn.im.segment)
 
 (defstruct candidate
-  form
-  origin)
+  form)
 
 (defstruct segment
   pron

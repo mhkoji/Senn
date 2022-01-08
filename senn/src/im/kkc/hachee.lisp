@@ -15,8 +15,7 @@
              (hachee.kkc.convert:entry-pron e)
              :candidates
              (list (senn.im.segment:make-candidate
-                    :form (hachee.kkc.convert:entry-form e)
-                    :origin (hachee.kkc.convert:entry-origin e)))
+                    :form (hachee.kkc.convert:entry-form e)))
              :current-index 0
              :has-more-candidates-p t))
           (hachee.kkc.convert:execute
@@ -26,8 +25,7 @@
 (defun lookup (lookup pron &key prev next)
   (mapcar (lambda (item)
             (senn.im.segment:make-candidate
-             :form (hachee.kkc.lookup:item-form item)
-             :origin (hachee.kkc.lookup:item-origin item)))
+             :form (hachee.kkc.lookup:item-form item)))
           (hachee.kkc.lookup:execute lookup pron :prev prev :next next)))
 
 (defun build-kkc ()

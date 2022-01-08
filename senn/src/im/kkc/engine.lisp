@@ -137,8 +137,7 @@
               (senn.im.segment:make-segment
                :pron pron
                :candidates (list (senn.im.segment:make-candidate
-                                  :form form
-                                  :origin origin))
+                                  :form form))
                :current-index 0
                :has-more-candidates-p t)))
           (cdr (engine-convert engine pron))))
@@ -147,8 +146,7 @@
   (mapcar (lambda (cand)
             (destructuring-bind (form origin) (cdr cand)
               (senn.im.segment:make-candidate
-               :form form
-               :origin origin)))
+               :form form)))
           (engine-list-candidate engine pron)))
 
 ;;;
@@ -170,7 +168,7 @@
         (list (senn.im.segment:make-segment
                :pron pron
                :candidates (list (senn.im.segment:make-candidate
-                                  :form pron :origin :um))
+                                  :form pron))
                :current-index 0
                :has-more-candidates-p t))))))
 

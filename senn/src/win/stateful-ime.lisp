@@ -30,8 +30,7 @@
                   (senn.im.segment:make-segment
                    :pron pron
                    :candidates (list (senn.im.segment:make-candidate
-                                      :form history-form
-                                      :origin :history))
+                                      :form history-form))
                    :current-index 0
                    :has-more-candidates-p t))))
           segs))
