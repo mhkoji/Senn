@@ -20,11 +20,17 @@
     nil))
 
 (defun append-candidates (ime current-candidates pron)
-  (remove-duplicates (append current-candidates (lookup ime pron))
-                     :key #'senn.im.segment:candidate-form
-                     :test #'string=))
+  (labels ((exists-in-current-candidates-p (cand)
+             (find-if (lambda (c)
+                        (string= (senn.im.segment:candidate-form c)
+                                 (senn.im.segment:candidate-form cand)))
+                      current-candidates)))
+    ;; Don't change the sort order of current-candidates.
+    (append current-candidates
+            (remove-if #'exists-in-current-candidates-p
+                       (lookup ime pron)))))
 
-(defun segment-append-candidates! (ime segment)
+(defun segment-append-candidates! (segment ime)
   (when (senn.im.segment:segment-has-more-candidates-p segment)
     (let ((pron (senn.im.segment:segment-pron segment))
           (current-candidates (senn.im.segment:segment-candidates segment)))
