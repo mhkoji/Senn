@@ -7,7 +7,7 @@
   (format nil "~A~A" #\Return #\Newline))
 
 (defun move-segment-form-index! (seg diff ime)
-  (senn.im.ime:segment-append-candidates! ime seg)
+  (senn.im.ime:segment-append-candidates! seg ime)
   (senn.im.segment:try-move-cursor-pos! seg diff))
 
 (defun buffer-empty-p (buffer)
