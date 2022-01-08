@@ -17,7 +17,7 @@ namespace socket {
 namespace {
 
 int MakeStreamSocketOrDie(int socket_family) {
-  int socket_fd = socket(socket_family, SOCK_STREAM, 0);
+  int socket_fd = ::socket(socket_family, SOCK_STREAM, 0);
   if (socket_fd < 0) {
     std::cerr << "Failed to create socket: " << socket_fd << std::endl;
     std::exit(1);
