@@ -1,12 +1,12 @@
-(defpackage :senn.bin.ibus-server-tcp
+(defpackage :senn.bin.ibus-server
   (:use :cl)
   (:export :run))
-(in-package :senn.bin.ibus-server-tcp)
+(in-package :senn.bin.ibus-server)
 
-(defun run (kkc)
+(defun tcp-run (kkc)
   (senn.server.tcp:start-server
    (lambda (client)
-     (let ((sf-ime (senn.ibus.stateful-ime:make-hachee-ime kkc)))
+     (let ((sf-ime (senn.ibus.stateful-ime:hachee-make-ime kkc)))
        (labels ((handle (req)
                   (senn.ibus.server:handle-request sf-ime req)))
          (senn.server:client-loop client :handle-fn #'handle))))))

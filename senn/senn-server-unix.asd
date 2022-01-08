@@ -1,6 +1,8 @@
 (asdf:defsystem :senn-server-unix
   :serial t
+  :pathname "src"
   :components
-  ((:file "src/server/server")
-   (:file "src/server/unix"))
-  :depends-on (:senn))
+  ((:file "ipc/unix")
+   (:file "server/server")
+   (:file "server/unix"))
+  :depends-on (:jsown))

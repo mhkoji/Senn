@@ -1,18 +1,20 @@
 ;; convert/lookup depending on hachee kkc
-(defpackage :senn.im.mixin.hachee
+(defpackage :senn.im.kkc.hachee
   (:use :cl)
   (:export :convert
            :lookup
+           :mixin
+           :mixin-extended-dictionary
            :build-kkc))
-(in-package :senn.im.mixin.hachee)
+(in-package :senn.im.kkc.hachee)
 
 (defun convert (convert pron &key 1st-boundary-index)
   (mapcar (lambda (e)
-            (senn.segment:make-segment
+            (senn.im.segment:make-segment
              :pron
              (hachee.kkc.convert:entry-pron e)
              :candidates
-             (list (senn.segment:make-candidate
+             (list (senn.im.segment:make-candidate
                     :form (hachee.kkc.convert:entry-form e)
                     :origin (hachee.kkc.convert:entry-origin e)))
              :current-index 0
@@ -23,7 +25,7 @@
 
 (defun lookup (lookup pron &key prev next)
   (mapcar (lambda (item)
-            (senn.segment:make-candidate
+            (senn.im.segment:make-candidate
              :form (hachee.kkc.lookup:item-form item)
              :origin (hachee.kkc.lookup:item-origin item)))
           (hachee.kkc.lookup:execute lookup pron :prev prev :next next)))
@@ -40,21 +42,31 @@
 
 ;;;
 
-(defclass convert ()
-  ((kkc-impl
-    :initarg :convert-kkc-impl
-    :reader convert-kkc-impl)))
+(defclass mixin ()
+  ((kkc
+    :initarg :kkc
+    :reader mixin-kkc)))
 
-(defmethod senn.im:convert ((mixin convert) (pron string)
-                            &key 1st-boundary-index)
-  (convert (convert-kkc-impl mixin) pron
-           :1st-boundary-index 1st-boundary-index))
+(defgeneric mixin-extended-dictionary (mixin)
+  (:method ((mixin t))
+    nil))
 
-(defclass lookup ()
-  ((kkc-impl
-    :initarg :lookup-kkc-impl
-    :reader lookup-kkc-impl)))
+(defclass convert (mixin) ())
 
-(defmethod senn.im:lookup ((mixin lookup) (pron string)
-                           &key prev next)
-  (lookup (lookup-kkc-impl mixin) pron :next next :prev prev))
+(defmethod senn.im.ime:convert ((mixin convert) (pron string)
+                                &key 1st-boundary-index)
+  (let ((ex-dict (mixin-extended-dictionary mixin)))
+    (convert (if ex-dict
+                 (hachee.kkc:make-kkc-convert
+                  :kkc (mixin-kkc mixin)
+                  :extended-dictionary ex-dict)
+                 (mixin-kkc mixin))
+             pron
+             :1st-boundary-index 1st-boundary-index)))
+
+(defclass lookup (mixin) ())
+
+(defmethod senn.im.ime:lookup ((mixin lookup) (pron string)
+                                   &key prev next)
+  (lookup (mixin-kkc mixin) pron
+          :next next :prev prev))

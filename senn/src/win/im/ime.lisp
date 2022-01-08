@@ -14,7 +14,7 @@
 ;; input state
 
 (defstruct editing
-  (buffer (senn.buffer:make-buffer))
+  (buffer (senn.im.buffer:make-buffer))
   predictions)
 
 (defstruct converting

@@ -6,9 +6,9 @@
 
            :stateful
            :make-initial-state
-           :make-engine-ime
-           :make-hachee-ime
-           :close-engine-ime))
+           :engine-make-ime
+           :engine-close-ime
+           :hachee-make-ime))
 (in-package :senn.ibus.stateful-ime)
 
 (defgeneric ime-state (ime))
@@ -58,32 +58,31 @@
 ;;;
 
 (defclass stateful-hachee-ime (stateful
-                               senn.im:ime
-                               senn.im.mixin.hachee:convert
-                               senn.im.mixin.hachee:lookup
-                               senn.im.mixin.katakana:predict)
+                               senn.im.ime:ime
+                               senn.im.kkc.hachee:convert
+                               senn.im.kkc.hachee:lookup
+                               senn.im.predict.katakana:predict)
   ())
 
-(defun make-hachee-ime (kkc)
-  (make-instance 'stateful-hachee-ime
-                 :state (make-initial-state)
-                 :lookup-kkc-impl kkc
-                 :convert-kkc-impl kkc))
+(defun hachee-make-ime (kkc)
+  (let ((state (make-initial-state)))
+    (make-instance 'stateful-hachee-ime :state state :kkc kkc)))
+
 ;;;
 
 (defclass stateful-engine-ime (stateful
-                               senn.im:ime
-                               senn.im.mixin.engine:convert
-                               senn.im.mixin.engine:lookup) ())
+                               senn.im.ime:ime
+                               senn.im.kkc.engine:convert
+                               senn.im.kkc.engine:lookup)
+  ())
 
-(defun make-engine-ime (engine-runner)
-  (let ((engine-store (senn.im.mixin.engine:make-engine-store
-                       :engine (senn.im.mixin.engine:run-engine
-                                engine-runner)
-                       :engine-runner engine-runner)))
-    (make-instance 'stateful-engine-ime
-                   :engine-store engine-store
-                   :state (make-initial-state))))
+(defun engine-make-ime (engine-runner)
+  (make-instance 'stateful-engine-ime
+   :state (make-initial-state)
+   :engine-store (senn.im.kkc.engine:make-engine-store
+                  :engine (senn.im.kkc.engine:run-engine
+                           engine-runner)
+                  :engine-runner engine-runner)))
 
-(defun close-engine-ime (ime)
-  (senn.im.mixin.engine:close-mixin ime))
+(defun engine-close-ime (ime)
+  (senn.im.kkc.engine:close-mixin ime))

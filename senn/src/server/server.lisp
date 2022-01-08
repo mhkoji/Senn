@@ -1,18 +1,18 @@
 (defpackage :senn.server
   (:use :cl)
-  (:export :read-request
-           :send-response
+  (:export :client-read-line
+           :client-send-line
            :client-loop))
 (in-package :senn.server)
 
-(defgeneric read-request (client))
-(defgeneric send-response (client resp))
+(defgeneric client-read-line (client))
+(defgeneric client-send-line (client resp))
 
 (defun client-loop (client &key handle-fn)
   (handler-case
-      (loop for req = (read-request client)
+      (loop for req = (client-read-line client)
             while req
             do (let ((resp (funcall handle-fn req)))
-                 (send-response client resp)))
+                 (client-send-line client resp)))
     (error (c)
       (log:warn "~A" c))))

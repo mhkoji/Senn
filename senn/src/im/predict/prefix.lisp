@@ -1,8 +1,8 @@
-(defpackage :senn.im.mixin.prefix
+(defpackage :senn.im.predict.prefix
   (:use :cl)
   (:export :predict
            :load-dictionary))
-(in-package :senn.im.mixin.prefix)
+(in-package :senn.im.predict.prefix)
 
 (defun predict (dict string)
   (let ((words (senn.prefix-dictionary:lookup dict string)))
@@ -24,5 +24,5 @@
     :initarg :predict-prefix-dictionary
     :reader predict-prefix-dictionary)))
 
-(defmethod senn.im:predict append ((mixin predict) (string string))
+(defmethod senn.im.ime:predict append ((mixin predict) (string string))
   (predict (predict-prefix-dictionary mixin) string))

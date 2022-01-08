@@ -1,7 +1,7 @@
-(defpackage :senn.bin.kkc-engine
+(defpackage :senn-kkc-engine.hachee
   (:use :cl)
   (:export :main))
-(in-package :senn.bin.kkc-engine)
+(in-package :senn-kkc-engine.hachee)
 
 (defun create-system-kkc ()
   (let ((corpus-pathnames

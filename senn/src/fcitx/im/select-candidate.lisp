@@ -13,7 +13,7 @@
 
 (defmethod execute ((s converting) (index integer))
   (let ((curr-seg (converting-current-segment s)))
-    (senn.segment:try-set-cursor-pos! curr-seg index))
+    (senn.im.segment:try-set-cursor-pos! curr-seg index))
   (let ((view (converting-view/converting-state s)))
     (resp t view :state s)))
 

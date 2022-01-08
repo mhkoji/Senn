@@ -2,18 +2,16 @@
   (:use :cl))
 (in-package :senn.t.scenario.win)
 
-(defclass ime (senn.im:ime
-               senn.win.stateful-ime:stateful)
+(defclass ime (senn.win.stateful-ime:ime)
   ())
 
-(defmethod senn.im:convert ((ime ime)
-                            (pron string)
-                            &key 1st-boundary-index)
+(defmethod senn.im.ime:convert ((ime ime) (pron string)
+                                &key 1st-boundary-index)
   (declare (ignore 1st-boundary-index))
   (assert (string= pron "そら"))
-  (list (senn.segment:make-segment
+  (list (senn.im.segment:make-segment
          :pron "そら"
-         :candidates (list (senn.segment:make-candidate
+         :candidates (list (senn.im.segment:make-candidate
                             :form "空"
                             :origin nil))
          :current-index 0

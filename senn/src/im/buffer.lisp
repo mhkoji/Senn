@@ -1,14 +1,12 @@
-(defpackage :senn.buffer
+(defpackage :senn.im.buffer
   (:use :cl)
   (:export :make-buffer
            :buffer-cursor-pos
            :buffer-string
            :insert-char
            :delete-char
-           :move-cursor-pos)
-  (:import-from :alexandria
-                :if-let))
-(in-package :senn.buffer)
+           :move-cursor-pos))
+(in-package :senn.im.buffer)
 
 (defstruct buffer
   (string "")
@@ -35,22 +33,22 @@
                                                      (subseq string pos))
                                 :cursor-pos (1+ pos))
                    (let ((substr-ending-at-pos
-                           (concatenate
-                            'string
-                            (subseq string (- pos diff-from-pos) pos)
-                            (string char))))
-                     (if-let ((hiragana (senn.ja:romaji->hiragana
-                                         substr-ending-at-pos)))
-                       (make-buffer
-                        :string
-                        (concatenate
-                         'string
-                         (subseq string 0 (- pos diff-from-pos))
-                         hiragana
-                         (subseq string pos))
-                        :cursor-pos (+ (- pos diff-from-pos)
-                                       (length hiragana)))
-                       (try-insertion (1- diff-from-pos)))))))
+                          (concatenate 'string
+                           (subseq string (- pos diff-from-pos) pos)
+                           (string char))))
+                     (let ((hiragana
+                            (senn.ja:romaji->hiragana
+                             substr-ending-at-pos)))
+                       (if hiragana
+                           (make-buffer
+                            :string
+                            (concatenate 'string
+                             (subseq string 0 (- pos diff-from-pos))
+                             hiragana
+                             (subseq string pos))
+                            :cursor-pos (+ (- pos diff-from-pos)
+                                           (length hiragana)))
+                           (try-insertion (1- diff-from-pos))))))))
       (try-insertion (min pos 4)))))
 
 
