@@ -3,10 +3,12 @@
   (:use :cl)
   (:export :convert
            :lookup
+           :close-mixin
            :run-engine
            :kill-engine
            :with-engine
-           :make-engine-runner))
+           :make-engine-runner
+           :make-engine-store))
 (in-package :senn.im.mixin.engine)
 
 (defstruct engine-runner
@@ -54,7 +56,8 @@
       (make-engine :process p)))
 
   (defun kill-engine (engine)
-    (sb-ext:process-kill (engine-process engine) 9)))
+    (ignore-errors
+      (sb-ext:process-kill (engine-process engine) 9))))
 
 ;;;
 
@@ -76,13 +79,24 @@
       (make-engine :stream stream :process process)))
 
   (defun kill-engine (engine)
-    (ext:terminate-process (engine-process engine) t))
+    (let ((process (engine-process engine)))
+      (ext:terminate-process process t)
+      ;; Wait the process to finish to prevent it from becoming a zombie.
+      (ext:external-process-wait process t)))
 
   (defun engine-send-recv (engine line)
     (let ((stream (engine-stream engine)))
       (write-line line stream)
       (force-output stream)
       (read stream nil nil nil))))
+
+(defstruct engine-store engine engine-runner)
+
+(defun engine-store-rerun (engine-store)
+  (with-accessors ((engine engine-store-engine)
+                   (runner engine-store-engine-runner)) engine-store
+    (kill-engine engine)
+    (setf engine (run-engine runner))))
 
 ;;;
 
@@ -127,40 +141,53 @@
                                   :origin origin))
                :current-index 0
                :has-more-candidates-p t)))
-          (handler-case
-              (cdr (engine-convert engine pron))
-            (error ()
-              (list (list pron pron :um))))))
+          (cdr (engine-convert engine pron))))
 
 (defun lookup (engine pron)
-  (handler-case
-      (mapcar (lambda (cand)
-                (destructuring-bind (form origin) (cdr cand)
-                  (senn.segment:make-candidate
-                   :form form
-                   :origin origin)))
-              (engine-list-candidate engine pron))
-    (error ()
-      (list (senn.segment:make-candidate :form pron :origin :um)))))
+  (mapcar (lambda (cand)
+            (destructuring-bind (form origin) (cdr cand)
+              (senn.segment:make-candidate
+               :form form
+               :origin origin)))
+          (engine-list-candidate engine pron)))
 
 ;;;
 
 (defclass convert ()
-  ((engine-impl
-    :initarg :convert-engine-impl
-    :reader convert-engine-impl)))
+  ((engine-store
+    :initarg :engine-store
+    :reader engine-store)))
 
 (defmethod senn.im:convert ((mixin convert) (pron string)
                             &key 1st-boundary-index)
   (declare (ignore 1st-boundary-index))
-  (convert (convert-engine-impl mixin) pron))
+  (with-accessors ((engine-store engine-store)) mixin
+    (handler-case (convert (engine-store-engine engine-store) pron)
+      (error ()
+        (engine-store-rerun engine-store)
+        (list (senn.segment:make-segment
+               :pron pron
+               :candidates (list (senn.segment:make-candidate
+                                  :form pron :origin :um))
+               :current-index 0
+               :has-more-candidates-p t))))))
 
 (defclass lookup ()
-  ((engine-impl
-    :initarg :lookup-engine-impl
-    :reader lookup-engine-impl)))
+  ((engine-store
+    :initarg :eingine-store
+    :reader engine-store)))
 
 (defmethod senn.im:lookup ((mixin lookup) (pron string)
                            &key prev next)
   (declare (ignore next prev))
-  (lookup (lookup-engine-impl mixin) pron))
+  (with-accessors ((engine-store engine-store)) mixin
+    (handler-case (lookup (engine-store-engine engine-store) pron)
+      (error ()
+        (engine-store-rerun engine-store)
+        nil))))
+
+(defun close-mixin (mixin)
+  ;; Which engine-store method (convert or lookup) is called doesn't matter
+  ;; when mixin is an instance of the convert and lookup classes.
+  ;; Whichever method can work well because the convert and lookup classes share the same instance because the slot name is the same.
+  (kill-engine (engine-store-engine (engine-store mixin))))
