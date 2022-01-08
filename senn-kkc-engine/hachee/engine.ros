@@ -11,7 +11,7 @@ exec ros -Q -- $0 "$@"
 (defpackage :ros.script.engine.3847071133
   (:use :cl))
 (in-package :ros.script.engine.3847071133)
-(ql:quickload :senn-kkc-hachee)
+(ql:quickload :senn-kkc-engine-hachee)
 
 (defun main (&rest argv)
   (declare (ignorable argv))

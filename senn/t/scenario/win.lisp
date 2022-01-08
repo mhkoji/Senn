@@ -12,8 +12,7 @@
   (list (senn.im.segment:make-segment
          :pron "そら"
          :candidates (list (senn.im.segment:make-candidate
-                            :form "空"
-                            :origin nil))
+                            :form "空"))
          :current-index 0
          :has-more-candidates-p t)))
 

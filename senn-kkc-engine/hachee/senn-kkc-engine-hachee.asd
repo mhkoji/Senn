@@ -2,4 +2,5 @@
   :serial t
   :components
   ((:file "engine"))
-  :depends-on (:hachee-kkc))
+  :depends-on (:hachee-kkc
+               :jsown))
