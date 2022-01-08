@@ -57,7 +57,7 @@
 
   (defun kill-engine (engine)
     (ignore-errors
-     (sb-ext:process-kill (engine-process engine) 9))))
+      (sb-ext:process-kill (engine-process engine) 9))))
 
 ;;;
 
@@ -80,7 +80,7 @@
 
   (defun kill-engine (engine)
     (ignore-errors
-     (ext:terminate-process (engine-process engine) t)))
+      (ext:terminate-process (engine-process engine) t)))
 
   (defun engine-send-recv (engine line)
     (let ((stream (engine-stream engine)))
