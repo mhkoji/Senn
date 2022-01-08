@@ -1,13 +1,18 @@
 (asdf:defsystem :senn-win
   :serial t
-  :pathname "src/win"
+  :pathname "src"
   :components
-  ((:file "keys")
+  ((:file "im/kkc/hachee")
+   (:module :win
+    :pathname "win"
+    :components
+    ((:file "keys")
+     (:file "im/ime")
+     (:file "im/process-input")
+     (:file "im/can-process")
+     (:file "stateful-ime")
+     (:file "server"))))
+  :depends-on (:jsown
+               :hachee-kkc
+               :senn))
 
-   (:file "im/ime")
-   (:file "im/process-input")
-   (:file "im/can-process")
-   (:file "stateful-ime")
-   (:file "server"))
-  :depends-on (:senn
-               :jsown))

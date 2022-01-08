@@ -1,9 +1,10 @@
 (in-package :senn.lib.fcitx)
 
 (defun make-ime (engine-path)
-  (senn.fcitx.stateful-ime:make-engine-ime
-   (senn.im.mixin.engine:make-engine-runner :program engine-path)))
+  (let ((runner (senn.im.kkc.engine:make-engine-runner
+                 :program engine-path)))
+    (senn.fcitx.stateful-ime-engine:make-ime runner)))
 
 (defun close-ime (ime)
   (log:info "IME closing...")
-  (senn.fcitx.stateful-ime:close-engine-ime ime))
+  (senn.fcitx.stateful-ime-engine:close-ime ime))

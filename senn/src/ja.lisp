@@ -1,8 +1,18 @@
 ;; Process-input like names are more appropriate?
 (defpackage :senn.ja
   (:use :cl)
-  (:export :romaji->hiragana))
+  (:export :hiragana->katakana
+           :romaji->hiragana))
 (in-package :senn.ja)
+
+(defun hiragana->katakana (string)
+  (labels ((htok (c)
+             (let ((code (char-code c))
+                   (diff #.(- (char-code #\ア) (char-code #\あ))))
+               (if (<= #.(char-code #\ぁ) code #.(char-code #\ゖ))
+                   (code-char (+ code diff))
+                   c))))
+    (map 'string #'htok string)))
 
 (let ((rules
        '(("a" "あ") ("i" "い") ("u" "う") ("e" "え") ("o" "お")

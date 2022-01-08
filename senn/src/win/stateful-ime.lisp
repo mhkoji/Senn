@@ -1,15 +1,15 @@
 (defpackage :senn.win.stateful-ime
   (:use :cl)
-  (:export :ime-state
+  (:export :ime
+           :make-initial-state
            :get-input-mode
            :toggle-input-mode
            :can-process
            :process-input
 
-           :stateful
-           :make-initial-state
-           :make-ime
-           :make-engine-ime))
+           :hachee-make-ime
+           :engine-make-ime
+           :engine-close-ime))
 (in-package :senn.win.stateful-ime)
 
 (defstruct history
@@ -23,13 +23,13 @@
 
 (defun history-apply (history segs)
   (mapcar (lambda (seg)
-            (let* ((pron (senn.segment:segment-pron seg))
+            (let* ((pron (senn.im.segment:segment-pron seg))
                    (history-form (history-get-form history pron)))
               (if (not history-form)
                   seg
-                  (senn.segment:make-segment
+                  (senn.im.segment:make-segment
                    :pron pron
-                   :candidates (list (senn.segment:make-candidate
+                   :candidates (list (senn.im.segment:make-candidate
                                       :form history-form
                                       :origin :history))
                    :current-index 0
@@ -93,69 +93,56 @@
           (dolist (seg committed-segments)
             (history-put
              history
-             (senn.segment:segment-pron seg)
-             (senn.segment:segment-current-form seg))))
+             (senn.im.segment:segment-pron seg)
+             (senn.im.segment:segment-current-form seg))))
         (format nil "~A ~A~%"
                 (if (and can-process view) 1 0)
                 (or view ""))))))
 
 ;;;
-   
-(defclass effected-ime (senn.im:ime)
-  ((kkc
-    :initarg :kkc
-    :reader effected-ime-kkc)))
 
-(defmethod senn.im:convert ((ime effected-ime) (pron string)
-                            &key 1st-boundary-index)
-  (with-accessors ((kkc effected-ime-kkc)
-                   (state ime-state)) ime
-    (let ((kkc-convert (hachee.kkc:make-kkc-convert
-                        :kkc kkc
-                        :extended-dictionary
-                        (state-extended-dictionary state))))
-      (let ((segs (senn.im.mixin.hachee:convert
-                   kkc-convert pron
-                   :1st-boundary-index 1st-boundary-index)))
-        (history-apply (state-history state) segs)))))
-
-(defmethod senn.im:lookup ((ime effected-ime) (pron string)
-                           &key next prev)
-  (with-accessors ((kkc effected-ime-kkc)) ime
-    (senn.im.mixin.hachee:lookup kkc pron :next next :prev prev)))
-
-(defmethod senn.im:predict append ((ime effected-ime) (pron string))
-  (list pron))
-
-;;;
-
-(defclass stateful ()
+(defclass ime (senn.im.ime:ime)
   ((state :initarg :state)))
 
-(defmethod ime-state ((ime stateful))
+(defmethod ime-state ((ime ime))
   (slot-value ime 'state))
 
-;;;
-
-(defclass stateful-effected-ime (stateful
-                                 effected-ime)
-  ())
-
-(defun make-ime (kkc state)
-  (make-instance 'stateful-effected-ime
-                 :kkc kkc
-                 :state state))
+(defmethod senn.im.ime:convert ((ime ime) (pron string)
+                                &key 1st-boundary-index)
+  (declare (ignore 1st-boundary-index))
+  (let ((segs (call-next-method)))
+    (history-apply (state-history (ime-state ime)) segs)))
 
 ;;;
 
-(defclass stateful-engine-ime (stateful
-                               senn.im:ime
-                               senn.im.mixin.engine:convert
-                               senn.im.mixin.engine:lookup)
+(defclass stateful-hachee-ime (ime
+                               senn.im.kkc.hachee:convert
+                               senn.im.kkc.hachee:lookup
+                               senn.im.predict.katakana:predict)
   ())
 
-(defun make-engine-ime (engine state)
+(defmethod senn.im.kkc.hachee:mixin-extended-dictionary
+    ((ime stateful-hachee-ime))
+  (state-extended-dictionary (ime-state ime)))
+
+(defun hachee-make-ime (kkc)
+  (let ((state (make-initial-state)))
+    (make-instance 'stateful-hachee-ime :kkc kkc :state state)))
+
+;;;
+
+(defclass stateful-effected-ime (ime
+                                 senn.im.kkc.engine:convert
+                                 senn.im.kkc.engine:lookup)
+  ())
+
+(defun engine-make-ime (engine-runner)
   (make-instance 'stateful-engine-ime
-                 :convert-engine-impl engine
-                 :lookup-engine-impl engine
-                 :state state))
+   :state (make-initial-state)
+   :engine-store (senn.im.kkc.engine:make-engine-store
+                  :engine (senn.im.kkc.engine:run-engine
+                           engine-runner)
+                  :engine-runner engine-runner)))
+
+(defun engine-close-ime (ime)
+  (senn.im.kkc.engine:close-mixin ime))

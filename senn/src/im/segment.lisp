@@ -1,4 +1,4 @@
-(defpackage :senn.segment
+(defpackage :senn.im.segment
   (:use :cl)
   (:export :candidate
            :candidate-form
@@ -17,7 +17,7 @@
            :append-forms!
            :try-move-cursor-pos!
            :try-set-cursor-pos!))
-(in-package :senn.segment)
+(in-package :senn.im.segment)
 
 (defstruct candidate
   form
@@ -37,7 +37,7 @@
 
 (defun segment-current-form (s)
   (if (segment-shows-katakana-p s)
-      (hachee.ja:hiragana->katakana (segment-pron s))
+      (senn.ja:hiragana->katakana (segment-pron s))
       (candidate-form (elt (segment-candidates s)
                            (segment-current-index s)))))
 

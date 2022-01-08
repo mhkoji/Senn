@@ -8,12 +8,12 @@ exec ros -Q -- $0 "$@"
   #+quicklisp(ql:quickload '() :silent t)
   )
 
-(defpackage :ros.script.kkc-engine.3847071133
+(defpackage :ros.script.engine.3847071133
   (:use :cl))
-(in-package :ros.script.kkc-engine.3847071133)
-(ql:quickload :senn-bin-kkc-engine)
+(in-package :ros.script.engine.3847071133)
+(ql:quickload :senn-kkc-hachee)
 
 (defun main (&rest argv)
   (declare (ignorable argv))
-  (senn.bin.kkc-engine:main))
+  (senn-kkc-engine.hachee:main))
 ;;; vim: set ft=lisp lisp:

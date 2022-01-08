@@ -15,19 +15,7 @@
      (:file "freq")
      (:file "n-gram")))
 
-   (:module :ja
-    :pathname "ja"
-    :components
-    ((:file "ja")))
-
-   (:module :ipc
-    :pathname "ipc"
-    :components
-    ((:file "op")
-     #+linux
-     (:file "unix")
-     #+win32
-     (:file "named-pipe")))
+   (:file "ja")
 
    (:module :kkc
     :pathname "kkc/cl"
@@ -51,8 +39,5 @@
                :bordeaux-threads
                :cl-ppcre
                :flexi-streams
-               :jsown
                :log4cl
-               #+win32
-               :win32
                :zip))

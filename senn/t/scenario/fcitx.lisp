@@ -18,8 +18,7 @@
                 ("committed-input"  committed-input))))
     (format nil "EDITING ~A" (jsown:to-json json))))
 
-(defclass ime (senn.im:ime
-               senn.fcitx.stateful-ime:stateful)
+(defclass ime (senn.fcitx.stateful-ime:ime)
   ())
 
 (defun make-ime ()

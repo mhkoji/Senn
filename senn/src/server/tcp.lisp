@@ -10,13 +10,13 @@
              (client-id ,client)
              ,@args))
 
-(defmethod senn.server:read-request ((client client))
+(defmethod senn.server:client-read-line ((client client))
   (let ((stream (usocket:socket-stream (client-usocket client))))
     (let ((line (read-line stream nil nil nil)))
       (log/info client "Read: ~A" line)
       line)))
 
-(defmethod senn.server:send-response ((client client) resp)
+(defmethod senn.server:client-send-line ((client client) resp)
   (let ((stream (usocket:socket-stream (client-usocket client))))
     (write-line resp stream)
     (force-output stream)

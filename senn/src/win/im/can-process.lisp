@@ -5,19 +5,23 @@
 
 (defgeneric execute (ime state mode key))
 
-(defmethod execute ((ime senn.im:ime) (s editing) (mode (eql :direct))
+(defmethod execute ((ime senn.im.ime:ime) (s editing)
+                    (mode (eql :direct))
                     (key senn.win.keys:key))
   t)
 
-(defmethod execute ((ime senn.im:ime) (s converting) (mode (eql :direct))
+(defmethod execute ((ime senn.im.ime:ime) (s converting)
+                    (mode (eql :direct))
                     (key senn.win.keys:key))
   t)
 
-(defmethod execute ((ime senn.im:ime) (s t) (mode (eql :direct))
+(defmethod execute ((ime senn.im.ime:ime) (s t)
+                    (mode (eql :direct))
                     (key senn.win.keys:key))
   nil)
 
-(defmethod execute ((ime senn.im:ime) (s converting) (mode (eql :hiragana))
+(defmethod execute ((ime senn.im.ime:ime) (s converting)
+                    (mode (eql :hiragana))
                     (key senn.win.keys:key))
   (cond ((senn.win.keys:enter-p key) t)
         ((or (senn.win.keys:space-p key)
@@ -28,7 +32,8 @@
         ((senn.win.keys:right-p key) t)
         (t nil)))
 
-(defmethod execute ((ime senn.im:ime) (s editing) (mode (eql :hiragana))
+(defmethod execute ((ime senn.im.ime:ime) (s editing)
+                    (mode (eql :hiragana))
                     (key senn.win.keys:key))
   (cond ((senn.win.keys:oem-minus-p key) t)
         ((senn.win.keys:oem-7-p key) t)
@@ -45,11 +50,11 @@
         ((senn.win.keys:number-p key) t)
         ((senn.win.keys:alphabet-p key) t)
         ((senn.win.keys:backspace-p key)
-         (let ((pron (senn.buffer:buffer-string (editing-buffer s))))
+         (let ((pron (senn.im.buffer:buffer-string (editing-buffer s))))
            ;; IMEが文字を削除していない -> OSに文字を削除してもらう
            (not (string= pron ""))))
         ((senn.win.keys:space-p key)
-         (let ((pron (senn.buffer:buffer-string (editing-buffer s))))
+         (let ((pron (senn.im.buffer:buffer-string (editing-buffer s))))
            (not (string= pron ""))))
         ((senn.win.keys:enter-p key) t)
         (t nil)))

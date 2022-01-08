@@ -1,4 +1,4 @@
-(defpackage :hachee.ipc.named-pipe
+(defpackage :senn.ipc.named-pipe
   (:use :cl)
   (:export :create
            :connect
@@ -6,7 +6,7 @@
 
            :read-file
            :write-file))
-(in-package :hachee.ipc.named-pipe)
+(in-package :senn.ipc.named-pipe)
 
 (defun h= (handle1 handle2)
   (= (cffi:pointer-address handle1)

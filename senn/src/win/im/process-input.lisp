@@ -7,11 +7,11 @@
   (format nil "~A~A" #\Return #\Newline))
 
 (defun move-segment-form-index! (seg diff ime)
-  (senn.im:append-candidates ime seg)
-  (senn.segment:try-move-cursor-pos! seg diff))
+  (senn.im.ime:segment-append-candidates! ime seg)
+  (senn.im.segment:try-move-cursor-pos! seg diff))
 
 (defun buffer-empty-p (buffer)
-  (string= (senn.buffer:buffer-string buffer) ""))
+  (string= (senn.im.buffer:buffer-string buffer) ""))
 
 
 (defun converting-move-curret-segment (c diff)
@@ -26,7 +26,7 @@
 
 (defun converting-current-input (c)
   (format nil "~{~A~}"
-          (mapcar #'senn.segment:segment-current-form
+          (mapcar #'senn.im.segment:segment-current-form
                   (converting-segments c))))
 
 ;;; view
@@ -34,7 +34,7 @@
 ;; May be viewed as the side-effect to the system by process-input
 (defun editing-view (editing-state)
   (let ((json (jsown:new-js
-                ("input" (senn.buffer:buffer-string
+                ("input" (senn.im.buffer:buffer-string
                           (editing-buffer editing-state)))
                 ("predictions" (editing-predictions editing-state)))))
     (format nil "EDITING ~A" (jsown:to-json json))))
@@ -44,7 +44,7 @@
          (jsown:to-json
           (jsown:new-js
            ("forms"
-            (mapcar #'senn.segment:segment-current-form
+            (mapcar #'senn.im.segment:segment-current-form
                     (converting-segments converting-state)))
            ("cursor-form-index"
             (converting-current-segment-index converting-state))
@@ -52,11 +52,11 @@
             (let ((segment (converting-current-segment converting-state)))
               (jsown:new-js
                ("candidates"
-                (if (senn.segment:segment-has-more-candidates-p segment)
+                (if (senn.im.segment:segment-has-more-candidates-p segment)
                     nil
-                    (senn.segment:segment-forms segment)))
+                    (senn.im.segment:segment-forms segment)))
                ("candidate-index"
-                (senn.segment:segment-current-index segment)))))))))
+                (senn.im.segment:segment-current-index segment)))))))))
     (format nil "CONVERTING ~A" json-string)))
 
 (defun committed-view (string)
@@ -76,20 +76,20 @@
         :state state
         :committed-segments committed-segments))
 
-(defmethod execute ((ime senn.im:ime) (s editing) (mode (eql :direct))
+(defmethod execute ((ime senn.im.ime:ime) (s editing) (mode (eql :direct))
                     (key senn.win.keys:key))
   (result t (editing-view s)))
 
-(defmethod execute ((ime senn.im:ime) (s converting) (mode (eql :direct))
+(defmethod execute ((ime senn.im.ime:ime) (s converting) (mode (eql :direct))
                     (key senn.win.keys:key))
   (result t (converting-view s)))
 
-(defmethod execute ((ime senn.im:ime) (s t) (mode (eql :direct))
+(defmethod execute ((ime senn.im.ime:ime) (s t) (mode (eql :direct))
                     (key senn.win.keys:key))
   (result nil nil))
 
 
-(defmethod execute ((ime senn.im:ime) (s converting) (mode (eql :hiragana))
+(defmethod execute ((ime senn.im.ime:ime) (s converting) (mode (eql :hiragana))
                     (key senn.win.keys:key))
   (cond ((senn.win.keys:enter-p key)
          (let ((view (committed-view (converting-current-input s)))
@@ -121,13 +121,13 @@
 
 (defun editing-insert-char (state char)
   (with-accessors ((buffer editing-buffer)) state
-    (setf buffer (senn.buffer:insert-char buffer char))))
+    (setf buffer (senn.im.buffer:insert-char buffer char))))
 
 (defun editing-update-predictions (state ime)
-  (let ((input (senn.buffer:buffer-string (editing-buffer state))))
-    (setf (editing-predictions state) (senn.im:predict ime input))))
+  (let ((input (senn.im.buffer:buffer-string (editing-buffer state))))
+    (setf (editing-predictions state) (senn.im.ime:predict ime input))))
 
-(defmethod execute ((ime senn.im:ime) (s editing) (mode (eql :hiragana))
+(defmethod execute ((ime senn.im.ime:ime) (s editing) (mode (eql :hiragana))
                     (key senn.win.keys:key))
   (cond ((senn.win.keys:oem-minus-p key)
          (editing-insert-char
@@ -217,20 +217,20 @@
          (result t (editing-view s) :state s))
 
         ((senn.win.keys:backspace-p key)
-         (let ((pron (senn.buffer:buffer-string (editing-buffer s))))
+         (let ((pron (senn.im.buffer:buffer-string (editing-buffer s))))
            (if (string/= pron "")
                (progn
                  (with-accessors ((buffer editing-buffer)) s
-                   (setf buffer (senn.buffer:delete-char buffer)))
+                   (setf buffer (senn.im.buffer:delete-char buffer)))
                  (editing-update-predictions s ime)
                  (result t (editing-view s) :state s))
                ;; IMEが文字を削除していない -> OSに文字を削除してもらう
                (result nil nil))))
 
         ((senn.win.keys:space-p key)
-         (let ((pron (senn.buffer:buffer-string (editing-buffer s))))
+         (let ((pron (senn.im.buffer:buffer-string (editing-buffer s))))
            (if (string/= pron "")
-               (let ((segments (senn.im:convert ime pron)))
+               (let ((segments (senn.im.ime:convert ime pron)))
                  (let ((converting (make-converting
                                     :segments segments
                                     :pronunciation pron)))
@@ -243,7 +243,7 @@
            (let ((view (committed-view
                         (if (buffer-empty-p buffer)
                             +crlf+
-                            (senn.buffer:buffer-string buffer)))))
+                            (senn.im.buffer:buffer-string buffer)))))
              (result t view :state (make-editing)))))
 
         (t

@@ -1,12 +1,12 @@
 ;;; Unix domain socket for IPC
-(defpackage :hachee.ipc.unix
+(defpackage :senn.ipc.unix
   (:use :cl)
   (:export :socket-listen
            :socket-accept
            :socket-close
            :socket-stream
            :connect-abstract-to))
-(in-package :hachee.ipc.unix)
+(in-package :senn.ipc.unix)
 
 (defstruct server-socket socket)
 

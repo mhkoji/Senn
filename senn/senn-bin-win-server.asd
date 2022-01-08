@@ -1,6 +1,6 @@
-(asdf:defsystem :senn-bin-win-server-tcp
+(asdf:defsystem :senn-bin-win-server
   :serial t
   :components
-  ((:file "src/bin/win-server-tcp"))
+  ((:file "src/bin/win-server"))
   :depends-on (:senn-win
                :senn-server-tcp))
