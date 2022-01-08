@@ -3,10 +3,12 @@
   (:use :cl)
   (:export :convert
            :lookup
+           :close-mixin
            :run-engine
            :kill-engine
            :with-engine
-           :make-engine-runner))
+           :make-engine-runner
+           :make-engine-store))
 (in-package :senn.im.mixin.engine)
 
 (defstruct engine-runner
@@ -86,6 +88,14 @@
       (force-output stream)
       (read stream nil nil nil))))
 
+(defstruct engine-store engine engine-runner)
+
+(defun engine-store-rerun (engine-store)
+  (with-accessors ((engine engine-store-engine)
+                   (runner engine-store-engine-runner)) engine-store
+    (kill-engine engine)
+    (setf engine (run-engine runner))))
+
 ;;;
 
 (defun engine-convert (engine pron)
@@ -142,22 +152,17 @@
 ;;;
 
 (defclass convert ()
-  ((engine
-    :initarg :convert-engine
-    :accessor convert-engine)
-   (engine-runner
-    :initarg :convert-eingine-runner
-    :reader convert-engine-runner)))
+  ((engine-store
+    :initarg :engine-store
+    :reader engine-store)))
 
 (defmethod senn.im:convert ((mixin convert) (pron string)
                             &key 1st-boundary-index)
   (declare (ignore 1st-boundary-index))
-  (with-accessors ((engine convert-engine)
-                   (runner convert-engine-runner)) mixin
-    (handler-case (convert engine pron)
+  (with-accessors ((engine-store engine-store)) mixin
+    (handler-case (convert (engine-store-engine engine-store) pron)
       (error ()
-        (kill-engine engine)
-        (setf engine (run-engine runner))
+        (engine-store-rerun engine-store)
         (list (senn.segment:make-segment
                :pron pron
                :candidates (list (senn.segment:make-candidate
@@ -166,21 +171,21 @@
                :has-more-candidates-p t))))))
 
 (defclass lookup ()
-  ((engine
-    :initarg :lookup-engine
-    :accessor lookup-engine)
-   (engine-runner
-    :initarg :lookup-eingine-runner
-    :reader lookup-engine-runner)))
+  ((engine-store
+    :initarg :eingine-store
+    :reader engine-store)))
 
 (defmethod senn.im:lookup ((mixin lookup) (pron string)
                            &key prev next)
   (declare (ignore next prev))
-  (with-accessors ((engine lookup-engine)
-                   (runner lookup-engine-runner)) mixin
-    (handler-case (lookup engine pron)
+  (with-accessors ((engine-store engine-store)) mixin
+    (handler-case (lookup (engine-store-engine engine-store) pron)
       (error ()
-        (kill-engine engine)
-        (setf engine (run-engine runner))
-        (list (senn.segment:make-candidate
-               :form pron :origin :um))))))
+        (engine-store-rerun engine-store)
+        nil))))
+
+(defun close-mixin (mixin)
+  ;; Which engine-store method (convert or lookup) is called doesn't matter
+  ;; when mixin is an instance of the convert and lookup classes.
+  ;; Whichever method can work well because the convert and lookup classes share the same instance because the slot name is the same.
+  (kill-engine (engine-store-engine (engine-store mixin))))
