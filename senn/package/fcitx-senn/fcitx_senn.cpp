@@ -8,7 +8,6 @@
 #include <fcitx/instance.h>
 
 #include "fcitx/im/stateful_ime_ecl.h"
-#include "process/process.h"
 // #include "fcitx/im/stateful_ime_socket.h"
 // #include "fcitx/im/stateful_ime_sbcl.h"
 
