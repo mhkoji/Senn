@@ -6,7 +6,6 @@
            :close-mixin
            :run-engine
            :kill-engine
-           :with-engine
            :make-engine-runner
            :make-engine-store))
 (in-package :senn.im.kkc.engine)
@@ -19,27 +18,12 @@
   (defstruct engine
     process)
 
-  (defun engine-convert (engine pron)
-    (let ((p (engine-process engine)))
-      (let ((input (sb-ext:process-input p)))
-        (write-line (format nil "CONVERT ~A" pron) input)
-        (force-output input))
-      (let ((exp (read (sb-ext:process-output p) nil nil nil)))
-        (destructuring-bind (logp . segs) exp
-          (cons logp
-                (mapcar (lambda (seg)
-                          (destructuring-bind (form pron orig) seg
-                            (list (symbol-name form)
-                                  (symbol-name pron)
-                                  (alexandria:make-keyword orig))))
-                        segs))))))
-
   (defun engine-send-recv (engine line)
     (let ((p (engine-process engine)))
       (let ((input (sb-ext:process-input p)))
         (write-line line input)
         (force-output input))
-      (read (sb-ext:process-output p) nil nil nil)))
+      (read-line (sb-ext:process-output p) nil nil nil)))
 
   (defun run-engine (runner)
     (let ((p (sb-ext:run-program
@@ -88,7 +72,13 @@
     (let ((stream (engine-stream engine)))
       (write-line line stream)
       (force-output stream)
-      (read stream nil nil nil))))
+      (read-line stream nil nil nil))))
+
+
+(defun engine-req (engine jsown)
+  (let ((line (jsown:to-json jsown)))
+    (jsown:parse (engine-send-recv engine line))))
+
 
 (defstruct engine-store engine engine-runner)
 
@@ -100,54 +90,36 @@
 
 ;;;
 
-(defun engine-convert (engine pron)
-  (let ((exp (engine-send-recv
-              engine
-              (format nil "CONVERT ~A" pron))))
-    (destructuring-bind (logp . segs) exp
-      (cons logp
-            (mapcar (lambda (seg)
-                      (destructuring-bind (form pron orig) seg
-                        (list (symbol-name form)
-                              (symbol-name pron)
-                              (alexandria:make-keyword orig))))
-                    segs)))))
-
-(defun engine-list-candidate (engine pron)
-  (let ((cands (engine-send-recv
-                engine
-                (format nil "LIST_CANDIDATE ~A" pron))))
-    (mapcar (lambda (cand)
-              (destructuring-bind (logp form orig) cand
-                (list logp
-                      (symbol-name form)
-                      (alexandria:make-keyword orig))))
-            cands)))
-
-(defmacro with-engine ((engine runner) &body body)
-  `(let ((,engine (run-engine ,runner)))
-     (unwind-protect (progn ,@body)
-       (kill-engine ,engine))))
-
-
-
 (defun convert (engine pron)
-  (mapcar (lambda (seg)
-            (destructuring-bind (form pron origin) seg
-              (senn.im.segment:make-segment
-               :pron pron
-               :candidates (list (senn.im.segment:make-candidate
-                                  :form form))
-               :current-index 0
-               :has-more-candidates-p t)))
-          (cdr (engine-convert engine pron))))
+  (let ((j-segs (engine-req
+                 engine
+                 (jsown:new-js
+                   ("op" :convert)
+                   ("args" (jsown:new-js
+                             ("pron" pron)))))))
+    (mapcar (lambda (j-seg)
+              (let ((form (jsown:val j-seg "form"))
+                    (pron (jsown:val j-seg "pron")))
+                (senn.im.segment:make-segment
+                 :pron pron
+                 :candidates (list (senn.im.segment:make-candidate
+                                    :form form))
+                 :current-index 0
+                 :has-more-candidates-p t)))
+            j-segs)))
 
 (defun lookup (engine pron)
-  (mapcar (lambda (cand)
-            (destructuring-bind (form origin) (cdr cand)
-              (senn.im.segment:make-candidate
-               :form form)))
-          (engine-list-candidate engine pron)))
+  (let ((j-cands (engine-req
+                  engine
+                  (jsown:new-js
+                    ("op" :lookup)
+                    ("args" (jsown:new-js
+                              ("pron" pron)))))))
+    (mapcar (lambda (j-cand)
+              (let ((form (jsown:val j-cand "form")))
+                (senn.im.segment:make-candidate
+                 :form form)))
+            j-cands)))
 
 ;;;
 
