@@ -1,9 +1,9 @@
 (defpackage :senn.im.predict.katakana
   (:use :cl)
-  (:export :predict))
+  (:export :predictor))
 (in-package :senn.im.predict.katakana)
 
-(defclass predict () ())
+(defclass predictor () ())
 
-(defmethod senn.im.ime:predict append ((mixin predict) (string string))
+(defmethod senn.im.predict:execute append ((mixin predictor) (string string))
   (list (senn.ja:hiragana->katakana string)))

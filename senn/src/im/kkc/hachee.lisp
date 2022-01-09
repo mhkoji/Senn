@@ -1,9 +1,10 @@
 ;; convert/lookup depending on hachee kkc
 (defpackage :senn.im.kkc.hachee
   (:use :cl)
-  (:export :convert
+  (:export :mixin
+           :convert
            :lookup
-           :mixin
+           :kkc
            :mixin-extended-dictionary
            :build-kkc))
 (in-package :senn.im.kkc.hachee)
@@ -43,15 +44,15 @@
 (defclass mixin ()
   ((kkc
     :initarg :kkc
-    :reader mixin-kkc)))
-
-(defgeneric mixin-extended-dictionary (mixin)
-  (:method ((mixin t))
-    nil))
+    :reader mixin-kkc)
+   (exteded-dictionary
+    :initarg :extended-dictionary
+    :initform nil
+    :reader mixin-extended-dictionary)))
 
 (defclass convert (mixin) ())
 
-(defmethod senn.im.ime:convert ((mixin convert) (pron string)
+(defmethod senn.im.kkc:convert ((mixin convert) (pron string)
                                 &key 1st-boundary-index)
   (let ((ex-dict (mixin-extended-dictionary mixin)))
     (convert (if ex-dict
@@ -64,7 +65,11 @@
 
 (defclass lookup (mixin) ())
 
-(defmethod senn.im.ime:lookup ((mixin lookup) (pron string)
+(defmethod senn.im.kkc:lookup ((mixin lookup) (pron string)
                                    &key prev next)
   (lookup (mixin-kkc mixin) pron
           :next next :prev prev))
+
+
+(defclass kkc (convert lookup)
+  ())

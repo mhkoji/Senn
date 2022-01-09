@@ -1,23 +1,33 @@
 (defpackage :senn.im.ime
   (:use :cl)
   (:export :ime
+           :ime-kkc
+           :ime-predictor
            :convert
-           :lookup
            :predict
            :segment-append-candidates!))
 (in-package :senn.im.ime)
 
 (defclass ime () ())
 
-(defgeneric convert (ime pron &key 1st-boundary-index))
+(defgeneric ime-kkc (ime))
 
-(defgeneric lookup (ime pron &key prev next))
-
-(defgeneric predict (ime string)
-  (:method-combination append)
-  (:method append ((ime t) (string t))
-    ;; returns no predictions
+(defgeneric ime-predictor (ime)
+  (:method ((ime ime))
     nil))
+
+(defun convert (ime pron &key 1st-boundary-index)
+  (senn.im.kkc:convert (ime-kkc ime) pron
+                       :1st-boundary-index 1st-boundary-index))
+
+(defun lookup (ime pron &key prev next)
+  (senn.im.kkc:lookup (ime-kkc ime) pron :prev prev :next next))
+
+(defun predict (ime string)
+  (let ((predictor (ime-predictor ime)))
+    (when predictor
+      (senn.im.predict:execute predictor string))))
+
 
 (defun append-candidates (ime current-candidates pron)
   (labels ((exists-in-current-candidates-p (cand)
