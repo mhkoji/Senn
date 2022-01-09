@@ -131,6 +131,9 @@
    :kkc (slot-value ime 'kkc)
    :extended-dictionary (state-extended-dictionary (ime-state ime))))
 
+(defmethod senn.im.ime:ime-predictor ((ime stateful-hachee-ime))
+  (slot-value ime 'predictor))
+
 (defun hachee-make-ime (kkc)
   (let ((state (make-initial-state)))
     (make-instance 'stateful-hachee-ime :kkc kkc :state state)))
