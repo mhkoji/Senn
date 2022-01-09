@@ -85,7 +85,6 @@
 
 ;;;
 
-
 (defmethod senn.im.kkc.request:send-line ((agent engine) (line string))
   (engine-send-recv agent line))
 
