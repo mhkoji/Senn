@@ -16,3 +16,5 @@
 *.sx32fsl
 *.wx64fsl
 *.wx32fsl
+
+__pycache__
