@@ -5,10 +5,16 @@
 
 (defclass ime (senn.fcitx.stateful-ime:ime)
   ((hachee-kkc
-   :initarg :hachee-kkc)))
+   :initarg :hachee-kkc)
+   (predictor
+    :initform
+    (make-instance 'senn.im.predict.katakana:predictor))))
 
 (defmethod senn.im.ime:ime-kkc ((ime ime))
   (slot-value ime 'hachee-kkc))
+
+(defmethod senn.im.ime:ime-predictor ((ime ime))
+  (slot-value ime 'predictor))
 
 (defun make-ime (kkc)
   (make-instance 'ime
