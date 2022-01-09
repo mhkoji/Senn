@@ -75,12 +75,6 @@
       (force-output stream)
       (read-line stream nil nil nil))))
 
-
-(defun engine-req (engine jsown)
-  (let ((line (jsown:to-json jsown)))
-    (jsown:parse (engine-send-recv engine line))))
-
-
 (defstruct engine-store engine engine-runner)
 
 (defun engine-store-rerun (engine-store)
@@ -91,36 +85,9 @@
 
 ;;;
 
-(defun convert (engine pron)
-  (let ((j-segs (engine-req
-                 engine
-                 (jsown:new-js
-                   ("op" :convert)
-                   ("args" (jsown:new-js
-                             ("pron" pron)))))))
-    (mapcar (lambda (j-seg)
-              (let ((form (jsown:val j-seg "form"))
-                    (pron (jsown:val j-seg "pron")))
-                (senn.im.segment:make-segment
-                 :pron pron
-                 :candidates (list (senn.im.segment:make-candidate
-                                    :form form))
-                 :current-index 0
-                 :has-more-candidates-p t)))
-            j-segs)))
 
-(defun lookup (engine pron)
-  (let ((j-cands (engine-req
-                  engine
-                  (jsown:new-js
-                    ("op" :lookup)
-                    ("args" (jsown:new-js
-                              ("pron" pron)))))))
-    (mapcar (lambda (j-cand)
-              (let ((form (jsown:val j-cand "form")))
-                (senn.im.segment:make-candidate
-                 :form form)))
-            j-cands)))
+(defmethod senn.im.kkc.request:send-line ((agent engine) (line string))
+  (engine-send-recv agent line))
 
 ;;;
 
@@ -135,7 +102,9 @@
                                 &key 1st-boundary-index)
   (declare (ignore 1st-boundary-index))
   (with-accessors ((engine-store engine-store)) mixin
-    (handler-case (convert (engine-store-engine engine-store) pron)
+    (handler-case (senn.im.kkc.request:convert
+                   (engine-store-engine engine-store)
+                   pron)
       (error ()
         (engine-store-rerun engine-store)
         (list (senn.im.segment:make-segment
@@ -151,7 +120,9 @@
                                &key prev next)
   (declare (ignore next prev))
   (with-accessors ((engine-store engine-store)) mixin
-    (handler-case (lookup (engine-store-engine engine-store) pron)
+    (handler-case (senn.im.kkc.request:lookup
+                   (engine-store-engine engine-store)
+                   pron)
       (error ()
         (engine-store-rerun engine-store)
         nil))))

@@ -66,7 +66,7 @@
 (defclass lookup (mixin) ())
 
 (defmethod senn.im.kkc:lookup ((mixin lookup) (pron string)
-                                   &key prev next)
+                               &key prev next)
   (lookup (mixin-kkc mixin) pron
           :next next :prev prev))
 
