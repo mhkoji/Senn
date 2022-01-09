@@ -16,17 +16,19 @@
     :components
     ((:file "buffer")
      (:file "segment")
-     (:file "ime")
-     (:module :kkc
+     (:file "kkc")
+     (:module :im-kkc
       :pathname "kkc"
       :components
       ((:file "engine")))
-     (:module :predict
+     (:file "predict")
+     (:module :im-predict
       :pathname "predict"
       :components
       (#+nil
        (:file "prefix")
-       (:file "katakana"))))))
+       (:file "katakana")))
+     (:file "ime"))))
   :depends-on (:cl-trie
                :alexandria
                :jsown

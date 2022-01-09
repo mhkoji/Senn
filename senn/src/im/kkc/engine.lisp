@@ -3,6 +3,7 @@
   (:use :cl)
   (:export :convert
            :lookup
+           :kkc
            :close-mixin
            :run-engine
            :kill-engine
@@ -130,7 +131,7 @@
 
 (defclass convert (mixin-base) ())
 
-(defmethod senn.im.ime:convert ((mixin convert) (pron string)
+(defmethod senn.im.kkc:convert ((mixin convert) (pron string)
                                 &key 1st-boundary-index)
   (declare (ignore 1st-boundary-index))
   (with-accessors ((engine-store engine-store)) mixin
@@ -146,7 +147,7 @@
 
 (defclass lookup (mixin-base) ())
 
-(defmethod senn.im.ime:lookup ((mixin lookup) (pron string)
+(defmethod senn.im.kkc:lookup ((mixin lookup) (pron string)
                                &key prev next)
   (declare (ignore next prev))
   (with-accessors ((engine-store engine-store)) mixin
@@ -154,6 +155,9 @@
       (error ()
         (engine-store-rerun engine-store)
         nil))))
+
+(defclass kkc (convert lookup)
+  ())
 
 (defun close-mixin (mixin)
   (kill-engine (engine-store-engine (engine-store mixin))))

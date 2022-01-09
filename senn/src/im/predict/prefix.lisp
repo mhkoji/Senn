@@ -1,6 +1,6 @@
 (defpackage :senn.im.predict.prefix
   (:use :cl)
-  (:export :predict
+  (:export :predictor
            :load-dictionary))
 (in-package :senn.im.predict.prefix)
 
@@ -19,10 +19,10 @@
 
 ;;;
 
-(defclass predict ()
+(defclass predictor ()
   ((dictionary
-    :initarg :predict-prefix-dictionary
-    :reader predict-prefix-dictionary)))
+    :initarg :predictor-prefix-dictionary
+    :reader predictor-prefix-dictionary)))
 
-(defmethod senn.im.ime:predict append ((mixin predict) (string string))
-  (predict (predict-prefix-dictionary mixin) string))
+(defmethod senn.im.predict:execute append ((mixin predictor) (string string))
+  (predict (predictor-prefix-dictionary mixin) string))

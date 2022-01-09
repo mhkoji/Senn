@@ -106,23 +106,30 @@
 (defmethod ime-state ((ime ime))
   (slot-value ime 'state))
 
-(defmethod senn.im.ime:convert ((ime ime) (pron string)
+;;;
+
+(defclass hachee-kkc (senn.im.kkc.hachee:kkc)
+  ((history
+    :initarg :history)))
+
+(defmethod senn.im.kkc:convert ((kkc hachee-kkc) (pron string)
                                 &key 1st-boundary-index)
   (declare (ignore 1st-boundary-index))
   (let ((segs (call-next-method)))
-    (history-apply (state-history (ime-state ime)) segs)))
+    (history-apply (slot-value kkc 'history) segs)))
 
-;;;
+(defclass stateful-hachee-ime (ime)
+  ((kkc
+    :initarg :kkc)
+   (predictor
+    :initform
+    (make-instance 'senn.im.predict.katakana:predictor))))
 
-(defclass stateful-hachee-ime (ime
-                               senn.im.kkc.hachee:convert
-                               senn.im.kkc.hachee:lookup
-                               senn.im.predict.katakana:predict)
-  ())
-
-(defmethod senn.im.kkc.hachee:mixin-extended-dictionary
-    ((ime stateful-hachee-ime))
-  (state-extended-dictionary (ime-state ime)))
+(defmethod senn.im.ime:ime-kkc ((ime stateful-hachee-ime))
+  (make-instance 'hachee-kkc
+   :history (state-history (ime-state ime))
+   :kkc (slot-value ime 'kkc)
+   :extended-dictionary (state-extended-dictionary (ime-state ime))))
 
 (defun hachee-make-ime (kkc)
   (let ((state (make-initial-state)))
@@ -130,18 +137,20 @@
 
 ;;;
 
-(defclass stateful-effected-ime (ime
-                                 senn.im.kkc.engine:convert
-                                 senn.im.kkc.engine:lookup)
-  ())
+(defclass stateful-engine-ime (ime)
+  ((engine-kkc :initarg :engine-kkc)))
+
+(defmethod senn.im.ime:ime-kkc ((ime stateful-engine-ime))
+  (slot-value ime 'engine-kkc))
 
 (defun engine-make-ime (engine-runner)
   (make-instance 'stateful-engine-ime
    :state (make-initial-state)
-   :engine-store (senn.im.kkc.engine:make-engine-store
-                  :engine (senn.im.kkc.engine:run-engine
-                           engine-runner)
-                  :engine-runner engine-runner)))
+   :engine-kkc (make-instance 'senn.im.kkc.engine:kkc
+                :engine-store
+                (senn.im.kkc.engine:make-engine-store
+                 :engine (senn.im.kkc.engine:run-engine engine-runner)
+                 :engine-runner engine-runner))))
 
 (defun engine-close-ime (ime)
-  (senn.im.kkc.engine:close-mixin ime))
+  (senn.im.kkc.engine:close-mixin (slot-value ime 'engine-kkc)))

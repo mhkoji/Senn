@@ -57,32 +57,35 @@
 
 ;;;
 
-(defclass stateful-hachee-ime (stateful
-                               senn.im.ime:ime
-                               senn.im.kkc.hachee:convert
-                               senn.im.kkc.hachee:lookup
-                               senn.im.predict.katakana:predict)
-  ())
+(defclass stateful-hachee-ime (stateful senn.im.ime:ime)
+  ((hachee-kkc
+    :initarg :hachee-kkc)))
+
+(defmethod senn.im.ime:ime-kkc ((ime stateful-hachee-ime))
+  (slot-value ime 'hachee-kkc))
 
 (defun hachee-make-ime (kkc)
-  (let ((state (make-initial-state)))
-    (make-instance 'stateful-hachee-ime :state state :kkc kkc)))
-
+  (make-instance 'stateful-hachee-ime
+   :state (make-initial-state)
+   :hachee-kkc (make-instance 'senn.im.kkc.hachee:kkc
+                :kkc kkc)))
 ;;;
 
-(defclass stateful-engine-ime (stateful
-                               senn.im.ime:ime
-                               senn.im.kkc.engine:convert
-                               senn.im.kkc.engine:lookup)
-  ())
+(defclass stateful-engine-ime (stateful senn.im.ime:ime)
+  ((engine-kkc
+    :initarg :engine-kkc)))
+
+(defmethod senn.im.ime:ime-kkc ((ime stateful-engine-ime))
+  (slot-value ime 'engine-kkc))
 
 (defun engine-make-ime (engine-runner)
   (make-instance 'stateful-engine-ime
    :state (make-initial-state)
-   :engine-store (senn.im.kkc.engine:make-engine-store
-                  :engine (senn.im.kkc.engine:run-engine
-                           engine-runner)
-                  :engine-runner engine-runner)))
+   :engine-kkc (make-instance 'senn.im.kkc.engine:kkc
+                :engine-store
+                (senn.im.kkc.engine:make-engine-store
+                 :engine (senn.im.kkc.engine:run-engine engine-runner)
+                 :engine-runner engine-runner))))
 
 (defun engine-close-ime (ime)
-  (senn.im.kkc.engine:close-mixin ime))
+  (senn.im.kkc.engine:close-mixin (slot-value ime 'engine-kkc)))
