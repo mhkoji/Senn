@@ -20,7 +20,8 @@
      (:module :im-kkc
       :pathname "kkc"
       :components
-      ((:file "engine")))
+      ((:file "request")
+       (:file "engine")))
      (:file "predict")
      (:module :im-predict
       :pathname "predict"
