@@ -2,10 +2,9 @@
   (:use :cl))
 (in-package :senn.t.scenario.win)
 
-(defclass ime (senn.win.stateful-ime:ime)
-  ())
+(defclass kkc () ())
 
-(defmethod senn.im.ime:convert ((ime ime) (pron string)
+(defmethod senn.im.kkc:convert ((kkc kkc) (pron string)
                                 &key 1st-boundary-index)
   (declare (ignore 1st-boundary-index))
   (assert (string= pron "そら"))
@@ -15,6 +14,12 @@
                             :form "空"))
          :current-index 0
          :has-more-candidates-p t)))
+
+
+(defclass ime (senn.win.stateful-ime:ime)
+  ((kkc
+    :initform (make-instance 'kkc)
+    :reader senn.im.ime:ime-kkc)))
 
 (defun editing-view (input)
   (let ((json (jsown:new-js
