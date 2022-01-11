@@ -52,7 +52,7 @@ void AnthyConvert(anthy_context_t anthy_context, const std::string &pron,
   }
 }
 
-void loop(anthy_context_t anthy_context) {
+void Loop(anthy_context_t anthy_context) {
   std::vector<Segment> segments;
 
   while (true) {
@@ -129,5 +129,5 @@ int main(void) {
   anthy_context_t anthy_context = anthy_create_context();
   AnthyContextReleaser anthy_context_releaser(anthy_context);
 
-  loop(anthy_context);
+  Loop(anthy_context);
 }
