@@ -1,4 +1,3 @@
-// Under construction
 #include <anthy/anthy.h>
 #include <fcitx-utils/utf8.h>
 #include <iostream>
