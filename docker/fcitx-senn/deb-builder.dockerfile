@@ -4,7 +4,8 @@ RUN apt update && apt install -y \
     build-essential \
     cmake \
     debhelper \
-    fcitx-libs-dev
+    fcitx-libs-dev \
+    libanthy-dev
 
 RUN mkdir \
     /app \
