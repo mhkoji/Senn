@@ -1,3 +1,9 @@
+fcitx-senn (0.0.3-1ubuntu1) UNRELEASED; urgency=medium
+
+  * TODO
+
+ -- mhkoji <mhkoji2@gmail.com>  Tue, 11 Jan 2022 18:51:32 +0900
+
 fcitx-senn (0.0.2-1) unstable; urgency=medium
 
   * Make the icon more visible
