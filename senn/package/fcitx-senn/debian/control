@@ -10,5 +10,5 @@ Homepage: https://github.com/mhkoji/Senn
 
 Package: fcitx-senn
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, fcitx-bin, fcitx-data, fcitx-modules
+Depends: ${shlibs:Depends}, ${misc:Depends}, fcitx-bin, fcitx-data, fcitx-modules, libanthy-dev
 Description: Senn support for Fcitx
