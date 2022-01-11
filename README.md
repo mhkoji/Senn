@@ -4,13 +4,13 @@ Input method editor for the Japanese language
 
 ## KKC Engine
 
-- The KKC of the ime is implemented in the separated file kkc-engine.
-- The kkc-engine file is installed at `/usr/lib/senn/fcitx/kkc-engine`.
-- The kkc-engine file can be replaced with any executable file as long as it satisfies the protocol described below to communication with the ime.
+- The KKC of the ime is implemented in the separated file named kkc-engine installed at `/usr/lib/senn/fcitx/kkc-engine`.
+- When the ime is turned on, it starts kkc-engine and communcates with it using a pipe.
+- kkc-engine can be replaced with any executable file as long as it satisfies the protocol described below to communication with the ime.
 
 ### The protocol
 
-A kkc-engine receives a request of a line from the standard input and sends a response of a line to the standard output.
+kkc-engine receives a request of a line from the standard input and sends a response of a line to the standard output.
 A line of the requests and responses is JSON encoded.
 
 Each json form of requests is as follows:
@@ -50,4 +50,3 @@ Request
 Response
 - array of objects:   // An array of objects that describes candidates
   - `form`: <string>  // A string of kana and kanji
-
