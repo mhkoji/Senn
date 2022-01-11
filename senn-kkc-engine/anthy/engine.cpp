@@ -53,6 +53,8 @@ void AnthyConvert(anthy_context_t anthy_context, const std::string &pron,
 }
 
 void loop(anthy_context_t anthy_context) {
+  std::vector<Segment> segments;
+
   while (true) {
     std::string req_string;
     std::getline(std::cin, req_string);
@@ -63,24 +65,36 @@ void loop(anthy_context_t anthy_context) {
     std::string op = req.get<picojson::object>()["op"].get<std::string>();
 
     if (op == "CONVERT") {
+      segments.clear();
       std::string pron = req.get<picojson::object>()["args"]
                              .get<picojson::object>()["pron"]
                              .get<std::string>();
-
-      std::vector<Segment> segs;
-      AnthyConvert(anthy_context, pron, &segs);
+      AnthyConvert(anthy_context, pron, &segments);
 
       picojson::array items;
-      for (size_t s = 0; s < segs.size(); s++) {
+      for (size_t s = 0; s < segments.size(); s++) {
         picojson::object item;
-        item["pron"] = picojson::value(segs[s].pron);
-        item["form"] = picojson::value(segs[s].candidate_forms[0]);
+        item["pron"] = picojson::value(segments[s].pron);
+        item["form"] = picojson::value(segments[s].candidate_forms[0]);
         items.push_back(picojson::value(item));
       }
       picojson::value resp(items);
       std::cout << resp << std::endl;
     } else if (op == "LOOKUP") {
+      std::string pron = req.get<picojson::object>()["args"]
+                             .get<picojson::object>()["pron"]
+                             .get<std::string>();
       picojson::array items;
+      for (size_t s = 0; s < segments.size(); s++) {
+        if (pron == segments[s].pron) {
+          for (size_t c = 1; c < segments[s].candidate_forms.size(); c++) {
+            picojson::object item;
+            item["form"] = picojson::value(segments[s].candidate_forms[c]);
+            items.push_back(picojson::value(item));
+          }
+          break;
+        }
+      }
       picojson::value resp(items);
       std::cout << resp << std::endl;
     } else {
