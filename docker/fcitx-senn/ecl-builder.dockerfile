@@ -28,12 +28,11 @@ RUN wget \
       -load /app-build/quicklisp.lisp \
       -eval "(quicklisp-quickstart:install)"
 
-COPY . /app
+COPY senn /app
 
 RUN ecl \
       -load "/root/quicklisp/setup.lisp" \
-      -eval '(push "/app/senn/" ql:*local-project-directories*)' \
-      -eval '(push "/app/hachee/" ql:*local-project-directories*)' \
+      -eval '(push "/app" ql:*local-project-directories*)' \
       -eval '(ql:quickload :senn-lib-fcitx)' \
       -eval '(asdf:make-build :senn-lib-fcitx :type :static-library :move-here #P"/output" :monolithic t :init-name "init_senn")' && \
     cp    /usr/local/lib/libecl*    /output && \
