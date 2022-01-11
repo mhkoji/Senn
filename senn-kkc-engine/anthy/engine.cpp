@@ -3,6 +3,7 @@
 #include <fcitx-utils/utf8.h>
 #include <iostream>
 #include <string.h>
+#include <vector>
 
 std::string utf8_string_substr(const std::string &s, size_t start, size_t len) {
   char *cs = strdup(s.c_str());
@@ -35,21 +36,27 @@ int main(void) {
     std::string sub_pron =
         utf8_string_substr(pron, seg_start_in_pron, seg_stat.seg_len);
 
-    std::string form;
+    std::vector<std::string> candidate_forms;
     {
-      int nth_cand = 0;
-      int len = anthy_get_segment(anthy_context, nth_seg, nth_cand, NULL, 0);
-      char buf[len + 1];
-      anthy_get_segment(anthy_context, nth_seg, nth_cand, buf, len + 1);
-      buf[len + 1] = '\0';
-      form = buf;
+      for (int nth_cand = 0; nth_cand < seg_stat.nr_candidate; nth_cand++) {
+        int len = anthy_get_segment(anthy_context, nth_seg, nth_cand, NULL, 0);
+        char buf[len + 1];
+        anthy_get_segment(anthy_context, nth_seg, nth_cand, buf, len + 1);
+        buf[len + 1] = '\0';
+        candidate_forms.push_back(std::string(buf));
+      }
     }
 
-    std::cout << form << "(" << sub_pron << ")" << std::endl;
-
     seg_start_in_pron += seg_stat.seg_len;
+
+    std::cout << sub_pron << ":";
+    for (size_t i = 0; i < candidate_forms.size(); i++) {
+      std::cout << " " << candidate_forms[i];
+    }
+    std::cout << std::endl;
   }
 
   anthy_release_context(anthy_context);
+
   anthy_quit();
 }
