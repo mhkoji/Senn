@@ -5,10 +5,7 @@
 (defun resp (consumed-p view)
   (format nil "~A ~A" (if consumed-p 1 0) view))
 
-(defclass kkc ()
-  ())
-
-(defmethod senn.im.kkc:convert ((kkc kkc) (pron string)
+(defmethod senn.im.kkc:convert ((kkc (eql 'static-kkc)) (pron string)
                                 &key 1st-boundary-index)
   (assert (string= pron "きょうは"))
   (list (senn.im.segment:make-segment
@@ -24,7 +21,7 @@
          :current-index 0
          :has-more-candidates-p t)))
 
-(defmethod senn.im.kkc:lookup ((kkc kkc) (pron string)
+(defmethod senn.im.kkc:lookup ((kkc (eql 'static-kkc)) (pron string)
                                &key next prev)
   (assert (string= pron "きょう"))
   (list (senn.im.segment:make-candidate :form "きょう")
@@ -35,7 +32,7 @@
   ())
 
 (defmethod senn.im.ime:ime-kkc ((ime ime))
-  (make-instance 'kkc))
+  'static-kkc)
 
 (defun make-ime ()
   (let ((state (senn.fcitx.stateful-ime:make-initial-state)))
