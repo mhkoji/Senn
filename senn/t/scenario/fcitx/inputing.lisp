@@ -1,6 +1,6 @@
-(defpackage :senn.t.scenario.fcitx
+(defpackage :senn.t.scenario.fcitx.inputing
   (:use :cl))
-(in-package :senn.t.scenario.fcitx)
+(in-package :senn.t.scenario.fcitx.inputing)
 
 (defun resp (consumed-p view)
   (format nil "~A ~A" (if consumed-p 1 0) view))
@@ -25,18 +25,7 @@
   (let ((state (senn.fcitx.stateful-ime:make-initial-state)))
     (make-instance 'ime :state state)))
 
-(defmacro when-space-key-is-first-inputted-then-full-width-space-is-inserted
-    (&key test)
-  `(let ((ime (make-ime)))
-     (,test (string=
-             (senn.fcitx.stateful-ime:process-input
-              ime (senn.fcitx.keys:make-key :sym 32 :state 0))
-             (resp t (editing-view
-                      :cursor-pos 0
-                      :input ""
-                      :committed-input "　"))))))
-
-(defmacro cursor-can-move-around-in-the-buffer (&key test)
+(defmacro cursor-goes-around-in-the-buffer (&key test)
   `(let ((ime (make-ime)))
      (,test (string=
              (senn.fcitx.stateful-ime:process-input
@@ -111,19 +100,104 @@
                                    :input "あ"
                                    :committed-input ""))))))
 
+(defmacro f7-then-katakana (&key test)
+  `(let ((ime (make-ime)))
+     (,test (string=
+             (senn.fcitx.stateful-ime:process-input
+              ime (senn.fcitx.keys:make-key :sym 97 :state 0))
+             (resp t (editing-view :cursor-pos 3
+                                   :input "あ"
+                                   :committed-input ""))))
+     (,test (string=
+             (senn.fcitx.stateful-ime:process-input
+              ime (senn.fcitx.keys:make-key :sym 65476 :state 0))
+             (resp t (editing-view :cursor-pos 3
+                                   :input "ア"
+                                   :committed-input ""))))))
+
+(defmacro f7-then-nothing-if-empty (&key test)
+  `(let ((ime (make-ime)))
+     (,test (string=
+             (senn.fcitx.stateful-ime:process-input
+              ime (senn.fcitx.keys:make-key :sym 65476 :state 0))
+             (resp nil "NONE")))))
+
+
+(defmacro enter-then-commit (&key test)
+  `(let ((ime (make-ime)))
+     (,test (string=
+             (senn.fcitx.stateful-ime:process-input
+              ime (senn.fcitx.keys:make-key :sym 97 :state 0))
+             (resp t (editing-view :cursor-pos 3
+                                   :input "あ"
+                                   :committed-input ""))))
+     (,test (string=
+             (senn.fcitx.stateful-ime:process-input
+              ime (senn.fcitx.keys:make-key :sym 65293 :state 0))
+             (resp t (editing-view :cursor-pos 0
+                                   :input ""
+                                   :committed-input "あ"))))))
+
+(defmacro enter-then-nothing-if-empty (&key test)
+  `(let ((ime (make-ime)))
+     (,test (string=
+             (senn.fcitx.stateful-ime:process-input
+              ime (senn.fcitx.keys:make-key :sym 65293 :state 0))
+             (resp nil "NONE")))))
+
+(defmacro backspace-then-delete (&key test)
+  `(let ((ime (make-ime)))
+     (,test (string=
+             (senn.fcitx.stateful-ime:process-input
+              ime (senn.fcitx.keys:make-key :sym 97 :state 0))
+             (resp t (editing-view :cursor-pos 3
+                                   :input "あ"
+                                   :committed-input ""))))
+     (,test (string=
+             (senn.fcitx.stateful-ime:process-input
+              ime (senn.fcitx.keys:make-key :sym 65288 :state 0))
+             (resp t (editing-view :cursor-pos 0
+                                   :input ""
+                                   :committed-input ""))))))
+
+(defmacro backspace-then-nothing-if-empty (&key test)
+  `(let ((ime (make-ime)))
+     (,test (string=
+             (senn.fcitx.stateful-ime:process-input
+              ime (senn.fcitx.keys:make-key :sym 65288 :state 0))
+             (resp nil "NONE")))))
+
+
+(defmacro space-then-full-width-space-if-empty
+    (&key test)
+  `(let ((ime (make-ime)))
+     (,test (string=
+             (senn.fcitx.stateful-ime:process-input
+              ime (senn.fcitx.keys:make-key :sym 32 :state 0))
+             (resp t (editing-view
+                      :cursor-pos 0
+                      :input ""
+                      :committed-input "　"))))))
+
+
+(defmacro add-tests (&rest syms)
+  `(progn
+     ,@(mapcar (lambda (sym)
+                 `(fiveam:test ,sym (,sym :test fiveam:is)))
+               syms)))
+
+
 (fiveam:def-suite :senn.fcitx)
-(fiveam:in-suite* :senn.fcitx.stateful-ime :in :senn.fcitx)
+(fiveam:in-suite* :senn.fcitx.inputing :in :senn.fcitx)
 
-(fiveam:test
-    when-space-key-is-first-inputted-then-full-width-space-is-inserted
-  (when-space-key-is-first-inputted-then-full-width-space-is-inserted
-   :test fiveam:is))
-
-(fiveam:test cursor-can-move-around-in-the-buffer
-  (cursor-can-move-around-in-the-buffer :test fiveam:is))
-
-(fiveam:test cursor-does-not-go-beyond-the-left-end
-  (cursor-does-not-go-beyond-the-left-end :test fiveam:is))
-
-(fiveam:test cursor-does-not-go-beyond-the-right-end
-  (cursor-does-not-go-beyond-the-right-end :test fiveam:is))
+(add-tests
+ cursor-goes-around-in-the-buffer
+ cursor-does-not-go-beyond-the-left-end
+ cursor-does-not-go-beyond-the-right-end 
+ f7-then-katakana
+ f7-then-nothing-if-empty
+ enter-then-commit
+ enter-then-nothing-if-empty
+ backspace-then-delete
+ backspace-then-nothing-if-empty
+ space-then-full-width-space-if-empty)
