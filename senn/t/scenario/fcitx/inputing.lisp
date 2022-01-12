@@ -168,8 +168,7 @@
              (resp nil "NONE")))))
 
 
-(defmacro space-then-full-width-space-if-empty
-    (&key test)
+(defmacro space-then-full-width-space-if-empty (&key test)
   `(let ((ime (make-ime)))
      (,test (string=
              (senn.fcitx.stateful-ime:process-input
@@ -178,6 +177,37 @@
                       :cursor-pos 0
                       :input ""
                       :committed-input "　"))))))
+
+
+(defmethod senn.im.kkc:convert ((kkc (eql 'static-kkc)) (pron string)
+                                &key 1st-boundary-index)
+  (assert (string= pron "あ"))
+  (list (senn.im.segment:make-segment
+         :pron "あ"
+         :candidates (list (senn.im.segment:make-candidate :form "亜"))
+         :current-index 0
+         :has-more-candidates-p t
+         :shows-katakana-p nil)))
+
+(defclass static-kkc-ime (senn.fcitx.stateful-ime:ime)
+  ())
+
+(defmethod senn.im.ime:ime-kkc ((ime static-kkc-ime))
+  'static-kkc)
+
+(defmacro convert-and-char-then-commit  (&key test)
+  `(let ((ime (make-instance 'static-kkc-ime
+               :state (senn.fcitx.stateful-ime:make-initial-state))))
+     (senn.fcitx.stateful-ime:process-input
+      ime (senn.fcitx.keys:make-key :sym 97 :state 0))
+     (senn.fcitx.stateful-ime:process-input
+      ime (senn.fcitx.keys:make-key :sym 32 :state 0))
+     (,test (string=
+             (senn.fcitx.stateful-ime:process-input
+              ime (senn.fcitx.keys:make-key :sym 105 :state 0))
+             (resp t (editing-view :cursor-pos 3
+                                   :input "い"
+                                   :committed-input "亜"))))))
 
 
 (senn.t.scenario.fcitx:add-tests
@@ -191,4 +221,5 @@
  enter-then-nothing-if-empty
  backspace-then-delete
  backspace-then-nothing-if-empty
- space-then-full-width-space-if-empty)
+ space-then-full-width-space-if-empty
+ convert-and-char-then-commit)
