@@ -231,15 +231,8 @@
                       :cursor-form-candidate-index 0))))))
 
 
-(defmacro add-tests (&rest syms)
-  `(progn
-     ,@(mapcar (lambda (sym)
-                 `(fiveam:test ,sym (,sym :test fiveam:is)))
-               syms)))
-
-
 (senn.t.scenario.fcitx:add-tests
- :senn.fcitx.converting
+ :converting
  space-then-convert
  segment-cursor-goes-around
  segment-cursor-does-not-go-beyond-the-both-ends

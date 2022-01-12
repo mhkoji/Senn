@@ -4,14 +4,14 @@
            :run))
 (in-package :senn.t.scenario.fcitx)
 
-(fiveam:def-suite :senn.fcitx)
+(fiveam:def-suite :senn.t.scenario.fcitx)
 
 (defmacro add-tests (name &rest syms)
   `(progn
-     (fiveam:in-suite* ,name :in :senn.fcitx)
+     (fiveam:in-suite* ,name :in :senn.t.scenario.fcitx)
      ,@(mapcar (lambda (sym)
                  `(fiveam:test ,sym (,sym :test fiveam:is)))
                syms)))
 
 (defun run ()
-  (fiveam:run! :senn.fcitx))
+  (fiveam:run! :senn.t.scenario.fcitx))
