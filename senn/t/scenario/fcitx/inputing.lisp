@@ -2,6 +2,39 @@
   (:use :cl))
 (in-package :senn.t.scenario.fcitx.inputing)
 
+(defclass ime (senn.fcitx.stateful-ime:ime)
+  ())
+
+
+(defclass static-kkc-ime (senn.fcitx.stateful-ime:ime)
+  ())
+
+(defmethod senn.im.kkc:convert ((kkc (eql 'static-kkc)) (pron string)
+                                &key 1st-boundary-index)
+  (assert (string= pron "あ"))
+  (list (senn.im.segment:make-segment
+         :pron "あ"
+         :candidates (list (senn.im.segment:make-candidate :form "亜"))
+         :current-index 0
+         :has-more-candidates-p t
+         :shows-katakana-p nil)))
+
+(defmethod senn.im.ime:ime-kkc ((ime static-kkc-ime))
+  'static-kkc)
+
+
+(defclass predictor-ime (senn.fcitx.stateful-ime:ime)
+  ())
+
+(defmethod senn.im.ime:ime-predictor ((ime predictor-ime))
+  (make-instance 'senn.im.predict.katakana:predictor))
+
+
+(defun make-ime (&optional (class 'ime))
+  (let ((state (senn.fcitx.stateful-ime:make-initial-state)))
+    (make-instance class :state state)))
+
+
 (defun resp (consumed-p view)
   (format nil "~A ~A" (if consumed-p 1 0) view))
 
@@ -17,13 +50,6 @@
                 ("prediction-index" (or prediction-index -1))
                 ("committed-input"  committed-input))))
     (format nil "EDITING ~A" (jsown:to-json json))))
-
-(defclass ime (senn.fcitx.stateful-ime:ime)
-  ())
-
-(defun make-ime ()
-  (let ((state (senn.fcitx.stateful-ime:make-initial-state)))
-    (make-instance 'ime :state state)))
 
 (defmacro cursor-goes-around-in-the-buffer (&key test)
   `(let ((ime (make-ime)))
@@ -167,9 +193,7 @@
               ime (senn.fcitx.keys:make-key :sym 65288 :state 0))
              (resp nil "NONE")))))
 
-
-(defmacro space-then-full-width-space-if-empty
-    (&key test)
+(defmacro space-then-full-width-space-if-empty (&key test)
   `(let ((ime (make-ime)))
      (,test (string=
              (senn.fcitx.stateful-ime:process-input
@@ -179,18 +203,48 @@
                       :input ""
                       :committed-input "　"))))))
 
+(defmacro convert-and-char-then-commit (&key test)
+  `(let ((ime (make-ime 'static-kkc-ime)))
+     (senn.fcitx.stateful-ime:process-input
+      ime (senn.fcitx.keys:make-key :sym 97 :state 0))
+     (senn.fcitx.stateful-ime:process-input
+      ime (senn.fcitx.keys:make-key :sym 32 :state 0))
+     (,test (string=
+             (senn.fcitx.stateful-ime:process-input
+              ime (senn.fcitx.keys:make-key :sym 105 :state 0))
+             (resp t (editing-view :cursor-pos 3
+                                   :input "い"
+                                   :committed-input "亜"))))))
 
-(defmacro add-tests (&rest syms)
-  `(progn
-     ,@(mapcar (lambda (sym)
-                 `(fiveam:test ,sym (,sym :test fiveam:is)))
-               syms)))
+(defmacro char-then-predictions (&key test)
+  `(let ((ime (make-ime 'predictor-ime)))
+     (,test (string=
+             (senn.fcitx.stateful-ime:process-input
+              ime (senn.fcitx.keys:make-key :sym 97 :state 0))
+             (resp t (editing-view :cursor-pos 3
+                                   :input "あ"
+                                   :predictions '("ア")
+                                   :prediction-index -1
+                                   :committed-input ""))))))
+
+(defmacro backspace-then-predictions (&key test)
+  `(let ((ime (make-ime 'predictor-ime)))
+     (senn.fcitx.stateful-ime:process-input
+      ime (senn.fcitx.keys:make-key :sym 97 :state 0))
+     (senn.fcitx.stateful-ime:process-input
+      ime (senn.fcitx.keys:make-key :sym 97 :state 0))
+     (,test (string=
+             (senn.fcitx.stateful-ime:process-input
+              ime (senn.fcitx.keys:make-key :sym 65288 :state 0))
+             (resp t (editing-view :cursor-pos 3
+                                   :input "あ"
+                                   :predictions '("ア")
+                                   :prediction-index -1
+                                   :committed-input ""))))))
 
 
-(fiveam:def-suite :senn.fcitx)
-(fiveam:in-suite* :senn.fcitx.inputing :in :senn.fcitx)
-
-(add-tests
+(senn.t.scenario.fcitx:add-tests
+ :inputing
  cursor-goes-around-in-the-buffer
  cursor-does-not-go-beyond-the-left-end
  cursor-does-not-go-beyond-the-right-end 
@@ -200,4 +254,7 @@
  enter-then-nothing-if-empty
  backspace-then-delete
  backspace-then-nothing-if-empty
- space-then-full-width-space-if-empty)
+ space-then-full-width-space-if-empty
+ convert-and-char-then-commit
+ char-then-predictions
+ backspace-then-predictions)
