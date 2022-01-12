@@ -250,4 +250,3 @@
  space-multiple-times-then-more-candidates
  candidate-cursor-goes-around
  candidate-cursor-loops)
-
