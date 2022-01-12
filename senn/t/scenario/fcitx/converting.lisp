@@ -241,9 +241,8 @@
                syms)))
 
 
-(fiveam:in-suite* :senn.fcitx.converting :in :senn.fcitx)
-
-(add-tests
+(senn.t.scenario.fcitx:add-tests
+ :senn.fcitx.converting
  space-then-convert
  segment-cursor-goes-around
  segment-cursor-does-not-go-beyond-the-both-ends

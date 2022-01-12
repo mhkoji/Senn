@@ -180,17 +180,8 @@
                       :committed-input "　"))))))
 
 
-(defmacro add-tests (&rest syms)
-  `(progn
-     ,@(mapcar (lambda (sym)
-                 `(fiveam:test ,sym (,sym :test fiveam:is)))
-               syms)))
-
-
-(fiveam:def-suite :senn.fcitx)
-(fiveam:in-suite* :senn.fcitx.inputing :in :senn.fcitx)
-
-(add-tests
+(senn.t.scenario.fcitx:add-tests
+ :senn.fcitx.inputing
  cursor-goes-around-in-the-buffer
  cursor-does-not-go-beyond-the-left-end
  cursor-does-not-go-beyond-the-right-end 

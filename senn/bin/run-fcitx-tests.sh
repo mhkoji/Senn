@@ -1,3 +1,6 @@
 #!/bin/bash
 
-ros run -s senn-fcitx-test -e "(asdf:test-system :senn-fcitx-test)" -q
+ros run \
+    -s senn-fcitx-test \
+    -e "(senn.t.scenario.fcitx:run)" \
+    -q
