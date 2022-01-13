@@ -7,8 +7,8 @@
   (format nil "~A~A" #\Return #\Newline))
 
 (defun move-segment-form-index! (seg diff ime)
-  (senn.im.ime:segment-append-candidates! seg ime)
-  (senn.im.segment:try-move-cursor-pos! seg diff))
+  (senn.win.im::segment-append-candidates! seg ime)
+  (senn.win.im::segment-cursor-pos-move! seg diff))
 
 (defun buffer-empty-p (buffer)
   (string= (senn.im.buffer:buffer-string buffer) ""))
@@ -26,7 +26,7 @@
 
 (defun converting-current-input (c)
   (format nil "~{~A~}"
-          (mapcar #'senn.im.segment:segment-current-form
+          (mapcar #'senn.win.im::segment-cursor-pos-form
                   (converting-segments c))))
 
 ;;; view
@@ -44,7 +44,7 @@
          (jsown:to-json
           (jsown:new-js
            ("forms"
-            (mapcar #'senn.im.segment:segment-current-form
+            (mapcar #'senn.win.im::segment-cursor-pos-form
                     (converting-segments converting-state)))
            ("cursor-form-index"
             (converting-current-segment-index converting-state))
@@ -52,11 +52,11 @@
             (let ((segment (converting-current-segment converting-state)))
               (jsown:new-js
                ("candidates"
-                (if (senn.im.segment:segment-has-more-candidates-p segment)
+                (if (senn.win.im::segment-has-more-candidates-p segment)
                     nil
-                    (senn.im.segment:segment-forms segment)))
+                    (senn.win.im::segment-forms segment)))
                ("candidate-index"
-                (senn.im.segment:segment-current-index segment)))))))))
+                (senn.win.im::segment-current-index segment)))))))))
     (format nil "CONVERTING ~A" json-string)))
 
 (defun committed-view (string)
@@ -76,20 +76,20 @@
         :state state
         :committed-segments committed-segments))
 
-(defmethod execute ((ime senn.im.ime:ime) (s editing) (mode (eql :direct))
+(defmethod execute ((ime senn.win.im:ime) (s editing) (mode (eql :direct))
                     (key senn.win.keys:key))
   (result t (editing-view s)))
 
-(defmethod execute ((ime senn.im.ime:ime) (s converting) (mode (eql :direct))
+(defmethod execute ((ime senn.win.im:ime) (s converting) (mode (eql :direct))
                     (key senn.win.keys:key))
   (result t (converting-view s)))
 
-(defmethod execute ((ime senn.im.ime:ime) (s t) (mode (eql :direct))
+(defmethod execute ((ime senn.win.im:ime) (s t) (mode (eql :direct))
                     (key senn.win.keys:key))
   (result nil nil))
 
 
-(defmethod execute ((ime senn.im.ime:ime) (s converting) (mode (eql :hiragana))
+(defmethod execute ((ime senn.win.im:ime) (s converting) (mode (eql :hiragana))
                     (key senn.win.keys:key))
   (cond ((senn.win.keys:enter-p key)
          (let ((view (committed-view (converting-current-input s)))
@@ -125,9 +125,11 @@
 
 (defun editing-update-predictions (state ime)
   (let ((input (senn.im.buffer:buffer-string (editing-buffer state))))
-    (setf (editing-predictions state) (senn.im.ime:predict ime input))))
+    (setf (editing-predictions state)
+          (senn.im.predict:execute (senn.win.im:ime-predictor ime)
+                                   input))))
 
-(defmethod execute ((ime senn.im.ime:ime) (s editing) (mode (eql :hiragana))
+(defmethod execute ((ime senn.win.im:ime) (s editing) (mode (eql :hiragana))
                     (key senn.win.keys:key))
   (cond ((senn.win.keys:oem-minus-p key)
          (editing-insert-char
@@ -230,12 +232,11 @@
         ((senn.win.keys:space-p key)
          (let ((pron (senn.im.buffer:buffer-string (editing-buffer s))))
            (if (string/= pron "")
-               (let ((segments (senn.im.ime:convert ime pron)))
-                 (let ((converting (make-converting
-                                    :segments segments
-                                    :pronunciation pron)))
-                   (let ((view (converting-view converting)))
-                     (result t view :state converting))))
+               (let ((converting (senn.win.im::convert
+                                  (senn.win.im:ime-kkc ime)
+                                  pron)))
+                 (let ((view (converting-view converting)))
+                   (result t view :state converting)))
                (result nil nil))))
 
         ((senn.win.keys:enter-p key)

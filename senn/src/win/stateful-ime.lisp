@@ -23,13 +23,13 @@
 
 (defun history-apply (history segs)
   (mapcar (lambda (seg)
-            (let* ((pron (senn.im.segment:segment-pron seg))
+            (let* ((pron (senn.win.im::segment-pron seg))
                    (history-form (history-get-form history pron)))
               (if (not history-form)
                   seg
-                  (senn.im.segment:make-segment
+                  (senn.win.im::make-segment
                    :pron pron
-                   :candidates (list (senn.im.segment:make-candidate
+                   :candidates (list (senn.win.im::make-candidate
                                       :form history-form))
                    :current-index 0
                    :has-more-candidates-p t))))
@@ -92,15 +92,15 @@
           (dolist (seg committed-segments)
             (history-put
              history
-             (senn.im.segment:segment-pron seg)
-             (senn.im.segment:segment-current-form seg))))
+             (senn.win.im::segment-pron seg)
+             (senn.win.im::segment-cursor-pos-form seg))))
         (format nil "~A ~A~%"
                 (if (and can-process view) 1 0)
                 (or view ""))))))
 
 ;;;
 
-(defclass ime (senn.im.ime:ime)
+(defclass ime (senn.win.im:ime)
   ((state :initarg :state)))
 
 (defmethod ime-state ((ime ime))
@@ -125,13 +125,13 @@
     :initform
     (make-instance 'senn.im.predict.katakana:predictor))))
 
-(defmethod senn.im.ime:ime-kkc ((ime stateful-hachee-ime))
+(defmethod senn.win.im:ime-kkc ((ime stateful-hachee-ime))
   (make-instance 'hachee-kkc
    :history (state-history (ime-state ime))
    :kkc (slot-value ime 'kkc)
    :extended-dictionary (state-extended-dictionary (ime-state ime))))
 
-(defmethod senn.im.ime:ime-predictor ((ime stateful-hachee-ime))
+(defmethod senn.win.im:ime-predictor ((ime stateful-hachee-ime))
   (slot-value ime 'predictor))
 
 (defun hachee-make-ime (kkc)
@@ -143,7 +143,7 @@
 (defclass stateful-engine-ime (ime)
   ((engine-kkc :initarg :engine-kkc)))
 
-(defmethod senn.im.ime:ime-kkc ((ime stateful-engine-ime))
+(defmethod senn.win.im:ime-kkc ((ime stateful-engine-ime))
   (slot-value ime 'engine-kkc))
 
 (defun engine-make-ime (engine-runner)
