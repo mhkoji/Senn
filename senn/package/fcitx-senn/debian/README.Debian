@@ -34,19 +34,19 @@ Request
 
 Response
 - array of objects:   // An array of objects that describes a word sequence
-  - `form`: <string>  // A string of kana and kanji for the word
   - `pron`: <string>  // A substring of the input sequence for the word
+  - `form`: <string>  // A string of kana and kanji for the word
 
 
-### LOOKUP request
+### LIST_CANDIDATES request
 
-A LOOKUP request is used to lookup more candidates for a word from CONVERT.
+A LIST_CANDIDATES request is used to list candidates for a word from CONVERT.
 
 Request
-- `op`: "LOOKUP"
+- `op`: "LIST_CANDIDATES"
 - `args`:
-  - `pron`: <string>
-    - A substring of the word
+  - `index`: <number>
+    - An index of the word (0-origin)
 
 Response
 - array of objects:   // An array of objects that describes candidates
