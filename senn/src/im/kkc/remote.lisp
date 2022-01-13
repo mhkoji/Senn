@@ -46,12 +46,8 @@
                  (connection mixin)
                  pron)
     (error ()
-      (list (senn.im.segment:make-segment
-             :pron pron
-             :candidates (list (senn.im.segment:make-candidate
-                                :form pron))
-             :current-index 0
-             :has-more-candidates-p t)))))
+      (list (senn.im.kkc:make-segment :pron pron :form pron)))))
+             
 
 (defclass lookup (mixin) ())
 

@@ -4,4 +4,6 @@
 (in-package :senn.im.predict)
 
 (defgeneric execute (predictor string)
-  (:method-combination append))
+  (:method-combination append)
+  (:method append ((predictor t) string)
+    nil))

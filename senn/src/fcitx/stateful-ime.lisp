@@ -7,7 +7,7 @@
            :reset-im))
 (in-package :senn.fcitx.stateful-ime)
 
-(defclass ime (senn.im.ime:ime)
+(defclass ime (senn.fcitx.im:ime)
   ((state :initarg :state)))
 
 (defun ime-state (ime)
@@ -17,12 +17,12 @@
   (setf (slot-value ime 'state) state))
 
 (defun make-initial-state ()
-  (senn.fcitx.im:make-inputting))
+  (senn.im.inputing:make-state))
 
 (defun process-input (ime key)
   (with-accessors ((s ime-state)) ime
     (destructuring-bind (consumed-p view &key state)
-        (senn.fcitx.im.process-input:execute ime s key)
+        (senn.fcitx.im.process-input:execute s ime key)
       (when state
         (set-ime-state ime state))
       (format nil "~A ~A"

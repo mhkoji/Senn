@@ -21,12 +21,7 @@
     (mapcar (lambda (j-seg)
               (let ((form (jsown:val j-seg "form"))
                     (pron (jsown:val j-seg "pron")))
-                (senn.im.segment:make-segment
-                 :pron pron
-                 :candidates (list (senn.im.segment:make-candidate
-                                    :form form))
-                 :current-index 0
-                 :has-more-candidates-p t)))
+                (senn.im.kkc:make-segment :pron pron :form form)))
             j-segs)))
 
 (defun lookup (agent pron)
@@ -38,6 +33,5 @@
                               ("pron" pron)))))))
     (mapcar (lambda (j-cand)
               (let ((form (jsown:val j-cand "form")))
-                (senn.im.segment:make-candidate
-                 :form form)))
+                (senn.im.kkc:make-candidate :form form)))
             j-cands)))

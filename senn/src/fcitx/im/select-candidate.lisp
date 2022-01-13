@@ -11,13 +11,13 @@
 (defmethod execute ((s t) index)
   (resp nil nil))
 
-(defmethod execute ((s converting) (index integer))
-  (let ((curr-seg (converting-current-segment s)))
-    (senn.im.segment:try-set-cursor-pos! curr-seg index))
-  (let ((view (converting-view/converting-state s)))
-    (resp t view :state s)))
+(defmethod execute ((s senn.im.converting:state)
+                    (index integer))
+  (senn.im.converting:current-segment-candidates-set! s index)
+  (resp t (converting-view/converting-state s) :state s))
 
-(defmethod execute ((s inputting) (index integer))
+(defmethod execute ((s senn.im.inputing:state)
+                    (index integer))
   (let ((predictions (inputting-predictions s)))
     (if (< -1 index (length predictions))
         (let* ((new-state (make-selecting-from-predictions
