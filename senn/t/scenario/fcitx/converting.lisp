@@ -7,6 +7,7 @@
 
 (defmethod senn.im.kkc:convert ((kkc (eql 'static-kkc)) (pron string)
                                 &key 1st-boundary-index)
+  (declare (ignore 1st-boundary-index))
   (assert (string= pron "きょうは"))
   (list (senn.im.segment:make-segment
          :pron "きょう"
@@ -23,6 +24,7 @@
 
 (defmethod senn.im.kkc:lookup ((kkc (eql 'static-kkc)) (pron string)
                                &key next prev)
+  (declare (ignore next prev))
   (assert (string= pron "きょう"))
   (list (senn.im.segment:make-candidate :form "きょう")
         (senn.im.segment:make-candidate :form "今日")
@@ -34,9 +36,29 @@
 (defmethod senn.im.ime:ime-kkc ((ime ime))
   'static-kkc)
 
-(defun make-ime ()
+
+(defmethod senn.im.kkc:convert ((kkc (eql 'nn-kkc)) (pron string)
+                                &key 1st-boundary-index)
+  (declare (ignore 1st-boundary-index))
+  (assert (string= pron "ん"))
+  (list (senn.im.segment:make-segment
+         :pron pron
+         :candidates (list (senn.im.segment:make-candidate
+                            :form pron))
+         :current-index 0
+         :has-more-candidates-p t)))
+
+(defclass nn-ime (senn.fcitx.stateful-ime:ime)
+  ())
+
+(defmethod senn.im.ime:ime-kkc ((ime nn-ime))
+  'nn-kkc)
+
+
+(defun make-ime (&optional (class 'ime))
   (let ((state (senn.fcitx.stateful-ime:make-initial-state)))
-    (make-instance 'ime :state state)))
+    (make-instance class :state state)))
+
 
 (defun converting-view (&key forms
                              cursor-form-index
@@ -230,10 +252,23 @@
                       :cursor-form-candidates (list "きょう" "今日" "強")
                       :cursor-form-candidate-index 0))))))
 
+(defmacro convert-adds-latin-n-to-make-hiragana-letter-n (&key test)
+  `(let ((ime (make-ime 'nn-ime)))
+     (senn.fcitx.stateful-ime:process-input
+      ime (senn.fcitx.keys:make-key :sym (char-code #\n) :state 0))
+     (,test (string=
+             (senn.fcitx.stateful-ime:process-input
+              ime (senn.fcitx.keys:make-key :sym 32 :state 0))
+             (resp t (converting-view
+                      :forms '("ん")
+                      :cursor-form-index 0
+                      :cursor-form-candidates nil
+                      :cursor-form-candidate-index 0))))))
 
 (senn.t.scenario.fcitx:add-tests
  :converting
  space-then-convert
+ convert-adds-latin-n-to-make-hiragana-letter-n
  segment-cursor-goes-around
  segment-cursor-does-not-go-beyond-the-both-ends
  space-multiple-times-then-more-candidates
