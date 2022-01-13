@@ -1,28 +1,9 @@
-;; convert/lookup depending on hachee kkc
+;; convert/list-candidates depending on hachee kkc
 (defpackage :senn.im.kkc.hachee
   (:use :cl)
-  (:export :mixin
-           :convert
-           :lookup
-           :kkc
-           :mixin-extended-dictionary
+  (:export :kkc
            :build-kkc))
 (in-package :senn.im.kkc.hachee)
-
-(defun convert (convert pron &key 1st-boundary-index)
-  (mapcar (lambda (e)
-            (senn.im.kkc:make-segment
-             :pron (hachee.kkc.convert:entry-pron e)
-             :form (hachee.kkc.convert:entry-form e)))
-          (hachee.kkc.convert:execute
-           convert pron
-           :1st-boundary-index 1st-boundary-index)))
-
-(defun lookup (lookup pron &key prev next)
-  (mapcar (lambda (item)
-            (senn.im.kkc:make-candidate
-             :form (hachee.kkc.lookup:item-form item)))
-          (hachee.kkc.lookup:execute lookup pron :prev prev :next next)))
 
 (defun build-kkc ()
   (let ((corpus-pathnames
@@ -36,35 +17,43 @@
 
 ;;;
 
-(defclass mixin ()
-  ((kkc
-    :initarg :kkc
-    :reader mixin-kkc)
+(defclass kkc ()
+  ((impl
+    :initarg :impl
+    :reader kkc-impl)
    (exteded-dictionary
     :initarg :extended-dictionary
     :initform nil
-    :reader mixin-extended-dictionary)))
+    :reader kkc-extended-dictionary)
+   (entries
+    :initform nil
+    :accessor kkc-entries)))
 
-(defclass convert (mixin) ())
+(defun kkc-convert (kkc)
+  (let ((ex-dict (kkc-extended-dictionary kkc)))
+    (if ex-dict
+        (hachee.kkc:make-kkc-convert
+         :kkc (kkc-impl kkc)
+         :extended-dictionary ex-dict)
+        (kkc-impl kkc))))
 
-(defmethod senn.im.kkc:convert ((mixin convert) (pron string)
+(defmethod senn.im.kkc:convert ((kkc kkc) (pron string)
                                 &key 1st-boundary-index)
-  (let ((ex-dict (mixin-extended-dictionary mixin)))
-    (convert (if ex-dict
-                 (hachee.kkc:make-kkc-convert
-                  :kkc (mixin-kkc mixin)
-                  :extended-dictionary ex-dict)
-                 (mixin-kkc mixin))
-             pron
-             :1st-boundary-index 1st-boundary-index)))
+  (setf (kkc-entries kkc)
+        (hachee.kkc.convert:execute
+         (kkc-convert kkc) pron
+         :1st-boundary-index 1st-boundary-index))
+  (mapcar (lambda (e)
+            (senn.im.kkc:make-segment
+             :pron (hachee.kkc.convert:entry-pron e)
+             :form (hachee.kkc.convert:entry-form e)))
+          (kkc-entries kkc)))
 
-(defclass lookup (mixin) ())
-
-(defmethod senn.im.kkc:lookup ((mixin lookup) (pron string)
-                               &key prev next)
-  (lookup (mixin-kkc mixin) pron
-          :next next :prev prev))
-
-
-(defclass kkc (convert lookup)
-  ())
+(defmethod senn.im.kkc:list-candidates ((kkc kkc) (index number))
+  (with-accessors ((entries kkc-entries)) kkc
+    (when (and (<= 0 index) (< index (length entries)))
+      (let ((pron (hachee.kkc.convert:entry-pron (elt entries index))))
+        (mapcar (lambda (item)
+                  (senn.im.kkc:make-candidate
+                   :form (hachee.kkc.lookup:item-form item)))
+                (hachee.kkc.lookup:execute (kkc-impl kkc) pron))))))

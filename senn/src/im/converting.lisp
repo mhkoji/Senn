@@ -62,10 +62,10 @@
     (append current-candidates
             (remove-if #'exists-in-current-candidates-p new-candidates))))
 
-(defun segment-ensure-candidates-appended! (segment kkc)
+(defun segment-ensure-candidates-appended! (segment list-candidates-fn)
   (when (segment-has-more-candidates-p segment)
     (let ((current-candidates (segment-candidates segment))
-          (candidates (senn.im.kkc:lookup kkc (segment-pron segment))))
+          (candidates (funcall list-candidates-fn)))
       (setf (segment-candidates segment)
             (append-candidates current-candidates candidates))
       (setf (segment-has-more-candidates-p segment) nil))))
@@ -84,10 +84,13 @@
       (setf (state-current-segment-index state) new-index))))
 
 (defun current-segment-candidates-move! (state diff kkc)
-  (with-accessors ((segment current-segment)) state
-    (segment-ensure-candidates-appended! segment kkc)
-    (segment-cursor-pos-move! segment diff)
-    (setf (segment-shows-katakana-p segment) nil)))
+  (with-accessors ((segment current-segment)
+                   (segment-index state-current-segment-index)) state
+    (labels ((list-candidates ()
+               (senn.im.kkc:list-candidates kkc segment-index)))
+      (segment-ensure-candidates-appended! segment #'list-candidates)
+      (segment-cursor-pos-move! segment diff)
+      (setf (segment-shows-katakana-p segment) nil))))
 
 (defun current-segment-candidates-set! (state index)
   (with-accessors ((segment current-segment)) state

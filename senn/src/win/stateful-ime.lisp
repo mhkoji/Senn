@@ -125,7 +125,7 @@
 (defmethod senn.win.im:ime-kkc ((ime stateful-hachee-ime))
   (make-instance 'hachee-kkc
    :history (state-history (ime-state ime))
-   :kkc (slot-value ime 'kkc)
+   :impl (slot-value ime 'kkc)
    :extended-dictionary (state-extended-dictionary (ime-state ime))))
 
 (defmethod senn.win.im:ime-predictor ((ime stateful-hachee-ime))
@@ -153,4 +153,4 @@
                  :engine-runner engine-runner))))
 
 (defun engine-close-ime (ime)
-  (senn.im.kkc.engine:close-mixin (slot-value ime 'engine-kkc)))
+  (senn.im.kkc.engine:close-kkc (slot-value ime 'engine-kkc)))

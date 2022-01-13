@@ -19,7 +19,7 @@
 
 (defun make-initial-state ()
   (make-state
-   :input-state (senn.fcitx.im:make-inputting)
+   :input-state nil
    :input-mode :direct))
 
 (defun process-input (ime key)
@@ -44,7 +44,7 @@
        (setf input-state nil))
       (:direct
        (setf input-mode :hiragana)
-       (setf input-state (senn.fcitx.im:make-inputting))))
+       (setf input-state (senn.im.inputing:make-state))))
     (format nil "~A" input-mode)))
 
 ;;;
@@ -67,8 +67,7 @@
 (defun hachee-make-ime (kkc)
   (make-instance 'stateful-hachee-ime
    :state (make-initial-state)
-   :hachee-kkc (make-instance 'senn.im.kkc.hachee:kkc
-                :kkc kkc)))
+   :hachee-kkc (make-instance 'senn.im.kkc.hachee:kkc :impl kkc)))
 ;;;
 
 (defclass stateful-engine-ime (stateful senn.im.ime:ime)
@@ -88,4 +87,4 @@
                  :engine-runner engine-runner))))
 
 (defun engine-close-ime (ime)
-  (senn.im.kkc.engine:close-mixin (slot-value ime 'engine-kkc)))
+  (senn.im.kkc.engine:close-kkc (slot-value ime 'engine-kkc)))

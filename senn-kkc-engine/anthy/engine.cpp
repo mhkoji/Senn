@@ -79,19 +79,16 @@ void Loop(anthy_context_t anthy_context) {
       }
       picojson::value resp(items);
       std::cout << resp << std::endl;
-    } else if (op == "LOOKUP") {
-      std::string pron = req.get<picojson::object>()["args"]
-                             .get<picojson::object>()["pron"]
-                             .get<std::string>();
+    } else if (op == "LIST_CANDIDATES") {
+      int index = req.get<picojson::object>()["args"]
+                      .get<picojson::object>()["index"]
+                      .get<double>();
       picojson::array items;
-      for (size_t s = 0; s < segments.size(); s++) {
-        if (pron == segments[s].pron) {
-          for (size_t c = 1; c < segments[s].candidate_forms.size(); c++) {
-            picojson::object item;
-            item["form"] = picojson::value(segments[s].candidate_forms[c]);
-            items.push_back(picojson::value(item));
-          }
-          break;
+      if (0 <= index && index < segments.size()) {
+        for (size_t c = 1; c < segments[index].candidate_forms.size(); c++) {
+          picojson::object item;
+          item["form"] = picojson::value(segments[index].candidate_forms[c]);
+          items.push_back(picojson::value(item));
         }
       }
       picojson::value resp(items);

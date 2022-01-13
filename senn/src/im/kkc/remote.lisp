@@ -1,10 +1,8 @@
 ;; TODO: test
 (defpackage :senn.im.kkc.remote
   (:use :cl)
-  (:export :convert
-           :lookup
-           :kkc
-           :close-mixin
+  (:export :kkc
+           :close-kkc
            :connect
            :disconnect
            :make-connector))
@@ -32,36 +30,27 @@
   (write-line line (connection-stream conn)))
 
 
-(defclass mixin ()
+(defclass kkc ()
   ((connection
     :initarg :connection
     :reader connection)))
 
-(defclass convert (mixin) ())
-
-(defmethod senn.im.kkc:convert ((mixin convert) (pron string)
+(defmethod senn.im.kkc:convert ((kkc kkc) (pron string)
                                 &key 1st-boundary-index)
   (declare (ignore 1st-boundary-index))
   (handler-case (senn.im.kkc.request:convert
-                 (connection mixin)
+                 (connection kkc)
                  pron)
     (error ()
       (list (senn.im.kkc:make-segment :pron pron :form pron)))))
              
 
-(defclass lookup (mixin) ())
+(defmethod senn.im.kkc:list-candidates ((kkc kkc) (index number))
+  (handler-case (senn.im.kkc.request:list-candidates
+                 (connection kkc)
+                 index)
+    (error ()
+      nil)))
 
-(defmethod senn.im.kkc:lookup ((mixin lookup) (pron string)
-                               &key prev next)
-  (declare (ignore next prev))
-    (handler-case (senn.im.kkc.request:lookup
-                   (connection mixin)
-                   pron)
-      (error ()
-        nil)))
-
-(defclass kkc (convert lookup)
-  ())
-
-(defun close-mixin (mixin)
-  (disconnect (connection mixin)))
+(defun close-kkc (kkc)
+  (disconnect (connection kkc)))
