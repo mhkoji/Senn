@@ -11,21 +11,16 @@
 
 (defun convert (convert pron &key 1st-boundary-index)
   (mapcar (lambda (e)
-            (senn.im.segment:make-segment
-             :pron
-             (hachee.kkc.convert:entry-pron e)
-             :candidates
-             (list (senn.im.segment:make-candidate
-                    :form (hachee.kkc.convert:entry-form e)))
-             :current-index 0
-             :has-more-candidates-p t))
+            (senn.im.kkc:make-segment
+             :pron (hachee.kkc.convert:entry-pron e)
+             :form (hachee.kkc.convert:entry-form e)))
           (hachee.kkc.convert:execute
            convert pron
            :1st-boundary-index 1st-boundary-index)))
 
 (defun lookup (lookup pron &key prev next)
   (mapcar (lambda (item)
-            (senn.im.segment:make-candidate
+            (senn.im.kkc:make-candidate
              :form (hachee.kkc.lookup:item-form item)))
           (hachee.kkc.lookup:execute lookup pron :prev prev :next next)))
 

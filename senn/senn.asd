@@ -14,9 +14,7 @@
    (:module :im
     :pathname "im"
     :components
-    ((:file "buffer")
-     (:file "segment")
-     (:file "kkc")
+    ((:file "kkc")
      (:module :im-kkc
       :pathname "kkc"
       :components
@@ -29,7 +27,9 @@
       (#+nil
        (:file "prefix")
        (:file "katakana")))
-     (:file "ime"))))
+     (:file "converting")
+     (:file "buffer")
+     (:file "inputing"))))
   :depends-on (:cl-trie
                :alexandria
                :jsown

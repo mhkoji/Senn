@@ -9,31 +9,21 @@
                                 &key 1st-boundary-index)
   (declare (ignore 1st-boundary-index))
   (assert (string= pron "きょうは"))
-  (list (senn.im.segment:make-segment
-         :pron "きょう"
-         :candidates (list (senn.im.segment:make-candidate
-                            :form "きょう"))
-         :current-index 0
-         :has-more-candidates-p t)
-        (senn.im.segment:make-segment
-         :pron "は"
-         :candidates (list (senn.im.segment:make-candidate
-                            :form "は"))
-         :current-index 0
-         :has-more-candidates-p t)))
-
+  (list (senn.im.kkc:make-segment :pron "きょう" :form "きょう")
+        (senn.im.kkc:make-segment :pron "は" :form "は")))
+         
 (defmethod senn.im.kkc:lookup ((kkc (eql 'static-kkc)) (pron string)
                                &key next prev)
   (declare (ignore next prev))
   (assert (string= pron "きょう"))
-  (list (senn.im.segment:make-candidate :form "きょう")
-        (senn.im.segment:make-candidate :form "今日")
-        (senn.im.segment:make-candidate :form "強")))
+  (list (senn.im.kkc:make-candidate :form "きょう")
+        (senn.im.kkc:make-candidate :form "今日")
+        (senn.im.kkc:make-candidate :form "強")))
 
 (defclass ime (senn.fcitx.stateful-ime:ime)
   ())
 
-(defmethod senn.im.ime:ime-kkc ((ime ime))
+(defmethod senn.fcitx.im:ime-kkc ((ime ime))
   'static-kkc)
 
 
@@ -41,17 +31,13 @@
                                 &key 1st-boundary-index)
   (declare (ignore 1st-boundary-index))
   (assert (string= pron "ん"))
-  (list (senn.im.segment:make-segment
-         :pron pron
-         :candidates (list (senn.im.segment:make-candidate
-                            :form pron))
-         :current-index 0
-         :has-more-candidates-p t)))
+  (list (senn.im.kkc:make-segment :pron pron :form pron)))
+         
 
 (defclass nn-ime (senn.fcitx.stateful-ime:ime)
   ())
 
-(defmethod senn.im.ime:ime-kkc ((ime nn-ime))
+(defmethod senn.fcitx.im:ime-kkc ((ime nn-ime))
   'nn-kkc)
 
 

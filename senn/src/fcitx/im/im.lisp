@@ -1,39 +1,28 @@
 (defpackage :senn.fcitx.im
   (:use :cl)
-  (:export :inputting
-           :make-inputting
-           :inputting-buffer
-           :inputting-predictions
-
+  (:export :ime
+           :ime-kkc
+           :ime-predictor
            :katakana
-           :make-katakana
            :katakana-input
-
+           :make-katakana
            :selecting-from-predictions
-           :make-selecting-from-predictions
            :selecting-from-predictions-predictions
            :selecting-from-predictions-current-index
            :selecting-from-predictions-current-input
-           :selecting-from-predictions-move-prediction
-
-           :converting
-           :make-converting
-           :converting-pronunciation
-           :converting-segments
-           :converting-current-segment
-           :converting-current-input
-           :converting-current-segment-index
-           :converting-move-curret-segment
-
+           :selecting-from-predictions-move!
+           :make-selecting-from-predictions
            :editing-view/inputing-state
            :editing-view/katakana-state
            :editing-view/selecting-from-predictions
            :converting-view/converting-state))
 (in-package :senn.fcitx.im)
 
-(defstruct inputting
-  (buffer (senn.im.buffer:make-buffer))
-  predictions)
+(defclass ime () ())
+(defgeneric ime-kkc (ime))
+(defgeneric ime-predictor (ime)
+  (:method ((ime ime))
+    nil))
 
 
 (defstruct (katakana (:constructor %make-katakana))
@@ -49,33 +38,13 @@
   (nth (selecting-from-predictions-current-index s)
        (selecting-from-predictions-predictions s)))
 
-(defun selecting-from-predictions-move-prediction (s diff)
+(defun selecting-from-predictions-move! (s diff)
   (let ((new-index (+ (selecting-from-predictions-current-index s) diff)))
     (when (<= 0 new-index
               (1- (length (selecting-from-predictions-predictions s))))
       (setf (selecting-from-predictions-current-index s) new-index)))
   s)
 
-
-(defstruct converting
-  segments
-  pronunciation
-  (current-segment-index 0))
-
-(defun converting-move-curret-segment (c diff)
-  (let ((new-index (+ (converting-current-segment-index c) diff)))
-    (when (<= 0 new-index (1- (length (converting-segments c))))
-      (setf (converting-current-segment-index c) new-index)))
-  c)
-
-(defun converting-current-segment (c)
-  (elt (converting-segments c)
-       (converting-current-segment-index c)))
-
-(defun converting-current-input (c)
-  (format nil "~{~A~}"
-          (mapcar #'senn.im.segment:segment-current-form
-                  (converting-segments c))))
 
 ;;; Views
 
@@ -101,10 +70,10 @@
     (format nil "EDITING ~A" (jsown:to-json json))))
 
 (defun editing-view/inputing-state (s &key committed-string)
-  (let ((buffer (inputting-buffer s)))
+  (let ((buffer (senn.im.inputing:state-buffer s)))
     (make-editing-view (buffer-cursor-pos-utf8 buffer)
                        (senn.im.buffer:buffer-string buffer)
-                       (inputting-predictions s)
+                       (senn.im.inputing:state-predictions s)
                        nil
                        (or committed-string ""))))
 
@@ -125,22 +94,23 @@
   (let ((json
          (jsown:new-js
            ("forms"
-            (mapcar #'senn.im.segment:segment-current-form
-                    (converting-segments s)))
+            (mapcar #'senn.im.converting:segment-cursor-pos-form
+                    (senn.im.converting:state-segments s)))
            ("cursor-form-index"
-            (converting-current-segment-index s))
+            (senn.im.converting:state-current-segment-index s))
            ("cursor-form"
-            (let ((segment (converting-current-segment s)))
-              (if (senn.im.segment:segment-shows-katakana-p segment)
+            (let ((segment (senn.im.converting:current-segment s)))
+              (if (senn.im.converting:segment-shows-katakana-p segment)
                   (jsown:new-js
                     ("candidates"      nil)
                     ("candidate-index" -1))
                   (jsown:new-js
                     ("candidates"
-                     (if (senn.im.segment:segment-has-more-candidates-p
+                     (if (senn.im.converting:segment-has-more-candidates-p
                           segment)
                          nil
-                         (senn.im.segment:segment-forms segment)))
+                         (senn.im.converting:segment-forms segment)))
                     ("candidate-index"
-                     (senn.im.segment:segment-current-index segment)))))))))
+                     (senn.im.converting:segment-current-index
+                      segment)))))))))
     (format nil "CONVERTING ~A" (jsown:to-json json))))

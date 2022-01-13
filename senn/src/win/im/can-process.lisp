@@ -5,22 +5,22 @@
 
 (defgeneric execute (ime state mode key))
 
-(defmethod execute ((ime senn.im.ime:ime) (s editing)
+(defmethod execute ((ime senn.win.im:ime) (s editing)
                     (mode (eql :direct))
                     (key senn.win.keys:key))
   t)
 
-(defmethod execute ((ime senn.im.ime:ime) (s converting)
+(defmethod execute ((ime senn.win.im:ime) (s converting)
                     (mode (eql :direct))
                     (key senn.win.keys:key))
   t)
 
-(defmethod execute ((ime senn.im.ime:ime) (s t)
+(defmethod execute ((ime senn.win.im:ime) (s t)
                     (mode (eql :direct))
                     (key senn.win.keys:key))
   nil)
 
-(defmethod execute ((ime senn.im.ime:ime) (s converting)
+(defmethod execute ((ime senn.win.im:ime) (s converting)
                     (mode (eql :hiragana))
                     (key senn.win.keys:key))
   (cond ((senn.win.keys:enter-p key) t)
@@ -32,7 +32,7 @@
         ((senn.win.keys:right-p key) t)
         (t nil)))
 
-(defmethod execute ((ime senn.im.ime:ime) (s editing)
+(defmethod execute ((ime senn.win.im:ime) (s editing)
                     (mode (eql :hiragana))
                     (key senn.win.keys:key))
   (cond ((senn.win.keys:oem-minus-p key) t)

@@ -8,18 +8,13 @@
                                 &key 1st-boundary-index)
   (declare (ignore 1st-boundary-index))
   (assert (string= pron "そら"))
-  (list (senn.im.segment:make-segment
-         :pron "そら"
-         :candidates (list (senn.im.segment:make-candidate
-                            :form "空"))
-         :current-index 0
-         :has-more-candidates-p t)))
+  (list (senn.im.kkc:make-segment :pron "そら" :form "空")))
 
 
 (defclass ime (senn.win.stateful-ime:ime)
   ((kkc
     :initform (make-instance 'kkc)
-    :reader senn.im.ime:ime-kkc)))
+    :reader senn.win.im:ime-kkc)))
 
 (defun editing-view (input)
   (let ((json (jsown:new-js

@@ -106,13 +106,8 @@
                    pron)
       (error ()
         (engine-store-rerun engine-store)
-        (list (senn.im.segment:make-segment
-               :pron pron
-               :candidates (list (senn.im.segment:make-candidate
-                                  :form pron))
-               :current-index 0
-               :has-more-candidates-p t))))))
-
+        (list (senn.im.kkc:make-segment :pron pron :form pron))))))
+               
 (defclass lookup (mixin-base) ())
 
 (defmethod senn.im.kkc:lookup ((mixin lookup) (pron string)

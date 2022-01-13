@@ -10,10 +10,10 @@
     :initform
     (make-instance 'senn.im.predict.katakana:predictor))))
 
-(defmethod senn.im.ime:ime-kkc ((ime ime))
+(defmethod senn.fcitx.im:ime-kkc ((ime ime))
   (slot-value ime 'hachee-kkc))
 
-(defmethod senn.im.ime:ime-predictor ((ime ime))
+(defmethod senn.fcitx.im:ime-predictor ((ime ime))
   (slot-value ime 'predictor))
 
 (defun make-ime (kkc)

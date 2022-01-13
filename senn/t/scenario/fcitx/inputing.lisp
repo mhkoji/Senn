@@ -12,14 +12,9 @@
 (defmethod senn.im.kkc:convert ((kkc (eql 'static-kkc)) (pron string)
                                 &key 1st-boundary-index)
   (assert (string= pron "あ"))
-  (list (senn.im.segment:make-segment
-         :pron "あ"
-         :candidates (list (senn.im.segment:make-candidate :form "亜"))
-         :current-index 0
-         :has-more-candidates-p t
-         :shows-katakana-p nil)))
+  (list (senn.im.kkc:make-segment :pron "あ" :form "亜")))
 
-(defmethod senn.im.ime:ime-kkc ((ime static-kkc-ime))
+(defmethod senn.fcitx.im:ime-kkc ((ime static-kkc-ime))
   'static-kkc)
 
 
@@ -31,7 +26,7 @@
 (defclass predictor-ime (senn.fcitx.stateful-ime:ime)
   ())
 
-(defmethod senn.im.ime:ime-predictor ((ime predictor-ime))
+(defmethod senn.fcitx.im:ime-predictor ((ime predictor-ime))
   'predictor)
 
 

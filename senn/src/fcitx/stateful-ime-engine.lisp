@@ -7,7 +7,7 @@
 (defclass ime (senn.fcitx.stateful-ime:ime)
   ((engine-kkc :initarg :engine-kkc)))
 
-(defmethod senn.im.ime:ime-kkc ((ime ime))
+(defmethod senn.fcitx.im:ime-kkc ((ime ime))
   (slot-value ime 'engine-kkc))
 
 (defun make-ime (engine-runner)
