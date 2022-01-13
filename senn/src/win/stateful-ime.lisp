@@ -23,16 +23,13 @@
 
 (defun history-apply (history segs)
   (mapcar (lambda (seg)
-            (let* ((pron (senn.win.im::segment-pron seg))
+            (let* ((pron (senn.im.kkc:segment-pron seg))
                    (history-form (history-get-form history pron)))
               (if (not history-form)
                   seg
-                  (senn.win.im::make-segment
+                  (senn.im.kkc:make-segment
                    :pron pron
-                   :candidates (list (senn.win.im::make-candidate
-                                      :form history-form))
-                   :current-index 0
-                   :has-more-candidates-p t))))
+                   :form history-form))))
           segs))
 
 ;; application state
@@ -65,7 +62,7 @@
        (setf input-state nil))
       (:direct
        (setf input-mode :hiragana)
-       (setf input-state (senn.win.im:make-editing)))))
+       (setf input-state (senn.im.inputing:make-state)))))
   ;; It seems to need to consume output buffer..
   (format nil "OK~%"))
 
@@ -73,7 +70,7 @@
   (with-accessors ((input-mode state-input-mode)
                    (input-state state-input-state)) (ime-state ime)
     (let ((can-process (senn.win.im.can-process:execute
-                        ime input-state input-mode key)))
+                        input-state input-mode key)))
       (format nil "~A~%" (if can-process 1 0)))))
 
 (defun process-input (ime key)
@@ -81,7 +78,7 @@
                    (input-mode state-input-mode)
                    (input-state state-input-state)) (ime-state ime)
     (let ((result (senn.win.im.process-input:execute
-                   ime input-state input-mode key)))
+                   input-state input-mode ime key)))
       (destructuring-bind (can-process view
                            &key state committed-segments)
           result
@@ -92,8 +89,8 @@
           (dolist (seg committed-segments)
             (history-put
              history
-             (senn.win.im::segment-pron seg)
-             (senn.win.im::segment-cursor-pos-form seg))))
+             (senn.im.converting:segment-pron seg)
+             (senn.im.converting:segment-cursor-pos-form seg))))
         (format nil "~A ~A~%"
                 (if (and can-process view) 1 0)
                 (or view ""))))))

@@ -1,42 +1,19 @@
 (defpackage :senn.win.im.process-input
-  (:use :cl :senn.win.im)
+  (:use :cl)
   (:export :execute))
 (in-package :senn.win.im.process-input)
+
+;;; view
 
 (defvar +crlf+
   (format nil "~A~A" #\Return #\Newline))
 
-(defun move-segment-form-index! (seg diff ime)
-  (senn.win.im::segment-append-candidates! seg ime)
-  (senn.win.im::segment-cursor-pos-move! seg diff))
-
-(defun buffer-empty-p (buffer)
-  (string= (senn.im.buffer:buffer-string buffer) ""))
-
-
-(defun converting-move-curret-segment (c diff)
-  (let ((new-index (+ (converting-current-segment-index c) diff)))
-    (when (<= 0 new-index (1- (length (converting-segments c))))
-      (setf (converting-current-segment-index c) new-index)))
-  c)
-
-(defun converting-current-segment (c)
-  (elt (converting-segments c)
-       (converting-current-segment-index c)))
-
-(defun converting-current-input (c)
-  (format nil "~{~A~}"
-          (mapcar #'senn.win.im::segment-cursor-pos-form
-                  (converting-segments c))))
-
-;;; view
-
-;; May be viewed as the side-effect to the system by process-input
-(defun editing-view (editing-state)
+(defun editing-view (inputing-state)
   (let ((json (jsown:new-js
-                ("input" (senn.im.buffer:buffer-string
-                          (editing-buffer editing-state)))
-                ("predictions" (editing-predictions editing-state)))))
+                ("input"
+                 (senn.im.inputing:state-buffer-string inputing-state))
+                ("predictions"
+                 (senn.im.inputing:state-predictions inputing-state)))))
     (format nil "EDITING ~A" (jsown:to-json json))))
 
 (defun converting-view (converting-state)
@@ -44,19 +21,21 @@
          (jsown:to-json
           (jsown:new-js
            ("forms"
-            (mapcar #'senn.win.im::segment-cursor-pos-form
-                    (converting-segments converting-state)))
+            (mapcar #'senn.im.converting:segment-cursor-pos-form
+                    (senn.im.converting:state-segments converting-state)))
            ("cursor-form-index"
-            (converting-current-segment-index converting-state))
+            (senn.im.converting:state-current-segment-index
+             converting-state))
            ("cursor-form"
-            (let ((segment (converting-current-segment converting-state)))
+            (let ((segment (senn.im.converting:current-segment
+                            converting-state)))
               (jsown:new-js
                ("candidates"
-                (if (senn.win.im::segment-has-more-candidates-p segment)
+                (if (senn.im.converting:segment-has-more-candidates-p segment)
                     nil
-                    (senn.win.im::segment-forms segment)))
-               ("candidate-index"
-                (senn.win.im::segment-current-index segment)))))))))
+                    (senn.im.converting:segment-forms segment)))
+                ("candidate-index"
+                 (senn.im.converting:segment-current-index segment)))))))))
     (format nil "CONVERTING ~A" json-string)))
 
 (defun committed-view (string)
@@ -69,131 +48,129 @@
 
 ;;; interface
 
-(defgeneric execute (ime state mode key))
+(defgeneric execute (state mode ime key))
 
 (defun result (can-process view &key state committed-segments)
   (list can-process view
         :state state
         :committed-segments committed-segments))
 
-(defmethod execute ((ime senn.win.im:ime) (s editing) (mode (eql :direct))
+(defmethod execute ((s senn.im.inputing:state) (mode (eql :direct))
+                    (ime senn.win.im:ime)
                     (key senn.win.keys:key))
   (result t (editing-view s)))
 
-(defmethod execute ((ime senn.win.im:ime) (s converting) (mode (eql :direct))
+(defmethod execute ((s senn.im.converting:state) (mode (eql :direct))
+                    (ime senn.win.im:ime)
                     (key senn.win.keys:key))
   (result t (converting-view s)))
 
-(defmethod execute ((ime senn.win.im:ime) (s t) (mode (eql :direct))
+(defmethod execute ((s t) (mode (eql :direct))
+                    (ime senn.win.im:ime)
                     (key senn.win.keys:key))
   (result nil nil))
 
 
-(defmethod execute ((ime senn.win.im:ime) (s converting) (mode (eql :hiragana))
+(defmethod execute ((s senn.im.converting:state) (mode (eql :hiragana))
+                    (ime senn.win.im:ime)
                     (key senn.win.keys:key))
   (cond ((senn.win.keys:enter-p key)
-         (let ((view (committed-view (converting-current-input s)))
-               (segs (converting-segments s)))
+         (let ((view (committed-view
+                      (senn.im.converting:current-input s)))
+               (segs (senn.im.converting:state-segments s)))
            (result t view
-                   :state (make-editing)
+                   :state (senn.im.inputing:make-state)
                    :committed-segments segs)))
 
         ((or (senn.win.keys:space-p key)
              (senn.win.keys:down-p key))
-         (move-segment-form-index! (converting-current-segment s) +1 ime)
+         (senn.im.converting:current-segment-candidates-move!
+          s +1 (senn.win.im:ime-kkc ime))
          (result t (converting-view s) :state s))
 
         ((senn.win.keys:up-p key)
-         (move-segment-form-index! (converting-current-segment s) -1 ime)
+         (senn.im.converting:current-segment-candidates-move!
+          s -1 (senn.win.im:ime-kkc ime))
          (result t (converting-view s) :state s))
 
         ((senn.win.keys:left-p key)
-         (converting-move-curret-segment s -1)
+         (senn.im.converting:current-segment-move! s -1)
          (result t (converting-view s) :state s))
 
         ((senn.win.keys:right-p key)
-         (converting-move-curret-segment s +1)
-         (result  t (converting-view s) :state s))
+         (senn.im.converting:current-segment-move! s +1)
+         (result t (converting-view s) :state s))
 
         (t
          (result nil nil))))
 
 
-(defun editing-insert-char (state char)
-  (with-accessors ((buffer editing-buffer)) state
-    (setf buffer (senn.im.buffer:insert-char buffer char))))
-
-(defun editing-update-predictions (state ime)
-  (let ((input (senn.im.buffer:buffer-string (editing-buffer state))))
-    (setf (editing-predictions state)
-          (senn.im.predict:execute (senn.win.im:ime-predictor ime)
-                                   input))))
-
-(defmethod execute ((ime senn.win.im:ime) (s editing) (mode (eql :hiragana))
+(defmethod execute ((s senn.im.inputing:state) (mode (eql :hiragana))
+                    (ime senn.win.im:ime)
                     (key senn.win.keys:key))
   (cond ((senn.win.keys:oem-minus-p key)
-         (editing-insert-char
-          s (if (senn.win.keys:key-shift-p key) #\＝ #\ー))
-         (editing-update-predictions s ime)
+         (senn.im.inputing:insert-char!
+          s (if (senn.win.keys:key-shift-p key) #\＝ #\ー)
+          (senn.win.im:ime-predictor ime))
          (result t (editing-view s) :state s))
         ((senn.win.keys:oem-7-p key)
-         (editing-insert-char
-          s (if (senn.win.keys:key-shift-p key) #\〜  #\＾))
-         (editing-update-predictions s ime)
+         (senn.im.inputing:insert-char!
+          s (if (senn.win.keys:key-shift-p key) #\〜  #\＾)
+          (senn.win.im:ime-predictor ime))
          (result t (editing-view s) :state s))
         ((senn.win.keys:oem-5-p key)
-         (editing-insert-char
-          s (if (senn.win.keys:key-shift-p key) #\｜ #\￥))
-         (editing-update-predictions s ime)
+         (senn.im.inputing:insert-char!
+          s (if (senn.win.keys:key-shift-p key) #\｜ #\￥)
+          (senn.win.im:ime-predictor ime))
          (result t (editing-view s) :state s))
         ((senn.win.keys:oem-3-p key)
-         (editing-insert-char
-          s (if (senn.win.keys:key-shift-p key) #\｀ #\＠))
-         (editing-update-predictions s ime)
+         (senn.im.inputing:insert-char!
+          s (if (senn.win.keys:key-shift-p key) #\｀ #\＠)
+          (senn.win.im:ime-predictor ime))
          (result t (editing-view s) :state s))
         ((senn.win.keys:oem-4-p key)
-         (editing-insert-char
-          s (if (senn.win.keys:key-shift-p key) #\｛ #\「))
-         (editing-update-predictions s ime)
+         (senn.im.inputing:insert-char!
+          s (if (senn.win.keys:key-shift-p key) #\｛ #\「)
+          (senn.win.im:ime-predictor ime))
          (result t (editing-view s) :state s))
         ((senn.win.keys:oem-plus-p key)
-         (editing-insert-char
-          s (if (senn.win.keys:key-shift-p key) #\＋ #\；))
-         (editing-update-predictions s ime)
+         (senn.im.inputing:insert-char!
+          s (if (senn.win.keys:key-shift-p key) #\＋ #\；)
+          (senn.win.im:ime-predictor ime))
          (result t (editing-view s) :state s))
         ((senn.win.keys:oem-1-p key)
-         (editing-insert-char
-          s (if (senn.win.keys:key-shift-p key) #\＊ #\：))
-         (editing-update-predictions s ime)
+         (senn.im.inputing:insert-char!
+          s (if (senn.win.keys:key-shift-p key) #\＊ #\：)
+          (senn.win.im:ime-predictor ime))
          (result t (editing-view s) :state s))
         ((senn.win.keys:oem-6-p key)
-         (editing-insert-char
-          s (if (senn.win.keys:key-shift-p key) #\｝ #\」))
-         (editing-update-predictions s ime)
+         (senn.im.inputing:insert-char!
+          s (if (senn.win.keys:key-shift-p key) #\｝ #\」)
+          (senn.win.im:ime-predictor ime))
          (result t (editing-view s) :state s))
         ((senn.win.keys:oem-comma-p key)
-         (editing-insert-char
-          s (if (senn.win.keys:key-shift-p key) #\＜ #\、))
-         (editing-update-predictions s ime)
+         (senn.im.inputing:insert-char!
+          s (if (senn.win.keys:key-shift-p key) #\＜ #\、)
+         (senn.win.im:ime-predictor ime))
          (result t (editing-view s) :state s))
         ((senn.win.keys:oem-period-p key)
-         (editing-insert-char
-          s (if (senn.win.keys:key-shift-p key) #\＞ #\。))
-         (editing-update-predictions s ime)
+         (senn.im.inputing:insert-char!
+          s (if (senn.win.keys:key-shift-p key) #\＞ #\。)
+         (senn.win.im:ime-predictor ime))
          (result t (editing-view s) :state s))
         ((senn.win.keys:oem-2-p key)
-         (editing-insert-char
-          s (if (senn.win.keys:key-shift-p key) #\？ #\・))
-         (editing-update-predictions s ime)
+         (senn.im.inputing:insert-char!
+          s (if (senn.win.keys:key-shift-p key) #\？ #\・)
+         (senn.win.im:ime-predictor ime))
          (result t (editing-view s) :state s))
         ((senn.win.keys:oem-102-p key)
-         (editing-insert-char
-          s (if (senn.win.keys:key-shift-p key) #\＿ #\￥))
-         (editing-update-predictions s ime)
+         (senn.im.inputing:insert-char!
+          s (if (senn.win.keys:key-shift-p key) #\＿ #\￥)
+          (senn.win.im:ime-predictor ime))
          (result t (editing-view s) :state s))
 
         ((senn.win.keys:number-p key)
-         (editing-insert-char
+         (senn.im.inputing:insert-char!
           s (let ((code (senn.win.keys:key-code key)))
               (if (senn.win.keys:key-shift-p key)
                   (cond ((= code (char-code #\0)) #\〜)
@@ -207,45 +184,39 @@
                         ((= code (char-code #\8)) #\（)
                         ((= code (char-code #\9)) #\）)
                         (t (code-char (+ #xFEE0 code))))
-                  (code-char (+ #xFEE0 code)))))
-         (editing-update-predictions s ime)
+                  (code-char (+ #xFEE0 code))))
+          (senn.win.im:ime-predictor ime))
          (result t (editing-view s) :state s))
 
         ((senn.win.keys:alphabet-p key)
-         (editing-insert-char
+         (senn.im.inputing:insert-char!
           ;; to lower case by adding #x20
-          s (code-char (+ #x20 (senn.win.keys:key-code key))))
-         (editing-update-predictions s ime)
+          s (code-char (+ #x20 (senn.win.keys:key-code key)))
+          (senn.win.im:ime-predictor ime))
          (result t (editing-view s) :state s))
 
         ((senn.win.keys:backspace-p key)
-         (let ((pron (senn.im.buffer:buffer-string (editing-buffer s))))
-           (if (string/= pron "")
-               (progn
-                 (with-accessors ((buffer editing-buffer)) s
-                   (setf buffer (senn.im.buffer:delete-char buffer)))
-                 (editing-update-predictions s ime)
-                 (result t (editing-view s) :state s))
-               ;; IMEが文字を削除していない -> OSに文字を削除してもらう
-               (result nil nil))))
+         (if (senn.im.inputing:delete-char!
+              s (senn.win.im:ime-predictor ime))
+             (result t (editing-view s) :state s)
+             ;; IMEが文字を削除していない -> OSに文字を削除してもらう
+             (result nil nil)))
 
         ((senn.win.keys:space-p key)
-         (let ((pron (senn.im.buffer:buffer-string (editing-buffer s))))
-           (if (string/= pron "")
-               (let ((converting (senn.win.im::convert
-                                  (senn.win.im:ime-kkc ime)
-                                  pron)))
-                 (let ((view (converting-view converting)))
-                   (result t view :state converting)))
-               (result nil nil))))
+         (if (senn.im.inputing:state-buffer-empty-p s)
+             (result nil nil)
+             (let ((new-state
+                    (senn.im.converting:convert
+                     (senn.win.im:ime-kkc ime)
+                     (senn.im.inputing:state-buffer-get-pron s))))
+               (result t (converting-view new-state) :state new-state))))
 
         ((senn.win.keys:enter-p key)
-         (with-accessors ((buffer editing-buffer)) s
-           (let ((view (committed-view
-                        (if (buffer-empty-p buffer)
-                            +crlf+
-                            (senn.im.buffer:buffer-string buffer)))))
-             (result t view :state (make-editing)))))
+         (let ((view (committed-view
+                      (if (senn.im.inputing:state-buffer-empty-p s)
+                          +crlf+
+                          (senn.im.inputing:state-buffer-string s)))))
+           (result t view :state (senn.im.inputing:make-state))))
 
         (t
          (result nil nil))))

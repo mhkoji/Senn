@@ -1,5 +1,6 @@
 (defpackage :senn.t.scenario.win
-  (:use :cl))
+  (:use :cl)
+  (:export :run))
 (in-package :senn.t.scenario.win)
 
 (defclass kkc () ())
@@ -65,8 +66,11 @@
                               :cursor-form-index 0
                               :cursor-form (list nil 0)))))))
 
-(fiveam:def-suite :senn.win)
-(fiveam:in-suite* :senn.win.stateful-ime :in :senn.win)
+(defun run ()
+  (fiveam:run! :senn.t.scenario.win))
+
+(fiveam:def-suite :senn.t.scenario.win)
+(fiveam:in-suite* :senn.t.scenario.win)
 
 (fiveam:test test-convert
   (test-convert :test fiveam:is))

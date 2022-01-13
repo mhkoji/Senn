@@ -1,27 +1,23 @@
 (defpackage :senn.win.im.can-process
-  (:use :cl :senn.win.im)
+  (:use :cl)
   (:export :execute))
 (in-package :senn.win.im.can-process)
 
-(defgeneric execute (ime state mode key))
+(defgeneric execute (state mode key))
 
-(defmethod execute ((ime senn.win.im:ime) (s editing)
-                    (mode (eql :direct))
+(defmethod execute ((s senn.im.inputing:state) (mode (eql :direct))
                     (key senn.win.keys:key))
   t)
 
-(defmethod execute ((ime senn.win.im:ime) (s converting)
-                    (mode (eql :direct))
+(defmethod execute ((s senn.im.converting:state) (mode (eql :direct))
                     (key senn.win.keys:key))
   t)
 
-(defmethod execute ((ime senn.win.im:ime) (s t)
-                    (mode (eql :direct))
+(defmethod execute ((s t) (mode (eql :direct))
                     (key senn.win.keys:key))
   nil)
 
-(defmethod execute ((ime senn.win.im:ime) (s converting)
-                    (mode (eql :hiragana))
+(defmethod execute ((s senn.im.converting:state) (mode (eql :hiragana))
                     (key senn.win.keys:key))
   (cond ((senn.win.keys:enter-p key) t)
         ((or (senn.win.keys:space-p key)
@@ -32,8 +28,7 @@
         ((senn.win.keys:right-p key) t)
         (t nil)))
 
-(defmethod execute ((ime senn.win.im:ime) (s editing)
-                    (mode (eql :hiragana))
+(defmethod execute ((s senn.im.inputing:state) (mode (eql :hiragana))
                     (key senn.win.keys:key))
   (cond ((senn.win.keys:oem-minus-p key) t)
         ((senn.win.keys:oem-7-p key) t)
@@ -50,11 +45,9 @@
         ((senn.win.keys:number-p key) t)
         ((senn.win.keys:alphabet-p key) t)
         ((senn.win.keys:backspace-p key)
-         (let ((pron (senn.im.buffer:buffer-string (editing-buffer s))))
-           ;; IMEが文字を削除していない -> OSに文字を削除してもらう
-           (not (string= pron ""))))
+         ;; IMEが文字を削除していない -> OSに文字を削除してもらう
+         (not (senn.im.inputing:state-buffer-empty-p s)))
         ((senn.win.keys:space-p key)
-         (let ((pron (senn.im.buffer:buffer-string (editing-buffer s))))
-           (not (string= pron ""))))
+         (not (senn.im.inputing:state-buffer-empty-p s)))
         ((senn.win.keys:enter-p key) t)
         (t nil)))
