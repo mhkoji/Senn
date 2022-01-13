@@ -12,10 +12,9 @@
   (list (senn.im.kkc:make-segment :pron "きょう" :form "きょう")
         (senn.im.kkc:make-segment :pron "は" :form "は")))
          
-(defmethod senn.im.kkc:lookup ((kkc (eql 'static-kkc)) (pron string)
-                               &key next prev)
-  (declare (ignore next prev))
-  (assert (string= pron "きょう"))
+(defmethod senn.im.kkc:list-candidates ((kkc (eql 'static-kkc))
+                                        (index number))
+  (assert (= index 0))
   (list (senn.im.kkc:make-candidate :form "きょう")
         (senn.im.kkc:make-candidate :form "今日")
         (senn.im.kkc:make-candidate :form "強")))

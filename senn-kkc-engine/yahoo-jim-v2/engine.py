@@ -37,7 +37,7 @@ class YahooClient:
         return dict_resp['result']['segment']
 
 def server(yahoo_client):
-    candidate_dict = {}
+    candidates_list = []
 
     for line in sys.stdin:
         req = json.loads(line)
@@ -47,7 +47,7 @@ def server(yahoo_client):
             pron = req['args']['pron']
             segment = yahoo_client.convert(pron)
 
-            candidate_dict = {}
+            candidates_list = []
             array = []
             for seg in segment:
                 form = seg['candidate'][0]
@@ -62,16 +62,17 @@ def server(yahoo_client):
                     candidates.append({
                         'form': form
                     })
-                ## TODO: care for the same pronunciations
-                candidate_dict[pron] = candidates
+                candidates_list.append(candidates)
 
             resp = json.dumps(array)
             sys.stdout.write(resp + '\n')
             sys.stdout.flush()
 
-        elif op == 'LOOKUP':
-            pron = req['args']['pron']
-            candidates = candidate_dict.get(pron, [])
+        elif op == 'LIST_CANDIDATES':
+            index = req['args']['index']
+            candidates = []
+            if 0 <= index < len(candidates_list):
+                candidates = candidates_list[index]
             resp = json.dumps(candidates)
             sys.stdout.write(resp + '\n')
             sys.stdout.flush()

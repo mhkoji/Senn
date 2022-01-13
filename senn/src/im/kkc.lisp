@@ -9,7 +9,7 @@
            :make-candidate
 
            :convert
-           :lookup))
+           :list-candidates))
 (in-package :senn.im.kkc)
 
 (defstruct segment pron form)
@@ -18,4 +18,4 @@
 
 (defgeneric convert (kkc pron &key 1st-boundary-index))
 
-(defgeneric lookup (kkc pron &key prev next))
+(defgeneric list-candidates (kkc index))

@@ -1,10 +1,9 @@
-;; convert/lookup depending on a (third-party) kkc engine
+;; convert/list-candidates depending on a (third-party) kkc engine
 (defpackage :senn.im.kkc.engine
   (:use :cl)
-  (:export :convert
-           :lookup
+  (:export :list-candidates
            :kkc
-           :close-mixin
+           :close-kkc
            :run-engine
            :kill-engine
            :make-engine-runner
@@ -90,17 +89,15 @@
 
 ;;;
 
-(defclass mixin-base ()
+(defclass kkc ()
   ((engine-store
     :initarg :engine-store
     :reader engine-store)))
 
-(defclass convert (mixin-base) ())
-
-(defmethod senn.im.kkc:convert ((mixin convert) (pron string)
+(defmethod senn.im.kkc:convert ((kkc kkc) (pron string)
                                 &key 1st-boundary-index)
   (declare (ignore 1st-boundary-index))
-  (with-accessors ((engine-store engine-store)) mixin
+  (with-accessors ((engine-store engine-store)) kkc
     (handler-case (senn.im.kkc.request:convert
                    (engine-store-engine engine-store)
                    pron)
@@ -108,21 +105,14 @@
         (engine-store-rerun engine-store)
         (list (senn.im.kkc:make-segment :pron pron :form pron))))))
                
-(defclass lookup (mixin-base) ())
-
-(defmethod senn.im.kkc:lookup ((mixin lookup) (pron string)
-                               &key prev next)
-  (declare (ignore next prev))
-  (with-accessors ((engine-store engine-store)) mixin
-    (handler-case (senn.im.kkc.request:lookup
+(defmethod senn.im.kkc:list-candidates ((kkc kkc) (index number))
+  (with-accessors ((engine-store engine-store)) kkc
+    (handler-case (senn.im.kkc.request:list-candidates
                    (engine-store-engine engine-store)
-                   pron)
+                   index)
       (error ()
         (engine-store-rerun engine-store)
         nil))))
 
-(defclass kkc (convert lookup)
-  ())
-
-(defun close-mixin (mixin)
-  (kill-engine (engine-store-engine (engine-store mixin))))
+(defun close-kkc (kkc)
+  (kill-engine (engine-store-engine (engine-store kkc))))

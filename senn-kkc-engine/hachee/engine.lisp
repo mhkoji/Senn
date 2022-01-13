@@ -26,26 +26,27 @@
   (force-output *standard-output*))
 
 (defun main ()
-  (loop for jsown = (read-jsown) while jsown do
-    (let ((j-op (jsown:val jsown "op"))
-          (j-args (jsown:val jsown "args")))
-      (ecase (alexandria:make-keyword j-op)
-        (:convert
-         (let ((entries (hachee.kkc.convert:execute
-                         *kkc*
-                         (jsown:val j-args "pron"))))
+  (let ((entries nil))
+    (loop for jsown = (read-jsown) while jsown do
+      (let ((j-op (jsown:val jsown "op"))
+            (j-args (jsown:val jsown "args")))
+        (ecase (alexandria:make-keyword j-op)
+          (:convert
+           (setf entries (hachee.kkc.convert:execute
+                          *kkc* (jsown:val j-args "pron")))
            (send-jsown
             (mapcar (lambda (e)
                       (jsown:new-js
                         ("form" (hachee.kkc.convert:entry-form e))
                         ("pron" (hachee.kkc.convert:entry-pron e))))
-                    entries))))
-        (:lookup
-         (let ((items (hachee.kkc.lookup:execute
-                       *kkc*
-                       (jsown:val j-args "pron"))))
-           (send-jsown
-            (mapcar (lambda (item)
-                      (jsown:new-js
-                        ("form" (hachee.kkc.lookup:item-form item))))
-                    items))))))))
+                    entries)))
+          (:list_candidates
+           (let ((index (jsown:val j-args "index")))
+             (send-jsown
+              (when (and (<= 0 index) (< index (length entries)))
+                (let ((pron (hachee.kkc.convert:entry-pron
+                             (elt entries index))))
+                  (mapcar (lambda (item)
+                            (jsown:new-js
+                              ("form" (hachee.kkc.lookup:item-form item))))
+                          (hachee.kkc.lookup:execute *kkc* pron))))))))))))

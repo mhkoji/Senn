@@ -2,7 +2,7 @@
   (:use :cl)
   (:export :send-line
            :convert
-           :lookup))
+           :list-candidates))
 (in-package :senn.im.kkc.request)
 
 (defgeneric send-line (agent jsown))
@@ -24,13 +24,13 @@
                 (senn.im.kkc:make-segment :pron pron :form form)))
             j-segs)))
 
-(defun lookup (agent pron)
+(defun list-candidates (agent index)
   (let ((j-cands (send-json
                   agent
                   (jsown:new-js
-                    ("op" :lookup)
+                    ("op" :list_candidates)
                     ("args" (jsown:new-js
-                              ("pron" pron)))))))
+                              ("index" index)))))))
     (mapcar (lambda (j-cand)
               (let ((form (jsown:val j-cand "form")))
                 (senn.im.kkc:make-candidate :form form)))

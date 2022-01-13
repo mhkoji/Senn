@@ -20,4 +20,4 @@
                  :engine-runner engine-runner))))
 
 (defun close-ime (ime)
-  (senn.im.kkc.engine:close-mixin (slot-value ime 'engine-kkc)))
+  (senn.im.kkc.engine:close-kkc (slot-value ime 'engine-kkc)))
