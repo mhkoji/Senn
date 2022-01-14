@@ -1,6 +1,6 @@
 (defpackage :senn.bin.ibus-server
   (:use :cl)
-  (:export :run))
+  (:export :tcp-run))
 (in-package :senn.bin.ibus-server)
 
 (defun tcp-run (kkc)
