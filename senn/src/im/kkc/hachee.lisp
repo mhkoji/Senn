@@ -2,7 +2,8 @@
 (defpackage :senn.im.kkc.hachee
   (:use :cl)
   (:export :kkc
-           :build-kkc))
+           :build-kkc
+           :make-holder))
 (in-package :senn.im.kkc.hachee)
 
 (defun build-kkc ()
@@ -17,6 +18,8 @@
 
 ;;;
 
+(defstruct holder entries)
+
 (defclass kkc ()
   ((impl
     :initarg :impl
@@ -25,9 +28,9 @@
     :initarg :extended-dictionary
     :initform nil
     :reader kkc-extended-dictionary)
-   (entries
-    :initform nil
-    :accessor kkc-entries)))
+   (holder
+    :initarg :holder
+    :reader kkc-holder)))
 
 (defun kkc-convert (kkc)
   (let ((ex-dict (kkc-extended-dictionary kkc)))
@@ -39,18 +42,18 @@
 
 (defmethod senn.im.kkc:convert ((kkc kkc) (pron string)
                                 &key 1st-boundary-index)
-  (setf (kkc-entries kkc)
-        (hachee.kkc.convert:execute
-         (kkc-convert kkc) pron
-         :1st-boundary-index 1st-boundary-index))
-  (mapcar (lambda (e)
-            (senn.im.kkc:make-segment
-             :pron (hachee.kkc.convert:entry-pron e)
-             :form (hachee.kkc.convert:entry-form e)))
-          (kkc-entries kkc)))
+  (with-accessors ((entries holder-entries)) (kkc-holder kkc)
+    (setf entries (hachee.kkc.convert:execute
+                   (kkc-convert kkc) pron
+                   :1st-boundary-index 1st-boundary-index))
+    (mapcar (lambda (e)
+              (senn.im.kkc:make-segment
+               :pron (hachee.kkc.convert:entry-pron e)
+               :form (hachee.kkc.convert:entry-form e)))
+            entries)))
 
 (defmethod senn.im.kkc:list-candidates ((kkc kkc) (index number))
-  (with-accessors ((entries kkc-entries)) kkc
+  (with-accessors ((entries holder-entries)) (kkc-holder kkc)
     (when (and (<= 0 index) (< index (length entries)))
       (let ((pron (hachee.kkc.convert:entry-pron (elt entries index))))
         (mapcar (lambda (item)

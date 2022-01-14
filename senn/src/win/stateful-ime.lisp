@@ -32,12 +32,22 @@
                    :form history-form))))
           segs))
 
+(defclass history-overwrite-mixin ()
+  ((history :initarg :history)))
+
+(defmethod senn.im.kkc:convert ((kkc history-overwrite-mixin) (pron string)
+                                &key 1st-boundary-index)
+  (declare (ignore 1st-boundary-index))
+  (let ((segs (call-next-method)))
+    (history-apply (slot-value kkc 'history) segs)))
+
 ;; application state
 (defstruct state
   input-mode
   input-state
   history
-  extended-dictionary)
+  extended-dictionary
+  hachee-kkc-holder)
 
 (defun make-initial-state ()
   (make-state
@@ -45,7 +55,9 @@
    :input-state nil
    :history (make-history)
    :extended-dictionary
-   (hachee.kkc.dictionary:make-dictionary)))
+   (hachee.kkc.dictionary:make-dictionary)
+   :hachee-kkc-holder
+   (senn.im.kkc.hachee:make-holder)))
 
 (defgeneric ime-state (ime))
 
@@ -105,15 +117,9 @@
 
 ;;;
 
-(defclass hachee-kkc (senn.im.kkc.hachee:kkc)
-  ((history
-    :initarg :history)))
-
-(defmethod senn.im.kkc:convert ((kkc hachee-kkc) (pron string)
-                                &key 1st-boundary-index)
-  (declare (ignore 1st-boundary-index))
-  (let ((segs (call-next-method)))
-    (history-apply (slot-value kkc 'history) segs)))
+(defclass kkc (history-overwrite-mixin
+               senn.im.kkc.hachee:kkc)
+  ())
 
 (defclass stateful-hachee-ime (ime)
   ((kkc
@@ -123,10 +129,12 @@
     (make-instance 'senn.im.predict.katakana:predictor))))
 
 (defmethod senn.win.im:ime-kkc ((ime stateful-hachee-ime))
-  (make-instance 'hachee-kkc
-   :history (state-history (ime-state ime))
-   :impl (slot-value ime 'kkc)
-   :extended-dictionary (state-extended-dictionary (ime-state ime))))
+  (with-accessors ((state ime-state)) ime
+    (make-instance 'kkc
+     :history (state-history state)
+     :impl (slot-value ime 'kkc)
+     :extended-dictionary (state-extended-dictionary state)
+     :holder (state-hachee-kkc-holder state))))
 
 (defmethod senn.win.im:ime-predictor ((ime stateful-hachee-ime))
   (slot-value ime 'predictor))
