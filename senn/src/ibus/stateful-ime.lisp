@@ -14,22 +14,22 @@
 (defgeneric ime-state (ime))
 
 (defstruct state
-  input-state
+  edit-state
   input-mode)
 
 (defun make-initial-state ()
   (make-state
-   :input-state nil
+   :edit-state nil
    :input-mode :direct))
 
 (defun process-input (ime key)
   (with-accessors ((input-mode state-input-mode)
-                   (input-state state-input-state)) (ime-state ime)
+                   (edit-state state-edit-state)) (ime-state ime)
     (if (eq input-mode :hiragana)
         (destructuring-bind (consumed-p view &key state)
-            (senn.fcitx.im.process-input:execute ime input-state key)
+            (senn.fcitx.im.process-input:execute edit-state ime key)
           (when state
-            (setf input-state state))
+            (setf edit-state state))
           (format nil "~A ~A"
                   (if consumed-p 1 0)
                   (if (and consumed-p view) view "NONE")))
@@ -37,54 +37,45 @@
 
 (defun toggle-input-mode (ime)
   (with-accessors ((input-mode state-input-mode)
-                   (input-state state-input-state)) (ime-state ime)
+                   (edit-state state-edit-state)) (ime-state ime)
     (ecase input-mode
       (:hiragana
        (setf input-mode :direct)
-       (setf input-state nil))
+       (setf edit-state nil))
       (:direct
        (setf input-mode :hiragana)
-       (setf input-state (senn.im.inputting:make-state))))
+       (setf edit-state (senn.im.inputting:make-state))))
     (format nil "~A" input-mode)))
 
 ;;;
 
-(defclass stateful ()
-  ((state :initarg :state)))
-
-(defmethod ime-state ((ime stateful))
-  (slot-value ime 'state))
+(defclass ime (senn.fcitx.im:ime)
+  ((state
+    :initarg :state
+    :reader ime-state)
+   (kkc
+    :initarg :kkc
+    :reader senn.fcitx.im:ime-kkc)))
 
 ;;;
-
-(defclass stateful-hachee-ime (stateful senn.im.ime:ime)
-  ((hachee-kkc
-    :initarg :hachee-kkc)))
-
-(defmethod senn.im.ime:ime-kkc ((ime stateful-hachee-ime))
-  (slot-value ime 'hachee-kkc))
 
 (defun hachee-make-ime (kkc)
-  (make-instance 'stateful-hachee-ime
-   :state (make-initial-state)
-   :hachee-kkc (make-instance 'senn.im.kkc.hachee:kkc :impl kkc)))
+  (make-instance 'ime
+   :kkc (make-instance 'senn.im.kkc.hachee:kkc
+         :impl kkc
+         :holder (senn.im.kkc.hachee:make-holder))
+   :state (make-initial-state)))
+
 ;;;
 
-(defclass stateful-engine-ime (stateful senn.im.ime:ime)
-  ((engine-kkc
-    :initarg :engine-kkc)))
-
-(defmethod senn.im.ime:ime-kkc ((ime stateful-engine-ime))
-  (slot-value ime 'engine-kkc))
-
 (defun engine-make-ime (engine-runner)
-  (make-instance 'stateful-engine-ime
-   :state (make-initial-state)
-   :engine-kkc (make-instance 'senn.im.kkc.engine:kkc
-                :engine-store
-                (senn.im.kkc.engine:make-engine-store
-                 :engine (senn.im.kkc.engine:run-engine engine-runner)
-                 :engine-runner engine-runner))))
+  (make-instance 'ime
+   :kkc (make-instance 'senn.im.kkc.engine:kkc
+         :engine-store
+         (senn.im.kkc.engine:make-engine-store
+          :engine (senn.im.kkc.engine:run-engine engine-runner)
+          :engine-runner engine-runner))
+   :state (make-initial-state)))
 
 (defun engine-close-ime (ime)
-  (senn.im.kkc.engine:close-kkc (slot-value ime 'engine-kkc)))
+  (senn.im.kkc.engine:close-kkc (slot-value ime 'kkc)))

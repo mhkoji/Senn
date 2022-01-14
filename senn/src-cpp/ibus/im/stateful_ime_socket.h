@@ -28,28 +28,21 @@ class StatefulIMESocket : public StatefulIMEProxy {
 
   class ReconnectableRequester : public senn::RequesterInterface {
   public:
+    ~ReconnectableRequester();
     ReconnectableRequester(IMEServerLauncher *,
-                           senn::ipc::socket::Connection **conn);
+                           senn::ipc::socket::Connection *conn);
 
     void Request(const std::string &, std::string *);
 
   private:
     const IMEServerLauncher *launcher_;
 
-    senn::ipc::socket::Connection **conn_;
+    senn::ipc::socket::Connection *conn_;
   };
 
 public:
-  StatefulIMESocket(IMEServerLauncher *);
-  ~StatefulIMESocket();
-
-private:
-  const IMEServerLauncher *launcher_;
-
-  senn::ipc::socket::Connection *conn_;
-
-public:
-  static StatefulIMESocket *SpawnAndCreate(const std::string &path);
+  static StatefulIMEProxy *SpawnAndCreate(const std::string &path);
+  static StatefulIMEProxy *ConnectTo(unsigned short port);
 };
 
 } // namespace im

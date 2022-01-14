@@ -1,7 +1,9 @@
 (asdf:defsystem :senn-ibus
   :serial t
-  :pathname "src/ibus"
+  :pathname "src"
   :components
-  ((:file "stateful-ime")
-   (:file "server"))
-  :depends-on (:senn-fcitx))
+  ((:file "im/kkc/hachee")
+   (:file "ibus/stateful-ime")
+   (:file "ibus/server"))
+  :depends-on (:hachee-kkc
+               :senn-fcitx))
