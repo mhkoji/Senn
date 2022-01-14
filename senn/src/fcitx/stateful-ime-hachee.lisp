@@ -19,4 +19,6 @@
 (defun make-ime (kkc)
   (make-instance 'ime
    :state (senn.fcitx.stateful-ime:make-initial-state)
-   :hachee-kkc (make-instance 'senn.im.kkc.hachee:kkc :impl kkc)))
+   :hachee-kkc (make-instance 'senn.im.kkc.hachee:kkc
+                :impl kkc
+                :holder (senn.im.kkc.hachee:make-holder))))
