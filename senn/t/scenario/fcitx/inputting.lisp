@@ -1,6 +1,6 @@
-(defpackage :senn.t.scenario.fcitx.inputing
+(defpackage :senn.t.scenario.fcitx.inputting
   (:use :cl))
-(in-package :senn.t.scenario.fcitx.inputing)
+(in-package :senn.t.scenario.fcitx.inputting)
 
 (defclass ime (senn.fcitx.stateful-ime:ime)
   ())
@@ -224,7 +224,7 @@
                                    :input "い"
                                    :committed-input "亜"))))))
 
-(defmacro convert-and-backspace-then-inputing (&key test)
+(defmacro convert-and-backspace-then-inputting (&key test)
   `(let ((ime (make-ime 'static-kkc-ime)))
      (senn.fcitx.stateful-ime:process-input
       ime (senn.fcitx.keys:make-key :sym 97 :state 0))
@@ -363,7 +363,7 @@
                                    :committed-input ""))))))
 
 (senn.t.scenario.fcitx:add-tests
- :inputing
+ :inputting
  buffer-cursor-goes-around-in-the-buffer
  buffer-cursor-does-not-go-beyond-the-left-end
  buffer-cursor-does-not-go-beyond-the-right-end
@@ -375,7 +375,7 @@
  backspace-then-delete
  backspace-then-nothing-if-empty
  space-then-full-width-space-if-empty
- convert-and-backspace-then-inputing
+ convert-and-backspace-then-inputting
  convert-and-char-then-commit
  char-then-predictions
  tab-then-prediction-selection

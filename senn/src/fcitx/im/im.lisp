@@ -12,7 +12,7 @@
            :selecting-from-predictions-current-input
            :selecting-from-predictions-move!
            :make-selecting-from-predictions
-           :editing-view/inputing-state
+           :editing-view/inputting-state
            :editing-view/katakana-state
            :editing-view/selecting-from-predictions
            :converting-view/converting-state))
@@ -69,11 +69,11 @@
                 ("committed-input"  committed-string))))
     (format nil "EDITING ~A" (jsown:to-json json))))
 
-(defun editing-view/inputing-state (s &key committed-string)
-  (let ((buffer (senn.im.inputing:state-buffer s)))
+(defun editing-view/inputting-state (s &key committed-string)
+  (let ((buffer (senn.im.inputting:state-buffer s)))
     (make-editing-view (buffer-cursor-pos-utf8 buffer)
                        (senn.im.buffer:buffer-string buffer)
-                       (senn.im.inputing:state-predictions s)
+                       (senn.im.inputting:state-predictions s)
                        nil
                        (or committed-string ""))))
 
