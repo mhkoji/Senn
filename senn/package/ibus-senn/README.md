@@ -20,16 +20,8 @@ ibus-senn_0.0.1_all.deb
 % /usr/lib/senn/server
 
 % sudo apt install -y gnome-common libibus-1.0-dev
-% cd <path/to/Hachee>/dists/ibus-senn/frontend
+% cd <path/to/Senn>/senn/package/ibus-senn/
 % ./autogen.sh
 % make && sudo make install
 % ibus-daemon -drx
-```
-
-## Debug info
-
-Connect to a server listening on port 5678:
-
-```
-% /usr/lib/ibus/ibus-engine-senn --ime-factory connect-to
 ```

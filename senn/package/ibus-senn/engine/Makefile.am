@@ -23,12 +23,12 @@ AM_CFLAGS = \
 	-Wno-unused-function \
 	$(NULL)
 
-AM_LDFLAGS = \
-	../dep-ecl/senn-lib-ibus--all-systems.a \
-	-lecl \
-	-L/usr/lib/senn/ \
-	-Wl,-rpath /usr/lib/senn/ \
-	$(NULL)
+# AM_LDFLAGS = \
+# 	../dep-ecl/senn-lib-ibus--all-systems.a \
+# 	-lecl \
+# 	-L/usr/lib/senn/ \
+# 	-Wl,-rpath /usr/lib/senn/ \
+# 	$(NULL)
 
 # AM_LDFLAGS = \
 # 	-lsenn_ibus \
@@ -50,12 +50,12 @@ libexec_PROGRAMS = \
 
 ibus_engine_senn_SOURCES = \
 	main.cpp \
-	../../../src-cpp/process/process.cpp \
 	../../../src-cpp/ibus/im/stateful_ime_proxy.cpp \
-	../../../src-cpp/ibus/im/stateful_ime_ecl.cpp \
+	../../../src-cpp/ibus/im/stateful_ime_socket.cpp \
+	../../../src-cpp/ipc/socket.cpp \
+	../../../src-cpp/process/process.cpp \
 	$(NULL)
-#	../../../src-cpp/ipc/socket.cpp \
-#	../../../src-cpp/ibus/im/stateful_ime_socket.cpp \
+#	../../../src-cpp/ibus/im/stateful_ime_ecl.cpp \
 #	../../../src-cpp/ibus/im/stateful_ime_sbcl.cpp \
 ibus_engine_senn_CFLAGS = \
 	$(AM_CFLAGS) \

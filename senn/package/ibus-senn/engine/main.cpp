@@ -8,8 +8,8 @@
 #include <cstring>
 #include <iostream>
 
-#include "ibus/im/stateful_ime_ecl.h"
-// #include "ibus/im/stateful_ime_ipc.h"
+// #include "ibus/im/stateful_ime_ecl.h"
+#include "ibus/im/stateful_ime_socket.h"
 // #include "ibus/im/stateful_ime_sbcl.h"
 // #include "ibus/im/stateful_ime_exec.h"
 
@@ -61,13 +61,32 @@ void Init(GTypeInstance *p, gpointer klass) {
   ibus_prop_list_append(engine->prop_list, engine->prop_input_mode);
 }
 
-void Show(IBusEngine *engine,
-          const senn::fcitx::im::views::Converting *converting) {
+void ShowCandidateWindow(IBusEngine *engine,
+                         const std::vector<std::string> &word_strings,
+                         const int index) {
+  const gboolean kRound = TRUE;
+  const size_t kPageSize = word_strings.size();
+  IBusLookupTable *table =
+      ibus_lookup_table_new(kPageSize, index, TRUE, kRound);
+
+  ibus_lookup_table_set_orientation(table, IBUS_ORIENTATION_VERTICAL);
+
+  for (int i = 0; i < word_strings.size(); ++i) {
+    IBusText *text = ibus_text_new_from_string(word_strings[i].c_str());
+    // releases text.
+    ibus_lookup_table_append_candidate(table, text);
+  }
+
+  // releases table
+  ibus_engine_update_lookup_table(engine, table, TRUE);
+}
+
+void Show(IBusEngine *engine, const senn::fcitx::im::views::Converting *view) {
   IBusText *text = nullptr;
   {
     std::string data;
-    std::vector<std::string>::const_iterator it = converting->forms.begin();
-    for (; it != converting->forms.end(); ++it) {
+    std::vector<std::string>::const_iterator it = view->forms.begin();
+    for (; it != view->forms.end(); ++it) {
       data.append(*it);
     }
     text = ibus_text_new_from_string(data.c_str());
@@ -79,9 +98,9 @@ void Show(IBusEngine *engine,
   int cursor_pos = 0;
   {
     int start = 0, end = 0;
-    int i = 0, cursor_form_index = converting->cursor_form_index;
-    std::vector<std::string>::const_iterator it = converting->forms.begin();
-    for (; it != converting->forms.end(); ++it, ++i) {
+    int i = 0, cursor_form_index = view->cursor_form_index;
+    std::vector<std::string>::const_iterator it = view->forms.begin();
+    for (; it != view->forms.end(); ++it, ++i) {
       end += g_utf8_strlen(it->c_str(), -1);
       if (i == cursor_form_index) {
         cursor_pos = start;
@@ -98,33 +117,41 @@ void Show(IBusEngine *engine,
     }
   }
 
+  if (0 < view->cursor_form_candidates.size()) {
+    ShowCandidateWindow(engine, view->cursor_form_candidates,
+                        view->cursor_form_candidate_index);
+  } else {
+    ibus_engine_hide_lookup_table(engine);
+  }
+
   ibus_engine_update_preedit_text_with_mode(engine, text, cursor_pos, TRUE,
                                             IBUS_ENGINE_PREEDIT_COMMIT);
 }
 
-void Show(IBusEngine *engine, const senn::fcitx::im::views::Editing *editing) {
-  if (editing->committed_input != "") {
+void Show(IBusEngine *engine, const senn::fcitx::im::views::Editing *view) {
+  ibus_engine_hide_lookup_table(engine);
+
+  if (view->committed_input != "") {
     IBusText *committed_text =
-        ibus_text_new_from_string(editing->committed_input.c_str());
+        ibus_text_new_from_string(view->committed_input.c_str());
     ibus_engine_commit_text(engine, committed_text);
   }
 
-  if (editing->input == "") {
+  if (view->input == "") {
     // Without this, the layout of the input console breaks
     // (The cursor is not shown, for example)
     ibus_engine_hide_preedit_text(engine);
     return;
   }
 
-  IBusText *input_text = ibus_text_new_from_string(editing->input.c_str());
+  IBusText *input_text = ibus_text_new_from_string(view->input.c_str());
   ibus_text_append_attribute(input_text, IBUS_ATTR_TYPE_UNDERLINE,
                              IBUS_ATTR_UNDERLINE_SINGLE, 0,
-                             g_utf8_strlen(editing->input.c_str(), -1));
+                             g_utf8_strlen(view->input.c_str(), -1));
 
   ibus_engine_update_preedit_text_with_mode(
-      engine, input_text,
-      g_utf8_strlen(editing->input.c_str(), editing->cursor_pos), TRUE,
-      IBUS_ENGINE_PREEDIT_COMMIT);
+      engine, input_text, g_utf8_strlen(view->input.c_str(), view->cursor_pos),
+      TRUE, IBUS_ENGINE_PREEDIT_COMMIT);
 }
 
 void UpdatePropInputMode(IBusEngine *p, senn::ibus::im::InputMode mode) {
@@ -146,6 +173,7 @@ void UpdatePropInputMode(IBusEngine *p, senn::ibus::im::InputMode mode) {
 
 gboolean ToggleInputMode(IBusEngine *p) {
   ibus_engine_hide_preedit_text(p);
+  ibus_engine_hide_lookup_table(p);
 
   senn::ibus::im::InputMode m = ENGINE(p)->ime->ToggleInputMode();
   UpdatePropInputMode(p, m);
@@ -178,20 +206,18 @@ void FocusIn(IBusEngine *p) {
 } // namespace ibus_senn
 } // namespace senn
 
-/*
-class ProxyConnectToIMEFactory : public senn::ibus_senn::engine::IMEFactory {
+class SocketIMEFactory : public senn::ibus_senn::engine::IMEFactory {
 public:
   senn::ibus::im::StatefulIME *CreateIME() {
-    return new senn::ibus::im::StatefulIMEProxy(
-        std::unique_ptr<senn::RequesterInterface>(
-            new senn::ipc::Requester(senn::ipc::Connection::ConnectTo(5678))));
+    return senn::ibus::im::StatefulIMESocket::ConnectTo(5678);
   }
 
   static senn::ibus_senn::engine::IMEFactory *Create() {
-    return new ProxyConnectToIMEFactory();
+    return new SocketIMEFactory();
   }
 };
 
+/*
 class IPCIMEFactory : public senn::ibus_senn::engine::IMEFactory {
 public:
   ~IPCIMEFactory() { delete ime_; }
@@ -224,7 +250,7 @@ public:
     return new SbclIMEFactory();
   }
 };
-*/
+
 
 class EclIMEFactory : public senn::ibus_senn::engine::IMEFactory {
 public:
@@ -240,6 +266,7 @@ public:
     return new EclIMEFactory();
   }
 };
+*/
 
 /*
 class ExecIMEFactory : public senn::ibus_senn::engine::IMEFactory {
@@ -359,13 +386,10 @@ void StartEngine(bool exec_by_daemon) {
 namespace {
 
 gboolean g_option_ibus = FALSE;
-gchar *g_option_ime_factory = NULL;
 
 const GOptionEntry g_option_entries[] = {
     {"ibus", 'i', 0, G_OPTION_ARG_NONE, &g_option_ibus,
      "Component is executed by ibus", NULL},
-    {"ime-factory", 0, 0, G_OPTION_ARG_STRING, &g_option_ime_factory,
-     "Specify a way to create an ime", NULL},
     {NULL},
 };
 
@@ -393,19 +417,9 @@ int main(gint argc, gchar **argv) {
     std::exit(1);
   }
 
-  /*
-  if (g_option_ime_factory) {
-    if (strcmp(g_option_ime_factory, "connect-to") == 0) {
-      g_ime_factory = ProxyConnectToIMEFactory::Create();
-    }
-    g_free(g_option_ime_factory);
-  } else {
-    g_ime_factory = IPCIMEFactory::Create();
-    // g_ime_factory = SbclIMEFactory::Create();
-  }
-  */
-  g_ime_factory = EclIMEFactory::Create();
-  
+  // g_ime_factory = EclIMEFactory::Create();
+  g_ime_factory = SocketIMEFactory::Create();
+
   StartEngine(g_option_ibus);
   return 0;
 }
