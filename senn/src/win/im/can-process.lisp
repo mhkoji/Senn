@@ -5,7 +5,7 @@
 
 (defgeneric execute (state mode key))
 
-(defmethod execute ((s senn.im.inputing:state) (mode (eql :direct))
+(defmethod execute ((s senn.im.inputting:state) (mode (eql :direct))
                     (key senn.win.keys:key))
   t)
 
@@ -28,7 +28,7 @@
         ((senn.win.keys:right-p key) t)
         (t nil)))
 
-(defmethod execute ((s senn.im.inputing:state) (mode (eql :hiragana))
+(defmethod execute ((s senn.im.inputting:state) (mode (eql :hiragana))
                     (key senn.win.keys:key))
   (cond ((senn.win.keys:oem-minus-p key) t)
         ((senn.win.keys:oem-7-p key) t)
@@ -46,8 +46,8 @@
         ((senn.win.keys:alphabet-p key) t)
         ((senn.win.keys:backspace-p key)
          ;; IMEが文字を削除していない -> OSに文字を削除してもらう
-         (not (senn.im.inputing:state-buffer-empty-p s)))
+         (not (senn.im.inputting:state-buffer-empty-p s)))
         ((senn.win.keys:space-p key)
-         (not (senn.im.inputing:state-buffer-empty-p s)))
+         (not (senn.im.inputting:state-buffer-empty-p s)))
         ((senn.win.keys:enter-p key) t)
         (t nil)))

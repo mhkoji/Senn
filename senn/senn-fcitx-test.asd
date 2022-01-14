@@ -3,7 +3,7 @@
   :pathname "t"
   :components
   ((:file "scenario/fcitx/fcitx")
-   (:file "scenario/fcitx/inputing")
+   (:file "scenario/fcitx/inputting")
    (:file "scenario/fcitx/converting"))
 
   :depends-on (:senn-fcitx

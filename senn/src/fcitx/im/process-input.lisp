@@ -6,7 +6,7 @@
   (:use :cl)
   (:export :execute)
   (:import-from :senn.fcitx.im
-                :editing-view/inputing-state
+                :editing-view/inputting-state
                 :editing-view/katakana-state
                 :editing-view/selecting-from-predictions
                 :converting-view/converting-state))
@@ -22,9 +22,9 @@
                     (ime senn.fcitx.im:ime)
                     (key senn.fcitx.keys:key))
   (cond ((senn.fcitx.keys:enter-p key)
-         (let ((new-state (senn.im.inputing::make-state))
+         (let ((new-state (senn.im.inputting:make-state))
                (committed-string (senn.fcitx.im:katakana-input s)))
-           (let ((view (editing-view/inputing-state
+           (let ((view (editing-view/inputting-state
                         new-state
                         :committed-string committed-string)))
              (resp t view :state new-state))))
@@ -35,10 +35,10 @@
                     (ime senn.fcitx.im:ime)
                     (key senn.fcitx.keys:key))
   (cond ((senn.fcitx.keys:enter-p key)
-         (let ((new-state (senn.im.inputing:make-state))
+         (let ((new-state (senn.im.inputting:make-state))
                (committed-string
                 (senn.fcitx.im:selecting-from-predictions-current-input s)))
-           (let ((view (editing-view/inputing-state
+           (let ((view (editing-view/inputting-state
                         new-state
                         :committed-string committed-string)))
            (resp t view :state new-state))))
@@ -85,34 +85,34 @@
 
         ((senn.fcitx.keys:backspace-p key)
          (let* ((pron (senn.im.converting:state-pronunciation s))
-                (new-state (senn.im.inputing:make-state
+                (new-state (senn.im.inputting:make-state
                             :buffer (senn.im.buffer:make-buffer
                                      :string pron
                                      :cursor-pos (length pron)))))
-           (resp t (editing-view/inputing-state new-state)
+           (resp t (editing-view/inputting-state new-state)
                  :state new-state)))
 
         ((senn.fcitx.keys:char-p key)
          (let* ((char (code-char (senn.fcitx.keys:key-sym key)))
-                (new-state (senn.im.inputing:make-state
+                (new-state (senn.im.inputting:make-state
                             :buffer (senn.im.buffer:insert-char
                                      (senn.im.buffer:make-buffer) char)))
                 (committed-string (senn.im.converting:current-input s)))
-           (resp t (editing-view/inputing-state
+           (resp t (editing-view/inputting-state
                     new-state
                     :committed-string committed-string)
                  :state new-state)))
 
         (t
          (let ((committed-string (senn.im.converting:current-input s))
-               (new-state (senn.im.inputing:make-state)))
+               (new-state (senn.im.inputting:make-state)))
            (resp t ;; Disable inserting a new line by the return key
-                 (editing-view/inputing-state
+                 (editing-view/inputting-state
                   new-state
                   :committed-string committed-string)
                  :state new-state)))))
 
-(defmethod execute ((s senn.im.inputing:state)
+(defmethod execute ((s senn.im.inputting:state)
                     (ime senn.fcitx.im:ime)
                     (key senn.fcitx.keys:key))
   (cond ((/= (logand (senn.fcitx.keys:key-state key)
@@ -124,16 +124,16 @@
                      #b100)
              0)
          ;; When FcitxKeyState_Ctr is on.
-         (if (senn.im.inputing:state-buffer-empty-p s)
+         (if (senn.im.inputting:state-buffer-empty-p s)
              ;; Let the OS process the key.
              ;; For example, if the key is ctrl-p, then the OS may move the cursor up.
              (resp nil nil)
              ;; Do not let the OS process the key.
              ;; If the key is ctrl-p, the OS may move the current input up without this, which is very annoying.
-             (resp t (editing-view/inputing-state s))))
+             (resp t (editing-view/inputting-state s))))
 
         ((senn.fcitx.keys:tab-p key)
-         (let ((predictions (senn.im.inputing:state-predictions s)))
+         (let ((predictions (senn.im.inputting:state-predictions s)))
            (if (null predictions)
                  ;;; IME does nothing
                (resp nil nil)
@@ -145,61 +145,61 @@
                        :state new-state)))))
 
         ((senn.fcitx.keys:char-p key)
-         (senn.im.inputing:insert-char!
+         (senn.im.inputting:insert-char!
           s (code-char (senn.fcitx.keys:key-sym key))
           (senn.fcitx.im:ime-predictor ime))
-         (resp t (editing-view/inputing-state s) :state s))
+         (resp t (editing-view/inputting-state s) :state s))
 
         ((and (senn.fcitx.keys:f7-p key)
-              (not (senn.im.inputing:state-buffer-empty-p s)))
+              (not (senn.im.inputting:state-buffer-empty-p s)))
          (let ((new-state (senn.fcitx.im:make-katakana
                            :input
-                           (senn.im.inputing:state-buffer-string s))))
+                           (senn.im.inputting:state-buffer-string s))))
            (resp t (editing-view/katakana-state new-state)
                  :state new-state)))
 
         ((senn.fcitx.keys:space-p key)
-         (if (senn.im.inputing:state-buffer-empty-p s)
-             (let ((new-state (senn.im.inputing:make-state)))
-               (resp t (editing-view/inputing-state
+         (if (senn.im.inputting:state-buffer-empty-p s)
+             (let ((new-state (senn.im.inputting:make-state)))
+               (resp t (editing-view/inputting-state
                         new-state
                         :committed-string "　")
                      :state new-state))
              (let ((new-state (senn.im.converting:convert
                                (senn.fcitx.im:ime-kkc ime)
-                               (senn.im.inputing:state-buffer-get-pron s))))
+                               (senn.im.inputting:state-buffer-get-pron s))))
                (resp t (converting-view/converting-state new-state)
                      :state new-state))))
 
         ((senn.fcitx.keys:enter-p key)
-         (let ((committed-string (senn.im.inputing:state-buffer-string s)))
+         (let ((committed-string (senn.im.inputting:state-buffer-string s)))
            (if (string= committed-string "")
                (resp nil nil)
                ;; 何らかの文字が確定された場合
                ;; エンターキーによる改行は無効化させる
-               (let ((new-state (senn.im.inputing:make-state)))
-                 (resp t (editing-view/inputing-state
+               (let ((new-state (senn.im.inputting:make-state)))
+                 (resp t (editing-view/inputting-state
                           new-state
                           :committed-string committed-string)
                        :state new-state)))))
 
         ((senn.fcitx.keys:backspace-p key)
-         (if (senn.im.inputing:delete-char!
+         (if (senn.im.inputting:delete-char!
               s (senn.fcitx.im:ime-predictor ime))
              ;; IMEが文字を削除した -> OSが文字が削除するのを抑制
-             (resp t (editing-view/inputing-state s) :state s)
+             (resp t (editing-view/inputting-state s) :state s)
              ;; IMEが文字を削除していない -> OSに文字を削除してもらう
              (resp nil nil)))
 
         ;; left/right keys
         ((and (senn.fcitx.keys:left-p key)
-              (not (senn.im.inputing:state-buffer-empty-p s)))
-         (senn.im.inputing:state-buffer-cursor-pos-move! s -1)
-         (resp t (editing-view/inputing-state s) :state s))
+              (not (senn.im.inputting:state-buffer-empty-p s)))
+         (senn.im.inputting:state-buffer-cursor-pos-move! s -1)
+         (resp t (editing-view/inputting-state s) :state s))
         ((and (senn.fcitx.keys:right-p key)
-              (not (senn.im.inputing:state-buffer-empty-p s)))
-         (senn.im.inputing:state-buffer-cursor-pos-move! s +1)
-         (resp t (editing-view/inputing-state s) :state s))
+              (not (senn.im.inputting:state-buffer-empty-p s)))
+         (senn.im.inputting:state-buffer-cursor-pos-move! s +1)
+         (resp t (editing-view/inputting-state s) :state s))
 
         (t
          (resp nil nil))))

@@ -16,7 +16,7 @@
   (senn.im.converting:current-segment-candidates-set! s index)
   (resp t (converting-view/converting-state s) :state s))
 
-(defmethod execute ((s senn.im.inputing:state)
+(defmethod execute ((s senn.im.inputting:state)
                     (index integer))
   (let ((predictions (inputting-predictions s)))
     (if (< -1 index (length predictions))

@@ -17,7 +17,7 @@
   (setf (slot-value ime 'state) state))
 
 (defun make-initial-state ()
-  (senn.im.inputing:make-state))
+  (senn.im.inputting:make-state))
 
 (defun process-input (ime key)
   (with-accessors ((s ime-state)) ime

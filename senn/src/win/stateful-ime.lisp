@@ -74,7 +74,7 @@
        (setf input-state nil))
       (:direct
        (setf input-mode :hiragana)
-       (setf input-state (senn.im.inputing:make-state)))))
+       (setf input-state (senn.im.inputting:make-state)))))
   ;; It seems to need to consume output buffer..
   (format nil "OK~%"))
 

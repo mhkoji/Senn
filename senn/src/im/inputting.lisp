@@ -1,4 +1,4 @@
-(defpackage :senn.im.inputing
+(defpackage :senn.im.inputting
   (:use :cl)
   (:export :state
            :state-buffer
@@ -11,7 +11,7 @@
 
            :insert-char!
            :delete-char!))
-(in-package :senn.im.inputing)
+(in-package :senn.im.inputting)
 
 (defun buffer-empty-p (buffer)
   (string= (senn.im.buffer:buffer-string buffer) ""))

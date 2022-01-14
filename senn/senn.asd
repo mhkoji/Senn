@@ -29,7 +29,7 @@
        (:file "katakana")))
      (:file "converting")
      (:file "buffer")
-     (:file "inputing"))))
+     (:file "inputting"))))
   :depends-on (:cl-trie
                :alexandria
                :jsown
