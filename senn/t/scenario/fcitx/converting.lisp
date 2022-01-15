@@ -19,31 +19,12 @@
         (senn.im.kkc:make-candidate :form "今日")
         (senn.im.kkc:make-candidate :form "強")))
 
-(defclass ime (senn.fcitx.stateful-ime:ime)
-  ())
-
-(defmethod senn.fcitx.im:ime-kkc ((ime ime))
-  'static-kkc)
-
-
 (defmethod senn.im.kkc:convert ((kkc (eql 'nn-kkc)) (pron string)
                                 &key 1st-boundary-index)
   (declare (ignore 1st-boundary-index))
   (assert (string= pron "ん"))
   (list (senn.im.kkc:make-segment :pron pron :form pron)))
          
-
-(defclass nn-ime (senn.fcitx.stateful-ime:ime)
-  ())
-
-(defmethod senn.fcitx.im:ime-kkc ((ime nn-ime))
-  'nn-kkc)
-
-
-(defun make-ime (&optional (class 'ime))
-  (let ((state (senn.fcitx.stateful-ime:make-initial-state)))
-    (make-instance class :state state)))
-
 
 (defun converting-view (&key forms
                              cursor-form-index
@@ -60,7 +41,7 @@
     (format nil "CONVERTING ~A" (jsown:to-json json))))
 
 (defmacro space-then-convert (&key test)
-  `(let ((ime (make-ime)))
+  `(let ((ime (senn.fcitx.stateful-ime:make-ime :kkc 'static-kkc)))
      (dolist (char '(#\k #\y #\o #\u #\h #\a))
        (senn.fcitx.stateful-ime:process-input
         ime (senn.fcitx.keys:make-key :sym (char-code char) :state 0)))
@@ -74,7 +55,7 @@
                       :cursor-form-candidate-index 0))))))
 
 (defmacro segment-cursor-goes-around (&key test)
-  `(let ((ime (make-ime)))
+  `(let ((ime (senn.fcitx.stateful-ime:make-ime :kkc 'static-kkc)))
      (dolist (char '(#\k #\y #\o #\u #\h #\a))
        (senn.fcitx.stateful-ime:process-input
         ime (senn.fcitx.keys:make-key :sym (char-code char) :state 0)))
@@ -98,7 +79,7 @@
                       :cursor-form-candidate-index 0))))))
 
 (defmacro segment-cursor-does-not-go-beyond-the-both-ends (&key test)
-  `(let ((ime (make-ime)))
+  `(let ((ime (senn.fcitx.stateful-ime:make-ime :kkc 'static-kkc)))
      (dolist (char '(#\k #\y #\o #\u #\h #\a))
        (senn.fcitx.stateful-ime:process-input
         ime (senn.fcitx.keys:make-key :sym (char-code char) :state 0)))
@@ -130,7 +111,7 @@
                       :cursor-form-candidate-index 0))))))
 
 (defmacro space-multiple-times-then-more-candidates (&key test)
-  `(let ((ime (make-ime)))
+  `(let ((ime (senn.fcitx.stateful-ime:make-ime :kkc 'static-kkc)))
      (dolist (char '(#\k #\y #\o #\u #\h #\a))
        (senn.fcitx.stateful-ime:process-input
         ime (senn.fcitx.keys:make-key :sym (char-code char) :state 0)))
@@ -146,7 +127,7 @@
                       :cursor-form-candidate-index 1))))))
 
 (defmacro candidate-cursor-goes-around (&key test)
-  `(let ((ime (make-ime)))
+  `(let ((ime (senn.fcitx.stateful-ime:make-ime :kkc 'static-kkc)))
      (dolist (char '(#\k #\y #\o #\u #\h #\a))
        (senn.fcitx.stateful-ime:process-input
         ime (senn.fcitx.keys:make-key :sym (char-code char) :state 0)))
@@ -180,7 +161,7 @@
                       :cursor-form-candidate-index 0))))))
 
 (defmacro candidate-cursor-loops (&key test)
-  `(let ((ime (make-ime)))
+  `(let ((ime (senn.fcitx.stateful-ime:make-ime :kkc 'static-kkc)))
      (dolist (char '(#\k #\y #\o #\u #\h #\a))
        (senn.fcitx.stateful-ime:process-input
         ime (senn.fcitx.keys:make-key :sym (char-code char) :state 0)))
@@ -238,7 +219,7 @@
                       :cursor-form-candidate-index 0))))))
 
 (defmacro convert-adds-latin-n-to-make-hiragana-letter-n (&key test)
-  `(let ((ime (make-ime 'nn-ime)))
+  `(let ((ime (senn.fcitx.stateful-ime:make-ime :kkc 'nn-kkc)))
      (senn.fcitx.stateful-ime:process-input
       ime (senn.fcitx.keys:make-key :sym (char-code #\n) :state 0))
      (,test (string=

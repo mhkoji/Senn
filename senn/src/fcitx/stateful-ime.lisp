@@ -1,44 +1,62 @@
 (defpackage :senn.fcitx.stateful-ime
   (:use :cl)
-  (:export :ime
-           :make-initial-state
-           :process-input
+  (:export :process-input
            :select-candidate
-           :reset-im))
+           :reset-im
+           :make-ime))
 (in-package :senn.fcitx.stateful-ime)
 
-(defclass ime (senn.fcitx.im:ime)
-  ((state :initarg :state)))
-
-(defun ime-state (ime)
-  (slot-value ime 'state))
-
-(defun set-ime-state (ime state)
-  (setf (slot-value ime 'state) state))
+(defstruct state
+  edit-state)
 
 (defun make-initial-state ()
-  (senn.im.inputting:make-state))
+  (make-state
+   :edit-state
+   (senn.im.inputting:make-state)))
+
+(defgeneric ime-state (ime))
 
 (defun process-input (ime key)
-  (with-accessors ((s ime-state)) ime
+  (with-accessors ((es state-edit-state)) (ime-state ime)
     (destructuring-bind (consumed-p view &key state)
-        (senn.fcitx.im.process-input:execute s ime key)
+        (senn.fcitx.im.process-input:execute es ime key)
       (when state
-        (set-ime-state ime state))
+        (setf es state))
       (format nil "~A ~A"
               (if consumed-p 1 0)
               (if (and consumed-p view) view "NONE")))))
 
 (defun select-candidate (ime index)
-  (with-accessors ((s ime-state)) ime
+  (with-accessors ((es state-edit-state)) (ime-state ime)
     (destructuring-bind (consumed-p view &key state)
-        (senn.fcitx.im.select-candidate:execute s index)
+        (senn.fcitx.im.select-candidate:execute es index)
       (when state
-        (set-ime-state ime state))
+        (setf es state))
       (format nil "~A ~A"
               (if consumed-p 1 0)
               (if (and consumed-p view) view "NONE")))))
 
 (defun reset-im (ime)
-  (set-ime-state ime (make-initial-state))
+  (with-accessors ((es state-edit-state)) (ime-state ime)
+    (setf es (senn.im.inputting:make-state)))
   "OK")
+
+;;;
+
+(defclass ime (senn.fcitx.im:ime)
+  ((state
+    :initarg :state
+    :reader ime-state)
+   (kkc
+    :initarg :kkc
+    :reader senn.fcitx.im:ime-kkc)
+   (predictor
+    :initarg :predictor
+    :initform nil
+    :reader senn.fcitx.im:ime-predictor)))
+
+(defun make-ime (&key kkc predictor)
+  (make-instance 'ime
+                 :state (make-initial-state)
+                 :kkc kkc
+                 :predictor predictor))

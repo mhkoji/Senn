@@ -2,38 +2,15 @@
   (:use :cl))
 (in-package :senn.t.scenario.fcitx.inputting)
 
-(defclass ime (senn.fcitx.stateful-ime:ime)
-  ())
-
-
-(defclass static-kkc-ime (senn.fcitx.stateful-ime:ime)
-  ())
-
-(defmethod senn.im.kkc:convert ((kkc (eql 'static-kkc)) (pron string)
+(defmethod senn.im.kkc:convert ((kkc (eql 'kkc)) (pron string)
                                 &key 1st-boundary-index)
   (assert (string= pron "あ"))
   (list (senn.im.kkc:make-segment :pron "あ" :form "亜")))
-
-(defmethod senn.fcitx.im:ime-kkc ((ime static-kkc-ime))
-  'static-kkc)
-
 
 (defmethod senn.im.predict:execute append ((predictor (eql 'predictor))
                                            (pron string))
   (list (senn.ja:hiragana->katakana pron)
         (reverse pron)))
-
-(defclass predictor-ime (senn.fcitx.stateful-ime:ime)
-  ())
-
-(defmethod senn.fcitx.im:ime-predictor ((ime predictor-ime))
-  'predictor)
-
-
-(defun make-ime (&optional (class 'ime))
-  (let ((state (senn.fcitx.stateful-ime:make-initial-state)))
-    (make-instance class :state state)))
-
 
 (defun resp (consumed-p view)
   (format nil "~A ~A" (if consumed-p 1 0) view))
@@ -52,7 +29,7 @@
     (format nil "EDITING ~A" (jsown:to-json json))))
 
 (defmacro buffer-cursor-goes-around-in-the-buffer (&key test)
-  `(let ((ime (make-ime)))
+  `(let ((ime (senn.fcitx.stateful-ime:make-ime)))
      (,test (string=
              (senn.fcitx.stateful-ime:process-input
               ime (senn.fcitx.keys:make-key :sym 97 :state 0))
@@ -91,7 +68,7 @@
                                    :committed-input ""))))))
 
 (defmacro buffer-cursor-does-not-go-beyond-the-left-end (&key test)
-  `(let ((ime (make-ime)))
+  `(let ((ime (senn.fcitx.stateful-ime:make-ime)))
      (,test (string=
              (senn.fcitx.stateful-ime:process-input
               ime (senn.fcitx.keys:make-key :sym 97 :state 0))
@@ -112,7 +89,7 @@
                                    :committed-input ""))))))
 
 (defmacro buffer-cursor-does-not-go-beyond-the-right-end (&key test)
-  `(let ((ime (make-ime)))
+  `(let ((ime (senn.fcitx.stateful-ime:make-ime)))
      (,test (string=
              (senn.fcitx.stateful-ime:process-input
               ime (senn.fcitx.keys:make-key :sym 97 :state 0))
@@ -127,7 +104,7 @@
                                    :committed-input ""))))))
 
 (defmacro f7-then-katakana (&key test)
-  `(let ((ime (make-ime)))
+  `(let ((ime (senn.fcitx.stateful-ime:make-ime)))
      (senn.fcitx.stateful-ime:process-input
       ime (senn.fcitx.keys:make-key :sym 97 :state 0))
      (,test (string=
@@ -138,14 +115,14 @@
                                    :committed-input ""))))))
 
 (defmacro f7-then-nothing-if-empty (&key test)
-  `(let ((ime (make-ime)))
+  `(let ((ime (senn.fcitx.stateful-ime:make-ime)))
      (,test (string=
              (senn.fcitx.stateful-ime:process-input
               ime (senn.fcitx.keys:make-key :sym 65476 :state 0))
              (resp nil "NONE")))))
 
 (defmacro katakana-and-enter-then-commit (&key test)
-  `(let ((ime (make-ime)))
+  `(let ((ime (senn.fcitx.stateful-ime:make-ime)))
      (senn.fcitx.stateful-ime:process-input
       ime (senn.fcitx.keys:make-key :sym 97 :state 0))
      (senn.fcitx.stateful-ime:process-input
@@ -158,7 +135,7 @@
                                    :committed-input "ア"))))))
 
 (defmacro enter-then-commit (&key test)
-  `(let ((ime (make-ime)))
+  `(let ((ime (senn.fcitx.stateful-ime:make-ime)))
      (,test (string=
              (senn.fcitx.stateful-ime:process-input
               ime (senn.fcitx.keys:make-key :sym 97 :state 0))
@@ -173,14 +150,14 @@
                                    :committed-input "あ"))))))
 
 (defmacro enter-then-nothing-if-empty (&key test)
-  `(let ((ime (make-ime)))
+  `(let ((ime (senn.fcitx.stateful-ime:make-ime)))
      (,test (string=
              (senn.fcitx.stateful-ime:process-input
               ime (senn.fcitx.keys:make-key :sym 65293 :state 0))
              (resp nil "NONE")))))
 
 (defmacro backspace-then-delete (&key test)
-  `(let ((ime (make-ime)))
+  `(let ((ime (senn.fcitx.stateful-ime:make-ime)))
      (,test (string=
              (senn.fcitx.stateful-ime:process-input
               ime (senn.fcitx.keys:make-key :sym 97 :state 0))
@@ -195,14 +172,14 @@
                                    :committed-input ""))))))
 
 (defmacro backspace-then-nothing-if-empty (&key test)
-  `(let ((ime (make-ime)))
+  `(let ((ime (senn.fcitx.stateful-ime:make-ime)))
      (,test (string=
              (senn.fcitx.stateful-ime:process-input
               ime (senn.fcitx.keys:make-key :sym 65288 :state 0))
              (resp nil "NONE")))))
 
 (defmacro space-then-full-width-space-if-empty (&key test)
-  `(let ((ime (make-ime)))
+  `(let ((ime (senn.fcitx.stateful-ime:make-ime)))
      (,test (string=
              (senn.fcitx.stateful-ime:process-input
               ime (senn.fcitx.keys:make-key :sym 32 :state 0))
@@ -212,7 +189,7 @@
                       :committed-input "　"))))))
 
 (defmacro convert-and-char-then-commit (&key test)
-  `(let ((ime (make-ime 'static-kkc-ime)))
+  `(let ((ime (senn.fcitx.stateful-ime:make-ime :kkc 'kkc)))
      (senn.fcitx.stateful-ime:process-input
       ime (senn.fcitx.keys:make-key :sym 97 :state 0))
      (senn.fcitx.stateful-ime:process-input
@@ -225,7 +202,7 @@
                                    :committed-input "亜"))))))
 
 (defmacro convert-and-backspace-then-inputting (&key test)
-  `(let ((ime (make-ime 'static-kkc-ime)))
+  `(let ((ime (senn.fcitx.stateful-ime:make-ime :kkc 'kkc)))
      (senn.fcitx.stateful-ime:process-input
       ime (senn.fcitx.keys:make-key :sym 97 :state 0))
      (senn.fcitx.stateful-ime:process-input
@@ -238,7 +215,7 @@
                                    :committed-input ""))))))
 
 (defmacro char-then-predictions (&key test)
-  `(let ((ime (make-ime 'predictor-ime)))
+  `(let ((ime (senn.fcitx.stateful-ime:make-ime :predictor 'predictor)))
      (senn.fcitx.stateful-ime:process-input
       ime (senn.fcitx.keys:make-key :sym 97 :state 0))
      (,test (string=
@@ -251,7 +228,7 @@
                                    :committed-input ""))))))
 
 (defmacro tab-then-prediction-selection (&key test)
-  `(let ((ime (make-ime 'predictor-ime)))
+  `(let ((ime (senn.fcitx.stateful-ime:make-ime :predictor 'predictor)))
      (senn.fcitx.stateful-ime:process-input
       ime (senn.fcitx.keys:make-key :sym 97 :state 0))
      (,test (string=
@@ -264,14 +241,14 @@
                                    :committed-input ""))))))
 
 (defmacro tab-then-nothing-if-empty (&key test)
-  `(let ((ime (make-ime 'predictor-ime)))
+  `(let ((ime (senn.fcitx.stateful-ime:make-ime :predictor 'predictor)))
      (,test (string=
              (senn.fcitx.stateful-ime:process-input
               ime (senn.fcitx.keys:make-key :sym 65289 :state 0))
              (resp nil "NONE")))))
 
 (defmacro backspace-then-predictions (&key test)
-  `(let ((ime (make-ime 'predictor-ime)))
+  `(let ((ime (senn.fcitx.stateful-ime:make-ime :predictor 'predictor)))
      (dolist (char '(#\a #\i))
        (senn.fcitx.stateful-ime:process-input
         ime (senn.fcitx.keys:make-key :sym (char-code char) :state 0)))
@@ -285,7 +262,7 @@
                                    :committed-input ""))))))
 
 (defmacro prediction-and-enter-then-commit (&key test)
-  `(let ((ime (make-ime 'predictor-ime)))
+  `(let ((ime (senn.fcitx.stateful-ime:make-ime :predictor 'predictor)))
      (dolist (char '(#\a #\i))
        (senn.fcitx.stateful-ime:process-input
         ime (senn.fcitx.keys:make-key :sym (char-code char) :state 0)))
@@ -299,7 +276,7 @@
                                    :committed-input "アイ"))))))
 
 (defmacro prediction-cursor-goes-around (&key test)
-  `(let ((ime (make-ime 'predictor-ime)))
+  `(let ((ime (senn.fcitx.stateful-ime:make-ime :predictor 'predictor)))
      (dolist (char '(#\a #\i))
        (senn.fcitx.stateful-ime:process-input
         ime (senn.fcitx.keys:make-key :sym (char-code char) :state 0)))
@@ -323,7 +300,7 @@
                                    :committed-input ""))))))
 
 (defmacro prediction-cursor-does-not-go-beyond-the-both-ends (&key test)
-  `(let ((ime (make-ime 'predictor-ime)))
+  `(let ((ime (senn.fcitx.stateful-ime:make-ime :predictor 'predictor)))
      (dolist (char '(#\a #\i))
        (senn.fcitx.stateful-ime:process-input
         ime (senn.fcitx.keys:make-key :sym (char-code char) :state 0)))
