@@ -5,6 +5,8 @@
            :can-process
            :process-input
 
+           :ime
+           :make-initial-state
            :hachee-make-ime
            :engine-make-ime
            :engine-close-ime))
