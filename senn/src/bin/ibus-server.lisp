@@ -13,7 +13,7 @@
   (senn.server.tcp:start-server
    (lambda (client)
      (let ((ime (senn.ibus.stateful-ime:hachee-make-ime kkc)))
-       (ime-client-loop client ime))))
+       (ime-client-loop client ime)))))
 
 (defun tcp-run-engine (runner)
   (senn.server.tcp:start-server
