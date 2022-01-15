@@ -3,19 +3,11 @@
   (:export :run))
 (in-package :senn.t.scenario.win)
 
-(defclass kkc () ())
-
-(defmethod senn.im.kkc:convert ((kkc kkc) (pron string)
+(defmethod senn.im.kkc:convert ((kkc (eql 'static-kkc)) (pron string)
                                 &key 1st-boundary-index)
   (declare (ignore 1st-boundary-index))
   (assert (string= pron "そら"))
   (list (senn.im.kkc:make-segment :pron "そら" :form "空")))
-
-
-(defclass ime (senn.win.stateful-ime:ime)
-  ((kkc
-    :initform (make-instance 'kkc)
-    :reader senn.win.im:ime-kkc)))
 
 (defun editing-view (input)
   (let ((json (jsown:new-js
@@ -38,9 +30,14 @@
 (defun resp (can-process view)
   (format nil "~A ~A~%" (if can-process 1 0) view))
 
+(defun make-ime ()
+  (make-instance 'senn.win.stateful-ime:ime
+   :state (senn.win.stateful-ime:make-initial-state)
+   :kkc 'static-kkc
+   :predictor nil))
+
 (defmacro test-convert (&key test)
-  `(let ((ime (make-instance 'ime
-               :state (senn.win.stateful-ime:make-initial-state))))
+  `(let ((ime (make-ime)))
      (senn.win.stateful-ime:toggle-input-mode ime)
      (,test (string= (senn.win.stateful-ime:process-input
                       ime (senn.win.keys:make-key

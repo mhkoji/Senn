@@ -1,11 +1,8 @@
 (defpackage :senn.ibus.stateful-ime
   (:use :cl)
-  (:export :ime-state
-           :process-input
+  (:export :process-input
            :toggle-input-mode
 
-           :stateful
-           :make-initial-state
            :engine-make-ime
            :engine-close-ime
            :hachee-make-ime))
@@ -63,7 +60,7 @@
   (make-instance 'ime
    :kkc (make-instance 'senn.im.kkc.hachee:kkc
          :impl kkc
-         :holder (senn.im.kkc.hachee:make-holder))
+         :state (senn.im.kkc.hachee:make-state))
    :state (make-initial-state)))
 
 ;;;

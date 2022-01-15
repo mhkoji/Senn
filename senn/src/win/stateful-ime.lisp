@@ -1,12 +1,12 @@
 (defpackage :senn.win.stateful-ime
   (:use :cl)
-  (:export :ime
-           :make-initial-state
-           :get-input-mode
+  (:export :get-input-mode
            :toggle-input-mode
            :can-process
            :process-input
 
+           :ime
+           :make-initial-state
            :hachee-make-ime
            :engine-make-ime
            :engine-close-ime))
@@ -47,7 +47,7 @@
   input-state
   history
   extended-dictionary
-  hachee-kkc-holder)
+  hachee-kkc-state)
 
 (defun make-initial-state ()
   (make-state
@@ -56,8 +56,8 @@
    :history (make-history)
    :extended-dictionary
    (hachee.kkc.dictionary:make-dictionary)
-   :hachee-kkc-holder
-   (senn.im.kkc.hachee:make-holder)))
+   :hachee-kkc-state
+   (senn.im.kkc.hachee:make-state)))
 
 (defgeneric ime-state (ime))
 
@@ -133,7 +133,7 @@
            :history (state-history state)
            :impl kkc
            :extended-dictionary (state-extended-dictionary state)
-           :holder (state-hachee-kkc-holder state))
+           :state (state-hachee-kkc-state state))
      :predictor (make-instance 'senn.im.predict.katakana:predictor)
      :state state)))
 

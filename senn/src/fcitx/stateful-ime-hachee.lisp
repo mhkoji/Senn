@@ -7,5 +7,5 @@
   (senn.fcitx.stateful-ime:make-ime
    :kkc (make-instance 'senn.im.kkc.hachee:kkc
          :impl kkc
-         :holder (senn.im.kkc.hachee:make-holder))
+         :state (senn.im.kkc.hachee:make-state))
    :predictor (make-instance 'senn.im.predict.katakana:predictor)))
