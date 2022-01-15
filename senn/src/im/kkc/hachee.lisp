@@ -3,7 +3,7 @@
   (:use :cl)
   (:export :kkc
            :build-kkc
-           :make-holder))
+           :make-state))
 (in-package :senn.im.kkc.hachee)
 
 (defun build-kkc ()
@@ -18,7 +18,7 @@
 
 ;;;
 
-(defstruct holder entries)
+(defstruct state entries)
 
 (defclass kkc ()
   ((impl
@@ -28,9 +28,9 @@
     :initarg :extended-dictionary
     :initform nil
     :reader kkc-extended-dictionary)
-   (holder
-    :initarg :holder
-    :reader kkc-holder)))
+   (state
+    :initarg :state
+    :reader kkc-state)))
 
 (defun kkc-convert (kkc)
   (let ((ex-dict (kkc-extended-dictionary kkc)))
@@ -42,7 +42,7 @@
 
 (defmethod senn.im.kkc:convert ((kkc kkc) (pron string)
                                 &key 1st-boundary-index)
-  (with-accessors ((entries holder-entries)) (kkc-holder kkc)
+  (with-accessors ((entries state-entries)) (kkc-state kkc)
     (setf entries (hachee.kkc.convert:execute
                    (kkc-convert kkc) pron
                    :1st-boundary-index 1st-boundary-index))
@@ -53,7 +53,7 @@
             entries)))
 
 (defmethod senn.im.kkc:list-candidates ((kkc kkc) (index number))
-  (with-accessors ((entries holder-entries)) (kkc-holder kkc)
+  (with-accessors ((entries state-entries)) (kkc-state kkc)
     (when (and (<= 0 index) (< index (length entries)))
       (let ((pron (hachee.kkc.convert:entry-pron (elt entries index))))
         (mapcar (lambda (item)
