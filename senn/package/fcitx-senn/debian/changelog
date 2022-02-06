@@ -1,3 +1,9 @@
+fcitx-senn (0.0.4-1ubuntu1) UNRELEASED; urgency=medium
+
+  * TODO
+
+ -- mhkoji <mhkoji2@gmail.com>  Sun, 06 Feb 2022 15:35:03 +0900
+
 fcitx-senn (0.0.3-1ubuntu1) unstable; urgency=medium
 
   * Change the communication protocol between the IME and kkc-engine
