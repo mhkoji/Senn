@@ -1,6 +1,7 @@
-fcitx-senn (0.0.3-1ubuntu1) UNRELEASED; urgency=medium
+fcitx-senn (0.0.3-1ubuntu1) unstable; urgency=medium
 
-  * TODO
+  * Change the communication protocol between the IME and kkc-engine
+  * Use anthy as default kkc-engine
 
  -- mhkoji <mhkoji2@gmail.com>  Tue, 11 Jan 2022 18:51:32 +0900
 
