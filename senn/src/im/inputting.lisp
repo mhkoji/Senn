@@ -1,6 +1,10 @@
 (defpackage :senn.im.inputting
   (:use :cl)
-  (:export :state
+  (:export :ime
+           :ime-predictor
+           :ime-max-candidate-count
+
+           :state
            :state-buffer
            :state-buffer-empty-p
            :state-buffer-string
@@ -39,29 +43,37 @@
       (subseq list 0 n)
       list))
 
-(defun state-predictions-update! (state predictor max-count)
-  (when predictor
+(defclass ime () ())
+(defgeneric ime-predictor (ime))
+(defgeneric ime-max-candidate-count (ime))
+
+(defun ime-list-predictions (ime string)
+  (if (string= string "")
+      nil
+      (with-accessors ((predictor ime-predictor)
+                       (max-count ime-max-candidate-count)) ime
+        (let ((cands (senn.im.predict:execute predictor string)))
+          (if max-count
+              (take-first cands max-count)
+              cands)))))
+
+(defun state-predictions-update! (state ime)
+  (when ime
     (setf (state-predictions state)
-          (let ((string (state-buffer-string state)))
-            (if (string= string "")
-                nil
-                (let ((cands (senn.im.predict:execute predictor string)))
-                  (if max-count
-                      (take-first cands max-count)
-                      cands)))))))
+          (ime-list-predictions ime (state-buffer-string state)))))
 
 (defun state-buffer-cursor-pos-move! (state diff)
   (setf (state-buffer state)
         (senn.im.buffer:move-cursor-pos (state-buffer state) diff)))
 
-(defun insert-char! (state char &optional predictor max-count)
+(defun insert-char! (state char &optional ime)
   (setf (state-buffer state)
         (senn.im.buffer:insert-char (state-buffer state) char))
-  (state-predictions-update! state predictor max-count))
+  (state-predictions-update! state ime))
 
-(defun delete-char! (state &optional predictor max-count)
+(defun delete-char! (state &optional ime)
   (when (not (state-buffer-empty-p state))
     (setf (state-buffer state)
           (senn.im.buffer:delete-char (state-buffer state)))
-    (state-predictions-update! state predictor max-count)
+    (state-predictions-update! state ime)
     t))

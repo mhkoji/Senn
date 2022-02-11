@@ -19,14 +19,31 @@
            :converting-view/converting-state))
 (in-package :senn.fcitx.im)
 
-(defclass ime () ())
+(defclass ime (senn.im.inputting:ime
+               senn.im.converting:ime)
+  ())
+
 (defgeneric ime-max-candidate-count (ime)
   (:method ((ime ime))
     nil))
+
 (defgeneric ime-kkc (ime))
+
 (defgeneric ime-predictor (ime)
   (:method ((ime ime))
     nil))
+
+(defmethod senn.im.inputting:ime-max-candidate-count ((ime ime))
+  (ime-max-candidate-count ime))
+
+(defmethod senn.im.inputting:ime-predictor ((ime ime))
+  (ime-predictor ime))
+
+(defmethod senn.im.converting:ime-max-candidate-count ((ime ime))
+  (ime-max-candidate-count ime))
+
+(defmethod senn.im.converting:ime-kkc ((ime ime))
+  (ime-kkc ime))
 
 
 (defstruct (katakana (:constructor %make-katakana))

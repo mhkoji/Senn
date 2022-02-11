@@ -1,6 +1,10 @@
 (defpackage :senn.im.converting
   (:use :cl)
-  (:export :segment-pron
+  (:export :ime
+           :ime-kkc
+           :ime-max-candidate-count
+
+           :segment-pron
            :segment-current-index
            :segment-shows-katakana-p
            :segment-has-more-candidates-p
@@ -75,6 +79,23 @@
   pronunciation
   (current-segment-index 0))
 
+(defclass ime () ())
+(defgeneric ime-kkc (ime))
+(defgeneric ime-max-candidate-count (ime))
+
+(defun take-first (list n)
+  (if (< n (length list))
+      (subseq list 0 n)
+      list))
+
+(defun ime-list-candidates (ime segment-index)
+  (with-accessors ((kkc ime-kkc)
+                   (max-count ime-max-candidate-count)) ime
+    (let ((cands (senn.im.kkc:list-candidates kkc segment-index)))
+      (if max-count
+          (take-first cands max-count)
+          cands))))
+
 (defun current-segment (state)
   (elt (state-segments state) (state-current-segment-index state)))
 
@@ -83,21 +104,11 @@
     (when (<= 0 new-index (1- (length (state-segments state))))
       (setf (state-current-segment-index state) new-index))))
 
-(defun take-first (list n)
-  (if (< n (length list))
-      (subseq list 0 n)
-      list))
-
-(defun current-segment-candidates-move! (state diff kkc max-candidate-count)
+(defun current-segment-candidates-move! (state diff ime)
   (with-accessors ((segment current-segment)
                    (segment-index state-current-segment-index)) state
     (labels ((list-candidates ()
-               (let ((cands (senn.im.kkc:list-candidates
-                             kkc
-                             segment-index)))
-                 (if max-candidate-count
-                     (take-first cands max-candidate-count)
-                     cands))))
+               (ime-list-candidates ime segment-index)))
       (segment-ensure-candidates-appended! segment #'list-candidates)
       (segment-cursor-pos-move! segment diff)
       (setf (segment-shows-katakana-p segment) nil))))
@@ -114,18 +125,19 @@
   (format nil "~{~A~}"
           (mapcar #'segment-cursor-pos-form (state-segments state))))
 
-(defun convert (kkc pron)
-  (let ((kkc-segs (senn.im.kkc:convert kkc pron)))
-    (make-state
-     :segments
-     (mapcar (lambda (kkc-seg)
-               (make-segment
-                :pron (senn.im.kkc:segment-pron kkc-seg)
-                :candidates
-                (list (senn.im.kkc:make-candidate
-                       :form (senn.im.kkc:segment-form kkc-seg)))
-                :current-index 0
-                :has-more-candidates-p t))
-             kkc-segs)
-     :current-segment-index 0
-     :pronunciation pron)))
+(defun convert (ime pron)
+  (with-accessors ((kkc ime-kkc)) ime
+    (let ((kkc-segs (senn.im.kkc:convert kkc pron)))
+      (make-state
+       :segments
+       (mapcar (lambda (kkc-seg)
+                 (make-segment
+                  :pron (senn.im.kkc:segment-pron kkc-seg)
+                  :candidates
+                  (list (senn.im.kkc:make-candidate
+                         :form (senn.im.kkc:segment-form kkc-seg)))
+                  :current-index 0
+                  :has-more-candidates-p t))
+               kkc-segs)
+       :current-segment-index 0
+       :pronunciation pron))))
