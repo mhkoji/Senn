@@ -83,11 +83,21 @@
     (when (<= 0 new-index (1- (length (state-segments state))))
       (setf (state-current-segment-index state) new-index))))
 
-(defun current-segment-candidates-move! (state diff kkc)
+(defun take-first (list n)
+  (if (< n (length list))
+      (subseq list 0 n)
+      list))
+
+(defun current-segment-candidates-move! (state diff kkc max-candidate-count)
   (with-accessors ((segment current-segment)
                    (segment-index state-current-segment-index)) state
     (labels ((list-candidates ()
-               (senn.im.kkc:list-candidates kkc segment-index)))
+               (let ((cands (senn.im.kkc:list-candidates
+                             kkc
+                             segment-index)))
+                 (if max-candidate-count
+                     (take-first cands max-candidate-count)
+                     cands))))
       (segment-ensure-candidates-appended! segment #'list-candidates)
       (segment-cursor-pos-move! segment diff)
       (setf (segment-shows-katakana-p segment) nil))))

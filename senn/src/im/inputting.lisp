@@ -34,26 +34,34 @@
          (senn.im.buffer:insert-char (state-buffer state) #\n))
         pron)))
 
-(defun state-predictions-update! (state predictor)
+(defun take-first (list n)
+  (if (< n (length list))
+      (subseq list 0 n)
+      list))
+
+(defun state-predictions-update! (state predictor max-count)
   (when predictor
     (setf (state-predictions state)
           (let ((string (state-buffer-string state)))
             (if (string= string "")
                 nil
-                (senn.im.predict:execute predictor string))))))
+                (let ((cands (senn.im.predict:execute predictor string)))
+                  (if max-count
+                      (take-first cands max-count)
+                      cands)))))))
 
 (defun state-buffer-cursor-pos-move! (state diff)
   (setf (state-buffer state)
         (senn.im.buffer:move-cursor-pos (state-buffer state) diff)))
 
-(defun insert-char! (state char &optional predictor)
+(defun insert-char! (state char &optional predictor max-count)
   (setf (state-buffer state)
         (senn.im.buffer:insert-char (state-buffer state) char))
-  (state-predictions-update! state predictor))
+  (state-predictions-update! state predictor max-count))
 
-(defun delete-char! (state &optional predictor)
+(defun delete-char! (state &optional predictor max-count)
   (when (not (state-buffer-empty-p state))
     (setf (state-buffer state)
           (senn.im.buffer:delete-char (state-buffer state)))
-    (state-predictions-update! state predictor)
+    (state-predictions-update! state predictor max-count)
     t))

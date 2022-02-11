@@ -1,6 +1,7 @@
 (defpackage :senn.fcitx.im
   (:use :cl)
   (:export :ime
+           :ime-max-candidate-count
            :ime-kkc
            :ime-predictor
            :katakana
@@ -19,6 +20,9 @@
 (in-package :senn.fcitx.im)
 
 (defclass ime () ())
+(defgeneric ime-max-candidate-count (ime)
+  (:method ((ime ime))
+    nil))
 (defgeneric ime-kkc (ime))
 (defgeneric ime-predictor (ime)
   (:method ((ime ime))
