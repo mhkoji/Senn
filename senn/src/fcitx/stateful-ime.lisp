@@ -24,9 +24,7 @@
         (setf es state))
       (format nil "~A ~A"
               (if consumed-p 1 0)
-              (if (and consumed-p view)
-                  (senn.fcitx.im.json:from-view view)
-                  "NONE")))))
+              (if (and consumed-p view) view "NONE")))))
 
 (defun select-candidate (ime index)
   (with-accessors ((es state-edit-state)) (ime-state ime)
@@ -36,9 +34,7 @@
         (setf es state))
       (format nil "~A ~A"
               (if consumed-p 1 0)
-              (if (and consumed-p view)
-                  (senn.fcitx.im.json:from-view view)
-                  "NONE")))))
+              (if (and consumed-p view) view "NONE")))))
 
 (defun reset-im (ime)
   (with-accessors ((es state-edit-state)) (ime-state ime)
