@@ -85,13 +85,11 @@
 
         ((or (senn.win.keys:space-p key)
              (senn.win.keys:down-p key))
-         (senn.im.converting:current-segment-candidates-move!
-          s +1 (senn.win.im:ime-kkc ime))
+         (senn.im.converting:current-segment-candidates-move! s +1 ime)
          (result t (converting-view s) :state s))
 
         ((senn.win.keys:up-p key)
-         (senn.im.converting:current-segment-candidates-move!
-          s -1 (senn.win.im:ime-kkc ime))
+         (senn.im.converting:current-segment-candidates-move! s -1 ime)
          (result t (converting-view s) :state s))
 
         ((senn.win.keys:left-p key)
@@ -111,63 +109,51 @@
                     (key senn.win.keys:key))
   (cond ((senn.win.keys:oem-minus-p key)
          (senn.im.inputting:insert-char!
-          s (if (senn.win.keys:key-shift-p key) #\＝ #\ー)
-          (senn.win.im:ime-predictor ime))
+          s (if (senn.win.keys:key-shift-p key) #\＝ #\ー) ime)
          (result t (editing-view s) :state s))
         ((senn.win.keys:oem-7-p key)
          (senn.im.inputting:insert-char!
-          s (if (senn.win.keys:key-shift-p key) #\〜  #\＾)
-          (senn.win.im:ime-predictor ime))
+          s (if (senn.win.keys:key-shift-p key) #\〜  #\＾) ime)
          (result t (editing-view s) :state s))
         ((senn.win.keys:oem-5-p key)
          (senn.im.inputting:insert-char!
-          s (if (senn.win.keys:key-shift-p key) #\｜ #\￥)
-          (senn.win.im:ime-predictor ime))
+          s (if (senn.win.keys:key-shift-p key) #\｜ #\￥) ime)
          (result t (editing-view s) :state s))
         ((senn.win.keys:oem-3-p key)
          (senn.im.inputting:insert-char!
-          s (if (senn.win.keys:key-shift-p key) #\｀ #\＠)
-          (senn.win.im:ime-predictor ime))
+          s (if (senn.win.keys:key-shift-p key) #\｀ #\＠) ime)
          (result t (editing-view s) :state s))
         ((senn.win.keys:oem-4-p key)
          (senn.im.inputting:insert-char!
-          s (if (senn.win.keys:key-shift-p key) #\｛ #\「)
-          (senn.win.im:ime-predictor ime))
+          s (if (senn.win.keys:key-shift-p key) #\｛ #\「) ime)
          (result t (editing-view s) :state s))
         ((senn.win.keys:oem-plus-p key)
          (senn.im.inputting:insert-char!
-          s (if (senn.win.keys:key-shift-p key) #\＋ #\；)
-          (senn.win.im:ime-predictor ime))
+          s (if (senn.win.keys:key-shift-p key) #\＋ #\；) ime)
          (result t (editing-view s) :state s))
         ((senn.win.keys:oem-1-p key)
          (senn.im.inputting:insert-char!
-          s (if (senn.win.keys:key-shift-p key) #\＊ #\：)
-          (senn.win.im:ime-predictor ime))
+          s (if (senn.win.keys:key-shift-p key) #\＊ #\：) ime)
          (result t (editing-view s) :state s))
         ((senn.win.keys:oem-6-p key)
          (senn.im.inputting:insert-char!
-          s (if (senn.win.keys:key-shift-p key) #\｝ #\」)
-          (senn.win.im:ime-predictor ime))
+          s (if (senn.win.keys:key-shift-p key) #\｝ #\」) ime)
          (result t (editing-view s) :state s))
         ((senn.win.keys:oem-comma-p key)
          (senn.im.inputting:insert-char!
-          s (if (senn.win.keys:key-shift-p key) #\＜ #\、)
-         (senn.win.im:ime-predictor ime))
+          s (if (senn.win.keys:key-shift-p key) #\＜ #\、) ime)
          (result t (editing-view s) :state s))
         ((senn.win.keys:oem-period-p key)
          (senn.im.inputting:insert-char!
-          s (if (senn.win.keys:key-shift-p key) #\＞ #\。)
-         (senn.win.im:ime-predictor ime))
+          s (if (senn.win.keys:key-shift-p key) #\＞ #\。) ime)
          (result t (editing-view s) :state s))
         ((senn.win.keys:oem-2-p key)
          (senn.im.inputting:insert-char!
-          s (if (senn.win.keys:key-shift-p key) #\？ #\・)
-         (senn.win.im:ime-predictor ime))
+          s (if (senn.win.keys:key-shift-p key) #\？ #\・) ime)
          (result t (editing-view s) :state s))
         ((senn.win.keys:oem-102-p key)
          (senn.im.inputting:insert-char!
-          s (if (senn.win.keys:key-shift-p key) #\＿ #\￥)
-          (senn.win.im:ime-predictor ime))
+          s (if (senn.win.keys:key-shift-p key) #\＿ #\￥) ime)
          (result t (editing-view s) :state s))
 
         ((senn.win.keys:number-p key)
@@ -186,19 +172,17 @@
                         ((= code (char-code #\9)) #\）)
                         (t (code-char (+ #xFEE0 code))))
                   (code-char (+ #xFEE0 code))))
-          (senn.win.im:ime-predictor ime))
+          ime)
          (result t (editing-view s) :state s))
 
         ((senn.win.keys:alphabet-p key)
          (senn.im.inputting:insert-char!
           ;; to lower case by adding #x20
-          s (code-char (+ #x20 (senn.win.keys:key-code key)))
-          (senn.win.im:ime-predictor ime))
+          s (code-char (+ #x20 (senn.win.keys:key-code key))) ime)
          (result t (editing-view s) :state s))
 
         ((senn.win.keys:backspace-p key)
-         (if (senn.im.inputting:delete-char!
-              s (senn.win.im:ime-predictor ime))
+         (if (senn.im.inputting:delete-char! s ime)
              (result t (editing-view s) :state s)
              ;; IMEが文字を削除していない -> OSに文字を削除してもらう
              (result nil nil)))
@@ -208,7 +192,7 @@
              (result nil nil)
              (let ((new-state
                     (senn.im.converting:convert
-                     (senn.win.im:ime-kkc ime)
+                     ime
                      (senn.im.inputting:state-buffer-get-pron s))))
                (result t (converting-view new-state) :state new-state))))
 
