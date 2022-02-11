@@ -1,0 +1,21 @@
+#!/bin/sh
+#|-*- mode:lisp -*-|#
+#|
+exec ros -Q -- $0 "$@"
+|#
+(progn ;;init forms
+  (ros:ensure-asdf)
+  #+quicklisp(ql:quickload '() :silent t)
+  )
+
+(defpackage :ros.script.ibus-server.3853548296
+  (:use :cl))
+(in-package :ros.script.ibus-server.3853548296)
+(ql:quickload :senn-bin-ibus-server)
+
+(defun main (&rest argv)
+  (let ((path (car argv)))
+    (senn.bin.ibus-server:tcp-run-engine
+     (senn.im.kkc.engine:make-engine-runner :program path))))
+
+;;; vim: set ft=lisp lisp:
