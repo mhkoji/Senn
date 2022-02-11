@@ -15,6 +15,10 @@
           (senn.fcitx.keys:make-key
            :sym (jsown:val (jsown:val jsown "args") "sym")
            :state (jsown:val (jsown:val jsown "args") "state"))))
+        (:select-candidate
+         (senn.ibus.stateful-ime:select-candidate
+          stateful-ime
+          (jsown:val (jsown:val jsown "args") "index")))
         (:toggle-input-mode
          (senn.ibus.stateful-ime:toggle-input-mode
           stateful-ime))))))

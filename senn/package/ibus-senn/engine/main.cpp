@@ -5,8 +5,7 @@
 #include <config.h>
 #endif
 
-#include <cstring>
-#include <iostream>
+// #include <iostream>
 
 // #include "ibus/im/stateful_ime_ecl.h"
 #include "ibus/im/stateful_ime_socket.h"
@@ -27,6 +26,8 @@ public:
 struct EngineClass {
   IBusEngineClass parent;
   IMEFactory *ime_factory;
+  IBusPropList *prop_list;
+  IBusProperty *prop_input_mode;
 };
 
 struct Engine {
@@ -43,22 +44,9 @@ void Init(GTypeInstance *p, gpointer klass) {
   EngineClass *engine_class =
       G_TYPE_CHECK_CLASS_CAST(klass, IBUS_TYPE_ENGINE, EngineClass);
 
-  // ime
   engine->ime = engine_class->ime_factory->CreateIME();
-
-  // prop list
-  engine->prop_list = ibus_prop_list_new();
-  // clang-format off
-  // avoid: ibus_engine_register_properties: assertion 'IBUS_IS_PROP_LIST (prop_list)' failed
-  // clang-format on
-  g_object_ref_sink(engine->prop_list);
-  // Initial input mode is (a).
-  engine->prop_input_mode =
-      ibus_property_new("InputMode", PROP_TYPE_NORMAL,
-                        ibus_text_new_from_string("Input Model (a)"), nullptr,
-                        nullptr, true, true, PROP_STATE_UNCHECKED, nullptr);
-  g_object_ref_sink(engine->prop_input_mode);
-  ibus_prop_list_append(engine->prop_list, engine->prop_input_mode);
+  engine->prop_list = engine_class->prop_list;
+  engine->prop_input_mode = engine_class->prop_input_mode;
 }
 
 void ShowCandidateWindow(IBusEngine *engine,
@@ -137,7 +125,7 @@ void Show(IBusEngine *engine, const senn::fcitx::im::views::Editing *view) {
   }
 
   if (view->input == "") {
-    // Without this, the layout of the input console breaks
+    // This prevents the input console layout from breaking.
     // (The cursor is not shown, for example)
     ibus_engine_hide_preedit_text(engine);
     return;
@@ -170,28 +158,39 @@ void UpdatePropInputMode(IBusEngine *p, senn::ibus::im::InputMode mode) {
   ibus_engine_update_property(p, e->prop_input_mode);
 }
 
-gboolean ToggleInputMode(IBusEngine *p) {
-  ibus_engine_hide_preedit_text(p);
-  ibus_engine_hide_lookup_table(p);
+class ProcessKeyEventHandler {
+public:
+  static gboolean execute(IBusEngine *p, guint keyval, guint keycode,
+                          guint modifiers) {
+    const bool is_key_up = ((modifiers & IBUS_RELEASE_MASK) != 0);
+    if (is_key_up) {
+      return FALSE;
+    }
 
-  senn::ibus::im::InputMode m = ENGINE(p)->ime->ToggleInputMode();
-  UpdatePropInputMode(p, m);
-  return true;
-}
+    if (keyval == IBUS_KEY_Zenkaku_Hankaku) {
+      return ToggleInputMode(p);
+    }
 
-gboolean ProcessKeyEvent(IBusEngine *p, guint keyval, guint keycode,
-                         guint modifiers) {
-  const bool is_key_up = ((modifiers & IBUS_RELEASE_MASK) != 0);
-  if (is_key_up) {
-    return FALSE;
+    return ENGINE(p)->ime->ProcessInput(
+        keyval, keycode, modifiers,
+        [&](const senn::fcitx::im::views::Converting *view) { Show(p, view); },
+        [&](const senn::fcitx::im::views::Editing *view) { Show(p, view); });
   }
 
-  if (keyval == IBUS_KEY_Zenkaku_Hankaku) {
-    return ToggleInputMode(p);
-  }
+private:
+  static gboolean ToggleInputMode(IBusEngine *p) {
+    ibus_engine_hide_preedit_text(p);
+    ibus_engine_hide_lookup_table(p);
 
-  return ENGINE(p)->ime->ProcessInput(
-      keyval, keycode, modifiers,
+    senn::ibus::im::InputMode m = ENGINE(p)->ime->ToggleInputMode();
+    UpdatePropInputMode(p, m);
+    return true;
+  }
+};
+
+void CandidateClicked(IBusEngine *p, guint index, guint button, guint state) {
+  ENGINE(p)->ime->SelectCandidate(
+      index,
       [&](const senn::fcitx::im::views::Converting *view) { Show(p, view); },
       [&](const senn::fcitx::im::views::Editing *view) { Show(p, view); });
 }
@@ -199,7 +198,11 @@ gboolean ProcessKeyEvent(IBusEngine *p, guint keyval, guint keycode,
 void FocusIn(IBusEngine *p) {
   Engine *e = ENGINE(p);
   ibus_engine_register_properties(p, e->prop_list);
+  // Initial input mode is (a).
+  UpdatePropInputMode(p, senn::ibus::im::InputMode::kDirect);
 }
+
+void Disable(IBusEngine *p) { delete ENGINE(p)->ime; }
 
 } // namespace engine
 } // namespace ibus_senn
@@ -301,8 +304,16 @@ void SennEngineClassDestroy(IBusObject *engine) {
 
 void SennEngineClassInit(gpointer klass, gpointer class_data) {
   IBusEngineClass *engine_class = IBUS_ENGINE_CLASS(klass);
-  engine_class->process_key_event = senn::ibus_senn::engine::ProcessKeyEvent;
-  engine_class->focus_in = senn::ibus_senn::engine::FocusIn;
+  // clang-format off
+  engine_class->process_key_event =
+      senn::ibus_senn::engine::ProcessKeyEventHandler::execute;
+  engine_class->candidate_clicked =
+      senn::ibus_senn::engine::CandidateClicked;
+  engine_class->focus_in =
+      senn::ibus_senn::engine::FocusIn;
+  engine_class->disable =
+      senn::ibus_senn::engine::Disable;
+  // clang-format on
 
   g_parent_class =
       reinterpret_cast<IBusEngineClass *>(g_type_class_peek_parent(klass));
@@ -318,6 +329,20 @@ void SennEngineClassInit(gpointer klass, gpointer class_data) {
       G_TYPE_CHECK_CLASS_CAST(klass, IBUS_TYPE_ENGINE,
                               senn::ibus_senn::engine::EngineClass);
   senn_engine_class->ime_factory = g_ime_factory;
+
+  senn_engine_class->prop_list = ibus_prop_list_new();
+  // clang-format off
+  // avoid: ibus_engine_register_properties: assertion 'IBUS_IS_PROP_LIST (prop_list)' failed
+  // clang-format on
+  g_object_ref_sink(senn_engine_class->prop_list);
+  // Initial input mode is (a).
+  senn_engine_class->prop_input_mode =
+      ibus_property_new("InputMode", PROP_TYPE_NORMAL,
+                        ibus_text_new_from_string("Input Mode (a)"), nullptr,
+                        nullptr, true, true, PROP_STATE_UNCHECKED, nullptr);
+  g_object_ref_sink(senn_engine_class->prop_input_mode);
+  ibus_prop_list_append(senn_engine_class->prop_list,
+                        senn_engine_class->prop_input_mode);
 }
 
 GType GetType() {
