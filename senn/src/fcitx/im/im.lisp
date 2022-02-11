@@ -61,13 +61,12 @@
                           predictions
                           prediction-index
                           committed-string)
-  (let ((json (jsown:new-js
-                ("cursor-pos"       cursor-pos)
-                ("input"            input)
-                ("predictions"      predictions)
-                ("prediction-index" (or prediction-index -1))
-                ("committed-input"  committed-string))))
-    (format nil "EDITING ~A" (jsown:to-json json))))
+  (senn.fcitx.im.view:make-editing
+   :cursor-pos       cursor-pos
+   :input            input
+   :predictions      predictions
+   :prediction-index (or prediction-index -1)
+   :committed-input  (or committed-string "")))
 
 (defun editing-view/inputting-state (s &key committed-string)
   (let ((buffer (senn.im.inputting:state-buffer s)))
@@ -75,12 +74,12 @@
                        (senn.im.buffer:buffer-string buffer)
                        (senn.im.inputting:state-predictions s)
                        nil
-                       (or committed-string ""))))
+                       committed-string)))
 
 (defun editing-view/katakana-state (s)
   (let ((katakana-input (katakana-input s)))
     (make-editing-view (length-utf8 katakana-input)
-                       katakana-input nil nil "")))
+                       katakana-input nil nil nil)))
 
 (defun editing-view/selecting-from-predictions (s)
   (let ((input (selecting-from-predictions-current-input s)))
@@ -88,29 +87,25 @@
                        input
                        (selecting-from-predictions-predictions s)
                        (selecting-from-predictions-current-index s)
-                       "")))
+                       nil)))
 
 (defun converting-view/converting-state (s)
-  (let ((json
-         (jsown:new-js
-           ("forms"
-            (mapcar #'senn.im.converting:segment-cursor-pos-form
-                    (senn.im.converting:state-segments s)))
-           ("cursor-form-index"
-            (senn.im.converting:state-current-segment-index s))
-           ("cursor-form"
-            (let ((segment (senn.im.converting:current-segment s)))
-              (if (senn.im.converting:segment-shows-katakana-p segment)
-                  (jsown:new-js
-                    ("candidates"      nil)
-                    ("candidate-index" -1))
-                  (jsown:new-js
-                    ("candidates"
-                     (if (senn.im.converting:segment-has-more-candidates-p
-                          segment)
-                         nil
-                         (senn.im.converting:segment-forms segment)))
-                    ("candidate-index"
-                     (senn.im.converting:segment-current-index
-                      segment)))))))))
-    (format nil "CONVERTING ~A" (jsown:to-json json))))
+  (senn.fcitx.im.view:make-converting
+   :forms
+   (mapcar #'senn.im.converting:segment-cursor-pos-form
+           (senn.im.converting:state-segments s))
+   :cursor-form-index
+   (senn.im.converting:state-current-segment-index s)
+   :cursor-form
+   (let ((segment (senn.im.converting:current-segment s)))
+     (if (senn.im.converting:segment-shows-katakana-p segment)
+         (senn.fcitx.im.view:make-converting-cursor-form
+          :candidates nil
+          :candidate-index -1)
+         (senn.fcitx.im.view:make-converting-cursor-form
+          :candidates
+          (if (senn.im.converting:segment-has-more-candidates-p segment)
+              nil
+              (senn.im.converting:segment-forms segment))
+          :candidate-index
+          (senn.im.converting:segment-current-index segment))))))
