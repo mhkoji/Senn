@@ -29,9 +29,7 @@
             (setf edit-state state))
           (format nil "~A ~A"
                   (if consumed-p 1 0)
-                  (if (and consumed-p view)
-                      (senn.fcitx.im.json:from-view view)
-                      "NONE")))
+                  (if (and consumed-p view) view "NONE")))
         (format nil "~A ~A" 0 "NONE"))))
 
 (defun toggle-input-mode (ime)
