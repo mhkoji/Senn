@@ -65,13 +65,12 @@ void ShowCandidateWindow(IBusEngine *engine,
                          const std::vector<std::string> &word_strings,
                          const int index) {
   const gboolean kRound = TRUE;
-  const size_t kPageSize = word_strings.size();
-  IBusLookupTable *table =
-      ibus_lookup_table_new(kPageSize, index, TRUE, kRound);
+  const size_t size = word_strings.size();
+  IBusLookupTable *table = ibus_lookup_table_new(size, index, TRUE, kRound);
 
   ibus_lookup_table_set_orientation(table, IBUS_ORIENTATION_VERTICAL);
 
-  for (int i = 0; i < word_strings.size(); ++i) {
+  for (int i = 0; i < size; ++i) {
     IBusText *text = ibus_text_new_from_string(word_strings[i].c_str());
     // releases text.
     ibus_lookup_table_append_candidate(table, text);

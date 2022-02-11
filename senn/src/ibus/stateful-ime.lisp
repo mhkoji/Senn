@@ -54,6 +54,10 @@
     :initarg :kkc
     :reader senn.fcitx.im:ime-kkc)))
 
+(defmethod senn.fcitx.im:ime-max-candidate-count ((ime ime))
+  ;; An error occurs if the candidate count >= 16.
+  15)
+
 ;;;
 
 (defun hachee-make-ime (kkc)

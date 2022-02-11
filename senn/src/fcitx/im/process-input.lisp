@@ -69,14 +69,18 @@
         ((or (senn.fcitx.keys:space-p key)
              (senn.fcitx.keys:down-p key))
          (senn.im.converting:current-segment-candidates-move!
-          s +1 (senn.fcitx.im:ime-kkc ime))
-         ;; t because the OS may move the current corsor in the candidate window.
+          s +1
+          (senn.fcitx.im:ime-kkc ime)
+          (senn.fcitx.im:ime-max-candidate-count ime))
+         ;; Return t because the OS may move the current corsor in the candidate window.
          (resp t (converting-view/converting-state s) :state s))
 
         ((senn.fcitx.keys:up-p key)
          (senn.im.converting:current-segment-candidates-move!
-          s -1 (senn.fcitx.im:ime-kkc ime))
-         ;; t because the OS may move the current corsor in the candidate window.
+          s -1
+          (senn.fcitx.im:ime-kkc ime)
+          (senn.fcitx.im:ime-max-candidate-count ime))
+         ;; Return t because the OS may move the current corsor in the candidate window.
          (resp t (converting-view/converting-state s) :state s))
 
         ((senn.fcitx.keys:f7-p key)
@@ -147,7 +151,8 @@
         ((senn.fcitx.keys:char-p key)
          (senn.im.inputting:insert-char!
           s (code-char (senn.fcitx.keys:key-sym key))
-          (senn.fcitx.im:ime-predictor ime))
+          (senn.fcitx.im:ime-predictor ime)
+          (senn.fcitx.im:ime-max-candidate-count ime))
          (resp t (editing-view/inputting-state s) :state s))
 
         ((and (senn.fcitx.keys:f7-p key)
@@ -185,7 +190,9 @@
 
         ((senn.fcitx.keys:backspace-p key)
          (if (senn.im.inputting:delete-char!
-              s (senn.fcitx.im:ime-predictor ime))
+              s
+              (senn.fcitx.im:ime-predictor ime)
+              (senn.fcitx.im:ime-max-candidate-count ime))
              ;; IMEが文字を削除した -> OSが文字が削除するのを抑制
              (resp t (editing-view/inputting-state s) :state s)
              ;; IMEが文字を削除していない -> OSに文字を削除してもらう
