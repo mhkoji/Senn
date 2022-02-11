@@ -2,6 +2,7 @@
   (:use :cl)
   (:export :process-input
            :toggle-input-mode
+           :select-candidate
 
            :engine-make-ime
            :engine-close-ime
@@ -30,7 +31,7 @@
           (format nil "~A ~A"
                   (if consumed-p 1 0)
                   (if (and consumed-p view) view "NONE")))
-        (format nil "~A ~A" 0 "NONE"))))
+        "0 NONE")))
 
 (defun toggle-input-mode (ime)
   (with-accessors ((input-mode state-input-mode)
@@ -44,6 +45,18 @@
        (setf edit-state (senn.im.inputting:make-state))))
     (format nil "~A" input-mode)))
 
+(defun select-candidate (ime index)
+  (with-accessors ((input-mode state-input-mode)
+                   (edit-state state-edit-state)) (ime-state ime)
+    (if (eq input-mode :hiragana)
+        (destructuring-bind (consumed-p view &key state)
+            (senn.fcitx.im.select-candidate:execute edit-state index)
+          (when state
+            (setf edit-state state))
+          (format nil "~A ~A"
+                  (if consumed-p 1 0)
+                  (if (and consumed-p view) view "NONE")))
+        "0 NONE")))
 ;;;
 
 (defclass ime (senn.fcitx.im:ime)
