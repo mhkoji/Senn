@@ -1,5 +1,5 @@
-ibus-senn (0.0.1) UNRELEASED; urgency=low
+ibus-senn (0.0.4-1) unstable; urgency=medium
 
   * Initial release
 
--- mhkoji <mhkoji2@gmail.com>  Sun, 15 Mar 2020 00:00:00 +0900
+ -- mhkoji <mhkoji2@gmail.com>  Sat, 12 Feb 2022 23:13:18 +0900
