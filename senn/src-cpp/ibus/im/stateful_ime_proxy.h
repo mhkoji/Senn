@@ -12,6 +12,8 @@ public:
   StatefulIMEProxy(std::unique_ptr<senn::RequesterInterface>);
   ~StatefulIMEProxy();
 
+  void ResetIM() override;
+
   InputMode ToggleInputMode() override;
 
   bool SelectCandidate(

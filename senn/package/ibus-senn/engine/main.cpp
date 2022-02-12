@@ -1,3 +1,5 @@
+#include <ecl/ecl.h>
+
 #include <glib-object.h>
 #include <ibus.h>
 
@@ -5,12 +7,15 @@
 #include <config.h>
 #endif
 
-// #include <iostream>
+#include <iostream>
 
-// #include "ibus/im/stateful_ime_ecl.h"
-#include "ibus/im/stateful_ime_socket.h"
+#include "ibus/im/stateful_ime_ecl.h"
+// #include "ibus/im/stateful_ime_socket.h"
 // #include "ibus/im/stateful_ime_sbcl.h"
 // #include "ibus/im/stateful_ime_exec.h"
+
+const char *kECLDIR = "/usr/lib/senn/ibus/ecl/lib/ecl-21.2.1/";
+const std::string kKkcEnginePath = "/usr/lib/senn/ibus/kkc-engine";
 
 namespace senn {
 namespace ibus_senn {
@@ -25,7 +30,7 @@ public:
 
 struct EngineClass {
   IBusEngineClass parent;
-  IMEFactory *ime_factory;
+  senn::ibus::im::StatefulIME *ime;
   IBusPropList *prop_list;
   IBusProperty *prop_input_mode;
 };
@@ -43,8 +48,7 @@ void Init(GTypeInstance *p, gpointer klass) {
   Engine *engine = ENGINE(p);
   EngineClass *engine_class =
       G_TYPE_CHECK_CLASS_CAST(klass, IBUS_TYPE_ENGINE, EngineClass);
-
-  engine->ime = engine_class->ime_factory->CreateIME();
+  engine->ime = engine_class->ime;
   engine->prop_list = engine_class->prop_list;
   engine->prop_input_mode = engine_class->prop_input_mode;
 }
@@ -202,12 +206,13 @@ void FocusIn(IBusEngine *p) {
   UpdatePropInputMode(p, senn::ibus::im::InputMode::kDirect);
 }
 
-void Disable(IBusEngine *p) { delete ENGINE(p)->ime; }
+void Disable(IBusEngine *p) { ENGINE(p)->ime->ResetIM(); }
 
 } // namespace engine
 } // namespace ibus_senn
 } // namespace senn
 
+/*
 class SocketIMEFactory : public senn::ibus_senn::engine::IMEFactory {
 public:
   senn::ibus::im::StatefulIME *CreateIME() {
@@ -216,25 +221,6 @@ public:
 
   static senn::ibus_senn::engine::IMEFactory *Create() {
     return new SocketIMEFactory();
-  }
-};
-
-/*
-class IPCIMEFactory : public senn::ibus_senn::engine::IMEFactory {
-public:
-  ~IPCIMEFactory() { delete ime_; }
-
-  senn::ibus::im::StatefulIME *CreateIME() { return ime_; }
-
-private:
-  IPCIMEFactory(senn::ibus::im::StatefulIMEIPC *ime) : ime_(ime) {}
-
-  senn::ibus::im::StatefulIMEIPC *ime_;
-
-public:
-  static senn::ibus_senn::engine::IMEFactory *Create() {
-    return new IPCIMEFactory(
-        senn::ibus::im::StatefulIMEIPC::SpawnAndCreate("/usr/lib/senn/server"));
   }
 };
 */
@@ -252,23 +238,24 @@ public:
     return new SbclIMEFactory();
   }
 };
-
+*/
 
 class EclIMEFactory : public senn::ibus_senn::engine::IMEFactory {
 public:
   senn::ibus::im::StatefulIME *CreateIME() {
-    return senn::ibus::im::StatefulIMEEcl::Create();
+    return senn::ibus::im::StatefulIMEEcl::Create(kKkcEnginePath);
   }
+
+  ~EclIMEFactory() { senn::ibus::im::StatefulIMEEcl::ClShutdown(); }
 
 public:
   static senn::ibus_senn::engine::IMEFactory *Create() {
-    setenv("ECLDIR", "/usr/lib/senn/ecl-21.2.1/", 1);
+    setenv("ECLDIR", kECLDIR, 1);
     senn::ibus::im::StatefulIMEEcl::ClBoot();
     senn::ibus::im::StatefulIMEEcl::EclInitModule();
     return new EclIMEFactory();
   }
 };
-*/
 
 /*
 class ExecIMEFactory : public senn::ibus_senn::engine::IMEFactory {
@@ -298,8 +285,8 @@ SennEngineClassConstructor(GType type, guint n_construct_properties,
       ->constructor(type, n_construct_properties, construct_properties);
 }
 
-void SennEngineClassDestroy(IBusObject *engine) {
-  IBUS_OBJECT_CLASS(g_parent_class)->destroy(engine);
+void SennEngineClassDestroy(IBusObject *p) {
+  IBUS_OBJECT_CLASS(g_parent_class)->destroy(p);
 }
 
 void SennEngineClassInit(gpointer klass, gpointer class_data) {
@@ -328,8 +315,9 @@ void SennEngineClassInit(gpointer klass, gpointer class_data) {
   senn::ibus_senn::engine::EngineClass *senn_engine_class =
       G_TYPE_CHECK_CLASS_CAST(klass, IBUS_TYPE_ENGINE,
                               senn::ibus_senn::engine::EngineClass);
-  senn_engine_class->ime_factory = g_ime_factory;
-
+  // ime
+  senn_engine_class->ime = g_ime_factory->CreateIME();
+  // prop list
   senn_engine_class->prop_list = ibus_prop_list_new();
   // clang-format off
   // avoid: ibus_engine_register_properties: assertion 'IBUS_IS_PROP_LIST (prop_list)' failed
@@ -441,8 +429,8 @@ int main(gint argc, gchar **argv) {
     std::exit(1);
   }
 
-  // g_ime_factory = EclIMEFactory::Create();
-  g_ime_factory = SocketIMEFactory::Create();
+  g_ime_factory = EclIMEFactory::Create();
+  // g_ime_factory = SocketIMEFactory::Create();
 
   StartEngine(g_option_ibus);
   return 0;

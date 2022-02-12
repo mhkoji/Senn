@@ -1,11 +1,10 @@
 (in-package :senn.lib.ibus)
 
-(defun make-ime ()
-  (let ((runner (senn.im.mixin.engine:make-engine-runner
-                 :program "/usr/lib/senn/kkc-engine")))
+(defun make-ime (engine-path)
+  (let ((runner (senn.im.kkc.engine:make-engine-runner
+                 :program engine-path)))
     (senn.ibus.stateful-ime-engine:make-ime runner)))
 
 (defun close-ime (ime)
   (log:info "IME closing...")
-  (senn.ibus.stateful-ime-engine:close-ime ime)
-  #+sbcl 0)
+  (senn.ibus.stateful-ime-engine:close-ime ime))
