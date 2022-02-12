@@ -42,6 +42,15 @@ std::string ToggleInputModeRequest() {
   return ss.str();
 }
 
+std::string ResetIMRequest() {
+  std::stringstream ss;
+  ss << "{"
+     << "\"op\": \"reset-im\","
+     << "\"args\": {}"
+     << "}\n";
+  return ss.str();
+}
+
 } // namespace
 
 StatefulIMEProxy::StatefulIMEProxy(
@@ -49,6 +58,12 @@ StatefulIMEProxy::StatefulIMEProxy(
     : requester_(std::move(requester)) {}
 
 StatefulIMEProxy::~StatefulIMEProxy() { requester_.reset(); }
+
+void StatefulIMEProxy::ResetIM() {
+  std::string response = "";
+  requester_->Request(ResetIMRequest(), &response);
+  assert(response == "OK");
+}
 
 InputMode StatefulIMEProxy::ToggleInputMode() {
   std::string response = "";

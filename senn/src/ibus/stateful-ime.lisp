@@ -3,10 +3,8 @@
   (:export :process-input
            :toggle-input-mode
            :select-candidate
-
-           :engine-make-ime
-           :engine-close-ime
-           :hachee-make-ime))
+           :reset-im
+           :make-ime))
 (in-package :senn.ibus.stateful-ime)
 
 (defgeneric ime-state (ime))
@@ -19,6 +17,13 @@
   (make-state
    :edit-state nil
    :input-mode :direct))
+
+(defun reset-im (ime)
+  (with-accessors ((input-mode state-input-mode)
+                   (edit-state state-edit-state)) (ime-state ime)
+    (setf input-mode :direct)
+    (setf edit-state nil))
+  "OK")
 
 (defun process-input (ime key)
   (with-accessors ((input-mode state-input-mode)
@@ -71,25 +76,7 @@
   ;; An error occurs if the candidate count >= 16.
   15)
 
-;;;
-
-(defun hachee-make-ime (kkc)
+(defun make-ime (&key kkc)
   (make-instance 'ime
-   :kkc (make-instance 'senn.im.kkc.hachee:kkc
-         :impl kkc
-         :state (senn.im.kkc.hachee:make-state))
-   :state (make-initial-state)))
-
-;;;
-
-(defun engine-make-ime (engine-runner)
-  (make-instance 'ime
-   :kkc (make-instance 'senn.im.kkc.engine:kkc
-         :engine-store
-         (senn.im.kkc.engine:make-engine-store
-          :engine (senn.im.kkc.engine:run-engine engine-runner)
-          :engine-runner engine-runner))
-   :state (make-initial-state)))
-
-(defun engine-close-ime (ime)
-  (senn.im.kkc.engine:close-kkc (slot-value ime 'kkc)))
+                 :state (make-initial-state)
+                 :kkc kkc))

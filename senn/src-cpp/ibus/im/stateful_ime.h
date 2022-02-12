@@ -17,6 +17,8 @@ class StatefulIME {
 public:
   virtual ~StatefulIME() {}
 
+  virtual void ResetIM() = 0;
+
   virtual InputMode ToggleInputMode() = 0;
 
   virtual bool SelectCandidate(

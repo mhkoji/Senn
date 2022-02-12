@@ -9,6 +9,9 @@
                (string-upcase
                 (jsown:val jsown "op")))))
       (case op
+        (:reset-im
+         (senn.ibus.stateful-ime:reset-im
+          stateful-ime))
         (:process-input
          (senn.ibus.stateful-ime:process-input
           stateful-ime

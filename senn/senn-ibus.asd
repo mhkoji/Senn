@@ -2,8 +2,7 @@
   :serial t
   :pathname "src"
   :components
-  ((:file "im/kkc/hachee")
-   (:file "ibus/stateful-ime")
+  ((:file "ibus/stateful-ime")
+   (:file "ibus/stateful-ime-engine")
    (:file "ibus/server"))
-  :depends-on (:hachee-kkc
-               :senn-fcitx))
+  :depends-on (:senn-fcitx))
