@@ -61,7 +61,8 @@ Thus, you can uninstall fcitx-senn by the following commands:
 
 The debian directory is created by `dh_make --createorig -p fcitx-senn_0.0.1`.
 
-Add `DEB_BUILD_OPTIONS=nostrip` because dh_strip removes the sbcl core in the kkc-engine.
+Add `DEB_BUILD_OPTIONS=nostrip` so that the sbcl core of kkc-engine survives strip by dh_strip.
+https://bugs.launchpad.net/sbcl/+bug/310108
 
 ```
 % cd <path/to/senn>/senn/package/fcitx-senn/
