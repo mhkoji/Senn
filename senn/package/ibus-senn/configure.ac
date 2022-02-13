@@ -12,6 +12,9 @@ AC_PROG_CXX
 AC_PROG_INSTALL
 
 # Checks for libraries.
+m4_define([ibus_required_version], [1.5.0])
+m4_define([glib_required_version], [2.26.0])
+
 ## Check ibus
 PKG_CHECK_MODULES(IBUS, [
     ibus-1.0 >= ibus_required_version
