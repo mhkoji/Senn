@@ -34,7 +34,6 @@ ibus_engine_senn_CPPFLAGS = \
 	-I/usr/lib/x86_64-linux-gnu/glib-2.0/include \
 	-I../../../third-party/ \
 	-I../../../src-cpp/ \
-	-I${HOME}/.roswell/impls/x86-64/linux/ecl/21.2.1/include \
 	-std=c++11 \
 	$(NULL)
 
