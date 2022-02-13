@@ -18,7 +18,7 @@ COPY --from=ecl-builder /output /app/senn/package/fcitx-senn/dep-ecl
 COPY --from=ecl-builder /usr/local/include/ecl /usr/local/include/ecl
 
 RUN cd /app/senn/package/fcitx-senn && \
-    DEB_BUILD_OPTIONS=nostrip dpkg-buildpackage -b -us -uc && \
+    dpkg-buildpackage -b -us -uc && \
     cp ../*.deb /output/ && \
     echo "#!/bin/bash"         > /app/cmd.sh && \
     echo "cp /output/* /host" >> /app/cmd.sh && \
