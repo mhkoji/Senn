@@ -35,8 +35,6 @@ RUN /usr/lib/senn/ibus/ecl/bin/ecl \
       -eval '(push "/app/hachee/" ql:*local-project-directories*)' \
       -eval '(ql:quickload :senn-lib-ibus)' \
       -eval '(asdf:make-build :senn-lib-ibus :type :static-library :move-here #P"/output" :monolithic t :init-name "init_senn")' && \
-    cp    /usr/lib/senn/ibus/ecl/lib/libecl*    /output && \
-    cp -r /usr/lib/senn/ibus/ecl/lib/ecl-21.2.1 /output && \
     echo "#!/bin/bash"         > /app/cmd.sh && \
     echo "cp /output/* /host" >> /app/cmd.sh && \
     chmod +x /app/cmd.sh
