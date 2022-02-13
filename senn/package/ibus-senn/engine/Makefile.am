@@ -24,8 +24,8 @@ ibus_engine_senn_LDADD = \
 	@GLIB2_LIBS@ \
 	@GIO2_LIBS@ \
 	@GTHREAD2_LIBS@ \
+	/usr/lib/senn/ibus/ecl/lib/libecl.so \
 	../dep-ecl/senn-lib-ibus--all-systems.a \
-	../dep-ecl/libecl.so \
 	$(NULL)
 
 ibus_engine_senn_CPPFLAGS = \
@@ -82,7 +82,7 @@ install-data-hook:
 ##  dh_auto_install
 ##       make -j2 -O install DESTDIR=/home/koji/git/Hachee/senn/package/ibus-senn/debian/ibus-senn AM_UPDATE_INFO_DIR=no
 ##  DESTDIR can be used according the log below.
-	install -d                           ${DESTDIR}/usr/lib/senn/ibus/ecl/lib/
-	install -p ../dep-kkc/kkc-engine     ${DESTDIR}/usr/lib/senn/ibus/
-	install -p ../dep-ecl/libecl.so.21.2 ${DESTDIR}/usr/lib/senn/ibus/ecl/lib/
-	cp -r ../dep-ecl/ecl-21.2.1          ${DESTDIR}/usr/lib/senn/ibus/ecl/lib/
+	install -d                                           ${DESTDIR}/usr/lib/senn/ibus/ecl/lib/
+	install -p ../dep-kkc/kkc-engine                     ${DESTDIR}/usr/lib/senn/ibus/
+	install -p /usr/lib/senn/ibus/ecl/lib/libecl.so.21.2 ${DESTDIR}/usr/lib/senn/ibus/ecl/lib/
+	cp      -r /usr/lib/senn/ibus/ecl/lib/ecl-21.2.1     ${DESTDIR}/usr/lib/senn/ibus/ecl/lib/

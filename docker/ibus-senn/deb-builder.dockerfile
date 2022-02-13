@@ -10,16 +10,14 @@ RUN apt update && apt install -y \
 
 RUN mkdir -p \
     /app \
-    /output \
-    /usr/lib/senn/ibus/ecl/lib/
+    /output
 
 COPY . /app
 COPY --from=kkc-builder /output /app/senn/package/ibus-senn/dep-kkc
 COPY --from=ecl-builder /output /app/senn/package/ibus-senn/dep-ecl
-COPY --from=ecl-builder /usr/lib/senn/ibus/ecl/include/ecl /usr/local/include/ecl
+COPY --from=ecl-builder /usr/lib/senn/ibus/ /usr/lib/senn/ibus/
 
-## Add nostrip because dh_strip removes the sbcl core of the server
-RUN cp /app/senn/package/ibus-senn/dep-ecl/libecl* /usr/lib/senn && \
+RUN ln -s /usr/lib/senn/ibus/ecl/include/ecl /usr/local/include/ && \
     cd /app/senn/package/ibus-senn && \
     touch NEWS README AUTHORS ChangeLog && \
     autoreconf -i && \
