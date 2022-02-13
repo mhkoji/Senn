@@ -7,21 +7,19 @@ Roswell needs to be installed first.
 ```
 % sudo apt install -y fcitx-libs-dev cmake
 
+% sudo mkdir -p /usr/lib/senn/fcitx/ecl
+% wget https://common-lisp.net/project/ecl/static/files/release/ecl-21.2.1.tgz
+% tar xvf ecl-21.2.1.tgz
+% cd ecl-21.2.1/
+% ./configure --prefix=/usr/lib/senn/fcitx/ecl && make && sudo make install
+% sudo ln -s /usr/lib/senn/fcitx/ecl/include/ecl/ /usr/local/include/
+
 % cd <path/to/senn>/senn/package/fcitx-senn/
 % mkdir dep-ecl dep-kkc
 % ros use sbcl
-% ros dump executable ../../src/bin/kkc-engine.ros
-% mv ../../src/bin/kkc-engine ./dep-kkc
-
+% ros dump executable ../../../senn-kkc-engine/hachee/engine.ros -o dep-kkc/kkc-engine
 % ros use ecl
 % ros run -e '(asdf:make-build :senn-lib-fcitx :type :static-library :move-here #P"./dep-ecl" :monolithic t :init-name "init_senn")' -q
-% cp -r ~/.roswell/impls/x86-64/linux/ecl/21.2.1/lib/ecl-21.2.1 ./dep-ecl
-% cp ~/.roswell/impls/x86-64/linux/ecl/21.2.1/lib/libecl.so* ./dep-ecl
-```
-
-Remove the following comment out in CMakeLists.txt:
-```
-#  $ENV{HOME}/.roswell/impls/x86-64/linux/ecl/21.2.1/include 
 ```
 
 ## Install by CMake
@@ -66,6 +64,6 @@ https://bugs.launchpad.net/sbcl/+bug/310108
 
 ```
 % cd <path/to/senn>/senn/package/fcitx-senn/
-% DEB_BUILD_OPTIONS=nostrip dpkg-buildpackage -b -us -uc
+% DEB_BUILD_OPTIONS=nostrip debuild -b -us -uc
 % sudo dpkg -i ../fcitx-senn_0.0.1-1_amd64.deb
 ```
