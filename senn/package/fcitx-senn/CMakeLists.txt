@@ -15,7 +15,7 @@ set(SENN_CPP_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../src-cpp)
 set(FCITX_SENN_INSTALL_DIR /usr/lib/senn/fcitx)
 
 ## Without this, CMake sets runtime path of the shared object to "".
-set(CMAKE_INSTALL_RPATH ${FCITX_SENN_INSTALL_DIR})
+set(CMAKE_INSTALL_RPATH ${FCITX_SENN_INSTALL_DIR}/ecl/lib/)
 
 include_directories(
   ${FCITX4_FCITX_INCLUDE_DIRS}
@@ -23,7 +23,6 @@ include_directories(
   ${FCITX4_FCITX_UTILS_INCLUDE_DIRS}
   ../../third-party/
   ${SENN_CPP_DIR}
-#  $ENV{HOME}/.roswell/impls/x86-64/linux/ecl/21.2.1/include
   )
 
 ## A macro to build the shared object library easily.
@@ -31,8 +30,8 @@ fcitx_add_addon_full(senn
   SOURCES fcitx_senn.cpp
           ${SENN_CPP_DIR}/fcitx/im/stateful_ime_proxy.cpp
           ${SENN_CPP_DIR}/fcitx/im/stateful_ime_ecl.cpp
-  LINK_LIBS ${CMAKE_CURRENT_SOURCE_DIR}/dep-ecl/senn-lib-fcitx--all-systems.a
-            ${CMAKE_CURRENT_SOURCE_DIR}/dep-ecl/libecl.so
+  LINK_LIBS /usr/lib/senn/fcitx/ecl/lib/libecl.so
+            ${CMAKE_CURRENT_SOURCE_DIR}/dep-ecl/senn-lib-fcitx--all-systems.a
   IM_CONFIG senn.conf)
 
 ## This fcitx-senn.png is displayed in the tray as the senn icon.
@@ -46,13 +45,14 @@ install(
   DESTINATION share/fcitx/imicon)
 
 install(
+  PROGRAMS /usr/lib/senn/fcitx/ecl/lib/libecl.so.21.2.1
+  DESTINATION ${FCITX_SENN_INSTALL_DIR}/ecl/lib/
   ## CMake adds this file to the dependencies of the shared object.
-  PROGRAMS ${CMAKE_CURRENT_SOURCE_DIR}/dep-ecl/libecl.so.21.2
-  DESTINATION ${FCITX_SENN_INSTALL_DIR})
+  RENAME libecl.so.21.2)
 
 install(
-  DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/dep-ecl/ecl-21.2.1
-  DESTINATION ${FCITX_SENN_INSTALL_DIR})
+  DIRECTORY /usr/lib/senn/fcitx/ecl/lib/ecl-21.2.1
+  DESTINATION ${FCITX_SENN_INSTALL_DIR}/ecl/lib/)
 
 install(
   PROGRAMS ${CMAKE_CURRENT_SOURCE_DIR}/dep-kkc/kkc-engine

@@ -2,8 +2,9 @@ FROM ubuntu:18.04 AS kkc-builder
 
 RUN apt update && apt install -y \
     build-essential \
+    cdbs \
     cmake \
-    debhelper \
+    devscripts \
     fcitx-libs-dev \
     libanthy-dev
 
@@ -15,10 +16,11 @@ COPY . /app
 # COPY --from=menu-builder /output /app/senn/package/fcitx-senn/dep-menu
 COPY --from=kkc-builder /output /app/senn/package/fcitx-senn/dep-kkc
 COPY --from=ecl-builder /output /app/senn/package/fcitx-senn/dep-ecl
-COPY --from=ecl-builder /usr/local/include/ecl /usr/local/include/ecl
+COPY --from=ecl-builder /usr/lib/senn/fcitx/ /usr/lib/senn/fcitx/
 
-RUN cd /app/senn/package/fcitx-senn && \
-    dpkg-buildpackage -b -us -uc && \
+RUN ln -s /usr/lib/senn/fcitx/ecl/include/ecl /usr/local/include/ && \
+    cd /app/senn/package/fcitx-senn && \
+    debuild -b -us -uc && \
     cp ../*.deb /output/ && \
     echo "#!/bin/bash"         > /app/cmd.sh && \
     echo "cp /output/* /host" >> /app/cmd.sh && \

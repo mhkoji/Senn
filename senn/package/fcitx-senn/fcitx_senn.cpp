@@ -11,7 +11,7 @@
 // #include "fcitx/im/stateful_ime_socket.h"
 // #include "fcitx/im/stateful_ime_sbcl.h"
 
-const char *kECLDIR = "/usr/lib/senn/fcitx/ecl-21.2.1/";
+const char *kECLDIR = "/usr/lib/senn/fcitx/ecl/lib/ecl-21.2.1/";
 const std::string kKkcEnginePath = "/usr/lib/senn/fcitx/kkc-engine";
 
 namespace {
