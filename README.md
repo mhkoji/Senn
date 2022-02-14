@@ -4,7 +4,9 @@ Input method editor for the Japanese language
 
 ## KKC Engine
 
-- The KKC of the ime is implemented in the separated file named kkc-engine installed at `/usr/lib/senn/fcitx/kkc-engine`.
+- The KKC of the ime is implemented in the separated file named kkc-engine installed at:
+  - fcitx: `/usr/lib/senn/fcitx/kkc-engine`.
+  - ibus: `/usr/lib/senn/ibus/kkc-engine`.
 - When the ime is turned on, it starts kkc-engine and communcates with it using a pipe.
 - kkc-engine can be replaced with any executable file as long as it satisfies the protocol described below to communication with the ime.
 
