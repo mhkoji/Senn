@@ -1,13 +1,6 @@
-(defpackage :hachee.kkc.dictionary
+(defpackage :hachee.kkc.impl.lm.dictionary
   (:use :cl)
-  (:export :make-unit
-           :unit-form
-           :unit-pron
-           :unit=
-           :unit->key
-           :unit->pron-units
-
-           :dictionary
+  (:export :dictionary
            :list-all
            :size
            :make-dictionary
@@ -19,31 +12,8 @@
            :add-entry
            :lookup
            :contains-p))
-(in-package :hachee.kkc.dictionary)
+(in-package :hachee.kkc.impl.lm.dictionary)
 
-;; word-pron pair model
-;; unit = form/pron
-(defun make-unit (&key form pron)
-  (concatenate 'string form "/" pron))
-
-(defun unit-form (unit)
-  (first (cl-ppcre:split "/" unit)))
-
-(defun unit-pron (unit)
-  (second (cl-ppcre:split "/" unit)))
-
-(defun unit= (unit1 unit2)
-  (string= unit1 unit2))
-
-(defun unit->key (unit)
-  unit)
-
-(defun unit->pron-units (unit)
-  (loop for ch across (unit-pron unit)
-        collect (make-unit :form (string ch)
-                           :pron (string ch))))
-
-;;;
 (defstruct dictionary
   (entry-hash (make-hash-table :test #'equal)))
 
@@ -73,7 +43,7 @@
   origin)
 
 (defun add-entry (dict unit origin)
-  (let ((key (unit-pron unit))
+  (let ((key (hachee.kkc.impl.lm.unit:unit-pron unit))
         (entry (make-entry :unit unit :origin origin)))
     (pushnew entry (gethash key (dictionary-entry-hash dict))
              :key #'entry-unit
@@ -84,5 +54,6 @@
   (gethash pron (dictionary-entry-hash dictionary)))
 
 (defun contains-p (dictionary unit)
-  (let ((entries (lookup dictionary (unit-pron unit))))
+  (let ((entries (lookup dictionary
+                         (hachee.kkc.impl.lm.unit:unit-pron unit))))
     (member unit entries :key #'entry-unit :test #'unit=)))

@@ -1,11 +1,8 @@
 (defpackage :hachee.kkc.convert
   (:use :cl)
-  (:export :make-entry
-           :entry-origin
-           :entry-form
+  (:export :entry-form
            :entry-pron
-           :entry-token
-           :entry-unit
+           :entry-origin
 
            :convert-begin-entry
            :convert-end-entry
@@ -14,14 +11,9 @@
            :execute))
 (in-package :hachee.kkc.convert)
 
-(defstruct entry
-  unit token origin)
-
-(defun entry-form (entry)
-  (hachee.kkc.dictionary:unit-form (entry-unit entry)))
-
-(defun entry-pron (entry)
-  (hachee.kkc.dictionary:unit-pron (entry-unit entry)))
+(defgeneric entry-form (e))
+(defgeneric entry-pron (e))
+(defgeneric entry-origin (e))
 
 (defgeneric convert-begin-entry (mixin))
 (defgeneric convert-end-entry (mixin))

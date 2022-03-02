@@ -1,10 +1,10 @@
-(defpackage :hachee.kkc.build.file
+(defpackage :hachee.kkc.impl.lm.build.file
   (:use :cl)
   (:import-from :alexandria
                 :with-gensyms)
   (:export :file->sentences
            :sentence-units))
-(in-package :hachee.kkc.build.file)
+(in-package :hachee.kkc.impl.lm.build.file)
 
 (defvar +external-format+ :utf-8)
 
@@ -35,7 +35,7 @@
                                (list (or (first split) "")
                                      (or (second split) ""))))
                            (cl-ppcre:split "-" form-pron-str))))
-              (hachee.kkc.dictionary:make-unit
+              (hachee.kkc.impl.lm.unit:make-unit
                :form (format nil "~{~A~}" (mapcar #'first
                                                   form-pron-list))
                :pron (format nil "~{~A~}" (mapcar #'second
