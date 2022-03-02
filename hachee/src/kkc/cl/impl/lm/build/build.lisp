@@ -1,11 +1,11 @@
-(defpackage :hachee.kkc.build
+(defpackage :hachee.kkc.impl.lm.build
   (:use :cl)
   (:import-from :hachee.language-model.vocabulary
                 :add-new
                 :to-int
                 :to-int-or-nil
                 :to-int-or-unk)
-  (:import-from :hachee.kkc.dictionary
+  (:import-from :hachee.kkc.impl.lm.unit
                 :make-unit
                 :unit-form
                 :unit-pron
@@ -21,20 +21,22 @@
            :add-to-word-dictionary-from-resources
            :build-tankan-dictionary
            :build-classifier))
-(in-package :hachee.kkc.build)
+(in-package :hachee.kkc.impl.lm.build)
 
 (defun to-token-sentence (file-sentence vocabulary)
   (hachee.language-model:make-sentence
    :tokens
    (mapcar (lambda (u)
              (to-int-or-unk vocabulary (unit->key u)))
-           (hachee.kkc.build.file:sentence-units file-sentence))))
+           (hachee.kkc.impl.lm.build.file:sentence-units file-sentence))))
 
 (defun build-vocabulary (pathnames)
   (let ((vocab (hachee.language-model.vocabulary:make-vocabulary)))
     (dolist (pathname pathnames)
-      (dolist (sentence (hachee.kkc.build.file:file->sentences pathname))
-        (dolist (word (hachee.kkc.build.file:sentence-units sentence))
+      (dolist (sentence (hachee.kkc.impl.lm.build.file:file->sentences
+                         pathname))
+        (dolist (word (hachee.kkc.impl.lm.build.file:sentence-units
+                       sentence))
           (add-new vocab (unit->key word)))))
     vocab))
 
@@ -45,8 +47,10 @@
         (word-key->freq (make-hash-table :test #'equal)))
     (dolist (pathname pathnames)
       (let ((curr-words (make-hash-table :test #'equal)))
-        (dolist (sentence (hachee.kkc.build.file:file->sentences pathname))
-          (dolist (word (hachee.kkc.build.file:sentence-units sentence))
+        (dolist (sentence (hachee.kkc.impl.lm.build.file:file->sentences
+                           pathname))
+          (dolist (word (hachee.kkc.impl.lm.build.file:sentence-units
+                         sentence))
             (setf (gethash (unit->key word) curr-words) word)))
         (maphash (lambda (word-key word)
                    (let ((freq (incf (gethash word-key word-key->freq 0))))
@@ -60,22 +64,26 @@
                                    pathnames-inaccurately-segmented)
   (log:info "Extending vocabulary...")
   (dolist (pathname pathnames-inaccurately-segmented)
-    (dolist (sentence (hachee.kkc.build.file:file->sentences pathname))
-      (dolist (unit (hachee.kkc.build.file:sentence-units sentence))
-        (when (hachee.kkc.dictionary:contains-p trusted-word-dictionary unit)
+    (dolist (sentence (hachee.kkc.impl.lm.build.file:file->sentences
+                       pathname))
+      (dolist (unit (hachee.kkc.impl.lm.build.file:sentence-units sentence))
+        (when (hachee.kkc.impl.lm.dictionary:contains-p
+               trusted-word-dictionary unit)
           (add-new vocabulary (unit->key unit))))))
   vocabulary)
 
 (defun build-word-dictionary (pathnames vocabulary)
   (log:info "Building dictionary...")
-  (let ((dict (hachee.kkc.dictionary:make-dictionary)))
+  (let ((dict (hachee.kkc.impl.lm.dictionary:make-dictionary)))
     (dolist (pathname pathnames)
-      (dolist (sentence (hachee.kkc.build.file:file->sentences pathname))
-        (dolist (unit (hachee.kkc.build.file:sentence-units sentence))
+      (dolist (sentence (hachee.kkc.impl.lm.build.file:file->sentences
+                         pathname))
+        (dolist (unit (hachee.kkc.impl.lm.build.file:sentence-units
+                       sentence))
           (if (to-int-or-nil vocabulary (unit->key unit))
-              (hachee.kkc.dictionary:add-entry
+              (hachee.kkc.impl.lm.dictionary:add-entry
                dict unit hachee.kkc.origin:+vocabulary+)
-              (hachee.kkc.dictionary:add-entry
+              (hachee.kkc.impl.lm.dictionary:add-entry
                dict unit hachee.kkc.origin:+corpus+)))))
     dict))
 
@@ -87,7 +95,8 @@
       (let ((sentences
              (mapcar (lambda (s)
                        (to-token-sentence s vocabulary))
-                     (hachee.kkc.build.file:file->sentences pathname))))
+                     (hachee.kkc.impl.lm.build.file:file->sentences
+                      pathname))))
         (hachee.language-model.n-gram:train model sentences
                                             :BOS BOS
                                             :EOS EOS)))
@@ -99,8 +108,10 @@
         (pron-vocab (hachee.language-model.vocabulary:make-vocabulary)))
     (dolist (pathname pathnames)
       (let ((curr-prons (make-hash-table :test #'equal)))
-        (dolist (sentence (hachee.kkc.build.file:file->sentences pathname))
-          (dolist (unit (hachee.kkc.build.file:sentence-units sentence))
+        (dolist (sentence (hachee.kkc.impl.lm.build.file:file->sentences
+                           pathname))
+          (dolist (unit (hachee.kkc.impl.lm.build.file:sentence-units
+                         sentence))
             (when (not (to-int-or-nil vocabulary (unit->key unit)))
               (dolist (pron-unit (unit->pron-units unit))
                 (setf (gethash (unit->key pron-unit) curr-prons)
@@ -112,6 +123,16 @@
                  curr-prons)))
     pron-vocab))
 
+(defun pron->sentence (pron unknown-word-char-vocabulary)
+  (hachee.language-model:make-sentence
+   :tokens (loop for ch across pron
+                 for unit = (hachee.kkc.impl.lm.unit:make-unit
+                             :form (string ch)
+                             :pron (string ch))
+                 collect (to-int-or-unk
+                          unknown-word-char-vocabulary
+                          (hachee.kkc.impl.lm.unit:unit->key unit)))))
+
 (defun build-unknown-word-n-gram-model (pathnames
                                         vocabulary
                                         unknown-word-vocabulary)
@@ -122,12 +143,13 @@
                      hachee.language-model.vocabulary:+EOS+))
         (model (make-instance 'hachee.language-model.n-gram:model)))
   (dolist (pathname pathnames)
-    (dolist (file-sentence (hachee.kkc.build.file:file->sentences pathname))
-      (dolist (unit (hachee.kkc.build.file:sentence-units file-sentence))
+    (dolist (file-sentence (hachee.kkc.impl.lm.build.file:file->sentences
+                            pathname))
+      (dolist (unit (hachee.kkc.impl.lm.build.file:sentence-units
+                     file-sentence))
         (when (not (to-int-or-nil vocabulary (unit->key unit)))
-          (let ((sentence (hachee.kkc.util:unit->sentence
-                           unit
-                           unknown-word-vocabulary)))
+          (let ((sentence (pron->sentence (unit-pron unit)
+                                          unknown-word-vocabulary)))
             (hachee.language-model.n-gram:train model (list sentence)
                                                 :BOS BOS
                                                 :EOS EOS))))))
@@ -141,7 +163,7 @@
         (destructuring-bind (form part pron) (cl-ppcre:split "/" line)
           (declare (ignore part))
           (let ((unit (make-unit :form form :pron pron)))
-            (hachee.kkc.dictionary:add-entry
+            (hachee.kkc.impl.lm.dictionary:add-entry
              dict unit hachee.kkc.origin:+resource+))))))
   dict)
 
@@ -152,7 +174,7 @@
         (destructuring-bind (form pron) (cl-ppcre:split "/" line)
           (let ((char-unit (make-unit :form form
                                       :pron pron)))
-            (hachee.kkc.dictionary:add-entry
+            (hachee.kkc.impl.lm.dictionary:add-entry
              dict char-unit hachee.kkc.origin:+tankan+))))))
   dict)
 

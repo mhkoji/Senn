@@ -37,11 +37,10 @@
       (let ((entries (hachee.kkc.convert:execute kkc pron)))
         (format out "~A~%"
                 (apply #'concatenate 'string
-                       (mapcar (lambda (e)
-                                 (hachee.kkc.dictionary:unit-form
-                                  (hachee.kkc.convert:entry-unit e)))
+                       (mapcar #'hachee.kkc.convert:entry-form
                                entries)))))))
 
+#+nil
 (defun convert-save-eval (kkc pathname dir)
   (labels ((sentence-pron (s)
              (apply #'concatenate

@@ -1,4 +1,4 @@
-;; convert/list-candidates depending on hachee kkc
+;; convert/list-candidates depending on hachee kkc impl lm
 (defpackage :senn.im.kkc.hachee
   (:use :cl)
   (:export :kkc
@@ -14,16 +14,16 @@
            (funcall (read-from-string "asdf:system-source-directory")
                     :hachee-kkc)))))
     (log:debug "Loading: ~A" corpus-pathnames)
-    (hachee.kkc:build-kkc-simple corpus-pathnames)))
+    (hachee.kkc.impl.lm:build-kkc-simple corpus-pathnames)))
 
 ;;;
 
 (defstruct state entries)
 
 (defclass kkc ()
-  ((impl
-    :initarg :impl
-    :reader kkc-impl)
+  ((lm-impl
+    :initarg :lm-impl
+    :reader kkc-lm-impl)
    (exteded-dictionary
     :initarg :extended-dictionary
     :initform nil
@@ -35,10 +35,10 @@
 (defun kkc-convert (kkc)
   (let ((ex-dict (kkc-extended-dictionary kkc)))
     (if ex-dict
-        (hachee.kkc:make-kkc-convert
-         :kkc (kkc-impl kkc)
+        (hachee.kkc.impl.lm:make-kkc-convert
+         :kkc (kkc-lm-impl kkc)
          :extended-dictionary ex-dict)
-        (kkc-impl kkc))))
+        (kkc-lm-impl kkc))))
 
 (defmethod senn.im.kkc:convert ((kkc kkc) (pron string)
                                 &key 1st-boundary-index)
@@ -59,4 +59,4 @@
         (mapcar (lambda (item)
                   (senn.im.kkc:make-candidate
                    :form (hachee.kkc.lookup:item-form item)))
-                (hachee.kkc.lookup:execute (kkc-impl kkc) pron))))))
+                (hachee.kkc.lookup:execute (kkc-lm-impl kkc) pron))))))

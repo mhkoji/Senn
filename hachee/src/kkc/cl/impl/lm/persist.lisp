@@ -1,13 +1,42 @@
-(defpackage :hachee.kkc.persist
+(defpackage :hachee.kkc.impl.lm.persist
   (:use :cl)
   (:export :save-object
            :load-object
            :do-save-into-zip
            :load-from-zip))
-(in-package :hachee.kkc.persist)
+(in-package :hachee.kkc.impl.lm.persist)
 
 (defgeneric save-object (obj stream))
 (defgeneric load-object (type stream))
+
+(defmethod save-object
+    ((obj hachee.language-model.n-gram:model) s)
+  (hachee.language-model.n-gram:save-model obj s))
+
+(defmethod save-object
+    ((obj hachee.kkc.impl.lm.dictionary:dictionary) s)
+  (hachee.kkc.impl.lm.dictionary:save-dictionary obj s))
+
+(defmethod save-object
+    ((obj hachee.language-model.vocabulary:vocabulary) s)
+  (hachee.language-model.vocabulary:save-vocabulary obj s))
+
+(defmethod load-object
+    ((type (eql 'hachee.language-model.n-gram:model)) s)
+  (hachee.language-model.n-gram:load-model type s))
+
+(defmethod load-object
+    ((type (eql 'hachee.language-model.n-gram:class-model))
+     s)
+  (hachee.language-model.n-gram:load-model type s))
+
+(defmethod load-object
+    ((type (eql 'hachee.kkc.impl.lm.dictionary:dictionary)) s)
+  (hachee.kkc.impl.lm.dictionary:load-dictionary s))
+
+(defmethod load-object
+    ((type (eql 'hachee.language-model.vocabulary:vocabulary)) s)
+  (hachee.language-model.vocabulary:load-vocabulary s))
 
 (defmacro do-save-into-zip ((add-entry pathname) &body body)
   `(zip:with-output-to-zipfile (writer ,pathname)

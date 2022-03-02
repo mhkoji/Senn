@@ -7,14 +7,16 @@
     :components
     ((:file "chu-liu-edmonds")))
 
+   #+nil
    (:file "util/stream")
 
+   #+nil
    (:module :dependency-parsing
     :pathname "dependency-parsing"
     :components
     ((:file "easy-first")
      (:file "shift-reduce")
-     #+nil (:file "mst")))
+     (:file "mst")))
    )
   :depends-on (:alexandria
                :clazy
