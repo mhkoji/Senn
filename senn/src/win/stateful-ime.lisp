@@ -55,7 +55,7 @@
    :input-state nil
    :history (make-history)
    :extended-dictionary
-   (hachee.kkc.dictionary:make-dictionary)
+   (hachee.kkc.impl.lm.dictionary:make-dictionary)
    :hachee-kkc-state
    (senn.im.kkc.hachee:make-state)))
 
@@ -131,7 +131,7 @@
     (make-instance 'ime
      :kkc (make-instance 'kkc
            :history (state-history state)
-           :impl kkc
+           :lm-impl kkc
            :extended-dictionary (state-extended-dictionary state)
            :state (state-hachee-kkc-state state))
      :predictor (make-instance 'senn.im.predict.katakana:predictor)

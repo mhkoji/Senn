@@ -1,6 +1,6 @@
 (asdf:defsystem :senn-win
   :serial t
-  :pathname "src"
+  :pathname "src/"
   :components
   ((:file "im/kkc/hachee")
    (:module :win
@@ -13,6 +13,6 @@
      (:file "stateful-ime")
      (:file "server"))))
   :depends-on (:jsown
-               :hachee-kkc
+               :hachee-kkc-impl-lm
                :senn))
 

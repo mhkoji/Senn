@@ -47,7 +47,7 @@
         (entry (make-entry :unit unit :origin origin)))
     (pushnew entry (gethash key (dictionary-entry-hash dict))
              :key #'entry-unit
-             :test #'unit=)
+             :test #'hachee.kkc.impl.lm.unit:unit=)
     (values)))
 
 (defun lookup (dictionary pron)
@@ -56,4 +56,5 @@
 (defun contains-p (dictionary unit)
   (let ((entries (lookup dictionary
                          (hachee.kkc.impl.lm.unit:unit-pron unit))))
-    (member unit entries :key #'entry-unit :test #'unit=)))
+    (member unit entries :key #'entry-unit
+                         :test #'hachee.kkc.impl.lm.unit:unit=)))
