@@ -21,24 +21,12 @@
 (defstruct state entries)
 
 (defclass kkc ()
-  ((lm-impl
-    :initarg :lm-impl
-    :reader kkc-lm-impl)
-   (exteded-dictionary
-    :initarg :extended-dictionary
-    :initform nil
-    :reader kkc-extended-dictionary)
+  ((convert
+    :initarg :convert
+    :reader kkc-convert)
    (state
     :initarg :state
     :reader kkc-state)))
-
-(defun kkc-convert (kkc)
-  (let ((ex-dict (kkc-extended-dictionary kkc)))
-    (if ex-dict
-        (hachee.kkc.impl.lm:make-kkc-convert
-         :kkc (kkc-lm-impl kkc)
-         :extended-dictionary ex-dict)
-        (kkc-lm-impl kkc))))
 
 (defmethod senn.im.kkc:convert ((kkc kkc) (pron string)
                                 &key 1st-boundary-index)
