@@ -131,9 +131,8 @@
     (make-instance 'ime
      :kkc (make-instance 'kkc
            :history (state-history state)
-           :convert (hachee.kkc.impl.lm:make-kkc-convert
-                     :kkc kkc
-                     :extended-dictionary (state-extended-dictionary state))
+           :lm-impl kkc
+           :extended-dictionary (state-extended-dictionary state)
            :state (state-hachee-kkc-state state))
      :predictor (make-instance 'senn.im.predict.katakana:predictor)
      :state state)))
