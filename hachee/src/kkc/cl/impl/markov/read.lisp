@@ -87,7 +87,6 @@
          (in-dict      (read-in-dict path-in-dict word-int-str)))
     (hachee.kkc.impl.markov:make-kkc
      :word-markov  word-markov
-     :word-int-str word-int-str
      :char-markov  char-markov
      :char-int-str char-int-str
      :in-dict      in-dict)))
