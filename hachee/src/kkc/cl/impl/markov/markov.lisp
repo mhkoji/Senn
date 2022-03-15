@@ -24,7 +24,6 @@
 
 (defstruct kkc
   word-markov
-  word-int-str
   char-markov
   char-int-str
   in-dict)
