@@ -69,6 +69,15 @@
 
 ;;;
 
+(defun char-cost-0gram (char-int-str)
+  (let ((pron-alphabet-size
+         6878)
+        (char-int-str-size
+         (hachee.kkc.impl.markov.int-str:int-str-size char-int-str)))
+    (* (log (- pron-alphabet-size
+               (- char-int-str-size 2))) ;; UT and BT
+       #x10000)))
+
 (defun read-kkc (&key path-word-int-str
                       path-word-1gram
                       path-word-2gram
@@ -77,16 +86,17 @@
                       path-char-2gram
                       path-in-dict)
   (let* ((word-int-str (read-int-str path-word-int-str))
+         (in-dict      (read-in-dict path-in-dict word-int-str))
          (word-markov  (read-markov path-word-1gram
                                     path-word-2gram
                                     word-int-str))
          (char-int-str (read-int-str path-char-int-str))
          (char-markov  (read-markov path-char-1gram
                                     path-char-2gram
-                                    char-int-str))
-         (in-dict      (read-in-dict path-in-dict word-int-str)))
+                                    char-int-str)))
     (hachee.kkc.impl.markov:make-kkc
      :word-markov  word-markov
+     :in-dict      in-dict
      :char-markov  char-markov
      :char-int-str char-int-str
-     :in-dict      in-dict)))
+     :char-cost-0gram (char-cost-0gram char-int-str))))
