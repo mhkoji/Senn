@@ -24,9 +24,10 @@
 
 (defstruct kkc
   word-markov
+  in-dict
   char-markov
   char-int-str
-  in-dict)
+  char-cost-0gram)
 
 ;;;
 
@@ -95,21 +96,22 @@
                  char-int-str
                  (string ch))))
 
-(defun unknown-word-cost (pron char-markov char-int-str)
+(defun unknown-word-cost (pron char-markov char-int-str char-cost-0gram)
   (let ((char-tokens (char-tokens pron char-int-str)))
     (let ((UT-count (count hachee.kkc.impl.markov.int-str:+UT+
                            char-tokens
                            :test #'=)))
       (+ (markov-sentence-cost char-markov char-tokens)
-         ;; todo: fix const
-         (* UT-count 10000)))))
+         (* UT-count char-cost-0gram)))))
 
 (defmethod hachee.kkc.convert:convert-list-entries-fn ((kkc kkc))
   (let ((in-dict (kkc-in-dict kkc))
         (char-markov (kkc-char-markov kkc))
-        (char-int-str (kkc-char-int-str kkc)))
+        (char-int-str (kkc-char-int-str kkc))
+        (char-cost-0gram (kkc-char-cost-0gram kkc)))
     (labels ((run-unknown-word-cost (pron)
-               (unknown-word-cost pron char-markov char-int-str)))
+               (unknown-word-cost
+                pron char-markov char-int-str char-cost-0gram)))
       (lambda (pron)
         (list-convert-entries pron in-dict #'run-unknown-word-cost)))))
 
