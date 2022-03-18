@@ -1,3 +1,9 @@
+fcitx-senn (0.0.5-1) UNRELEASED; urgency=medium
+
+  * TODO
+
+ -- mhkoji <mhkoji2@gmail.com>  Fri, 18 Mar 2022 17:06:48 +0900
+
 fcitx-senn (0.0.4-1) unstable; urgency=medium
 
   * Use hachee-lm as default kkc-engine
