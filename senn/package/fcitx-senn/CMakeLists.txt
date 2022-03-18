@@ -55,7 +55,10 @@ install(
   DESTINATION ${FCITX_SENN_INSTALL_DIR}/ecl/lib/)
 
 install(
-  PROGRAMS ${CMAKE_CURRENT_SOURCE_DIR}/dep-kkc/kkc-engine
+  # https://bugs.launchpad.net/sbcl/+bug/310108
+  # FILES is used instead of PROGRAMS because install with PROGRAMS strips the core of kkc-engine built by sbcl.
+  # As a result, kkc-engine is not executable, so make it executable by postinst.
+  FILES ${CMAKE_CURRENT_SOURCE_DIR}/dep-kkc/kkc-engine
   DESTINATION ${FCITX_SENN_INSTALL_DIR})
 
 # install(
