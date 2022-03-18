@@ -6,7 +6,7 @@
 
 (defun read-int-str (path)
   (let ((str->int (make-hash-table :test #'equal)))
-    (with-open-file (stream path)
+    (with-open-file (stream path :external-format :utf-8)
       (loop for int from 0
             for str = (read-line stream nil nil)
             while str do
@@ -21,7 +21,7 @@
 
 (defun read-in-dict (path int-str)
   (let ((hash (make-hash-table :test #'equal)))
-    (with-open-file (stream path)
+    (with-open-file (stream path :external-format :utf-8)
       (loop for line = (read-line stream nil nil) while line do
         (progn
           (destructuring-bind (pron form cost) (cl-ppcre:split "\\t" line)
@@ -38,7 +38,7 @@
 (defun read-cost-1gram (path int-str)
   (let ((array (make-array (hachee.kkc.impl.markov.int-str:int-str-size
                             int-str))))
-    (with-open-file (stream path)
+    (with-open-file (stream path :external-format :utf-8)
       (loop for line = (read-line stream nil nil) while line do
         (progn
           (destructuring-bind (str cost-str) (cl-ppcre:split "\\t" line)
@@ -49,7 +49,7 @@
 
 (defun read-cost-2gram (path int-str)
   (let ((hash (make-hash-table :test #'equal)))
-    (with-open-file (stream path)
+    (with-open-file (stream path :external-format :utf-8)
       (loop for line = (read-line stream nil nil) while line do
         (progn
           (destructuring-bind (i-str j-str cost-str)
@@ -74,6 +74,7 @@
          6878)
         (char-int-str-size
          (hachee.kkc.impl.markov.int-str:int-str-size char-int-str)))
+    (assert (< char-int-str-size 6878))
     (* (log (- pron-alphabet-size
                (- char-int-str-size 2))) ;; UT and BT
        #x10000)))

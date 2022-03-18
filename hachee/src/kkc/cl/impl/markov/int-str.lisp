@@ -16,4 +16,4 @@
   (or (gethash str (int-str-str->int int-str)) +UT+))
 
 (defun int-str-size (int-str)
-  (hash-table-size (int-str-str->int int-str)))
+  (hash-table-count (int-str-str->int int-str)))
