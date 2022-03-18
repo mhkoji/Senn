@@ -18,3 +18,5 @@
 *.wx32fsl
 
 __pycache__
+
+data/markov
