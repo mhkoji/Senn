@@ -1,6 +1,6 @@
-fcitx-senn (0.0.4-1ubuntu1) UNRELEASED; urgency=medium
+fcitx-senn (0.0.4-1) unstable; urgency=medium
 
-  * TODO
+  * Use hachee-lm as default kkc-engine
 
  -- mhkoji <mhkoji2@gmail.com>  Sun, 06 Feb 2022 15:35:03 +0900
 
