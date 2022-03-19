@@ -14,5 +14,6 @@
      (:file "server"))))
   :depends-on (:jsown
                :hachee-kkc-impl-lm
+               :hachee-data
                :senn))
 

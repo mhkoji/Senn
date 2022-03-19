@@ -5,11 +5,7 @@
 
 (defun create-system-kkc ()
   (let ((corpus-pathnames
-         (cl-fad:list-directory
-          (merge-pathnames
-           "src/kkc/data/aozora/word-pron-utf8/"
-           (funcall (read-from-string "asdf:system-source-directory")
-                    :hachee-kkc)))))
+         (hachee.data.corpus:word-pron-utf8-pathnames)))
     (log:debug "Loading: ~A" corpus-pathnames)
     (hachee.kkc.impl.lm:build-kkc-simple corpus-pathnames)))
 

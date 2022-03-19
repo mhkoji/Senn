@@ -4,6 +4,7 @@
   ((:file "engine")
    (:file "lm"))
   :depends-on (:hachee-kkc-impl-lm
+               :hachee-data
                :alexandria
                :cl-fad
                :jsown

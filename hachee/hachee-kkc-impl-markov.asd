@@ -1,6 +1,6 @@
 (asdf:defsystem :hachee-kkc-impl-markov
   :serial t
-  :pathname "src/kkc/cl/impl/markov/"
+  :pathname "src/kkc/impl/markov/"
   :components
   ((:file "int-str")
    (:file "in-dict")
