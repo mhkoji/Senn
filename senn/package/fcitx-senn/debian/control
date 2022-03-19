@@ -12,3 +12,4 @@ Package: fcitx-senn
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, fcitx-bin, fcitx-data, fcitx-modules
 Description: Senn support for Fcitx
+ Senn is an input method editor for the Japanese language.
