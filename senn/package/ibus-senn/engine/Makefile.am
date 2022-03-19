@@ -83,5 +83,7 @@ install-data-hook:
 ##  DESTDIR can be used according the log below.
 	install -d                                           ${DESTDIR}/usr/lib/senn/ibus/ecl/lib/
 	install -p ../dep-kkc/kkc-engine                     ${DESTDIR}/usr/lib/senn/ibus/
+# https://bugs.launchpad.net/sbcl/+bug/310108
+	chmod -x ${DESTDIR}/usr/lib/senn/ibus/kkc-engine
 	install -p /usr/lib/senn/ibus/ecl/lib/libecl.so.21.2 ${DESTDIR}/usr/lib/senn/ibus/ecl/lib/
 	cp      -r /usr/lib/senn/ibus/ecl/lib/ecl-21.2.1     ${DESTDIR}/usr/lib/senn/ibus/ecl/lib/

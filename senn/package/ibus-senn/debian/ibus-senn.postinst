@@ -1,0 +1,5 @@
+#!/bin/sh
+set -e
+
+# https://bugs.launchpad.net/sbcl/+bug/310108
+chmod +x /usr/lib/senn/ibus/kkc-engine
