@@ -12,13 +12,11 @@
     (:file "dependency-parsing/shift-reduce")
     (:file "kkc/word-pron")))
 
-   (:file "fiveam"))
-
-  :perform (asdf:test-op (o s)
-             (funcall (intern (symbol-name :run!) :fiveam) :hachee))
+   (:file "main"))
 
   :depends-on (:hachee
                :hachee-kkc
                :hachee-language-model
                :hachee-kkc-impl-lm
+               :hachee-data
                :fiveam))

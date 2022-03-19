@@ -3,17 +3,14 @@
   (:export :build-and-convert-pronunciations))
 (in-package :hachee.t.scenario.kkc.word-pron)
 
-(defun pathnames (system-pathname)
-  (list (merge-pathnames "src/kkc/data/aozora/word-pron-utf8/kokoro.txt"
-                         system-pathname)))
-
 (defun entry->string (e)
   (format nil "~A/~A"
           (hachee.kkc.convert:entry-form e)
           (hachee.kkc.convert:entry-pron e)))
 
-(defmacro build-and-convert-pronunciations (pathnames &key test)
-  `(let ((kkc (hachee.kkc.impl.lm:build-kkc-simple ,pathnames)))
+(defmacro build-and-convert-pronunciations (&key test)
+  `(let ((kkc (hachee.kkc.impl.lm:build-kkc-simple
+               (hachee.data.corpus:word-pron-utf8-pathnames))))
      (,test
       (equal (mapcar #'entry->string
                      (hachee.kkc.convert:execute

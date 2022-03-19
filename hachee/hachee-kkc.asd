@@ -10,7 +10,7 @@
    (:file "ja")
 
    (:module :kkc
-    :pathname "kkc/cl/"
+    :pathname "kkc/"
     :components
     ((:file "origin")
      (:file "convert/viterbi")

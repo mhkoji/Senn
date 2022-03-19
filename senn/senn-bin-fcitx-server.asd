@@ -6,6 +6,7 @@
    (:file "fcitx/stateful-ime-hachee")
    (:file "bin/fcitx-server"))
   :depends-on (:hachee-kkc-impl-lm
+               :hachee-data
                :senn-fcitx
                :senn-server-unix
                :senn-server-tcp))
