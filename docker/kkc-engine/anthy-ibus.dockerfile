@@ -15,9 +15,7 @@ COPY senn/third-party/picojson /app//senn/third-party/picojson
 
 RUN cd /app/senn-kkc-engine/anthy && \
     make ibus-engine && \
-    cp ./ibus-engine /output/kkc-engine && \
-    echo "#!/bin/bash"         > /app/cmd.sh && \
-    echo "cp /output/* /host" >> /app/cmd.sh && \
-    chmod +x /app/cmd.sh
+    mv ./ibus-engine /output/kkc-engine
 
-CMD ["/app/cmd.sh"]
+COPY docker/script/copy-output.sh /app
+CMD ["/app/copy-output.sh"]
