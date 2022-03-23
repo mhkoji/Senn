@@ -1,12 +1,12 @@
 #!/bin/bash
 
 DIR=../../
-# docker build $DIR -f ../common/menu-builder.dockerfile \
-#        -t menu-builder && \
-docker build $DIR -f ../kkc-engine/hachee-lm.dockerfile \
-       -t kkc-builder  && \
-docker build $DIR -f ./ecl-builder.dockerfile \
-       -t ecl-builder  && \
-docker build $DIR -f ./deb-builder.dockerfile \
-       -t deb-builder  && \
-docker run  -v $PWD:/host --rm -t deb-builder
+# docker build $DIR -t menu-builder \
+#        -f ../common/menu-builder.dockerfile && \
+docker build $DIR -t kkc-builder \
+       -f ../kkc-engine/hachee-lm.dockerfile &&\
+docker build $DIR -t ecl-builder \
+       -f ./ecl.dockerfile && \
+docker build $DIR -t deb-builder \
+       -f ./deb.dockerfile  && \
+docker run -v $PWD:/host --rm -t deb-builder

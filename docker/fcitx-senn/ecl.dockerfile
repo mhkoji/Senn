@@ -5,7 +5,7 @@ RUN apt update && apt install -y \
     wget \
     m4
 
-RUN mkdir -p\
+RUN mkdir \
     /app \
     /app-build \
     /output
@@ -16,27 +16,24 @@ RUN wget \
     cd /app-build && \
     tar zxvf ecl-21.2.1.tgz && \
     cd ecl-21.2.1 && \
-    ./configure --prefix=/usr/lib/senn/ibus/ecl/ && \
+    ./configure --prefix=/usr/lib/senn/fcitx/ecl/ && \
     make && \
     make install && \
     wget \
       https://beta.quicklisp.org/quicklisp.lisp \
       --directory-prefix /app-build && \
-    /usr/lib/senn/ibus/ecl/bin/ecl \
+    /usr/lib/senn/fcitx/ecl/bin/ecl \
       -norc \
       -load /app-build/quicklisp.lisp \
       -eval "(quicklisp-quickstart:install)"
 
-COPY . /app
+COPY senn /app
 
-RUN /usr/lib/senn/ibus/ecl/bin/ecl \
+RUN /usr/lib/senn/fcitx/ecl/bin/ecl \
       -load "/root/quicklisp/setup.lisp" \
-      -eval '(push "/app/senn/" ql:*local-project-directories*)' \
-      -eval '(push "/app/hachee/" ql:*local-project-directories*)' \
-      -eval '(ql:quickload :senn-lib-ibus)' \
-      -eval '(asdf:make-build :senn-lib-ibus :type :static-library :move-here #P"/output" :monolithic t :init-name "init_senn")' && \
-    echo "#!/bin/bash"         > /app/cmd.sh && \
-    echo "cp /output/* /host" >> /app/cmd.sh && \
-    chmod +x /app/cmd.sh
+      -eval '(push "/app" ql:*local-project-directories*)' \
+      -eval '(ql:quickload :senn-lib-fcitx)' \
+      -eval '(asdf:make-build :senn-lib-fcitx :type :static-library :move-here #P"/output" :monolithic t :init-name "init_senn")'
 
-CMD ["/app/cmd.sh"]
+COPY docker/script/copy-output.sh /app
+CMD ["/app/copy-output.sh"]

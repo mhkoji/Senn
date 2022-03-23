@@ -12,7 +12,7 @@ RUN mkdir -p \
     /app \
     /output
 
-COPY . /app
+COPY senn /app/senn
 COPY --from=kkc-builder /output /app/senn/package/ibus-senn/dep-kkc
 COPY --from=ecl-builder /output /app/senn/package/ibus-senn/dep-ecl
 COPY --from=ecl-builder /usr/lib/senn/ibus/ /usr/lib/senn/ibus/
@@ -22,9 +22,7 @@ RUN ln -s /usr/lib/senn/ibus/ecl/include/ecl /usr/local/include/ && \
     touch NEWS README AUTHORS ChangeLog && \
     autoreconf -i && \
     debuild -us -uc -b && \
-    cp /app/senn/package/*.deb /output/ && \
-    echo "#!/bin/bash"         > /app/cmd.sh && \
-    echo "cp /output/* /host" >> /app/cmd.sh && \
-    chmod +x /app/cmd.sh
+    mv /app/senn/package/*.deb /output/
 
-CMD ["/app/cmd.sh"]
+COPY docker/script/copy-output.sh /app
+CMD ["/app/copy-output.sh"]
