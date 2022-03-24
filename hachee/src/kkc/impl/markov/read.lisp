@@ -79,6 +79,16 @@
                (- char-int-str-size 2))) ;; UT and BT
        #x10000)))
 
+(defun in-dict-prob (in-dict char-int-str char-markov char-cost-0gram)
+  (loop
+    for pron in (hachee.kkc.impl.markov.in-dict:list-prons in-dict)
+    sum (exp (hachee.kkc.impl.markov:char-based-cost
+              pron char-int-str char-markov char-cost-0gram))))
+
+(defvar *empty-ex-dict*
+  (hachee.kkc.impl.markov.ex-dict:make-ex-dict
+   :hash (make-hash-table)))
+
 (defun read-kkc (&key path-word-int-str
                       path-word-1gram
                       path-word-2gram
@@ -94,10 +104,17 @@
          (char-int-str (read-int-str path-char-int-str))
          (char-markov  (read-markov path-char-1gram
                                     path-char-2gram
-                                    char-int-str)))
+                                    char-int-str))
+         (char-cost-0gram (char-cost-0gram char-int-str))
+         (in-dict-prob    (in-dict-prob in-dict
+                                        char-int-str
+                                        char-markov
+                                        char-cost-0gram)))
     (hachee.kkc.impl.markov:make-kkc
      :word-markov  word-markov
      :in-dict      in-dict
+     :in-dict-prob in-dict-prob
+     :ex-dict      *empty-ex-dict*
      :char-markov  char-markov
      :char-int-str char-int-str
-     :char-cost-0gram (char-cost-0gram char-int-str))))
+     :char-cost-0gram char-cost-0gram)))
