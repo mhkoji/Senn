@@ -133,9 +133,7 @@
        (mapcar (lambda (kkc-seg)
                  (make-segment
                   :pron (senn.im.kkc:segment-pron kkc-seg)
-                  :candidates
-                  (list (senn.im.kkc:make-candidate
-                         :form (senn.im.kkc:segment-form kkc-seg)))
+                  :candidates (senn.im.kkc:segment-candidates kkc-seg)
                   :current-index 0
                   :has-more-candidates-p t))
                kkc-segs)

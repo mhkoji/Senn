@@ -29,7 +29,12 @@
                   seg
                   (senn.im.kkc:make-segment
                    :pron pron
-                   :form history-form))))
+                   :candidates
+                   (cons (senn.im.kkc:make-candidate :form history-form)
+                         (remove history-form
+                                 (senn.im.kkc:segment-candidates seg)
+                                 :key #'senn.im.kkc:candidate-form
+                                 :test #'string=))))))
           segs))
 
 (defclass history-overwrite-mixin ()
@@ -46,8 +51,7 @@
   input-mode
   input-state
   history
-  extended-dictionary
-  hachee-kkc-state)
+  extended-dictionary)
 
 (defun make-initial-state ()
   (make-state
@@ -55,9 +59,7 @@
    :input-state nil
    :history (make-history)
    :extended-dictionary
-   (hachee.kkc.impl.lm.dictionary:make-dictionary)
-   :hachee-kkc-state
-   (senn.im.kkc.hachee:make-state)))
+   (hachee.kkc.impl.lm.dictionary:make-dictionary)))
 
 (defgeneric ime-state (ime))
 
@@ -132,8 +134,7 @@
      :kkc (make-instance 'kkc
            :history (state-history state)
            :lm-impl kkc
-           :extended-dictionary (state-extended-dictionary state)
-           :state (state-hachee-kkc-state state))
+           :extended-dictionary (state-extended-dictionary state))
      :predictor (make-instance 'senn.im.predict.katakana:predictor)
      :state state)))
 

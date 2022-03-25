@@ -12,32 +12,32 @@
   (write-line (jsown:to-json jsown) out-stream)
   (force-output out-stream))
 
+(defun string->candidate-jsown (str)
+  (jsown:new-js
+    ("form" str)))
+
+(defun convert-entry->segment-jsown (e)
+  (jsown:new-js
+    ("pron" (hachee.kkc.convert:entry-pron e))
+    ("candidates" (list (string->candidate-jsown
+                         (hachee.kkc.convert:entry-form e))))))
+
 (defun run (kkc in-stream out-stream)
-  (let ((entries nil))
-    (loop for jsown = (read-jsown in-stream) while jsown do
-      (let ((j-op (jsown:val jsown "op"))
-            (j-args (jsown:val jsown "args")))
-        (ecase (alexandria:make-keyword j-op)
-          (:convert
-           (let ((pron (jsown:val j-args "pron")))
-             (setf entries (hachee.kkc.convert:execute kkc pron))
-             (let ((jsown (mapcar
-                           (lambda (e)
-                             (jsown:new-js
-                               ("form" (hachee.kkc.convert:entry-form e))
-                               ("pron" (hachee.kkc.convert:entry-pron e))))
-                           entries)))
-               (send-jsown out-stream jsown))))
-          (:list_candidates
-           (let ((jsown
-                  (let ((index (jsown:val j-args "index")))
-                    (when (and (<= 0 index) (< index (length entries)))
-                      (let* ((pron (hachee.kkc.convert:entry-pron
-                                    (elt entries index)))
-                             (items (hachee.kkc.lookup:execute kkc pron)))
-                        (mapcar
-                         (lambda (item)
-                           (jsown:new-js
-                             ("form" (hachee.kkc.lookup:item-form item))))
-                         items))))))
+  (loop for jsown = (read-jsown in-stream) while jsown do
+    (let ((j-op (jsown:val jsown "op"))
+          (j-args (jsown:val jsown "args")))
+      (ecase (alexandria:make-keyword j-op)
+        (:convert
+         (let* ((pron (jsown:val j-args "pron"))
+                (entries (hachee.kkc.convert:execute kkc pron)))
+           (let ((jsown (mapcar #'convert-entry->segment-jsown
+                                entries)))
+             (send-jsown out-stream jsown))))
+        (:list_candidates
+         (let* ((pron (jsown:val j-args "pron"))
+                (items (hachee.kkc.lookup:execute kkc pron)))
+           (let ((jsown (mapcar (lambda (item)
+                                  (string->candidate-jsown
+                                   (hachee.kkc.lookup:item-form item)))
+                                items)))
              (send-jsown out-stream jsown))))))))

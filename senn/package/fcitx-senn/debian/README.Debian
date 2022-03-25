@@ -35,18 +35,18 @@ Request
 Response
 - array of objects:   // An array of objects that describes a word sequence
   - `pron`: <string>  // A substring of the input sequence for the word
-  - `form`: <string>  // A string of kana and kanji for the word
+  - `candidates`: array of objects:
+    - `form`: <string>  // A string of kana and kanji for the word
 
 
 ### LIST_CANDIDATES request
 
-A LIST_CANDIDATES request is used to list candidates for a word from CONVERT.
+A LIST_CANDIDATES request is used to list candidates for a pron.
 
 Request
 - `op`: "LIST_CANDIDATES"
 - `args`:
-  - `index`: <number>
-    - An index of the word (0-origin)
+  - `pron`: <string>
 
 Response
 - array of objects:   // An array of objects that describes candidates
