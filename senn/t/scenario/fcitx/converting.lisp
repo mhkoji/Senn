@@ -17,8 +17,8 @@
          :candidates (list (senn.im.kkc:make-candidate :form "は")))))
          
 (defmethod senn.im.kkc:list-candidates ((kkc (eql 'static-kkc))
-                                        (index number))
-  (assert (= index 0))
+                                        (pron string))
+  (assert (string= pron "きょう"))
   (list (senn.im.kkc:make-candidate :form "きょう")
         (senn.im.kkc:make-candidate :form "今日")
         (senn.im.kkc:make-candidate :form "強")))

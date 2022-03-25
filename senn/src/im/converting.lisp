@@ -88,10 +88,10 @@
       (subseq list 0 n)
       list))
 
-(defun ime-list-candidates (ime segment-index)
+(defun ime-list-candidates (ime pron)
   (with-accessors ((kkc ime-kkc)
                    (max-count ime-max-candidate-count)) ime
-    (let ((cands (senn.im.kkc:list-candidates kkc segment-index)))
+    (let ((cands (senn.im.kkc:list-candidates kkc pron)))
       (if max-count
           (take-first cands max-count)
           cands))))
@@ -105,10 +105,9 @@
       (setf (state-current-segment-index state) new-index))))
 
 (defun current-segment-candidates-move! (state diff ime)
-  (with-accessors ((segment current-segment)
-                   (segment-index state-current-segment-index)) state
+  (with-accessors ((segment current-segment)) state
     (labels ((list-candidates ()
-               (ime-list-candidates ime segment-index)))
+               (ime-list-candidates ime (segment-pron segment))))
       (segment-ensure-candidates-appended! segment #'list-candidates)
       (segment-cursor-pos-move! segment diff)
       (setf (segment-shows-katakana-p segment) nil))))
