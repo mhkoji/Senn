@@ -1,8 +1,20 @@
 (defpackage :hachee.kkc.impl.markov
   (:use :cl)
   (:export :make-markov
-           :make-kkc))
+           :make-kkc
+           :char-based-cost
+           :cost->probability
+           :probability->cost
+           :kkc-apply-user-dict))
 (in-package :hachee.kkc.impl.markov)
+
+(defvar *log-probability-to-cost-multiple* #x10000)
+
+(defun probability->cost (prob)
+  (- (* (log prob) *log-probability-to-cost-multiple*)))
+
+(defun cost->probability (cost)
+  (exp (/ (- cost) *log-probability-to-cost-multiple*)))
 
 (defstruct markov
   cost-1gram
@@ -25,6 +37,8 @@
 (defstruct kkc
   word-markov
   in-dict
+  in-dict-prob
+  ex-dict
   char-markov
   char-int-str
   char-cost-0gram)
@@ -68,7 +82,7 @@
                    (convert-entry-cost curr-entry))))
         (- cost)))))
 
-(defun list-convert-entries (pron in-dict unknown-word-cost-fn)
+(defun list-convert-entries (pron in-dict ex-dict char-based-cost-fn)
   (let ((entries nil))
     (dolist (dict-entry (hachee.kkc.impl.markov.in-dict:list-entries
                          in-dict pron))
@@ -80,13 +94,23 @@
              :origin hachee.kkc.origin:+vocabulary+)
             entries))
     ;; Add unknown word entry
-    (when (< (length pron) 8) ;; Length up to 8
+    (when (and (null entries)
+               (< (length pron) 8)) ;; Length up to 8
       (push (make-convert-entry
              :form (hachee.ja:hiragana->katakana pron)
              :pron pron
-             :cost (funcall unknown-word-cost-fn pron)
+             :cost (funcall char-based-cost-fn pron)
              :token hachee.kkc.impl.markov.int-str:+UT+
              :origin hachee.kkc.origin:+out-of-dictionary+)
+            entries))
+    (dolist (dict-entry (hachee.kkc.impl.markov.ex-dict:list-entries
+                         ex-dict pron))
+      (push (make-convert-entry
+             :form (hachee.kkc.impl.markov.ex-dict:entry-form dict-entry)
+             :pron pron
+             :cost (hachee.kkc.impl.markov.ex-dict:entry-cost dict-entry)
+             :token hachee.kkc.impl.markov.int-str:+UT+
+             :origin hachee.kkc.origin:+extended-dictionary+)
             entries))
     entries))
 
@@ -96,7 +120,7 @@
                  char-int-str
                  (string ch))))
 
-(defun unknown-word-cost (pron char-markov char-int-str char-cost-0gram)
+(defun char-based-cost (pron char-int-str char-markov char-cost-0gram)
   (let ((char-tokens (char-tokens pron char-int-str)))
     (let ((UT-count (count hachee.kkc.impl.markov.int-str:+UT+
                            char-tokens
@@ -106,14 +130,16 @@
 
 (defmethod hachee.kkc.convert:convert-list-entries-fn ((kkc kkc))
   (let ((in-dict (kkc-in-dict kkc))
+        (ex-dict (kkc-ex-dict kkc))
         (char-markov (kkc-char-markov kkc))
         (char-int-str (kkc-char-int-str kkc))
         (char-cost-0gram (kkc-char-cost-0gram kkc)))
-    (labels ((run-unknown-word-cost (pron)
-               (unknown-word-cost
-                pron char-markov char-int-str char-cost-0gram)))
+    (labels ((run-char-based-cost (pron)
+               (char-based-cost
+                pron char-int-str char-markov char-cost-0gram)))
       (lambda (pron)
-        (list-convert-entries pron in-dict #'run-unknown-word-cost)))))
+        (list-convert-entries
+         pron in-dict ex-dict #'run-char-based-cost)))))
 
 ;;;
 
@@ -139,3 +165,38 @@
                                       &key prev next)
   (declare (ignore prev next))
   (list-lookup-items pronunciation (kkc-in-dict kkc)))
+
+;;;
+
+(defun user-dict->ex-dict (user-dict in-dict-prob char-based-cost-fn)
+  (let ((hash (make-hash-table :test #'equal))
+        (each-added-probability
+         (/ in-dict-prob
+            (hachee.kkc.user-dict:dict-size user-dict))))
+    (loop for entry in (hachee.kkc.user-dict:dict-entries user-dict)
+          for form = (hachee.kkc.user-dict:entry-form entry)
+          for pron = (hachee.kkc.user-dict:entry-pron entry) do
+      (progn
+        (let* ((cost (funcall char-based-cost-fn pron))
+               (new-cost (probability->cost
+                          (+ (cost->probability cost)
+                             each-added-probability))))
+          (push (hachee.kkc.impl.markov.ex-dict:make-entry
+                 :form form :cost new-cost)
+                (gethash pron hash)))))
+    (hachee.kkc.impl.markov.ex-dict:make-ex-dict :hash hash)))
+
+(defun kkc-apply-user-dict (kkc path)
+  (let ((user-dict (hachee.kkc.user-dict:read-file path)))
+    (when user-dict
+      (let ((in-dict-prob (kkc-in-dict-prob kkc))
+            (char-markov (kkc-char-markov kkc))
+            (char-int-str (kkc-char-int-str kkc))
+            (char-cost-0gram (kkc-char-cost-0gram kkc)))
+        (labels ((run-char-based-cost (pron)
+                   (char-based-cost
+                    pron char-int-str char-markov char-cost-0gram)))
+          (let ((ex-dict (user-dict->ex-dict user-dict
+                                             in-dict-prob
+                                             #'run-char-based-cost)))
+            (setf (kkc-ex-dict kkc) ex-dict)))))))

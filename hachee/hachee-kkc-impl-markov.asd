@@ -4,6 +4,7 @@
   :components
   ((:file "int-str")
    (:file "in-dict")
+   (:file "ex-dict")
    (:file "markov")
    (:file "read"))
   :depends-on (:hachee-kkc

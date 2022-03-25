@@ -3,9 +3,9 @@
   (:export :entry-form
            :entry-cost
            :entry-token
-           :entry-origin
            :make-entry
            :list-entries
+           :list-prons
            :make-in-dict))
 (in-package :hachee.kkc.impl.markov.in-dict)
 
@@ -13,7 +13,11 @@
   hash)
 
 (defstruct entry
-  form cost token origin)
+  form cost token)
 
 (defun list-entries (dict pron)
   (gethash pron (in-dict-hash dict)))
+
+(defun list-prons (dict)
+  (let ((hash (in-dict-hash dict)))
+    (loop for pron being the hash-key of hash collect pron)))
