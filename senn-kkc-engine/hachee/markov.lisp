@@ -18,10 +18,17 @@
 
 (defvar *kkc*)
 
+(defun user-dict-pathname ()
+  (merge-pathnames ".senn/user-dict.tsv"
+                   (user-homedir-pathname)))
+
 (defun set-kkc (&optional (markov-dir "~/senn-data/"))
   (setq *kkc* (read-kkc markov-dir)))
 
 (defun main ()
+  (ignore-errors
+   (hachee.kkc.impl.markov:kkc-apply-user-dict
+    *kkc* (user-dict-pathname)))
   (senn-kkc-engine.hachee:run *kkc*
                               *standard-input*
                               *standard-output*))

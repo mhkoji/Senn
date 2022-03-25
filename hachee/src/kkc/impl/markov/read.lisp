@@ -75,15 +75,17 @@
         (char-int-str-size
          (hachee.kkc.impl.markov.int-str:int-str-size char-int-str)))
     (assert (< char-int-str-size 6878))
-    (* (log (- pron-alphabet-size
-               (- char-int-str-size 2))) ;; UT and BT
-       #x10000)))
+    (hachee.kkc.impl.markov:probability->cost
+     (/ 1 (- pron-alphabet-size
+             (- char-int-str-size 2)))))) ;; UT and BT
 
 (defun in-dict-prob (in-dict char-int-str char-markov char-cost-0gram)
   (loop
     for pron in (hachee.kkc.impl.markov.in-dict:list-prons in-dict)
-    sum (exp (hachee.kkc.impl.markov:char-based-cost
-              pron char-int-str char-markov char-cost-0gram))))
+    for cost = (hachee.kkc.impl.markov:char-based-cost
+                pron char-int-str char-markov char-cost-0gram)
+    for prob = (hachee.kkc.impl.markov:cost->probability cost)
+    sum prob))
 
 (defvar *empty-ex-dict*
   (hachee.kkc.impl.markov.ex-dict:make-ex-dict

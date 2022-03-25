@@ -17,4 +17,6 @@
      (:file "convert/convert")
      (:file "lookup")
      #+sbcl (:file "profile")
-     (:file "eval")))))
+     (:file "eval")
+     (:file "user-dict"))))
+  :depends-on (:cl-ppcre))
