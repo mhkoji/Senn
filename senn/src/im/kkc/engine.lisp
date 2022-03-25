@@ -103,13 +103,16 @@
                    pron)
       (error ()
         (engine-store-rerun engine-store)
-        (list (senn.im.kkc:make-segment :pron pron :form pron))))))
+        (list (senn.im.kkc:make-segment
+               :pron pron
+               :candidates (list (senn.im.kkc:make-candidate
+                                  :form pron))))))))
                
-(defmethod senn.im.kkc:list-candidates ((kkc kkc) (index number))
+(defmethod senn.im.kkc:list-candidates ((kkc kkc) (pron string))
   (with-accessors ((engine-store engine-store)) kkc
     (handler-case (senn.im.kkc.request:list-candidates
                    (engine-store-engine engine-store)
-                   index)
+                   pron)
       (error ()
         (engine-store-rerun engine-store)
         nil))))

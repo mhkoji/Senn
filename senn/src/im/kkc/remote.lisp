@@ -42,13 +42,15 @@
                  (connection kkc)
                  pron)
     (error ()
-      (list (senn.im.kkc:make-segment :pron pron :form pron)))))
-             
+      (list (senn.im.kkc:make-segment
+             :pron pron
+             :candidates (list (senn.im.kkc:make-candidate
+                                  :form pron)))))))
 
-(defmethod senn.im.kkc:list-candidates ((kkc kkc) (index number))
+(defmethod senn.im.kkc:list-candidates ((kkc kkc) (pron string))
   (handler-case (senn.im.kkc.request:list-candidates
                  (connection kkc)
-                 index)
+                 pron)
     (error ()
       nil)))
 

@@ -64,24 +64,23 @@ void Loop(anthy_context_t anthy_context) {
       for (size_t s = 0; s < segments.size(); s++) {
         picojson::object item;
         item["pron"] = picojson::value(segments[s].pron);
-        item["form"] = picojson::value(segments[s].candidate_forms[0]);
+
+        picojson::array candidates;
+        for (size_t c = 0; c < segments[s].candidate_forms.size(); c++) {
+          picojson::object cand;
+          cand["form"] = picojson::value(segments[s].candidate_forms[c]);
+          candidates.push_back(picojson::value(cand));
+        }
+        item["candidates"] = picojson::value(candidates);
+
         items.push_back(picojson::value(item));
       }
       picojson::value resp(items);
       std::cout << resp << std::endl;
     } else if (op == "LIST_CANDIDATES") {
-      int index = req.get<picojson::object>()["args"]
-                      .get<picojson::object>()["index"]
-                      .get<double>();
-      picojson::array items;
-      if (0 <= index && index < segments.size()) {
-        for (size_t c = 1; c < segments[index].candidate_forms.size(); c++) {
-          picojson::object item;
-          item["form"] = picojson::value(segments[index].candidate_forms[c]);
-          items.push_back(picojson::value(item));
-        }
-      }
-      picojson::value resp(items);
+      // Return the empty array.
+      picojson::array cands;
+      picojson::value resp(cands);
       std::cout << resp << std::endl;
     } else {
       throw std::runtime_error("Invalid op: " + op);

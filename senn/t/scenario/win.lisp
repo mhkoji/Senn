@@ -7,7 +7,9 @@
                                 &key 1st-boundary-index)
   (declare (ignore 1st-boundary-index))
   (assert (string= pron "そら"))
-  (list (senn.im.kkc:make-segment :pron "そら" :form "空")))
+  (list (senn.im.kkc:make-segment
+         :pron "そら"
+         :candidates (list (senn.im.kkc:make-candidate :form "空")))))
 
 (defun editing-view (input)
   (let ((json (jsown:new-js

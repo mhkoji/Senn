@@ -9,8 +9,12 @@
                                 &key 1st-boundary-index)
   (declare (ignore 1st-boundary-index))
   (assert (string= pron "きょうは"))
-  (list (senn.im.kkc:make-segment :pron "きょう" :form "きょう")
-        (senn.im.kkc:make-segment :pron "は" :form "は")))
+  (list (senn.im.kkc:make-segment
+         :pron "きょう"
+         :candidates (list (senn.im.kkc:make-candidate :form "きょう")))
+        (senn.im.kkc:make-segment
+         :pron "は"
+         :candidates (list (senn.im.kkc:make-candidate :form "は")))))
          
 (defmethod senn.im.kkc:list-candidates ((kkc (eql 'static-kkc))
                                         (index number))
@@ -23,8 +27,10 @@
                                 &key 1st-boundary-index)
   (declare (ignore 1st-boundary-index))
   (assert (string= pron "ん"))
-  (list (senn.im.kkc:make-segment :pron pron :form pron)))
-         
+  (list (senn.im.kkc:make-segment
+         :pron pron
+         :candidates (list (senn.im.kkc:make-candidate :form pron)))))
+
 
 (defun converting-view (&key forms
                              cursor-form-index

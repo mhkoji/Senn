@@ -5,7 +5,9 @@
 (defmethod senn.im.kkc:convert ((kkc (eql 'kkc)) (pron string)
                                 &key 1st-boundary-index)
   (assert (string= pron "あ"))
-  (list (senn.im.kkc:make-segment :pron "あ" :form "亜")))
+  (list (senn.im.kkc:make-segment
+         :pron "あ"
+         :candidates (list (senn.im.kkc:make-candidate :form "亜")))))
 
 (defmethod senn.im.predict:execute append ((predictor (eql 'predictor))
                                            (pron string))

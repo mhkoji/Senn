@@ -1,7 +1,7 @@
 (defpackage :senn.im.kkc
   (:use :cl)
-  (:export :segment-form
-           :segment-pron
+  (:export :segment-pron
+           :segment-candidates
            :make-segment
 
            :candidate
@@ -12,10 +12,10 @@
            :list-candidates))
 (in-package :senn.im.kkc)
 
-(defstruct segment pron form)
+(defstruct segment pron candidates)
 
 (defstruct candidate form)
 
 (defgeneric convert (kkc pron &key 1st-boundary-index))
 
-(defgeneric list-candidates (kkc index))
+(defgeneric list-candidates (kkc pron))

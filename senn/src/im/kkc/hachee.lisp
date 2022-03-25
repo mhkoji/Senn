@@ -14,8 +14,6 @@
 
 ;;;
 
-(defstruct state entries)
-
 (defclass kkc ()
   ((lm-impl
     :initarg :lm-impl
@@ -23,10 +21,7 @@
    (exteded-dictionary
     :initarg :extended-dictionary
     :initform nil
-    :reader kkc-extended-dictionary)
-   (state
-    :initarg :state
-    :reader kkc-state)))
+    :reader kkc-extended-dictionary)))
 
 (defun kkc-convert (kkc)
   (let ((ex-dict (kkc-extended-dictionary kkc)))
@@ -38,21 +33,20 @@
 
 (defmethod senn.im.kkc:convert ((kkc kkc) (pron string)
                                 &key 1st-boundary-index)
-  (with-accessors ((entries state-entries)) (kkc-state kkc)
-    (setf entries (hachee.kkc.convert:execute
-                   (kkc-convert kkc) pron
-                   :1st-boundary-index 1st-boundary-index))
+  (let ((entries (hachee.kkc.convert:execute
+                  (kkc-convert kkc) pron
+                  :1st-boundary-index 1st-boundary-index)))
     (mapcar (lambda (e)
-              (senn.im.kkc:make-segment
-               :pron (hachee.kkc.convert:entry-pron e)
-               :form (hachee.kkc.convert:entry-form e)))
+              (let ((pron (hachee.kkc.convert:entry-pron e))
+                    (form (hachee.kkc.convert:entry-form e)))
+                (senn.im.kkc:make-segment
+                 :pron pron
+                 :candidates (list (senn.im.kkc:make-candidate
+                                    :form form)))))
             entries)))
 
-(defmethod senn.im.kkc:list-candidates ((kkc kkc) (index number))
-  (with-accessors ((entries state-entries)) (kkc-state kkc)
-    (when (and (<= 0 index) (< index (length entries)))
-      (let ((pron (hachee.kkc.convert:entry-pron (elt entries index))))
-        (mapcar (lambda (item)
-                  (senn.im.kkc:make-candidate
-                   :form (hachee.kkc.lookup:item-form item)))
-                (hachee.kkc.lookup:execute (kkc-lm-impl kkc) pron))))))
+(defmethod senn.im.kkc:list-candidates ((kkc kkc) (pron string))
+  (mapcar (lambda (item)
+            (senn.im.kkc:make-candidate
+             :form (hachee.kkc.lookup:item-form item)))
+          (hachee.kkc.lookup:execute (kkc-lm-impl kkc) pron)))
