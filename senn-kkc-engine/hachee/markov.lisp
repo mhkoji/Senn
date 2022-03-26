@@ -4,26 +4,14 @@
            :main))
 (in-package :senn-kkc-engine.hachee.markov)
 
-(defun read-kkc (markov-dir)
-  (labels ((make-path (path)
-             (format nil "~A~A" markov-dir path)))
-    (hachee.kkc.impl.markov.read:read-kkc
-     :path-word-int-str (make-path "word/int-str.txt")
-     :path-word-1gram   (make-path "word/cost-1gram.tsv")
-     :path-word-2gram   (make-path "word/cost-2gram.tsv")
-     :path-char-int-str (make-path "char/int-str.txt")
-     :path-char-1gram   (make-path "char/cost-1gram.tsv")
-     :path-char-2gram   (make-path "char/cost-2gram.tsv")
-     :path-in-dict      (make-path "in-dict.tsv"))))
-
 (defvar *kkc*)
 
 (defun user-dict-pathname ()
   (merge-pathnames ".senn/user-dict.tsv"
                    (user-homedir-pathname)))
 
-(defun set-kkc (&optional (markov-dir "~/senn-data/"))
-  (setq *kkc* (read-kkc markov-dir)))
+(defun set-kkc (&optional (dir "~/senn-data/"))
+  (setq *kkc* (hachee.kkc.impl.markov.read:read-kkc dir)))
 
 (defun main ()
   (ignore-errors
