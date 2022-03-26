@@ -1,7 +1,8 @@
 ;; in-dict, int-str, markovは読み込み処理が似ているのでこのパッケージにまとめた。
 (defpackage :hachee.kkc.impl.markov.read
   (:use :cl)
-  (:export :read-kkc)
+  (:export :read-kkc-dir
+           :read-kkc-paths)
   (:local-nicknames (:int-str :hachee.kkc.impl.markov.int-str)))
 (in-package :hachee.kkc.impl.markov.read)
 
@@ -73,24 +74,26 @@
       (hachee.kkc.impl.markov:probability->cost (/ 1 unk-char-size)))))
 
 (defun in-dict-prob (in-dict char-int-str char-markov char-cost-0gram)
-  (loop
-    for pron in (hachee.kkc.impl.markov.in-dict:list-prons in-dict)
-    for cost = (hachee.kkc.impl.markov:char-based-cost
-                pron char-int-str char-markov char-cost-0gram)
-    for prob = (hachee.kkc.impl.markov:cost->probability cost)
-    sum prob))
+  (let ((sum-prob 0))
+    (hachee.kkc.impl.markov.in-dict:do-entries (entry in-dict)
+      (let* ((form (hachee.kkc.impl.markov.in-dict:entry-form entry))
+             (cost (hachee.kkc.impl.markov:char-based-cost
+                    form char-int-str char-markov char-cost-0gram))
+             (prob (hachee.kkc.impl.markov:cost->probability cost)))
+        (incf sum-prob prob)))
+    sum-prob))
 
 (defvar *empty-ex-dict*
   (hachee.kkc.impl.markov.ex-dict:make-ex-dict
    :hash (make-hash-table)))
 
-(defun read-kkc-internal (&key path-word-int-str
-                               path-word-1gram
-                               path-word-2gram
-                               path-char-int-str
-                               path-char-1gram
-                               path-char-2gram
-                               path-in-dict)
+(defun read-kkc-paths (&key path-word-int-str
+                            path-word-1gram
+                            path-word-2gram
+                            path-char-int-str
+                            path-char-1gram
+                            path-char-2gram
+                            path-in-dict)
   (let* ((word-int-str (read-int-str path-word-int-str))
          (in-dict      (read-in-dict path-in-dict word-int-str))
          (word-markov  (read-markov path-word-1gram
@@ -114,10 +117,10 @@
      :char-int-str char-int-str
      :char-cost-0gram char-cost-0gram)))
 
-(defun read-kkc (dir)
+(defun read-kkc-dir (dir)
   (labels ((make-path (path)
              (format nil "~A~A" dir path)))
-    (read-kkc-internal
+    (read-kkc-paths
      :path-word-int-str (make-path "word/int-str.txt")
      :path-word-1gram   (make-path "word/cost-1gram.tsv")
      :path-word-2gram   (make-path "word/cost-2gram.tsv")

@@ -45,15 +45,16 @@
   (values))
 
 
-(defun pron->sentence (pron unknown-word-char-vocabulary)
+(defun string->sentence (str unknown-word-char-vocabulary)
   (hachee.language-model:make-sentence
-   :tokens (loop for ch across pron
+   :tokens (loop for ch across str
                  for unit = (hachee.kkc.impl.lm.unit:make-unit
                              :form (string ch)
                              :pron (string ch))
-                 collect (hachee.language-model.vocabulary::to-int-or-unk
-                          unknown-word-char-vocabulary
-                          (hachee.kkc.impl.lm.unit:unit->key unit)))))
+                 for token = (hachee.language-model.vocabulary:to-int-or-unk
+                              unknown-word-char-vocabulary
+                              (hachee.kkc.impl.lm.unit:unit->key unit))
+                 collect token)))
 
 (defun sum-probabilities-of-words (unknown-word-vocabulary
                                    unknown-word-n-gram-model
@@ -66,8 +67,8 @@
                     hachee.language-model.vocabulary:+EOS+)))
     (loop
       for word in words
-      for sent = (pron->sentence (hachee.kkc.impl.lm.unit:unit-pron word)
-                                 unknown-word-vocabulary)
+      for sent = (string->sentence (hachee.kkc.impl.lm.unit:unit-form word)
+                                   unknown-word-vocabulary)
       sum (exp (hachee.language-model.n-gram:sentence-log-probability
                 unknown-word-n-gram-model sent
                 :BOS bos-token
@@ -118,7 +119,8 @@
 (defun build-kkc-simple (pathnames &key char-dictionary)
   (let ((vocabulary (hachee.kkc.impl.lm.build:build-vocabulary pathnames))
         (n-gram-model (make-instance 'hachee.language-model.n-gram:model)))
-    (hachee.kkc.impl.lm.build:train-n-gram-model n-gram-model pathnames vocabulary)
+    (hachee.kkc.impl.lm.build:train-n-gram-model
+     n-gram-model pathnames vocabulary)
     (make-kkc
      :n-gram-model n-gram-model
      :vocabulary vocabulary
@@ -138,8 +140,8 @@
                        char-dictionary
                        trusted-word-dictionary
                        class-token-to-word-file-path)
-  (let ((vocabulary
-         (hachee.kkc.impl.lm.build:build-vocabulary-with-unk pathnames-segmented)))
+  (let ((vocabulary (hachee.kkc.impl.lm.build:build-vocabulary-with-unk
+                     pathnames-segmented)))
     (when (and pathnames-inaccurately-segmented
                trusted-word-dictionary
                ;; Unable to map an added word to a class
@@ -218,12 +220,12 @@
   sum-probabilities-of-vocabulary-words
   extended-dictionary)
 
-(defun unknown-word-log-probability (score-calc-dto pron)
+(defun unknown-word-log-probability (score-calc-dto form)
   (with-accessors ((unknown-word-vocabulary
                     score-calc-dto-unknown-word-vocabulary)
                    (unknown-word-n-gram-model
                     score-calc-dto-unknown-word-n-gram-model)) score-calc-dto
-    (let ((sentence (pron->sentence pron unknown-word-vocabulary))
+    (let ((sentence (string->sentence form unknown-word-vocabulary))
           (bos (hachee.language-model.vocabulary:to-int
                 unknown-word-vocabulary
                 hachee.language-model.vocabulary:+BOS+))
@@ -269,7 +271,7 @@
               (let ((log-prob-unknown
                      (unknown-word-log-probability
                       score-calc-dto
-                      (hachee.kkc.convert:entry-pron curr-entry)))
+                      (hachee.kkc.convert:entry-form curr-entry)))
                     (prob-extended
                      (extended-dictionary-word-probability
                       score-calc-dto
