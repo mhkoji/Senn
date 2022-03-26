@@ -50,16 +50,13 @@
 (defstruct state
   input-mode
   input-state
-  history
-  extended-dictionary)
+  history)
 
 (defun make-initial-state ()
   (make-state
    :input-mode :direct
    :input-state nil
-   :history (make-history)
-   :extended-dictionary
-   (hachee.kkc.impl.lm.dictionary:make-dictionary)))
+   :history (make-history)))
 
 (defgeneric ime-state (ime))
 
@@ -133,8 +130,7 @@
     (make-instance 'ime
      :kkc (make-instance 'kkc
            :history (state-history state)
-           :lm-impl kkc
-           :extended-dictionary (state-extended-dictionary state))
+           :kkc-impl kkc)
      :predictor (make-instance 'senn.im.predict.katakana:predictor)
      :state state)))
 

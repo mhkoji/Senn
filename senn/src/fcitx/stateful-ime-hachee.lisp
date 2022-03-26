@@ -6,5 +6,5 @@
 (defun make-ime (kkc)
   (senn.fcitx.stateful-ime:make-ime
    :kkc (make-instance 'senn.im.kkc.hachee:kkc
-         :lm-impl kkc)
+         :kkc-impl kkc)
    :predictor (make-instance 'senn.im.predict.katakana:predictor)))
