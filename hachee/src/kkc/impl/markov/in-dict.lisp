@@ -5,7 +5,7 @@
            :entry-token
            :make-entry
            :list-entries
-           :list-prons
+           :do-entries
            :make-in-dict))
 (in-package :hachee.kkc.impl.markov.in-dict)
 
@@ -18,6 +18,9 @@
 (defun list-entries (dict pron)
   (gethash pron (in-dict-hash dict)))
 
-(defun list-prons (dict)
-  (let ((hash (in-dict-hash dict)))
-    (loop for pron being the hash-key of hash collect pron)))
+(defmacro do-entries ((var dict) &body body)
+  `(let ((hash (in-dict-hash ,dict)))
+     (loop for entries being the hash-value of hash do
+       (progn
+         (dolist (,var entries)
+           (progn ,@body))))))

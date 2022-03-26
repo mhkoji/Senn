@@ -3,16 +3,12 @@
   (:export :entry-form
            :entry-pron
            :dict-entries
-           :dict-size
            :read-file))
 (in-package :hachee.kkc.user-dict)
 
 (defstruct entry form pron)
 
 (defstruct dict entries)
-
-(defun dict-size (dict)
-  (length (dict-entries dict)))
 
 (defun read-file-internal (path)
   (let ((hash (make-hash-table :test #'equal)))

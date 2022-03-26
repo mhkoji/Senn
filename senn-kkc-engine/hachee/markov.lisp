@@ -11,7 +11,7 @@
                    (user-homedir-pathname)))
 
 (defun set-kkc (&optional (dir "~/senn-data/"))
-  (setq *kkc* (hachee.kkc.impl.markov.read:read-kkc dir)))
+  (setq *kkc* (hachee.kkc.impl.markov.read:read-kkc-dir dir)))
 
 (defun main ()
   (ignore-errors
