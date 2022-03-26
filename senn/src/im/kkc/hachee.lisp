@@ -2,8 +2,7 @@
 (defpackage :senn.im.kkc.hachee
   (:use :cl)
   (:export :kkc
-           :build-kkc
-           :make-state))
+           :build-kkc))
 (in-package :senn.im.kkc.hachee)
 
 (defun build-kkc ()
@@ -15,26 +14,14 @@
 ;;;
 
 (defclass kkc ()
-  ((lm-impl
-    :initarg :lm-impl
-    :reader kkc-lm-impl)
-   (exteded-dictionary
-    :initarg :extended-dictionary
-    :initform nil
-    :reader kkc-extended-dictionary)))
-
-(defun kkc-convert (kkc)
-  (let ((ex-dict (kkc-extended-dictionary kkc)))
-    (if ex-dict
-        (hachee.kkc.impl.lm:make-kkc-convert
-         :kkc (kkc-lm-impl kkc)
-         :extended-dictionary ex-dict)
-        (kkc-lm-impl kkc))))
+  ((kkc-impl
+    :initarg :kkc-impl
+    :reader kkc-kkc-impl)))
 
 (defmethod senn.im.kkc:convert ((kkc kkc) (pron string)
                                 &key 1st-boundary-index)
   (let ((entries (hachee.kkc.convert:execute
-                  (kkc-convert kkc) pron
+                  (kkc-kkc-impl kkc) pron
                   :1st-boundary-index 1st-boundary-index)))
     (mapcar (lambda (e)
               (let ((pron (hachee.kkc.convert:entry-pron e))
@@ -46,7 +33,8 @@
             entries)))
 
 (defmethod senn.im.kkc:list-candidates ((kkc kkc) (pron string))
-  (mapcar (lambda (item)
-            (senn.im.kkc:make-candidate
-             :form (hachee.kkc.lookup:item-form item)))
-          (hachee.kkc.lookup:execute (kkc-lm-impl kkc) pron)))
+  (let ((items (hachee.kkc.lookup:execute (kkc-kkc-impl kkc) pron)))
+    (mapcar (lambda (item)
+              (senn.im.kkc:make-candidate
+               :form (hachee.kkc.lookup:item-form item)))
+            items)))

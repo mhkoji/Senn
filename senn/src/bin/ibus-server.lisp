@@ -12,12 +12,12 @@
 (defun tcp-run (kkc)
   (senn.server.tcp:start-server
    (lambda (client)
-     (let ((ime (senn.ibus.stateful-ime:hachee-make-ime kkc)))
+     (let ((ime (senn.ibus.stateful-ime-hachee:make-ime kkc)))
        (ime-client-loop client ime)))))
 
 (defun tcp-run-engine (runner)
   (senn.server.tcp:start-server
    (lambda (client)
-     (let ((ime (senn.ibus.stateful-ime:engine-make-ime runner)))
+     (let ((ime (senn.ibus.stateful-ime-engine:make-ime runner)))
        (unwind-protect (ime-client-loop client ime)
-         (senn.ibus.stateful-ime:engine-close-ime ime))))))
+         (senn.ibus.stateful-ime-engine:close-ime ime))))))
