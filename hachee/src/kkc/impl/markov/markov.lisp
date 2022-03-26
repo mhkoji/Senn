@@ -105,7 +105,7 @@
                    :origin hachee.kkc.origin:+extended-dictionary+)
                   entries))
           ;; An unknown word entry can't be added when ex-dict words exist
-          ;; because The unknown word probability for the pron is 0
+          ;; because the unknown word probability for the pron is 0
           ;; and the computed value of that is used for ex-dict words.
           (when (< (length pron) 8) ;; Length up to 8
             (push (make-convert-entry
