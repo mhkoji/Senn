@@ -65,28 +65,6 @@
 
 ;;;
 
-(defun char-cost-0gram (char-int-str)
-  (let ((pron-alphabet-size 6878)
-        (char-int-str-size  (int-str:int-str-size char-int-str)))
-    ;; 2 for UT and BT
-    (let ((unk-char-size (- pron-alphabet-size (- char-int-str-size 2))))
-      (assert (< 0 unk-char-size))
-      (hachee.kkc.impl.markov:probability->cost (/ 1 unk-char-size)))))
-
-(defun in-dict-prob (in-dict char-int-str char-markov char-cost-0gram)
-  (let ((sum-prob 0))
-    (hachee.kkc.impl.markov.in-dict:do-entries (entry in-dict)
-      (let* ((form (hachee.kkc.impl.markov.in-dict:entry-form entry))
-             (cost (hachee.kkc.impl.markov:char-based-cost
-                    form char-int-str char-markov char-cost-0gram))
-             (prob (hachee.kkc.impl.markov:cost->probability cost)))
-        (incf sum-prob prob)))
-    sum-prob))
-
-(defvar *empty-ex-dict*
-  (hachee.kkc.impl.markov.ex-dict:make-ex-dict
-   :hash (make-hash-table)))
-
 (defun read-kkc-paths (&key path-word-int-str
                             path-word-1gram
                             path-word-2gram
@@ -95,27 +73,19 @@
                             path-char-2gram
                             path-in-dict)
   (let* ((word-int-str (read-int-str path-word-int-str))
-         (in-dict      (read-in-dict path-in-dict word-int-str))
          (word-markov  (read-markov path-word-1gram
                                     path-word-2gram
                                     word-int-str))
+         (in-dict      (read-in-dict path-in-dict word-int-str))
          (char-int-str (read-int-str path-char-int-str))
          (char-markov  (read-markov path-char-1gram
                                     path-char-2gram
-                                    char-int-str))
-         (char-cost-0gram (char-cost-0gram char-int-str))
-         (in-dict-prob    (in-dict-prob in-dict
-                                        char-int-str
-                                        char-markov
-                                        char-cost-0gram)))
-    (hachee.kkc.impl.markov:make-kkc
+                                    char-int-str)))
+    (hachee.kkc.impl.markov:build-kkc
      :word-markov  word-markov
      :in-dict      in-dict
-     :in-dict-prob in-dict-prob
-     :ex-dict      *empty-ex-dict*
-     :char-markov  char-markov
      :char-int-str char-int-str
-     :char-cost-0gram char-cost-0gram)))
+     :char-markov  char-markov)))
 
 (defun read-kkc-dir (dir)
   (labels ((make-path (path)

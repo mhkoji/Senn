@@ -3,8 +3,8 @@
   (:export :entry-form
            :entry-cost
            :make-entry
-           :list-entries
-           :make-ex-dict))
+           :make-ex-dict
+           :list-entries))
 (in-package :hachee.kkc.impl.markov.ex-dict)
 
 (defstruct ex-dict
