@@ -1,12 +1,12 @@
-(defpackage :senn-kkc-engine.hachee.user-dict
+(defpackage :senn.im.user-dict
   (:use :cl)
-  (:export :entry-form
+  (:export :entry
+           :entry-form
            :entry-pron
-           :entry
-           :dict-entries
            :dict
+           :dict-entries
            :read-file))
-(in-package :senn-kkc-engine.hachee.user-dict)
+(in-package :senn.im.user-dict)
 
 (defstruct entry form pron)
 

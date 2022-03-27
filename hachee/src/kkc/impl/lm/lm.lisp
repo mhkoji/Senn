@@ -2,6 +2,7 @@
 (defpackage :hachee.kkc.impl.lm
   (:use :cl)
   (:export :kkc
+           :kkc-word-dictionary
            :save-kkc
            :load-kkc
            :build-kkc
