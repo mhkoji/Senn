@@ -11,20 +11,19 @@
                    (user-homedir-pathname)))
 
 (defmethod hachee.kkc.impl.markov.ex-dict-builder:item-pron
-    ((item senn-kkc-engine.hachee.user-dict:entry))
-  (senn-kkc-engine.hachee.user-dict:entry-pron item))
+    ((item senn.im.user-dict:entry))
+  (senn.im.user-dict:entry-pron item))
 
 (defmethod hachee.kkc.impl.markov.ex-dict-builder:item-form
-    ((item senn-kkc-engine.hachee.user-dict:entry))
-  (senn-kkc-engine.hachee.user-dict:entry-form item))
+    ((item senn.im.user-dict:entry))
+  (senn.im.user-dict:entry-form item))
 
 (defmethod hachee.kkc.impl.markov.ex-dict-builder:list-items
-    ((source senn-kkc-engine.hachee.user-dict:dict))
-  (senn-kkc-engine.hachee.user-dict:dict-entries source))
+    ((source senn.im.user-dict:dict))
+  (senn.im.user-dict:dict-entries source))
 
 (defun kkc-apply-user-dict (kkc)
-  (let ((dict (senn-kkc-engine.hachee.user-dict:read-file
-               (user-dict-pathname))))
+  (let ((dict (senn.im.user-dict:read-file (user-dict-pathname))))
     (when dict
       (hachee.kkc.impl.markov:kkc-set-ex-dict kkc dict))))
 
