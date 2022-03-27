@@ -11,7 +11,7 @@
 
 (defmacro hachee-convert (&key test)
   `(let ((ime (senn.fcitx.stateful-ime-hachee:make-ime
-               (senn.im.kkc.hachee:build-kkc))))
+               (senn.im.kkc.hachee:build-hachee-impl-lm-kkc))))
      (,test
       (equal
        (converting-state-segment-strings

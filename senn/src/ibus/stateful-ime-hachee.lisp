@@ -6,4 +6,4 @@
 (defun make-ime (kkc)
   (senn.ibus.stateful-ime:make-ime
    :kkc (make-instance 'senn.im.kkc.hachee:kkc
-         :kkc-impl kkc)))
+         :hachee-impl-lm-kkc kkc)))

@@ -125,12 +125,12 @@
                senn.im.kkc.hachee:kkc)
   ())
 
-(defun hachee-make-ime (kkc)
+(defun hachee-make-ime (hachee-impl-lm-kkc)
   (let ((state (make-initial-state)))
     (make-instance 'ime
      :kkc (make-instance 'kkc
            :history (state-history state)
-           :kkc-impl kkc)
+           :hachee-impl-lm-kkc hachee-impl-lm-kkc)
      :predictor (make-instance 'senn.im.predict.katakana:predictor)
      :state state)))
 

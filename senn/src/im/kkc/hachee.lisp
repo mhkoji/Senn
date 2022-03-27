@@ -2,10 +2,10 @@
 (defpackage :senn.im.kkc.hachee
   (:use :cl)
   (:export :kkc
-           :build-kkc))
+           :build-hachee-impl-lm-kkc))
 (in-package :senn.im.kkc.hachee)
 
-(defun build-kkc ()
+(defun build-hachee-impl-lm-kkc ()
   (let ((corpus-pathnames
          (hachee.data.corpus:word-pron-utf8-pathnames)))
     (log:debug "Loading: ~A" corpus-pathnames)
@@ -14,14 +14,25 @@
 ;;;
 
 (defclass kkc ()
-  ((kkc-impl
-    :initarg :kkc-impl
-    :reader kkc-kkc-impl)))
+  ((hachee-impl-lm-kkc
+    :initarg :hachee-impl-lm-kkc
+    :reader kkc-hachee-impl-lm-kkc)
+   (extended-dictionary
+    :initarg :extended-dictionary
+    :initform nil
+    :reader kkc-extended-dictionary)))
+
+(defun hachee-kkc-convert (kkc)
+  (if (kkc-extended-dictionary kkc)
+      (hachee.kkc.impl.lm:make-kkc-convert
+       :kkc (kkc-hachee-impl-lm-kkc kkc)
+       :extended-dictionary (kkc-extended-dictionary kkc))
+      (kkc-hachee-impl-lm-kkc kkc)))
 
 (defmethod senn.im.kkc:convert ((kkc kkc) (pron string)
                                 &key 1st-boundary-index)
   (let ((entries (hachee.kkc.convert:execute
-                  (kkc-kkc-impl kkc) pron
+                  (hachee-kkc-convert kkc) pron
                   :1st-boundary-index 1st-boundary-index)))
     (mapcar (lambda (e)
               (let ((pron (hachee.kkc.convert:entry-pron e))
@@ -33,7 +44,8 @@
             entries)))
 
 (defmethod senn.im.kkc:list-candidates ((kkc kkc) (pron string))
-  (let ((items (hachee.kkc.lookup:execute (kkc-kkc-impl kkc) pron)))
+  (let ((items (hachee.kkc.lookup:execute
+                (kkc-hachee-impl-lm-kkc kkc) pron)))
     (mapcar (lambda (item)
               (senn.im.kkc:make-candidate
                :form (hachee.kkc.lookup:item-form item)))
