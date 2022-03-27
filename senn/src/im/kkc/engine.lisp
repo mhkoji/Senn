@@ -1,13 +1,13 @@
 ;; convert/list-candidates depending on a (third-party) kkc engine
 (defpackage :senn.im.kkc.engine
   (:use :cl)
-  (:export :list-candidates
-           :kkc
-           :close-kkc
-           :run-engine
+  (:export :run-engine
            :kill-engine
            :make-engine-runner
-           :make-engine-store))
+           :make-engine-store
+           :kkc-rerun-engine
+           :kkc
+           :close-kkc))
 (in-package :senn.im.kkc.engine)
 
 (defstruct engine-runner
@@ -93,6 +93,9 @@
   ((engine-store
     :initarg :engine-store
     :reader engine-store)))
+
+(defun kkc-rerun-engine (kkc)
+  (engine-store-rerun (engine-store kkc)))
 
 (defmethod senn.im.kkc:convert ((kkc kkc) (pron string)
                                 &key 1st-boundary-index)

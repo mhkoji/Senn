@@ -6,11 +6,8 @@
 
 (defun make-ime (engine-runner)
   (senn.fcitx.stateful-ime:make-ime
-   :kkc (make-instance 'senn.im.kkc.engine:kkc
-         :engine-store
-         (senn.im.kkc.engine:make-engine-store
-          :engine (senn.im.kkc.engine:run-engine engine-runner)
-          :engine-runner engine-runner))))
+   :kkc-store (senn.im.kkc-store.engine:make-store-and-run engine-runner)))
 
 (defun close-ime (ime)
-  (senn.im.kkc.engine:close-kkc (senn.fcitx.im:ime-kkc ime)))
+  (senn.im.kkc-store.engine:close-store
+   (senn.fcitx.stateful-ime:ime-kkc-store ime)))

@@ -1,6 +1,6 @@
 (asdf:defsystem :senn
   :serial t
-  :pathname "src"
+  :pathname "src/"
   :components
   ((:file "ja")
    #+nil (:file "prefix-dictionary")
@@ -9,7 +9,7 @@
     :components
     ((:file "kkc")
      (:module :im/kkc
-      :pathname "kkc"
+      :pathname "kkc/"
       :components
       ((:file "request")
        (:file "engine")))
@@ -21,7 +21,9 @@
        (:file "katakana")))
      (:file "converting")
      (:file "buffer")
-     (:file "inputting"))))
+     (:file "inputting")
+     (:file "kkc-store")
+     (:file "kkc-store/engine"))))
   :depends-on (#+nil :cl-trie
                :alexandria
                :jsown))

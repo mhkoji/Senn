@@ -3,6 +3,7 @@
   (:export :process-input
            :select-candidate
            :reset-im
+           :ime-kkc-store
            :make-ime))
 (in-package :senn.fcitx.stateful-ime)
 
@@ -13,6 +14,10 @@
   (make-state
    :edit-state
    (senn.im.inputting:make-state)))
+
+;;;
+
+(defgeneric reload-kkc (ime))
 
 (defgeneric ime-state (ime))
 
@@ -45,18 +50,28 @@
 
 (defclass ime (senn.fcitx.im:ime)
   ((state
-    :initarg :state
-    :reader ime-state)
-   (kkc
-    :initarg :kkc
-    :reader senn.fcitx.im:ime-kkc)
+    :initarg :state)
+   (kkc-store
+    :initarg :kkc-store)
    (predictor
     :initarg :predictor
-    :initform nil
-    :reader senn.fcitx.im:ime-predictor)))
+    :initform nil)))
 
-(defun make-ime (&key kkc predictor)
+(defmethod reload-kkc ((ime ime))
+  (senn.im.kkc-store:reload (slot-value ime 'kkc-store))
+  "OK")
+
+(defmethod ime-state ((ime ime))
+  (slot-value ime 'state))
+
+(defmethod senn.fcitx.im:ime-kkc ((ime ime))
+  (senn.im.kkc-store:get-kkc (slot-value ime 'kkc-store)))
+
+(defmethod senn.fcitx.im:ime-predictor ((ime ime))
+  (slot-value ime 'predictor))
+
+(defun make-ime (&key kkc-store predictor)
   (make-instance 'ime
                  :state (make-initial-state)
-                 :kkc kkc
+                 :kkc-store kkc-store
                  :predictor predictor))
