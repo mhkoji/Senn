@@ -15,7 +15,8 @@
   this)
 
 (defmethod senn.im.kkc-store:reload ((this senn.im.kkc.engine:kkc))
-  (senn.im.kkc.engine:kkc-rerun-engine this))
+  (senn.im.kkc.engine:kkc-rerun-engine this)
+  (values))
 
 (defun close-store (this)
   (senn.im.kkc.engine:close-kkc this))

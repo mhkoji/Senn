@@ -6,24 +6,8 @@
 
 ;;; user-dict
 
-(defun user-dict-pathname ()
-  (merge-pathnames ".senn/user-dict.tsv"
-                   (user-homedir-pathname)))
-
-(defmethod hachee.kkc.impl.markov.ex-dict-builder:item-pron
-    ((item senn.im.user-dict:entry))
-  (senn.im.user-dict:entry-pron item))
-
-(defmethod hachee.kkc.impl.markov.ex-dict-builder:item-form
-    ((item senn.im.user-dict:entry))
-  (senn.im.user-dict:entry-form item))
-
-(defmethod hachee.kkc.impl.markov.ex-dict-builder:list-items
-    ((source senn.im.user-dict:dict))
-  (senn.im.user-dict:dict-entries source))
-
 (defun kkc-apply-user-dict (kkc)
-  (let ((dict (senn.im.user-dict:read-file (user-dict-pathname))))
+  (let ((dict (senn-user-dict:read-file)))
     (when dict
       (hachee.kkc.impl.markov:kkc-set-ex-dict kkc dict))))
 

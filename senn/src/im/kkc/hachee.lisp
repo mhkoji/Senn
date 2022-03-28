@@ -50,17 +50,3 @@
               (senn.im.kkc:make-candidate
                :form (hachee.kkc.lookup:item-form item)))
             items)))
-
-;;; user-dict
-
-(defmethod hachee.kkc.impl.lm.ex-dict-builder:item-pron
-    ((item senn.im.user-dict:entry))
-  (senn.im.user-dict:entry-pron item))
-
-(defmethod hachee.kkc.impl.lm.ex-dict-builder:item-form
-    ((item senn.im.user-dict:entry))
-  (senn.im.user-dict:entry-form item))
-
-(defmethod hachee.kkc.impl.lm.ex-dict-builder:list-items
-    ((source senn.im.user-dict:dict))
-  (senn.im.user-dict:dict-entries source))

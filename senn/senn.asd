@@ -7,8 +7,7 @@
    (:module :im
     :pathname "im"
     :components
-    ((:file "user-dict")
-     (:file "kkc")
+    ((:file "kkc")
      (:module :im/kkc
       :pathname "kkc/"
       :components
@@ -27,5 +26,4 @@
      (:file "kkc-store/engine"))))
   :depends-on (#+nil :cl-trie
                :alexandria
-               :cl-ppcre
                :jsown))

@@ -1,12 +1,18 @@
-(defpackage :senn.im.user-dict
+(defpackage :senn-user-dict
   (:use :cl)
-  (:export :entry
+  (:export :dict
            :entry-form
            :entry-pron
-           :dict
+           :entry
            :dict-entries
            :read-file))
-(in-package :senn.im.user-dict)
+(in-package :senn-user-dict)
+
+(defun user-dict-pathname ()
+  (merge-pathnames ".senn/user-dict.tsv"
+                   (user-homedir-pathname)))
+
+;;;
 
 (defstruct entry form pron)
 
@@ -29,6 +35,7 @@
                hash)
       (make-dict :entries entries))))
 
-(defun read-file (path)
-  (when (uiop/filesystem:file-exists-p path)
-    (read-file-internal path)))
+(defun read-file ()
+  (let ((path (user-dict-pathname)))
+    (when (uiop/filesystem:file-exists-p path)
+      (read-file-internal path))))
