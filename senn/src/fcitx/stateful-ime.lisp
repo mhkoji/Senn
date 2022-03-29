@@ -3,6 +3,7 @@
   (:export :process-input
            :select-candidate
            :reset-im
+           ; :reload-kkc
            :ime-kkc-store
            :make-ime))
 (in-package :senn.fcitx.stateful-ime)
