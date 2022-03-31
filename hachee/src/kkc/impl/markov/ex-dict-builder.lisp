@@ -16,7 +16,8 @@
                    (pron (item-pron item)))
                (find form (hachee.kkc.impl.markov.in-dict:list-entries
                            in-dict pron)
-                     :test #'string= :key #'item-form))))
+                     :test #'string=
+                     :key #'hachee.kkc.impl.markov.in-dict:entry-form))))
     (remove-if #'in-dict-contains-p (list-items source))))
 
 (defun build (source in-dict in-dict-prob char-based-cost-fn)
