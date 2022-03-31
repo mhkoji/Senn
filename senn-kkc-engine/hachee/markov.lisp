@@ -16,7 +16,8 @@
 (defvar *kkc*)
 
 (defun set-kkc (&optional (dir "~/senn-data/"))
-  (setq *kkc* (hachee.kkc.impl.markov.read:read-kkc-dir dir)))
+  (setq *kkc* (hachee.kkc.impl.markov.read:read-kkc-dir dir))
+  (values))
 
 (defun main ()
   (ignore-errors
