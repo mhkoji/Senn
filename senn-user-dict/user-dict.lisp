@@ -9,7 +9,7 @@
 (in-package :senn-user-dict)
 
 (defun user-dict-pathname ()
-  (merge-pathnames ".senn/user-dict.tsv"
+  (merge-pathnames ".senn/user-dict.txt"
                    (user-homedir-pathname)))
 
 ;;;
@@ -24,7 +24,7 @@
       (loop for line = (read-line stream nil nil) while line do
         (when (and (string/= line "")
                    (char/= (char line 0) #\#))
-          (let ((cols (cl-ppcre:split "\\t" line)))
+          (let ((cols (cl-ppcre:split " " line)))
             (when (= (length cols) 2)
               (destructuring-bind (form pron) cols
                 (setf (gethash form hash) pron)))))))
