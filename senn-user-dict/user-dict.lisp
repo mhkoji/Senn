@@ -1,12 +1,18 @@
-(defpackage :senn-kkc-engine.hachee.user-dict
+(defpackage :senn-user-dict
   (:use :cl)
-  (:export :entry-form
+  (:export :dict
+           :entry-form
            :entry-pron
            :entry
            :dict-entries
-           :dict
            :read-file))
-(in-package :senn-kkc-engine.hachee.user-dict)
+(in-package :senn-user-dict)
+
+(defun user-dict-pathname ()
+  (merge-pathnames ".senn/user-dict.txt"
+                   (user-homedir-pathname)))
+
+;;;
 
 (defstruct entry form pron)
 
@@ -18,7 +24,7 @@
       (loop for line = (read-line stream nil nil) while line do
         (when (and (string/= line "")
                    (char/= (char line 0) #\#))
-          (let ((cols (cl-ppcre:split "\\t" line)))
+          (let ((cols (cl-ppcre:split " " line)))
             (when (= (length cols) 2)
               (destructuring-bind (form pron) cols
                 (setf (gethash form hash) pron)))))))
@@ -29,6 +35,7 @@
                hash)
       (make-dict :entries entries))))
 
-(defun read-file (path)
-  (when (uiop/filesystem:file-exists-p path)
-    (read-file-internal path)))
+(defun read-file ()
+  (let ((path (user-dict-pathname)))
+    (when (uiop/filesystem:file-exists-p path)
+      (read-file-internal path))))

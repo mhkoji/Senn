@@ -7,7 +7,6 @@
    (:file "im/process-input")
    (:file "im/select-candidate")
    (:file "stateful-ime")
-   (:file "stateful-ime-engine")
    (:file "server"))
   :depends-on (:babel
                :jsown

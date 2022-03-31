@@ -4,20 +4,34 @@
            :unix-run-engine))
 (in-package :senn.bin.fcitx-server)
 
+(defun make-hachee-ime (kkc-impl)
+  (senn.fcitx.stateful-ime:make-ime
+   :kkc-store (senn.im.kkc-store.hachee:make-store kkc-impl)
+   :predictor (make-instance 'senn.im.predict.katakana:predictor)))
+
+(defmacro with-engine-ime ((ime runner) &body body)
+  `(let ((store (senn.im.kkc-store.engine:make-store-and-run ,runner)))
+    (unwind-protect
+         (let ((,ime (senn.fcitx.stateful-ime:make-ime
+                      :kkc-store store
+                      :predictor (make-instance
+                                  'senn.im.predict.katakana:predictor))))
+           ,@body)
+      (senn.im.kkc-store.engine:close-store store))))
+
+(defun ime-client-loop (client ime)
+  (labels ((handle (req)
+             (senn.fcitx.server:handle-request ime req)))
+    (senn.server:client-loop client :handle-fn #'handle)))
+
 (defun unix-run (kkc)
   (senn.server.unix:start-server
    (lambda (client)
-     (let ((ime (senn.fcitx.stateful-ime-hachee:make-ime kkc)))
-       (labels ((handle (req)
-                  (senn.fcitx.server:handle-request ime req)))
-         (senn.server:client-loop client :handle-fn #'handle))))))
+     (let ((ime (make-hachee-ime kkc)))
+       (ime-client-loop client ime)))))
 
 (defun unix-run-engine (runner)
   (senn.server.unix:start-server
    (lambda (client)
-     (let ((ime (senn.fcitx.stateful-ime-engine:make-ime runner)))
-       (unwind-protect
-            (labels ((handle (req)
-                       (senn.fcitx.server:handle-request ime req)))
-              (senn.server:client-loop client :handle-fn #'handle))
-         (senn.fcitx.stateful-ime-engine:close-ime ime))))))
+     (with-engine-ime (ime runner)
+       (ime-client-loop client ime)))))

@@ -191,7 +191,7 @@
                       :committed-input "　"))))))
 
 (defmacro convert-and-char-then-commit (&key test)
-  `(let ((ime (senn.fcitx.stateful-ime:make-ime :kkc 'kkc)))
+  `(let ((ime (senn.fcitx.stateful-ime:make-ime :kkc-store 'kkc)))
      (senn.fcitx.stateful-ime:process-input
       ime (senn.fcitx.keys:make-key :sym 97 :state 0))
      (senn.fcitx.stateful-ime:process-input
@@ -204,7 +204,7 @@
                                    :committed-input "亜"))))))
 
 (defmacro convert-and-backspace-then-inputting (&key test)
-  `(let ((ime (senn.fcitx.stateful-ime:make-ime :kkc 'kkc)))
+  `(let ((ime (senn.fcitx.stateful-ime:make-ime :kkc-store 'kkc)))
      (senn.fcitx.stateful-ime:process-input
       ime (senn.fcitx.keys:make-key :sym 97 :state 0))
      (senn.fcitx.stateful-ime:process-input

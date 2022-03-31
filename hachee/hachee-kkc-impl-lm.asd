@@ -4,6 +4,7 @@
   :components
   ((:file "unit")
    (:file "dictionary")
+   (:file "ex-dict-builder")
    (:file "build/file")
    (:file "build/build")
    (:file "persist")
