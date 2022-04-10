@@ -53,7 +53,7 @@
   (with-accessors ((input-mode state-input-mode)
                    (fcitx-state state-fcitx-state)) (ime-state ime)
     (if (eq input-mode :hiragana)
-        (destructuring-bind (resp &key state)
+        (destructuring-bind (resp state)
             (senn.fcitx.im:select-candidate fcitx-state index)
           (when state
             (setf fcitx-state state))
