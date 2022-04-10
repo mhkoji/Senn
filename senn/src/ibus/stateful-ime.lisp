@@ -66,6 +66,9 @@
 
 ;;;
 
+(defmethod senn.fcitx.im:ime-kkc ((ime ime))
+  (ime-kkc ime))
+
 (defmethod senn.fcitx.im:ime-max-candidate-count ((ime ime))
   ;; An error occurs if the candidate count >= 16.
   15)
