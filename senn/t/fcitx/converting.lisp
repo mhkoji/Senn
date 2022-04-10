@@ -1,6 +1,6 @@
-(defpackage :senn.t.scenario.fcitx.converting
+(defpackage :senn.t.fcitx.converting
   (:use :cl))
-(in-package :senn.t.scenario.fcitx.converting)
+(in-package :senn.t.fcitx.converting)
 
 (defun resp= (expected consumed-p view)
   (destructuring-bind (consumed-p-expected view-expected)
@@ -242,7 +242,7 @@
                 :cursor-form-candidates nil
                 :cursor-form-candidate-index 0)))))
 
-(senn.t.scenario.fcitx:add-tests
+(senn.t.fcitx:add-tests
  :converting
  space-then-convert
  convert-adds-latin-n-to-make-hiragana-letter-n

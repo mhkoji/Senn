@@ -1,7 +1,7 @@
-(defpackage :senn.t.scenario.win
+(defpackage :senn.t.win
   (:use :cl)
   (:export :run))
-(in-package :senn.t.scenario.win)
+(in-package :senn.t.win)
 
 (defmethod senn.im.kkc:convert ((kkc (eql 'static-kkc)) (pron string)
                                 &key 1st-boundary-index)
@@ -83,10 +83,10 @@
 
 
 (defun run ()
-  (fiveam:run! :senn.t.scenario.win))
+  (fiveam:run! :senn.t.win))
 
-(fiveam:def-suite :senn.t.scenario.win)
-(fiveam:in-suite* :senn.t.scenario.win)
+(fiveam:def-suite :senn.t.win)
+(fiveam:in-suite* :senn.t.win)
 
 (fiveam:test test-convert
   (test-convert :test fiveam:is))

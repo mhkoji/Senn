@@ -1,11 +1,11 @@
 (asdf:defsystem :senn-fcitx-test
   :serial t
-  :pathname "t"
+  :pathname "t/fcitx/"
   :components
-  ((:file "scenario/fcitx/fcitx")
-   (:file "scenario/fcitx/inputting")
-   (:file "scenario/fcitx/converting")
-   (:file "scenario/fcitx/hachee"))
+  ((:file "fcitx")
+   (:file "inputting")
+   (:file "converting")
+   (:file "hachee"))
 
   :depends-on (:senn-bin-fcitx-server
                :fiveam))

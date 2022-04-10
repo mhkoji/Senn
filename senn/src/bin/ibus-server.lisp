@@ -14,7 +14,7 @@
                :engine-store
                (senn.im.kkc.engine:make-engine-store
                 :engine (senn.im.kkc.engine:run-engine ,runner)
-                :engine-runner engine-runner))))
+                :engine-runner ,runner))))
      (unwind-protect
           (let ((,ime (senn.ibus.stateful-ime:make-ime :kkc kkc)))
             ,@body)
