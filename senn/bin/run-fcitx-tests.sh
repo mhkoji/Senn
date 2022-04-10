@@ -1,6 +1,6 @@
 #!/bin/bash
 
-rm -rf ./coverage && \
+rm -rf ./coverage-fcitx && \
 ros run \
     -e "(require :sb-cover)" \
     -e "(declaim (optimize sb-cover:store-coverage-data))" \
@@ -8,5 +8,5 @@ ros run \
     -e "(asdf:oos 'asdf:load-op :senn-fcitx :force t)" \
     -e "(asdf:oos 'asdf:load-op :senn-fcitx-test :force t)" \
     -e "(senn.t.fcitx:run)" \
-    -e "(sb-cover:report \"coverage/\")" \
+    -e "(sb-cover:report \"coverage-fcitx/\")" \
     -q
