@@ -1,12 +1,12 @@
 (defpackage :senn.fcitx.im.select-candidate
-  (:use :cl :senn.fcitx.im)
+  (:use :cl :senn.fcitx.im.view)
   (:export :execute))
 (in-package :senn.fcitx.im.select-candidate)
 
 (defgeneric execute (state index))
 
 (defun resp (consumed-p view &key state)
-  (list consumed-p view :state state))
+  (list (list consumed-p view) state))
 
 (defmethod execute ((s t) index)
   (resp nil nil))
