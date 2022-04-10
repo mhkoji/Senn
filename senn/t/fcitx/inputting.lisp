@@ -1,6 +1,6 @@
-(defpackage :senn.t.scenario.fcitx.inputting
+(defpackage :senn.t.fcitx.inputting
   (:use :cl))
-(in-package :senn.t.scenario.fcitx.inputting)
+(in-package :senn.t.fcitx.inputting)
 
 (defmethod senn.im.kkc:convert ((kkc (eql 'kkc)) (pron string)
                                 &key 1st-boundary-index)
@@ -345,7 +345,7 @@
                              :prediction-index 0
                              :committed-input "")))))
 
-(senn.t.scenario.fcitx:add-tests
+(senn.t.fcitx:add-tests
  :inputting
  buffer-cursor-goes-around-in-the-buffer
  buffer-cursor-does-not-go-beyond-the-left-end

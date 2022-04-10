@@ -2,7 +2,7 @@
   :serial t
   :pathname "t/"
   :components
-  ((:file "scenario/win"))
+  ((:file "win"))
 
   :depends-on (:senn-bin-win-server
                :fiveam))

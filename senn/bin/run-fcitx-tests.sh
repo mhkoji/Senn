@@ -7,6 +7,6 @@ ros run \
     -e "(asdf:oos 'asdf:load-op :senn :force t)" \
     -e "(asdf:oos 'asdf:load-op :senn-fcitx :force t)" \
     -e "(asdf:oos 'asdf:load-op :senn-fcitx-test :force t)" \
-    -e "(senn.t.scenario.fcitx:run)" \
+    -e "(senn.t.fcitx:run)" \
     -e "(sb-cover:report \"coverage/\")" \
     -q

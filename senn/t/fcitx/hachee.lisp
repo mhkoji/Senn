@@ -1,6 +1,6 @@
-(defpackage :senn.t.scenario.fcitx.hachee
+(defpackage :senn.t.fcitx.hachee
   (:use :cl))
-(in-package :senn.t.scenario.fcitx.hachee)
+(in-package :senn.t.fcitx.hachee)
 
 (defun converting-state-segment-strings (state)
   (mapcar (lambda (seg)
@@ -20,6 +20,6 @@
         (senn.im.converting:convert ime "とうきょうにいきました"))
       '("東京/とうきょう" "に/に" "行/い" "き/き" "ま/ま" "し/し" "た/た")))))
 
-(senn.t.scenario.fcitx:add-tests
+(senn.t.fcitx:add-tests
  :hachee
  hachee-convert)
