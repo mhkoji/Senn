@@ -22,14 +22,14 @@
 
 (defun process-input (ime key)
   (destructuring-bind (resp state)
-      (senn.fcitx.im.process-input:execute (ime-state ime) key ime)
+      (senn.fcitx.im:process-input ime (ime-state ime) key)
     (when state
       (setf (ime-state ime) state))
     resp))
 
 (defun select-candidate (ime index)
   (destructuring-bind (resp state)
-      (senn.fcitx.im.select-candidate:execute (ime-state ime) index)
+      (senn.fcitx.im:select-candidate (ime-state ime) index)
     (when state
       (setf (ime-state ime) state))
     resp))
