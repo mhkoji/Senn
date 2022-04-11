@@ -20,6 +20,14 @@
     :initform nil
     :reader ime-predictor)))
 
+(defmethod senn.fcitx.im:ime-kkc ((ime ime))
+  (senn.im.kkc-store:get-kkc (ime-kkc-store ime)))
+
+(defmethod senn.fcitx.im:ime-predictor ((ime ime))
+  (ime-predictor ime))
+
+;;;
+
 (defun process-input (ime key)
   (destructuring-bind (resp state)
       (senn.fcitx.im:process-input ime (ime-state ime) key)
@@ -43,12 +51,6 @@
   (values))
 
 ;;;
-
-(defmethod senn.fcitx.im:ime-kkc ((ime ime))
-  (senn.im.kkc-store:get-kkc (slot-value ime 'kkc-store)))
-
-(defmethod senn.fcitx.im:ime-predictor ((ime ime))
-  (slot-value ime 'predictor))
 
 (defun make-ime (&key kkc-store predictor)
   (make-instance 'ime
