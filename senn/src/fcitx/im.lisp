@@ -9,8 +9,7 @@
            :make-initial-state))
 (in-package :senn.fcitx.im)
 
-(defclass ime (senn.im.inputting:ime
-               senn.im.converting:ime)
+(defclass ime (senn.fcitx.im.process-input:mixin)
   ())
 
 (defgeneric ime-max-candidate-count (ime)
