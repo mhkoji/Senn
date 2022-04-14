@@ -1,12 +1,14 @@
 (defpackage :senn-kkc-engine.hachee.user-dict
   (:use :cl)
-  (:export :init
+  (:export :with-library-loaded
            :dict
            :entry-form
            :entry-pron
            :entry
            :dict-entries
            :read-file)
+  (:import-from :senn-kkc-engine.hachee.user-dict.cffi
+                :with-library-loaded)
   (:local-nicknames (:user-dict.cffi :senn-kkc-engine.hachee.user-dict.cffi)))
 (in-package :senn-kkc-engine.hachee.user-dict)
 
@@ -41,6 +43,3 @@
   (let ((path (user-dict-pathname)))
     (when (uiop/filesystem:file-exists-p path)
       (read-file-internal path))))
-
-(defun init ()
-  (user-dict.cffi:load-shared-library))

@@ -34,8 +34,11 @@
 
 (defun main ()
   (ignore-errors
-    (user-dict:init)
-    (kkc-apply-user-dict *kkc*))
+   (let ((cffi:*foreign-library-directories*
+          (list "/usr/lib/senn/fcitx/kkc/"    ;; for fcitx
+                "/usr/lib/senn/ibus/kkc/")))  ;; for ibus
+     (user-dict:with-library-loaded
+       (kkc-apply-user-dict *kkc*))))
   (senn-kkc-engine.hachee.engine:run *kkc*
                                      *standard-input*
                                      *standard-output*))

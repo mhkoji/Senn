@@ -12,10 +12,10 @@ set(CMAKE_SHARED_LINKER_FLAGS "-Wl,--as-needed ${CMAKE_SHARED_LINKER_FLAGS}")
 set(CMAKE_MODULE_LINKER_FLAGS "-Wl,--as-needed ${CMAKE_MODULE_LINKER_FLAGS}")
 
 set(SENN_CPP_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../src-cpp)
-set(SENN_INSTALL_DIR /usr/lib/senn)
+set(FCITX_SENN_INSTALL_DIR /usr/lib/senn/fcitx)
 
 ## Without this, CMake sets runtime path of the shared object to "".
-set(CMAKE_INSTALL_RPATH ${SENN_INSTALL_DIR}/fcitx/ecl/lib/)
+set(CMAKE_INSTALL_RPATH ${FCITX_SENN_INSTALL_DIR}/ecl/lib/)
 
 include_directories(
   ${FCITX4_FCITX_INCLUDE_DIRS}
@@ -25,7 +25,7 @@ include_directories(
   ${SENN_CPP_DIR}
   )
 
-## fcitx-senn.so
+### fcitx-senn.so
 fcitx_add_addon_full(senn
   SOURCES fcitx_senn.cpp
           ${SENN_CPP_DIR}/fcitx/im/stateful_ime_proxy.cpp
@@ -34,14 +34,14 @@ fcitx_add_addon_full(senn
             ${CMAKE_CURRENT_SOURCE_DIR}/dep-ecl/senn-lib-fcitx--all-systems.a
   IM_CONFIG senn.conf)
 
-## libuserdict.so
+### libuserdict.so
 add_library(userdict SHARED
-  ${SENN_CPP_DIR}/user-dict/user_dict.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/../../../senn-kkc-engine/hachee/src-cpp/user_dict.cpp
 )
 
-### Configs for installation
+## Configs for installation
 
-## This fcitx-senn.png is displayed in the tray as the senn icon.
+### This fcitx-senn.png is displayed in the tray as the senn icon.
 install(
   FILES ../../icon/senn.png
   DESTINATION share/icons/hicolor/48x48/apps
@@ -53,28 +53,32 @@ install(
 
 install(
   PROGRAMS /usr/lib/senn/fcitx/ecl/lib/libecl.so.21.2.1
-  DESTINATION ${SENN_INSTALL_DIR}/fcitx/ecl/lib/
+  DESTINATION ${FCITX_SENN_INSTALL_DIR}/ecl/lib/
   ## CMake adds this file to the dependencies of the shared object.
   RENAME libecl.so.21.2)
 
 install(
   DIRECTORY /usr/lib/senn/fcitx/ecl/lib/ecl-21.2.1
-  DESTINATION ${SENN_INSTALL_DIR}/fcitx/ecl/lib/)
+  DESTINATION ${FCITX_SENN_INSTALL_DIR}/ecl/lib/)
+
+### kkc
 
 install(
   # https://bugs.launchpad.net/sbcl/+bug/310108
   # FILES is used instead of PROGRAMS because install with PROGRAMS strips the core of kkc-engine built by sbcl.
   # As a result, kkc-engine is not executable, so make it executable by postinst.
   FILES ${CMAKE_CURRENT_SOURCE_DIR}/dep-kkc/kkc-engine
-  DESTINATION ${SENN_INSTALL_DIR}/fcitx)
+  DESTINATION ${FCITX_SENN_INSTALL_DIR}/kkc/
+  RENAME engine)
 
 install(
   TARGETS userdict
-  LIBRARY DESTINATION ${SENN_INSTALL_DIR}/)
+  LIBRARY
+  DESTINATION ${FCITX_SENN_INSTALL_DIR}/kkc/)
 
 # install(
 #   PROGRAMS ${CMAKE_CURRENT_SOURCE_DIR}/dep-menu/menu-about
 #   RENAME menu-about
 #   CONFIGURATIONS Release
-#   RUNTIME DESTINATION ${SENN_INSTALL_DIR}/fcitx)
+#   RUNTIME DESTINATION ${FCITX_SENN_INSTALL_DIR})
 

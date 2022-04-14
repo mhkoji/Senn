@@ -1,6 +1,6 @@
 (defpackage :senn-kkc-engine.hachee.user-dict.cffi
   (:use :cl)
-  (:export :load-shared-library
+  (:export :with-library-loaded
            :user-dict-load
            :user-dict-destroy
            :user-dict-count
@@ -9,11 +9,10 @@
            :entry-pron))
 (in-package :senn-kkc-engine.hachee.user-dict.cffi)
 
-(cffi:define-foreign-library user-dict
-  (:unix "/usr/lib/senn/libuserdict.so"))
-
-(defun load-shared-library ()
-  (cffi:use-foreign-library user-dict))
+(defmacro with-library-loaded (&body body)
+  `(let ((handle (cffi:load-foreign-library "libuserdict.so")))
+     (unwind-protect (progn ,@body)
+       (cffi:close-foreign-library handle))))
 
 (cffi:defcfun ("user_dict_load" user-dict-load) :pointer
   (path :string))
