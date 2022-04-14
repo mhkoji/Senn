@@ -34,7 +34,8 @@
 
 (defun main ()
   (ignore-errors
-   (kkc-apply-user-dict *kkc*))
+    (user-dict:init)
+    (kkc-apply-user-dict *kkc*))
   (senn-kkc-engine.hachee.engine:run *kkc*
                                      *standard-input*
                                      *standard-output*))

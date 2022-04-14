@@ -12,10 +12,10 @@ set(CMAKE_SHARED_LINKER_FLAGS "-Wl,--as-needed ${CMAKE_SHARED_LINKER_FLAGS}")
 set(CMAKE_MODULE_LINKER_FLAGS "-Wl,--as-needed ${CMAKE_MODULE_LINKER_FLAGS}")
 
 set(SENN_CPP_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../src-cpp)
-set(FCITX_SENN_INSTALL_DIR /usr/lib/senn/fcitx)
+set(SENN_INSTALL_DIR /usr/lib/senn)
 
 ## Without this, CMake sets runtime path of the shared object to "".
-set(CMAKE_INSTALL_RPATH ${FCITX_SENN_INSTALL_DIR}/ecl/lib/)
+set(CMAKE_INSTALL_RPATH ${SENN_INSTALL_DIR}/fcitx/ecl/lib/)
 
 include_directories(
   ${FCITX4_FCITX_INCLUDE_DIRS}
@@ -25,7 +25,7 @@ include_directories(
   ${SENN_CPP_DIR}
   )
 
-## A macro to build the shared object library easily.
+## fcitx-senn.so
 fcitx_add_addon_full(senn
   SOURCES fcitx_senn.cpp
           ${SENN_CPP_DIR}/fcitx/im/stateful_ime_proxy.cpp
@@ -33,6 +33,13 @@ fcitx_add_addon_full(senn
   LINK_LIBS /usr/lib/senn/fcitx/ecl/lib/libecl.so
             ${CMAKE_CURRENT_SOURCE_DIR}/dep-ecl/senn-lib-fcitx--all-systems.a
   IM_CONFIG senn.conf)
+
+## libuserdict.so
+add_library(userdict SHARED
+  ${SENN_CPP_DIR}/user-dict/user_dict.cpp
+)
+
+### Configs for installation
 
 ## This fcitx-senn.png is displayed in the tray as the senn icon.
 install(
@@ -46,24 +53,28 @@ install(
 
 install(
   PROGRAMS /usr/lib/senn/fcitx/ecl/lib/libecl.so.21.2.1
-  DESTINATION ${FCITX_SENN_INSTALL_DIR}/ecl/lib/
+  DESTINATION ${SENN_INSTALL_DIR}/fcitx/ecl/lib/
   ## CMake adds this file to the dependencies of the shared object.
   RENAME libecl.so.21.2)
 
 install(
   DIRECTORY /usr/lib/senn/fcitx/ecl/lib/ecl-21.2.1
-  DESTINATION ${FCITX_SENN_INSTALL_DIR}/ecl/lib/)
+  DESTINATION ${SENN_INSTALL_DIR}/fcitx/ecl/lib/)
 
 install(
   # https://bugs.launchpad.net/sbcl/+bug/310108
   # FILES is used instead of PROGRAMS because install with PROGRAMS strips the core of kkc-engine built by sbcl.
   # As a result, kkc-engine is not executable, so make it executable by postinst.
   FILES ${CMAKE_CURRENT_SOURCE_DIR}/dep-kkc/kkc-engine
-  DESTINATION ${FCITX_SENN_INSTALL_DIR})
+  DESTINATION ${SENN_INSTALL_DIR}/fcitx)
+
+install(
+  TARGETS userdict
+  LIBRARY DESTINATION ${SENN_INSTALL_DIR}/)
 
 # install(
 #   PROGRAMS ${CMAKE_CURRENT_SOURCE_DIR}/dep-menu/menu-about
 #   RENAME menu-about
 #   CONFIGURATIONS Release
-#   RUNTIME DESTINATION ${FCITX_SENN_INSTALL_DIR})
+#   RUNTIME DESTINATION ${SENN_INSTALL_DIR}/fcitx)
 

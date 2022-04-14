@@ -1,6 +1,7 @@
 (defpackage :senn-kkc-engine.hachee.user-dict.cffi
   (:use :cl)
-  (:export :user-dict-load
+  (:export :load-shared-library
+           :user-dict-load
            :user-dict-destroy
            :user-dict-count
            :user-dict-entry
@@ -9,9 +10,10 @@
 (in-package :senn-kkc-engine.hachee.user-dict.cffi)
 
 (cffi:define-foreign-library user-dict
-  (:unix "user_dict.so"))
+  (:unix "/usr/lib/senn/libuserdict.so"))
 
-(cffi:use-foreign-library user-dict)
+(defun load-shared-library ()
+  (cffi:use-foreign-library user-dict))
 
 (cffi:defcfun ("user_dict_load" user-dict-load) :pointer
   (path :string))
