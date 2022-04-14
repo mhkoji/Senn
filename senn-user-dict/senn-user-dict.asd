@@ -1,5 +1,7 @@
 (asdf:defsystem :senn-user-dict
   :serial t
+  :pathname "src/"
   :components
-  ((:file "user-dict"))
-  :depends-on (:cl-ppcre))
+  ((:file "cffi")
+   (:file "user-dict"))
+  :depends-on (:cffi))
