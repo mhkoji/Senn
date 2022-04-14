@@ -1,4 +1,4 @@
-(defpackage :senn-user-dict.cffi
+(defpackage :senn-kkc-engine.hachee.user-dict.cffi
   (:use :cl)
   (:export :user-dict-load
            :user-dict-destroy
@@ -6,7 +6,7 @@
            :user-dict-entry
            :entry-form
            :entry-pron))
-(in-package :senn-user-dict.cffi)
+(in-package :senn-kkc-engine.hachee.user-dict.cffi)
 
 (cffi:define-foreign-library user-dict
   (:unix "user_dict.so"))

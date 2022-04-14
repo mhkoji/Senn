@@ -1,6 +1,6 @@
-(asdf:defsystem :senn-user-dict
+(asdf:defsystem :senn-kkc-engine-hachee-user-dict
   :serial t
-  :pathname "src/"
+  :pathname "src/user-dict/"
   :components
   ((:file "cffi")
    (:file "user-dict"))
