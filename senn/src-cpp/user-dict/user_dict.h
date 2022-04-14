@@ -1,3 +1,8 @@
+/*
+  TODO:
+    sennはuser-dictに依存していないため、
+    user-dictはsennが持つよりもkkc-engineが持つほうがよさそう。
+ */
 #ifndef __SENN_USER_DICT_H__
 #define __SENN_USER_DICT_H__
 
