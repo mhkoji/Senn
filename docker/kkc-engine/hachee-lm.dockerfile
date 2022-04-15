@@ -33,7 +33,7 @@ RUN sbcl \
       --eval '(push "/app/engine/" ql:*local-project-directories*)' \
       --eval '(push "/app/hachee/" ql:*local-project-directories*)' \
       --eval '(ql:quickload :senn-kkc-engine-hachee-lm)' \
-      --eval "(sb-ext:save-lisp-and-die \"/output/kkc-engine\" :toplevel #'senn-kkc-engine.hachee.lm:main :executable t)"
+      --eval "(sb-ext:save-lisp-and-die \"/output/kkc-engine\" :toplevel #'senn-kkc-engine.hachee.engine.lm:main :executable t)"
 
 COPY docker/script/copy-output.sh /app
 CMD ["/app/copy-output.sh"]

@@ -1,9 +1,10 @@
 (asdf:defsystem :senn-kkc-engine-hachee-markov
   :serial t
+  :pathname "src/engine/"
   :components
   ((:file "engine")
    (:file "markov"))
   :depends-on (:hachee-kkc-impl-markov
-               :senn-user-dict-markov
+               :senn-kkc-engine-hachee-user-dict
                :alexandria
                :jsown))

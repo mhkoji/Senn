@@ -1,7 +1,7 @@
-(defpackage :senn-kkc-engine.hachee.lm
+(defpackage :senn-kkc-engine.hachee.engine.lm
   (:use :cl)
   (:export :main))
-(in-package :senn-kkc-engine.hachee.lm)
+(in-package :senn-kkc-engine.hachee.engine.lm)
 
 (defun create-system-kkc ()
   (let ((corpus-pathnames
@@ -13,6 +13,6 @@
   (create-system-kkc))
 
 (defun main ()
-  (senn-kkc-engine.hachee:run *kkc*
-                              *standard-input*
-                              *standard-output*))
+  (senn-kkc-engine.hachee.engine:run *kkc*
+                                     *standard-input*
+                                     *standard-output*))

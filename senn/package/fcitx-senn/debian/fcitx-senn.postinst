@@ -2,4 +2,6 @@
 set -e
 
 # https://bugs.launchpad.net/sbcl/+bug/310108
-chmod +x /usr/lib/senn/fcitx/kkc-engine
+chmod +x /usr/lib/senn/fcitx/kkc/engine
+
+ln -s /usr/lib/senn/fcitx/kkc/engine /usr/lib/senn/fcitx/kkc-engine

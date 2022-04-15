@@ -25,7 +25,7 @@ include_directories(
   ${SENN_CPP_DIR}
   )
 
-## A macro to build the shared object library easily.
+### fcitx-senn.so
 fcitx_add_addon_full(senn
   SOURCES fcitx_senn.cpp
           ${SENN_CPP_DIR}/fcitx/im/stateful_ime_proxy.cpp
@@ -34,7 +34,24 @@ fcitx_add_addon_full(senn
             ${CMAKE_CURRENT_SOURCE_DIR}/dep-ecl/senn-lib-fcitx--all-systems.a
   IM_CONFIG senn.conf)
 
-## This fcitx-senn.png is displayed in the tray as the senn icon.
+### userdict-related objects
+
+add_executable(userdict_main
+  ${CMAKE_CURRENT_SOURCE_DIR}/../../../senn-kkc-engine/hachee/src-cpp/user_dict_main.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/../../../senn-kkc-engine/hachee/src-cpp/user_dict.cpp
+)
+set_target_properties(userdict_main
+  PROPERTIES OUTPUT_NAME userdict
+)
+
+#### libuserdict.so
+add_library(userdict SHARED
+  ${CMAKE_CURRENT_SOURCE_DIR}/../../../senn-kkc-engine/hachee/src-cpp/user_dict.cpp
+)
+
+## Configs for installation
+
+### This fcitx-senn.png is displayed in the tray as the senn icon.
 install(
   FILES ../../icon/senn.png
   DESTINATION share/icons/hicolor/48x48/apps
@@ -54,16 +71,28 @@ install(
   DIRECTORY /usr/lib/senn/fcitx/ecl/lib/ecl-21.2.1
   DESTINATION ${FCITX_SENN_INSTALL_DIR}/ecl/lib/)
 
+### kkc
+
 install(
   # https://bugs.launchpad.net/sbcl/+bug/310108
   # FILES is used instead of PROGRAMS because install with PROGRAMS strips the core of kkc-engine built by sbcl.
   # As a result, kkc-engine is not executable, so make it executable by postinst.
   FILES ${CMAKE_CURRENT_SOURCE_DIR}/dep-kkc/kkc-engine
-  DESTINATION ${FCITX_SENN_INSTALL_DIR})
+  DESTINATION ${FCITX_SENN_INSTALL_DIR}/kkc/
+  RENAME engine)
+
+install(
+  TARGETS userdict_main
+  RUNTIME
+  DESTINATION ${FCITX_SENN_INSTALL_DIR}/kkc/)
+
+install(
+  TARGETS userdict
+  LIBRARY
+  DESTINATION ${FCITX_SENN_INSTALL_DIR}/kkc/)
 
 # install(
 #   PROGRAMS ${CMAKE_CURRENT_SOURCE_DIR}/dep-menu/menu-about
 #   RENAME menu-about
 #   CONFIGURATIONS Release
 #   RUNTIME DESTINATION ${FCITX_SENN_INSTALL_DIR})
-

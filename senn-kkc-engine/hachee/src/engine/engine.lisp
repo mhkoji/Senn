@@ -1,7 +1,7 @@
-(defpackage :senn-kkc-engine.hachee
+(defpackage :senn-kkc-engine.hachee.engine
   (:use :cl)
   (:export :run))
-(in-package :senn-kkc-engine.hachee)
+(in-package :senn-kkc-engine.hachee.engine)
 
 (defstruct candidate
   form)

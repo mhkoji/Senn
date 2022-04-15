@@ -13,13 +13,15 @@ RUN mkdir -p \
     /output
 
 COPY senn /app/senn
-COPY --from=kkc-builder /output /app/senn/package/ibus-senn/dep-kkc
+COPY senn-kkc-engine/hachee/src-cpp /app/senn-kkc-engine/hachee/src-cpp
+COPY --from=kkc-builder /output/kkc-engine /app/senn/package/ibus-senn/kkc/engine
 COPY --from=ecl-builder /output /app/senn/package/ibus-senn/dep-ecl
 COPY --from=ecl-builder /usr/lib/senn/ibus/ /usr/lib/senn/ibus/
 
 RUN ln -s /usr/lib/senn/ibus/ecl/include/ecl /usr/local/include/ && \
     cd /app/senn/package/ibus-senn && \
     touch NEWS README AUTHORS ChangeLog && \
+    mkdir m4 && \
     autoreconf -i && \
     debuild -us -uc -b && \
     mv /app/senn/package/*.deb /output/

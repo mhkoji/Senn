@@ -1,5 +1,6 @@
 (asdf:defsystem :senn-kkc-engine-hachee-lm
   :serial t
+  :pathname "src/engine/"
   :components
   ((:file "engine")
    (:file "lm"))
