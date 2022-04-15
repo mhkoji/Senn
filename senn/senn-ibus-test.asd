@@ -2,8 +2,11 @@
   :serial t
   :pathname "t/"
   :components
-  ((:file "ibus/ibus")
+  ((:file "fcitx-util")
+   (:file "ibus/ibus")
    (:file "ibus/inputting")
-   (:file "ibus/converting"))
+   (:file "ibus/converting")
+   (:file "ibus/lib"))
   :depends-on (:senn-bin-ibus-server
+               :senn-lib-ibus
                :fiveam))
