@@ -14,11 +14,10 @@
                :kkc-store
                (senn.im.kkc-store.hachee:make-store
                 (senn.im.kkc.hachee:build-hachee-impl-lm-kkc)))))
-     (,test
-      (equal
-       (converting-state-segment-strings
-        (senn.im.converting:convert ime "とうきょうにいきました"))
-      '("東京/とうきょう" "に/に" "行/い" "き/き" "ま/ま" "し/し" "た/た")))))
+     (let ((state (senn.im.converting:convert ime "とうきょうにいきました")))
+       (,test (equal
+               (senn.t.fcitx-util:converting-state-segment-strings state)
+               '("東京/とうきょう" "に/に" "行/い" "き/き" "ま/ま" "し/し" "た/た"))))))
 
 (senn.t.fcitx:add-tests
  :hachee
