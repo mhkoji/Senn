@@ -7,7 +7,6 @@
    (:file "bin/fcitx-server"))
   :depends-on (:hachee-kkc-impl-lm
                :hachee-data
-               :senn-user-dict-lm
                :senn-fcitx
                :senn-server-unix
                :senn-server-tcp))
