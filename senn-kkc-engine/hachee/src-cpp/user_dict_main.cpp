@@ -7,7 +7,7 @@
 #include <pwd.h>
 
 
-// g++ list_entries.cpp user_dict.cpp -std=c++11
+// g++ user_dict_main.cpp user_dict.cpp -std=c++11
 // g++ -shared -fPIC user_dict.cpp -o user_dict.so -std=c++11
 int main(void) {
   std::string home_dir = std::string(getpwuid(getuid())->pw_dir);
@@ -18,9 +18,10 @@ int main(void) {
     return 0;
   }
 
+  std::cout << "form, pron" << std::endl;
   for (int i = 0; i < user_dict_count(ud); i++) {
     entry_t e = user_dict_entry(ud, i);
-    std::cout << entry_form(e) << " " << entry_pron(e) << std::endl;
+    std::cout << entry_form(e) << ", " << entry_pron(e) << std::endl;
   }
   user_dict_destroy(ud);
 

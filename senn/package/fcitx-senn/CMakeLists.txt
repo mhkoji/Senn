@@ -34,7 +34,17 @@ fcitx_add_addon_full(senn
             ${CMAKE_CURRENT_SOURCE_DIR}/dep-ecl/senn-lib-fcitx--all-systems.a
   IM_CONFIG senn.conf)
 
-### libuserdict.so
+### userdict-related objects
+
+add_executable(userdict_main
+  ${CMAKE_CURRENT_SOURCE_DIR}/../../../senn-kkc-engine/hachee/src-cpp/user_dict_main.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/../../../senn-kkc-engine/hachee/src-cpp/user_dict.cpp
+)
+set_target_properties(userdict_main
+  PROPERTIES OUTPUT_NAME userdict
+)
+
+#### libuserdict.so
 add_library(userdict SHARED
   ${CMAKE_CURRENT_SOURCE_DIR}/../../../senn-kkc-engine/hachee/src-cpp/user_dict.cpp
 )
@@ -72,6 +82,11 @@ install(
   RENAME engine)
 
 install(
+  TARGETS userdict_main
+  RUNTIME
+  DESTINATION ${FCITX_SENN_INSTALL_DIR}/kkc/)
+
+install(
   TARGETS userdict
   LIBRARY
   DESTINATION ${FCITX_SENN_INSTALL_DIR}/kkc/)
@@ -81,4 +96,3 @@ install(
 #   RENAME menu-about
 #   CONFIGURATIONS Release
 #   RUNTIME DESTINATION ${FCITX_SENN_INSTALL_DIR})
-
