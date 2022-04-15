@@ -2,7 +2,8 @@
   :serial t
   :pathname "src/"
   :components
-  ((:file "im/kkc/hachee")
+  ((:file "im/kkc/hachee/user-dict")
+   (:file "im/kkc/hachee")
    (:module :win
     :pathname "win"
     :components
