@@ -3,13 +3,16 @@
 
 AC_PREREQ([2.69])
 AC_INIT([ibus_senn], [0.0.6], [], [ibus-senn])
-AM_INIT_AUTOMAKE([1.10])
+AM_INIT_AUTOMAKE([1.10 subdir-objects])
 AC_CONFIG_SRCDIR([engine/main.cpp])
 AC_CONFIG_HEADERS([config.h])
+## libtoolize: Consider adding 'AC_CONFIG_MACRO_DIRS([m4])' to configure.ac,
+AC_CONFIG_MACRO_DIRS([m4])
 
 # Checks for programs.
 AC_PROG_CXX
 AC_PROG_INSTALL
+AC_PROG_LIBTOOL
 
 # Checks for libraries.
 m4_define([ibus_required_version], [1.5.0])
@@ -44,5 +47,6 @@ AC_TYPE_SIZE_T
 AC_CHECK_FUNCS([setenv])
 
 AC_CONFIG_FILES([Makefile
-                 engine/Makefile])
+                 engine/Makefile
+                 kkc/Makefile])
 AC_OUTPUT
