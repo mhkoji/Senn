@@ -2,7 +2,8 @@
   :serial t
   :pathname "t/"
   :components
-  ((:file "fcitx-util")
+  ((:file "base")
+   (:file "fcitx-util")
    (:file "ibus/ibus")
    (:file "ibus/inputting")
    (:file "ibus/converting")
