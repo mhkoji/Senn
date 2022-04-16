@@ -7,7 +7,8 @@
            :make-engine-store
            :kkc-rerun-engine
            :kkc
-           :close-kkc))
+           :close-kkc
+           :make-kkc-and-run))
 (in-package :senn.im.kkc.engine)
 
 (defstruct engine-runner
@@ -122,3 +123,12 @@
 
 (defun close-kkc (kkc)
   (kill-engine (engine-store-engine (engine-store kkc))))
+
+;;
+
+(defun make-kkc-and-run (runner)
+  (let ((initial-engine (run-engine runner)))
+    (let ((store (make-engine-store
+                  :engine initial-engine
+                  :engine-runner runner)))
+      (make-instance 'kkc :engine-store store))))

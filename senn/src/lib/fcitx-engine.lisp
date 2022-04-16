@@ -1,10 +1,10 @@
 (in-package :senn.lib.fcitx)
 
 (defun make-ime (engine-path)
-  (let ((runner (senn.im.kkc.engine:make-engine-runner
-                 :program engine-path)))
-    (let ((store (senn.im.kkc-store.engine:make-store-and-run runner)))
-      (senn.fcitx.stateful-ime:make-ime :kkc-store store))))
+  (let ((store (senn.im.kkc-store.engine:make-store-and-run
+                (senn.im.kkc.engine:make-engine-runner
+                 :program engine-path))))
+    (senn.fcitx.stateful-ime:make-ime :kkc-store store)))
 
 (defun close-ime (ime)
   (log:info "IME closing...")
