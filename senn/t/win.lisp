@@ -1,6 +1,5 @@
 (defpackage :senn.t.win
-  (:use :cl)
-  (:export :run))
+  (:use :cl))
 (in-package :senn.t.win)
 
 (defmethod senn.im.kkc:convert ((kkc (eql 'static-kkc)) (pron string)
@@ -82,11 +81,8 @@
       '("東京/とうきょう" "に/に" "行/い" "き/き" "ま/ま" "し/し" "た/た")))))
 
 
-(defun run ()
-  (fiveam:run! :senn.t.win))
-
-(fiveam:def-suite :senn.t.win)
-(fiveam:in-suite* :senn.t.win)
+(fiveam:def-suite :senn.t.win :in :senn.t)
+(fiveam:in-suite :senn.t.win)
 
 (fiveam:test test-convert
   (test-convert :test fiveam:is))
