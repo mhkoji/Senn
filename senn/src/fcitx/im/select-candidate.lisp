@@ -14,15 +14,16 @@
 (defmethod execute ((s senn.im.converting:state)
                     (index integer))
   (senn.im.converting:current-segment-candidates-set! s index)
-  (resp t (converting-view/converting-state s) :state s))
+  (resp t (converting/converting-state s) :state s))
 
 (defmethod execute ((s senn.im.inputting:state)
                     (index integer))
-  (let ((predictions (inputting-predictions s)))
+  (let ((predictions (senn.im.inputting:state-predictions s)))
     (if (< -1 index (length predictions))
-        (let* ((new-state (make-selecting-from-predictions
-                           :predictions predictions
-                           :current-index index))
-               (view (editing-view/selecting-from-predictions new-state)))
+        (let* ((new-state
+                (senn.fcitx.im.state:make-selecting-from-predictions
+                 :predictions predictions
+                 :current-index index))
+               (view (editing/selecting-from-predictions-state new-state)))
           (resp t view :state new-state))
         (resp nil nil))))
