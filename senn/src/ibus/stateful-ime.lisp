@@ -4,6 +4,7 @@
            :toggle-input-mode
            :select-candidate
            :reset-im
+           :ime-kkc
            :make-ime))
 (in-package :senn.ibus.stateful-ime)
 
