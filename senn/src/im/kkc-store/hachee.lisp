@@ -1,7 +1,7 @@
 (defpackage :senn.im.kkc-store.hachee
   (:use :cl)
   (:export :make-store)
-  (:local-nicknames (:user-dict :senn.im.kkc.hachee.user-dict)))
+  (:local-nicknames (:user-dict :senn.im.kkc-store.hachee.user-dict)))
 (in-package :senn.im.kkc-store.hachee)
 
 (defstruct (store (:constructor %make-store))
