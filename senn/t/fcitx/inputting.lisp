@@ -345,6 +345,18 @@
                              :prediction-index 0
                              :committed-input "")))))
 
+(defmacro select-candidate-from-prediction (&key test)
+  `(let ((ime (senn.fcitx.stateful-ime:make-ime :predictor 'predictor)))
+     (senn.fcitx.stateful-ime:process-input
+      ime (senn.fcitx.keys:make-key :sym (char-code #\a) :state 0))
+     (,test (resp=
+             (senn.fcitx.stateful-ime:select-candidate ime 0)
+             t (editing-view :cursor-pos 3
+                             :input "ア"
+                             :predictions '("ア" "あ")
+                             :prediction-index 0
+                             :committed-input "")))))
+
 (senn.t.fcitx:add-tests
  :inputting
  buffer-cursor-goes-around-in-the-buffer
@@ -366,4 +378,5 @@
  backspace-then-predictions
  prediction-and-enter-then-commit
  prediction-cursor-goes-around
- prediction-cursor-does-not-go-beyond-the-both-ends)
+ prediction-cursor-does-not-go-beyond-the-both-ends
+ select-candidate-from-prediction)

@@ -242,6 +242,23 @@
                 :cursor-form-candidates nil
                 :cursor-form-candidate-index 0)))))
 
+(defmacro select-candidate (&key test)
+  `(let ((ime (senn.fcitx.stateful-ime:make-ime :kkc-store 'static-kkc)))
+     (dolist (char '(#\k #\y #\o #\u #\h #\a))
+       (senn.fcitx.stateful-ime:process-input
+        ime (senn.fcitx.keys:make-key :sym (char-code char) :state 0)))
+     (senn.fcitx.stateful-ime:process-input
+      ime (senn.fcitx.keys:make-key :sym 32 :state 0))
+     (senn.fcitx.stateful-ime:process-input
+      ime (senn.fcitx.keys:make-key :sym 32 :state 0))
+     (,test (resp=
+             (senn.fcitx.stateful-ime:select-candidate ime 2)
+             t (converting-view
+                :forms '("強" "は")
+                :cursor-form-index 0
+                :cursor-form-candidates (list "きょう" "今日" "強")
+                :cursor-form-candidate-index 2)))))
+
 (senn.t.fcitx:add-tests
  :converting
  space-then-convert
@@ -250,4 +267,5 @@
  segment-cursor-does-not-go-beyond-the-both-ends
  space-multiple-times-then-more-candidates
  candidate-cursor-goes-around
- candidate-cursor-loops)
+ candidate-cursor-loops
+ select-candidate)
