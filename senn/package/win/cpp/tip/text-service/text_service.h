@@ -115,7 +115,7 @@ private:
   // Button to switch the current input mode.
   langbar::InputModeToggleButton *input_mode_toggle_button_;
 
-  senn::senn_win::ime::StatefulIME *ime_;
+  senn::win::im::StatefulIME *ime_;
 
   KeyEventHandler *key_event_handler_;
 

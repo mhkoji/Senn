@@ -4,8 +4,8 @@
 #include <vector>
 
 namespace senn {
-namespace senn_win {
-namespace ime {
+namespace win {
+namespace im {
 namespace views {
 
 struct Editing {
@@ -25,6 +25,6 @@ struct Committed {
 };
 
 } // namespace views
-} // namespace ime
-} // namespace senn_win
+} // namespace im
+} // namespace win
 } // namespace senn

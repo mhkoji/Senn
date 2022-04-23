@@ -4,8 +4,8 @@
 #include <functional>
 
 namespace senn {
-namespace senn_win {
-namespace ime {
+namespace win {
+namespace im {
 
 enum InputMode {
   kDirect,
@@ -29,6 +29,6 @@ public:
   virtual InputMode GetInputMode() = 0;
 };
 
-} // namespace ime
-} // namespace senn_win
+} // namespace im
+} // namespace win
 } // namespace senn

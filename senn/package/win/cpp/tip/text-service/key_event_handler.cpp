@@ -8,7 +8,7 @@ namespace senn_win {
 namespace text_service {
 
 EditSessionEditing::EditSessionEditing(
-    const senn::senn_win::ime::views::Editing &view, ITfContext *context,
+    const senn::win::im::views::Editing &view, ITfContext *context,
     TfGuidAtom display_attribute_atom, ITfCompositionSink *composition_sink,
     CompositionHolder *composition_holder)
     : view_(view), context_(context),
@@ -82,9 +82,9 @@ HRESULT __stdcall EditSessionEditing::DoEditSession(TfEditCookie ec) {
 }
 
 EditSessionConverting::EditSessionConverting(
-    ITfThreadMgr *thread_mgr,
-    const senn::senn_win::ime::views::Converting &view, ITfContext *context,
-    const DisplayAttributeAtoms *atoms, ITfComposition *composition)
+    ITfThreadMgr *thread_mgr, const senn::win::im::views::Converting &view,
+    ITfContext *context, const DisplayAttributeAtoms *atoms,
+    ITfComposition *composition)
     : thread_mgr_(thread_mgr), view_(view), context_(context), atoms_(atoms),
       composition_(composition) {
   context_->AddRef();
@@ -148,7 +148,7 @@ HRESULT __stdcall EditSessionConverting::DoEditSession(TfEditCookie ec) {
 }
 
 EditSessionCommitted::EditSessionCommitted(
-    const senn::senn_win::ime::views::Committed &view, ITfContext *context,
+    const senn::win::im::views::Committed &view, ITfContext *context,
     ITfCompositionSink *composition_sink, CompositionHolder *composition_holder)
     : view_(view), context_(context), composition_sink_(composition_sink),
       composition_holder_(composition_holder) {
@@ -201,8 +201,9 @@ HRESULT __stdcall MoveCandidateWindowToTextPositionEditSession::DoEditSession(
   return S_OK;
 }
 
-HRESULT KeyEventHandler::HandleIMEView(
-    ITfContext *context, const senn::senn_win::ime::views::Editing &view) {
+HRESULT
+KeyEventHandler::HandleIMEView(ITfContext *context,
+                               const senn::win::im::views::Editing &view) {
   ITfEditSession *edit_session =
       new EditSessionEditing(view, context, editing_display_attribute_atom_,
                              composition_sink_, &composition_holder_);
@@ -223,8 +224,9 @@ HRESULT KeyEventHandler::HandleIMEView(
                                      TF_ES_SYNC | TF_ES_READWRITE, &result);
 }
 
-HRESULT KeyEventHandler::HandleIMEView(
-    ITfContext *context, const senn::senn_win::ime::views::Converting &view) {
+HRESULT
+KeyEventHandler::HandleIMEView(ITfContext *context,
+                               const senn::win::im::views::Converting &view) {
   ITfEditSession *edit_session = new EditSessionConverting(
       thread_mgr_, view, context, converting_display_attribute_atoms_,
       composition_holder_.Get());
@@ -251,8 +253,9 @@ HRESULT KeyEventHandler::HandleIMEView(
   return S_OK;
 }
 
-HRESULT KeyEventHandler::HandleIMEView(
-    ITfContext *context, const senn::senn_win::ime::views::Committed &view) {
+HRESULT
+KeyEventHandler::HandleIMEView(ITfContext *context,
+                               const senn::win::im::views::Committed &view) {
   if (candidate_list_ui_) {
     delete candidate_list_state_;
     candidate_list_state_ = nullptr;
@@ -273,7 +276,7 @@ HRESULT KeyEventHandler::HandleIMEView(
 
 KeyEventHandler::KeyEventHandler(
     ITfThreadMgr *thread_mgr, TfClientId id, ITfCompositionSink *sink,
-    senn::senn_win::ime::StatefulIME *ime, TfGuidAtom atom_editing,
+    senn::win::im::StatefulIME *ime, TfGuidAtom atom_editing,
     EditSessionConverting::DisplayAttributeAtoms *atoms_converting,
     Handlers *handlers)
     : thread_mgr_(thread_mgr), client_id_(id), composition_sink_(sink),
@@ -343,13 +346,13 @@ HRESULT KeyEventHandler::OnKeyDown(ITfContext *context, WPARAM wParam,
   HRESULT result;
   *pfEaten = ime_->ProcessInput(
       wParam, key_state,
-      [&](const senn::senn_win::ime::views::Editing &view) {
+      [&](const senn::win::im::views::Editing &view) {
         result = HandleIMEView(context, view);
       },
-      [&](const senn::senn_win::ime::views::Converting &view) {
+      [&](const senn::win::im::views::Converting &view) {
         result = HandleIMEView(context, view);
       },
-      [&](const senn::senn_win::ime::views::Committed &view) {
+      [&](const senn::win::im::views::Committed &view) {
         result = HandleIMEView(context, view);
       });
   return result;
@@ -391,8 +394,7 @@ bool IsSameCandidateList(const std::vector<std::wstring> &c1,
 
 } // namespace
 
-void CandidateListState::Update(
-    const senn::senn_win::ime::views::Editing &view) {
+void CandidateListState::Update(const senn::win::im::views::Editing &view) {
   current_index_ = -1;
 
   if (!IsSameCandidateList(candidates_, view.predictions)) {
@@ -405,8 +407,7 @@ void CandidateListState::Update(
   }
 }
 
-void CandidateListState::Update(
-    const senn::senn_win::ime::views::Converting &view) {
+void CandidateListState::Update(const senn::win::im::views::Converting &view) {
   // Update candidate index
   current_index_ = view.cursor_form_candidate_index;
 

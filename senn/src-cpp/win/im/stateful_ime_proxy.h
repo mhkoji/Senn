@@ -6,8 +6,8 @@
 #include "stateful_ime.h"
 
 namespace senn {
-namespace senn_win {
-namespace ime {
+namespace win {
+namespace im {
 
 class Connection {
 public:
@@ -66,6 +66,6 @@ public:
                                           const std::string &port);
 };
 
-} // namespace ime
-} // namespace senn_win
+} // namespace im
+} // namespace win
 } // namespace senn
