@@ -175,6 +175,7 @@
     <ClInclude Include="win\registry.h" />
     <ClInclude Include="win\text-service\class_factory.h" />
     <ClInclude Include="win\text-service\registration.h" />
+    <ClInclude Include="..\..\..\src-cpp\win\im\stateful_ime_conn.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\src-cpp\win\im\stateful_ime_proxy.cpp" />
@@ -195,6 +196,7 @@
     <ClCompile Include="variable.cpp" />
     <ClCompile Include="win\registry.cpp" />
     <ClCompile Include="win\text-service\registration.cpp" />
+    <ClCompile Include="..\..\..\src-cpp\win\im\stateful_ime_conn.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

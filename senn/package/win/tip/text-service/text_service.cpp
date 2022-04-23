@@ -2,7 +2,7 @@
 #include "object_releaser.h"
 #include "ui.h"
 #include <cassert>
-#include <win/im/stateful_ime_proxy.h>
+#include <win/im/stateful_ime_conn.h>
 
 namespace senn {
 namespace senn_win {
@@ -65,8 +65,8 @@ HRESULT TextService::ActivateInternal(ITfThreadMgr *thread_mgr,
     }
 
     // Create a stateful IM to process user inputs of keys.
-    ime_ = senn::win::im::StatefulIMEProxy::CreateTCPPRoxy("localhost", "5678");
-    // senn::win::im::StatefulIMEProxy::CreateIPCPRoxy(kNamedPipePath);
+    ime_ = senn::win::im::StatefulIMEConn::TCP("localhost", "5678");
+    // senn::win::im::StatefulIMEConn::IPC(kNamedPipePath);
     if (ime_ == nullptr) {
       return E_FAIL;
     }

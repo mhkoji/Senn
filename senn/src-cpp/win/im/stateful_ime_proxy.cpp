@@ -1,70 +1,10 @@
-#include <sstream>
-#include <ws2tcpip.h>
-
 #include "stateful_ime_proxy.h"
 #include <picojson/picojson.h>
+#include <sstream>
 
 namespace senn {
 namespace win {
 namespace im {
-
-ConnectionIPC::ConnectionIPC(const HANDLE pipe) : pipe_(pipe) {}
-
-void ConnectionIPC::Close() { CloseHandle(pipe_); }
-
-bool ConnectionIPC::Write(const std::string &content) {
-  DWORD bytes_written;
-  return WriteFile(pipe_, content.c_str(), static_cast<DWORD>(content.size()),
-                   &bytes_written, NULL);
-}
-
-bool ConnectionIPC::ReadLine(std::string *output) {
-  char buf[1024] = {'\0'};
-
-  while (1) {
-    DWORD bytes_read;
-    if (!ReadFile(pipe_, buf, sizeof(buf), &bytes_read, NULL)) {
-      return false;
-    }
-
-    *output += std::string(buf, bytes_read);
-
-    if (buf[bytes_read - 1] == '\n') {
-      break;
-    }
-  }
-
-  return true;
-}
-
-ConnectionTCP::ConnectionTCP(SOCKET socket) : socket_(socket) {}
-
-void ConnectionTCP::Close() { closesocket(socket_); }
-
-bool ConnectionTCP::Write(const std::string &content) {
-  const std::string data = content + "\n"; // Needs newline
-  return send(socket_, data.c_str(), static_cast<int>(data.size()), 0) !=
-         SOCKET_ERROR;
-}
-
-bool ConnectionTCP::ReadLine(std::string *output) {
-  char buf[1024] = {'\0'};
-
-  while (1) {
-    int bytes_read = recv(socket_, buf, sizeof(buf), 0);
-    if (bytes_read < 0) {
-      return false;
-    }
-
-    *output += std::string(buf, bytes_read);
-
-    if (buf[bytes_read - 1] == '\n') {
-      break;
-    }
-  }
-
-  return true;
-}
 
 namespace {
 
@@ -79,6 +19,12 @@ int ToWString(const std::string &char_string, std::wstring *output) {
 
 } // namespace
 
+StatefulIMEProxy::StatefulIMEProxy(
+    std::unique_ptr<senn::RequesterInterface> requester)
+    : requester_(std::move(requester)) {}
+
+StatefulIMEProxy::~StatefulIMEProxy() { requester_.reset(); }
+
 void StatefulIMEProxy::ToggleInputMode() {
   std::string response;
   {
@@ -86,12 +32,7 @@ void StatefulIMEProxy::ToggleInputMode() {
     ss << "{"
        << "\"op\": \"toggle-input-mode\""
        << "}";
-    if (!conn_->Write(ss.str())) {
-      return;
-    }
-    if (!conn_->ReadLine(&response)) {
-      return;
-    }
+    requester_->Request(ss.str(), &response);
   }
   // It seems to need to consume output buffer...
   std::istringstream iss(response);
@@ -106,12 +47,7 @@ InputMode StatefulIMEProxy::GetInputMode() {
     ss << "{"
        << "\"op\": \"get-input-mode\""
        << "}";
-    if (!conn_->Write(ss.str())) {
-      return kUnknown;
-    }
-    if (!conn_->ReadLine(&response)) {
-      return kUnknown;
-    }
+    requester_->Request(ss.str(), &response);
   }
 
   std::istringstream iss(response);
@@ -136,12 +72,7 @@ bool StatefulIMEProxy::CanProcess(uint64_t keycode) {
        << "\"args\": {"
        << "\"keycode\": " << keycode << "}"
        << "}";
-    if (!conn_->Write(ss.str())) {
-      return false;
-    }
-    if (!conn_->ReadLine(&response)) {
-      return false;
-    }
+    requester_->Request(ss.str(), &response);
   }
 
   std::istringstream iss(response);
@@ -164,12 +95,7 @@ bool StatefulIMEProxy::ProcessInput(
        << "\"keycode\": " << keycode << ","
        << "\"shift\": " << (modifiers[VK_SHIFT] ? "true" : "false") << "}"
        << "}";
-    if (!conn_->Write(ss.str())) {
-      return false;
-    }
-    if (!conn_->ReadLine(&response)) {
-      return false;
-    }
+    requester_->Request(ss.str(), &response);
   }
 
   std::istringstream iss(response);
@@ -265,50 +191,6 @@ bool StatefulIMEProxy::ProcessInput(
 
   return eaten;
 };
-
-StatefulIMEProxy::StatefulIMEProxy(Connection *conn) : conn_(conn) {}
-
-StatefulIMEProxy::~StatefulIMEProxy() { conn_->Close(); }
-
-StatefulIMEProxy *
-StatefulIMEProxy::CreateIPCPRoxy(const WCHAR *const named_pipe_path) {
-  HANDLE pipe = CreateFile(named_pipe_path, GENERIC_READ | GENERIC_WRITE, 0,
-                           NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-  if (pipe == INVALID_HANDLE_VALUE) {
-    return nullptr;
-  }
-  return new StatefulIMEProxy(new ConnectionIPC(pipe));
-}
-
-StatefulIMEProxy *StatefulIMEProxy::CreateTCPPRoxy(const std::string &host,
-                                                   const std::string &port) {
-  // https://docs.microsoft.com/ja-jp/windows/win32/winsock/complete-client-code
-  struct addrinfo hint, *result = nullptr;
-  ZeroMemory(&hint, sizeof(hint));
-  hint.ai_family = AF_UNSPEC;
-  hint.ai_socktype = SOCK_STREAM;
-  hint.ai_protocol = IPPROTO_TCP;
-  if (getaddrinfo(host.c_str(), port.c_str(), &hint, &result) != 0) {
-    WSACleanup();
-    return nullptr;
-  }
-
-  for (struct addrinfo *p = result; p != nullptr; p = p->ai_next) {
-    SOCKET sock = socket(p->ai_family, p->ai_socktype, p->ai_protocol);
-    if (sock == INVALID_SOCKET) {
-      break;
-    }
-    if (connect(sock, p->ai_addr, static_cast<int>(p->ai_addrlen)) !=
-        SOCKET_ERROR) {
-      freeaddrinfo(result);
-      return new StatefulIMEProxy(new ConnectionTCP(sock));
-    }
-    closesocket(sock);
-  }
-  freeaddrinfo(result);
-  WSACleanup();
-  return nullptr;
-}
 
 } // namespace im
 } // namespace win
