@@ -75,14 +75,14 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(ProjectDir)..\..\..\..\src-cpp\;$(ProjectDir)..\..\..\..\third-party\;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)..\..\..\src-cpp\;$(ProjectDir)..\..\..\third-party\;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(ProjectDir)..\..\..\..\src-cpp\;$(ProjectDir)..\..\..\..\third-party\;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)..\..\..\src-cpp\;$(ProjectDir)..\..\..\third-party\;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -156,9 +156,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\..\src-cpp\win\im\stateful_ime.h" />
-    <ClInclude Include="..\..\..\..\src-cpp\win\im\stateful_ime_proxy.h" />
-    <ClInclude Include="..\..\..\..\src-cpp\win\im\views.h" />
+    <ClInclude Include="..\..\..\src-cpp\win\im\stateful_ime.h" />
+    <ClInclude Include="..\..\..\src-cpp\win\im\stateful_ime_proxy.h" />
+    <ClInclude Include="..\..\..\src-cpp\win\im\views.h" />
     <ClInclude Include="registration.h" />
     <ClInclude Include="senn.h" />
     <ClInclude Include="stdafx.h" />
@@ -177,7 +177,7 @@
     <ClInclude Include="win\text-service\registration.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\..\src-cpp\win\im\stateful_ime_proxy.cpp" />
+    <ClCompile Include="..\..\..\src-cpp\win\im\stateful_ime_proxy.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

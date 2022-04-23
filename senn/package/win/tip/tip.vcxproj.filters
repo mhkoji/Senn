@@ -63,13 +63,13 @@
     <ClInclude Include="text-service\key_event_handler.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\src-cpp\win\im\stateful_ime.h">
+    <ClInclude Include="..\..\..\src-cpp\win\im\stateful_ime.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\src-cpp\win\im\stateful_ime_proxy.h">
+    <ClInclude Include="..\..\..\src-cpp\win\im\stateful_ime_proxy.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\src-cpp\win\im\views.h">
+    <ClInclude Include="..\..\..\src-cpp\win\im\views.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>
@@ -110,7 +110,7 @@
     <ClCompile Include="text-service\key_event_handler.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\src-cpp\win\im\stateful_ime_proxy.cpp">
+    <ClCompile Include="..\..\..\src-cpp\win\im\stateful_ime_proxy.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
