@@ -3,7 +3,7 @@
 #include <msctf.h>
 #include <string>
 
-#include "../ime/views.h"
+#include <win/im/views.h>
 
 namespace senn {
 namespace senn_win {

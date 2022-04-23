@@ -1,8 +1,8 @@
 #include "text_service.h"
-#include "../ime/stateful_ime_proxy.h"
 #include "object_releaser.h"
 #include "ui.h"
 #include <cassert>
+#include <win/im/stateful_ime_proxy.h>
 
 namespace senn {
 namespace senn_win {

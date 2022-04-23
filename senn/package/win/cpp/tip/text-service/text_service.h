@@ -4,13 +4,13 @@
 #include <string>
 #include <windows.h>
 
-#include "../ime/stateful_ime.h"
 #include "../senn.h"
 #include "../win/text-service/class_factory.h"
 #include "direct.h"
 #include "key_event_handler.h"
 #include "langbar.h"
 #include "ui.h"
+#include <win/im/stateful_ime.h>
 
 namespace senn {
 namespace senn_win {

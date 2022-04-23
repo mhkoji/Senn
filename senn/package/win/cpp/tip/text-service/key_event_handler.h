@@ -1,10 +1,9 @@
 #pragma once
 
+#include "candidate_ui_list.h"
 #include <msctf.h>
 #include <string>
-
-#include "../ime/stateful_ime.h"
-#include "candidate_ui_list.h"
+#include <win/im/stateful_ime.h>
 
 namespace senn {
 namespace senn_win {
