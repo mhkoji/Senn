@@ -1,8 +1,8 @@
 #include "text_service.h"
-#include "../ime/stateful_ime_proxy.h"
 #include "object_releaser.h"
 #include "ui.h"
 #include <cassert>
+#include <win/im/stateful_ime_proxy.h>
 
 namespace senn {
 namespace senn_win {
@@ -65,9 +65,8 @@ HRESULT TextService::ActivateInternal(ITfThreadMgr *thread_mgr,
     }
 
     // Create a stateful IM to process user inputs of keys.
-    ime_ = senn::senn_win::ime::StatefulIMEProxy::CreateTCPPRoxy("localhost",
-                                                                 "5678");
-    // senn::senn_win::ime::StatefulIMEProxy::CreateIPCPRoxy(kNamedPipePath);
+    ime_ = senn::win::im::StatefulIMEProxy::CreateTCPPRoxy("localhost", "5678");
+    // senn::win::im::StatefulIMEProxy::CreateIPCPRoxy(kNamedPipePath);
     if (ime_ == nullptr) {
       return E_FAIL;
     }
@@ -235,10 +234,10 @@ HRESULT __stdcall TextService::OnPreservedKey(ITfContext *context,
 // langbar::InputModeToggleButton::State
 void TextService::GetIcon(HICON *phIcon) const {
   assert(ime_ != nullptr);
-  senn::senn_win::ime::InputMode mode = ime_->GetInputMode();
+  senn::win::im::InputMode mode = ime_->GetInputMode();
 
   // Use a built-in icon for a while...
-  if (mode == senn::senn_win::ime::InputMode::kDirect) {
+  if (mode == senn::win::im::InputMode::kDirect) {
     *phIcon = LoadIcon(NULL, IDI_APPLICATION);
   } else {
     *phIcon = LoadIcon(NULL, IDI_ASTERISK);

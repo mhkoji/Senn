@@ -2,8 +2,8 @@
 
 #include <msctf.h>
 #include <string>
+#include <win/im/views.h>
 
-#include "../ime/views.h"
 #include "candidate_window.h"
 
 namespace senn {

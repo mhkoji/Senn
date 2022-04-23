@@ -2,9 +2,9 @@
 
 #include <msctf.h>
 
-#include "../ime/stateful_ime.h"
 #include <functional>
 #include <string>
+#include <win/im/views.h>
 
 namespace senn {
 namespace senn_win {

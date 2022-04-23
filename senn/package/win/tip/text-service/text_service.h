@@ -4,13 +4,13 @@
 #include <string>
 #include <windows.h>
 
-#include "../ime/stateful_ime.h"
 #include "../senn.h"
 #include "../win/text-service/class_factory.h"
 #include "direct.h"
 #include "key_event_handler.h"
 #include "langbar.h"
 #include "ui.h"
+#include <win/im/stateful_ime.h>
 
 namespace senn {
 namespace senn_win {
@@ -115,7 +115,7 @@ private:
   // Button to switch the current input mode.
   langbar::InputModeToggleButton *input_mode_toggle_button_;
 
-  senn::senn_win::ime::StatefulIME *ime_;
+  senn::win::im::StatefulIME *ime_;
 
   KeyEventHandler *key_event_handler_;
 

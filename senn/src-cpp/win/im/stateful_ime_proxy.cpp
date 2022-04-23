@@ -1,12 +1,12 @@
 #include <sstream>
 #include <ws2tcpip.h>
 
-#include "../../third-party/picojson/picojson.h"
 #include "stateful_ime_proxy.h"
+#include <picojson/picojson.h>
 
 namespace senn {
-namespace senn_win {
-namespace ime {
+namespace win {
+namespace im {
 
 ConnectionIPC::ConnectionIPC(const HANDLE pipe) : pipe_(pipe) {}
 
@@ -240,8 +240,8 @@ bool StatefulIMEProxy::ProcessInput(
 
         converting.cursor_form_candidate_index =
             static_cast<int>(v.get<picojson::object>()["cursor-form"]
-                                    .get<picojson::object>()["candidate-index"]
-                                    .get<double>());
+                                 .get<picojson::object>()["candidate-index"]
+                                 .get<double>());
       }
 
       on_converting(converting);
@@ -310,6 +310,6 @@ StatefulIMEProxy *StatefulIMEProxy::CreateTCPPRoxy(const std::string &host,
   return nullptr;
 }
 
-} // namespace ime
-} // namespace senn_win
+} // namespace im
+} // namespace win
 } // namespace senn

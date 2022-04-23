@@ -1,10 +1,9 @@
 #pragma once
 
+#include "candidate_ui_list.h"
 #include <msctf.h>
 #include <string>
-
-#include "../ime/stateful_ime.h"
-#include "candidate_ui_list.h"
+#include <win/im/stateful_ime.h>
 
 namespace senn {
 namespace senn_win {
@@ -66,7 +65,7 @@ private:
 
 class EditSessionEditing : public EditSessionImplementingIUnknown {
 public:
-  EditSessionEditing(const senn::senn_win::ime::views::Editing &, ITfContext *,
+  EditSessionEditing(const senn::win::im::views::Editing &, ITfContext *,
                      TfGuidAtom, ITfCompositionSink *, CompositionHolder *);
   ~EditSessionEditing() override;
 
@@ -74,7 +73,7 @@ private:
   // ITfEditSession
   HRESULT __stdcall DoEditSession(TfEditCookie ec) override;
 
-  const senn::senn_win::ime::views::Editing view_;
+  const senn::win::im::views::Editing view_;
 
   ITfContext *const context_;
 
@@ -92,9 +91,8 @@ public:
   };
 
   EditSessionConverting(ITfThreadMgr *,
-                        const senn::senn_win::ime::views::Converting &,
-                        ITfContext *, const DisplayAttributeAtoms *,
-                        ITfComposition *);
+                        const senn::win::im::views::Converting &, ITfContext *,
+                        const DisplayAttributeAtoms *, ITfComposition *);
   ~EditSessionConverting() override;
 
 private:
@@ -103,7 +101,7 @@ private:
 
   ITfThreadMgr *thread_mgr_;
 
-  const senn::senn_win::ime::views::Converting view_;
+  const senn::win::im::views::Converting view_;
 
   ITfContext *const context_;
 
@@ -114,15 +112,15 @@ private:
 
 class EditSessionCommitted : public EditSessionImplementingIUnknown {
 public:
-  EditSessionCommitted(const senn::senn_win::ime::views::Committed &,
-                       ITfContext *, ITfCompositionSink *, CompositionHolder *);
+  EditSessionCommitted(const senn::win::im::views::Committed &, ITfContext *,
+                       ITfCompositionSink *, CompositionHolder *);
   ~EditSessionCommitted() override;
 
 private:
   // ITfEditSession
   HRESULT __stdcall DoEditSession(TfEditCookie ec) override;
 
-  const senn::senn_win::ime::views::Committed view_;
+  const senn::win::im::views::Committed view_;
 
   ITfContext *const context_;
 
@@ -162,8 +160,8 @@ class CandidateListState : public candidate_window::View {
 public:
   CandidateListState() : candidates_(std::vector<std::wstring>()) {}
 
-  void Update(const senn::senn_win::ime::views::Editing &);
-  void Update(const senn::senn_win::ime::views::Converting &);
+  void Update(const senn::win::im::views::Editing &);
+  void Update(const senn::win::im::views::Converting &);
 
   // candidate_window::View
   virtual const std::vector<std::wstring> *candidates() const override {
@@ -186,7 +184,7 @@ public:
   };
 
   KeyEventHandler(ITfThreadMgr *, TfClientId, ITfCompositionSink *,
-                  senn::senn_win::ime::StatefulIME *, TfGuidAtom,
+                  senn::win::im::StatefulIME *, TfGuidAtom,
                   EditSessionConverting::DisplayAttributeAtoms *, Handlers *);
 
   ~KeyEventHandler();
@@ -202,12 +200,9 @@ public:
   HRESULT OnPreservedKey(ITfContext *pic, REFGUID rguid, BOOL *pfEaten);
 
 private:
-  HRESULT HandleIMEView(ITfContext *,
-                        const senn::senn_win::ime::views::Editing &);
-  HRESULT HandleIMEView(ITfContext *,
-                        const senn::senn_win::ime::views::Converting &);
-  HRESULT HandleIMEView(ITfContext *,
-                        const senn::senn_win::ime::views::Committed &);
+  HRESULT HandleIMEView(ITfContext *, const senn::win::im::views::Editing &);
+  HRESULT HandleIMEView(ITfContext *, const senn::win::im::views::Converting &);
+  HRESULT HandleIMEView(ITfContext *, const senn::win::im::views::Committed &);
 
   //  CandidateListUI::Handlers
   virtual HRESULT OnLayoutChange(ITfContext *, ITfContextView *);
@@ -219,7 +214,7 @@ private:
   ITfCompositionSink *composition_sink_;
 
   // The input method that manages the states.
-  senn::senn_win::ime::StatefulIME *ime_;
+  senn::win::im::StatefulIME *ime_;
 
   CompositionHolder composition_holder_;
 
