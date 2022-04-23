@@ -151,7 +151,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\third-party\picojson\picojson.h" />
     <ClInclude Include="ime\stateful_ime_proxy.h" />
     <ClInclude Include="ime\stateful_ime.h" />
     <ClInclude Include="ime\views.h" />

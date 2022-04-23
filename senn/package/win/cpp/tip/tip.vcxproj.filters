@@ -48,9 +48,6 @@
     <ClInclude Include="ime\views.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="..\third-party\picojson\picojson.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="text-service\langbar.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
