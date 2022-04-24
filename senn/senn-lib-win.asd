@@ -3,4 +3,5 @@
   :components
   ((:file "src/lib/win")
    (:file "src/lib/win-engine"))
-  :depends-on (:senn-win))
+  :depends-on (:log4cl
+               :senn-win))
