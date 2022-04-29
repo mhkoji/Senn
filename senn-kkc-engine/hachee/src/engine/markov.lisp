@@ -28,8 +28,12 @@
 
 (defvar *kkc*)
 
-(defun set-kkc (&optional (dir "~/senn-data/"))
-  (setq *kkc* (hachee.kkc.impl.markov.read:read-kkc-dir dir))
+(defun kkc-dir-pathname ()
+  (merge-pathnames ".senn/markov/" (user-homedir-pathname)))
+
+(defun set-kkc (&optional dir)
+  (setq *kkc* (hachee.kkc.impl.markov.read:read-kkc-dir
+	       (or dir (kkc-dir-pathname))))
   (values))
 
 (defun main ()
