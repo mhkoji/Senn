@@ -2,6 +2,7 @@
 
 #include "views.h"
 #include <functional>
+#include <windows.h> // import "BYTE" definition
 
 namespace senn {
 namespace win {
