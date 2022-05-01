@@ -13,6 +13,6 @@
   (create-system-kkc))
 
 (defun main ()
-  (senn-kkc-engine.hachee.engine:run *kkc*
-                                     *standard-input*
-                                     *standard-output*))
+  (senn-ipc.server.stdio:start-server
+   (lambda (line)
+     (senn-kkc-engine.hachee.engine:handle line *kkc*))))

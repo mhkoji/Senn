@@ -33,10 +33,11 @@
 
 (defun set-kkc (&optional dir)
   (setq *kkc* (hachee.kkc.impl.markov.read:read-kkc-dir
-	       (or dir (kkc-dir-pathname))))
+               (or dir (kkc-dir-pathname))))
   (values))
 
 (defun main ()
+  #-win32
   (handler-case
       (let ((dirs (list
                    "/usr/lib/senn/fcitx/kkc/"    ;; for fcitx
@@ -45,6 +46,11 @@
           (kkc-apply-user-dict *kkc*)))
     (error (e)
       (format *standard-output* "~A~%" e)))
-  (senn-kkc-engine.hachee.engine:run *kkc*
-                                     *standard-input*
-                                     *standard-output*))
+  (labels ((handle (line)
+             (senn-kkc-engine.hachee.engine:handle line *kkc*)))
+    #-win32
+    (senn-ipc.server.stdio:start-server #'handle)
+    #+win32
+    (senn-ipc.server.named-pipe:start-server
+     (lambda (client)
+       (senn-ipc.server:client-loop client :handle-fn #'handle)))))

@@ -1,6 +1,6 @@
 (defpackage :senn-kkc-engine.hachee.engine
   (:use :cl)
-  (:export :run))
+  (:export :handle))
 (in-package :senn-kkc-engine.hachee.engine)
 
 (defstruct candidate
@@ -36,17 +36,8 @@
     ("pron" (segment-pron seg))
     ("candidates" (mapcar #'candidate->jsown (segment-candidates seg)))))
 
-(defun read-jsown (in-stream)
-  (let ((line (read-line in-stream nil nil)))
-    (when line
-      (jsown:parse line))))
-
-(defun send-jsown (out-stream jsown)
-  (write-line (jsown:to-json jsown) out-stream)
-  (force-output out-stream))
-
-(defun run (kkc in-stream out-stream)
-  (loop for jsown = (read-jsown in-stream) while jsown do
+(defun handle (line kkc)
+  (let ((jsown (jsown:parse line)))
     (let ((j-op (jsown:val jsown "op"))
           (j-args (jsown:val jsown "args")))
       (ecase (alexandria:make-keyword j-op)
@@ -54,9 +45,9 @@
          (let ((pron (jsown:val j-args "pron")))
            (let ((segs (convert kkc pron)))
              (let ((jsown (mapcar #'segment->jsown segs)))
-               (send-jsown out-stream jsown)))))
+               (jsown:to-json jsown)))))
         (:list_candidates
          (let ((pron (jsown:val j-args "pron")))
            (let ((cands (list-candidates kkc pron)))
              (let ((jsown (mapcar #'candidate->jsown cands)))
-               (send-jsown out-stream jsown)))))))))
+               (jsown:to-json out-stream jsown)))))))))

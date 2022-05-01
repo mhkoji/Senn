@@ -2,4 +2,5 @@
   :serial t
   :components
   ((:file "src/server")
-   (:file "src/server/stdio")))
+   (:file "src/server/stdio"))
+  :depends-on (:log4cl))
