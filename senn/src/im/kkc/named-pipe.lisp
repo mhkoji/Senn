@@ -1,34 +1,28 @@
-;; TODO: test
-(defpackage :senn.im.kkc.remote
+(defpackage :senn.im.kkc.named-pipe
   (:use :cl)
   (:export :kkc
            :close-kkc
-           :connect
-           :disconnect
-           :make-connector))
-(in-package :senn.im.kkc.remote)
+           :make-kkc-and-connect))
+(in-package :senn.im.kkc.named-pipe)
 
-(defstruct connector
-  host port)
+(defstruct connection file pipe-name)
 
-(defstruct connection
-  socket stream)
+(defun connect (pipe-name)
+  (let ((file (senn-ipc.named-pipe:create-client-file pipe-name)))
+    (when file
+      (make-connection
+       :file file
+       :pipe-name pipe-name))))
 
-(defun connect (connector)
-  (let ((socket (usocket:socket-connect
-                 (connector-host connector)
-                 (connector-port connector))))
-    (make-connection
-     :socket socket
-     :stream (usocket:socket-stream socket))))
-
-(defun disconnect (connection)
-  (usocket:socket-close (connection-socket connection)))
+(defun disconnect (conn)
+  (senn-ipc.named-pipe:close-file (connection-file conn)))
 
 (defmethod senn.im.kkc.request:send-line ((conn connection)
                                           (line string))
-  (write-line line (connection-stream conn)))
-
+  (let ((file (connection-file conn)))
+    (let ((octets (babel:string-to-octets resp :encoding :utf-8)))
+      (senn-ipc.named-pipe:write-file file octets)
+      (senn-ipc.named-pipe:read-file file))))
 
 (defclass kkc ()
   ((connection
@@ -56,3 +50,7 @@
 
 (defun close-kkc (kkc)
   (disconnect (connection kkc)))
+
+(defun make-kkc-and-connect (named-pipe)
+  (let ((conn (connect named-pipe)))
+    (make-instance 'kkc :connection conn)))

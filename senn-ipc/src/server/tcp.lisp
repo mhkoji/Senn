@@ -1,7 +1,7 @@
-(defpackage :senn.server.tcp
+(defpackage :senn-ipc.server.tcp
   (:use :cl)
   (:export :start-server))
-(in-package :senn.server.tcp)
+(in-package :senn-ipc.server.tcp)
 
 (defstruct client id usocket)
 
@@ -10,13 +10,13 @@
              (client-id ,client)
              ,@args))
 
-(defmethod senn.server:client-read-line ((client client))
+(defmethod senn-ipc.server:client-read-line ((client client))
   (let ((stream (usocket:socket-stream (client-usocket client))))
     (let ((line (read-line stream nil nil nil)))
       (log/info client "Read: ~A" line)
       line)))
 
-(defmethod senn.server:client-send-line ((client client) resp)
+(defmethod senn-ipc.server:client-send-line ((client client) resp)
   (let ((stream (usocket:socket-stream (client-usocket client))))
     (write-line resp stream)
     (force-output stream)

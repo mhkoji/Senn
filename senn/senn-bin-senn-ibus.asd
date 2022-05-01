@@ -3,4 +3,4 @@
   :components
   ((:file "src/bin/senn-ibus"))
   :depends-on (:senn-ibus
-               :senn-server-stdio))
+               :senn-ipc-server-stdio))

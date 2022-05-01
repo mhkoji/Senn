@@ -33,19 +33,19 @@
 ;;;
 
 (defun run (kkc)
-  (senn.server.tcp:start-server
+  (senn-ipc.server.tcp:start-server
    (lambda (client)
      (let ((ime (hachee-ime-make kkc)))
        (labels ((handle (req)
                   (senn.win.server:handle-request ime req)))
-         (senn.server:client-loop client :handle-fn #'handle))))))
+         (senn-ipc.server:client-loop client :handle-fn #'handle))))))
 
 (defun run-engine (runner)
-  (senn.server.tcp:start-server
+  (senn-ipc.server.tcp:start-server
    (lambda (client)
      (let ((ime (engine-ime-make runner)))
        (unwind-protect
             (labels ((handle (req)
                        (senn.win.server:handle-request ime req)))
-              (senn.server:client-loop client :handle-fn #'handle))
+              (senn-ipc.server:client-loop client :handle-fn #'handle))
          (engine-ime-close ime))))))
