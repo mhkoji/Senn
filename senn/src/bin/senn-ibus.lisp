@@ -8,7 +8,7 @@
               (senn.im.kkc.engine:make-engine-runner
                :program "/usr/lib/senn/kkc-engine"))))
     (unwind-protect
-         (senn.server.stdio:start-server
+         (senn-ipc.server.stdio:start-server
           (lambda (line)
             (senn.ibus.server:handle-request ime line)))
       (senn.ibus.stateful-ime:engine-close-ime ime))))

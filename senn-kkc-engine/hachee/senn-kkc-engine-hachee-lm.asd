@@ -6,6 +6,7 @@
    (:file "lm"))
   :depends-on (:hachee-kkc-impl-lm
                :hachee-data
+               :senn-ipc-server-stdio
                :alexandria
                :cl-fad
                :jsown

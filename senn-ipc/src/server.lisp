@@ -1,9 +1,9 @@
-(defpackage :senn.server
+(defpackage :senn-ipc.server
   (:use :cl)
   (:export :client-read-line
            :client-send-line
            :client-loop))
-(in-package :senn.server)
+(in-package :senn-ipc.server)
 
 (defgeneric client-read-line (client))
 (defgeneric client-send-line (client resp))

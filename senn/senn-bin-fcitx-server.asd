@@ -9,5 +9,5 @@
   :depends-on (:hachee-kkc-impl-lm
                :hachee-data
                :senn-fcitx
-               :senn-server-unix
-               :senn-server-tcp))
+               :senn-ipc-server-unix
+               :senn-ipc-server-tcp))

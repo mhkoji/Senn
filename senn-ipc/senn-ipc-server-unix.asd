@@ -1,8 +1,8 @@
-(asdf:defsystem :senn-server-unix
+(asdf:defsystem :senn-ipc-server-unix
   :serial t
   :pathname "src"
   :components
   ((:file "ipc/unix")
-   (:file "server/server")
+   (:file "server")
    (:file "server/unix"))
-  :depends-on (:jsown))
+  :depends-on (:log4cl))

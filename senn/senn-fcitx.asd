@@ -14,4 +14,5 @@
   :depends-on (:babel
                :jsown
                :log4cl
-               :senn))
+               :senn
+	       :senn-im-kkc-engine))

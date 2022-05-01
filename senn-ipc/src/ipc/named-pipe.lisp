@@ -1,19 +1,22 @@
-(defpackage :senn.ipc.named-pipe
+(defpackage :senn-ipc.named-pipe
   (:use :cl)
-  (:export :create
+  (:export :create-server-pipe
            :connect
            :disconnect-and-close
 
+           :create-client-file
+           :close-file
+	   
            :read-file
            :write-file))
-(in-package :senn.ipc.named-pipe)
+(in-package :senn-ipc.named-pipe)
 
 (defun h= (handle1 handle2)
   (= (cffi:pointer-address handle1)
      (cffi:pointer-address handle2)))
 
-
-(defun create (pipe-name)
+;;; server
+(defun create-server-pipe (pipe-name)
   (let ((pipe (win32:create-named-pipe
                pipe-name
                win32:+pipe-access-duplex+
@@ -28,13 +31,31 @@
         nil
         pipe)))
 
-
 (defun connect (pipe)
   (win32:connect-named-pipe pipe (cffi:null-pointer)))
 
 (defun disconnect-and-close (pipe)
   (win32:disconnect-named-pipe pipe)
   (win32:close-handle pipe))
+
+
+;;; client
+(defun create-client-file (pipe-name)
+  (let ((file (win32:create-file
+               pipe-name
+               (logior win32:+generic-read+
+                       win32:+generic-write+)
+	       0
+	       (cffi:null-pointer)
+               win32:+open-existing+
+	       win32:+file-attribute-normal+
+               (cffi:null-pointer))))
+    (if (h= pipe win32:+invalid-handle-value+)
+        nil
+        pipe)))
+
+(defun close-file (file)
+  (win32:close-handle file))
 
 
 ;;; Windows File API

@@ -8,11 +8,6 @@
     :pathname "im"
     :components
     ((:file "kkc")
-     (:module :im/kkc
-      :pathname "kkc/"
-      :components
-      ((:file "request")
-       (:file "engine")))
      (:file "predict")
      (:module :im/predict
       :pathname "predict"
@@ -22,8 +17,6 @@
      (:file "converting")
      (:file "buffer")
      (:file "inputting")
-     (:file "kkc-store")
-     (:file "kkc-store/engine"))))
+     (:file "kkc-store"))))
   :depends-on (#+nil :cl-trie
-               :alexandria
-               :jsown))
+               :alexandria))
