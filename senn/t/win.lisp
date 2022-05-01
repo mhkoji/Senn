@@ -32,10 +32,7 @@
   (format nil "~A ~A~%" (if can-process 1 0) view))
 
 (defun make-ime ()
-  (make-instance 'senn.win.stateful-ime:ime
-   :state (senn.win.stateful-ime:make-initial-state)
-   :kkc 'static-kkc
-   :predictor nil))
+  (senn.win.stateful-ime:make-ime :kkc 'static-kkc))
 
 (defmacro test-convert (&key test)
   `(let ((ime (make-ime)))
@@ -72,8 +69,10 @@
           (senn.im.converting:state-segments state)))
 
 (defmacro hachee-convert (&key test)
-  `(let ((ime (senn.win.stateful-ime:hachee-make-ime
-               (senn.im.kkc.hachee:build-hachee-impl-lm-kkc))))
+  `(let ((ime (senn.win.stateful-ime:make-ime
+	       :kkc (make-instance 'senn.im.kkc.hachee:kkc
+		     :hachee-impl-lm-kkc
+		     (senn.im.kkc.hachee:build-hachee-impl-lm-kkc)))))
      (,test
       (equal
        (converting-state-segment-strings
