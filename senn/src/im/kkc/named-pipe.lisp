@@ -20,9 +20,11 @@
 (defmethod senn.im.kkc.request:send-line ((conn connection)
                                           (line string))
   (let ((file (connection-file conn)))
-    (let ((octets (babel:string-to-octets resp :encoding :utf-8)))
-      (senn-ipc.named-pipe:write-file file octets)
-      (senn-ipc.named-pipe:read-file file))))
+    (let ((octets (babel:string-to-octets line :encoding :utf-8)))
+      (senn-ipc.named-pipe:write-file file octets))
+    (let ((octets (senn-ipc.named-pipe:read-file file)))
+      (when octets
+        (babel:octets-to-string octets :encoding :utf-8)))))
 
 (defclass kkc ()
   ((connection
@@ -35,7 +37,8 @@
   (handler-case (senn.im.kkc.request:convert
                  (connection kkc)
                  pron)
-    (error ()
+    (error (e)
+      (log:warn "~A" e)
       (list (senn.im.kkc:make-segment
              :pron pron
              :candidates (list (senn.im.kkc:make-candidate
@@ -45,7 +48,8 @@
   (handler-case (senn.im.kkc.request:list-candidates
                  (connection kkc)
                  pron)
-    (error ()
+    (error (e)
+      (log:warn "~A" e)
       nil)))
 
 (defun close-kkc (kkc)

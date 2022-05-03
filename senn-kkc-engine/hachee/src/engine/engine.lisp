@@ -50,4 +50,4 @@
          (let ((pron (jsown:val j-args "pron")))
            (let ((cands (list-candidates kkc pron)))
              (let ((jsown (mapcar #'candidate->jsown cands)))
-               (jsown:to-json out-stream jsown)))))))))
+               (jsown:to-json jsown)))))))))

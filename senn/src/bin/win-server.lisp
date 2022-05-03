@@ -4,7 +4,7 @@
 (in-package :senn.bin.win-server)
 
 (defun run ()
-  (senn-ipc.server.named-pipe:start-server
+  (senn-ipc.server.named-pipe:run
    (lambda (client)
      ;; TODO: verify that the kkc server is valid.
      (let ((kkc (senn.im.kkc.named-pipe:make-kkc-and-connect
