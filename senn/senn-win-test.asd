@@ -1,8 +1,10 @@
 (asdf:defsystem :senn-win-test
   :serial t
-  :pathname "t/"
   :components
-  ((:file "base")
-   (:file "win"))
-  :depends-on (:senn-bin-win-server
+  ((:file "src/im/kkc/hachee")
+   (:file "t/base")
+   (:file "t/win") )
+  :depends-on (:hachee-kkc-impl-lm
+	       :hachee-data
+	       :senn-win
                :fiveam))
