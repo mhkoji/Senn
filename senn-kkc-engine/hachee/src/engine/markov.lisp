@@ -53,4 +53,5 @@
     #+win32
     (senn-ipc.server.named-pipe:start-server
      (lambda (client)
-       (senn-ipc.server:client-loop client :handle-fn #'handle)))))
+       (senn-ipc.server:client-loop client :handle-fn #'handle))
+     :pipe-name "\\\\.\\Pipe\\senn\\senn-kkc-engine")))
