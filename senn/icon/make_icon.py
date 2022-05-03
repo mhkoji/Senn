@@ -36,7 +36,7 @@ def main():
     ch = 12379 ## 'せ'
     fontpath = os.path.join(
         os.getcwd(),
-        '../third-party/MPLUS_FONTS/Mplus1-Bold.ttf')
+        '../../third-party/MPLUS_FONTS/Mplus1-Bold.ttf')
     write_svg('./senn.svg', fontpath, ch)
 
     subprocess.run(['convert',
