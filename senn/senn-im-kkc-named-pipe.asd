@@ -5,5 +5,6 @@
   ((:file "kkc/request")
    (:file "kkc/named-pipe"))
   :depends-on (:babel
+               :log4cl
 	       :senn
 	       :senn-ipc-named-pipe))

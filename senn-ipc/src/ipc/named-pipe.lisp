@@ -50,9 +50,9 @@
                win32:+open-existing+
 	       win32:+file-attribute-normal+
                (cffi:null-pointer))))
-    (if (h= pipe win32:+invalid-handle-value+)
+    (if (h= file win32:+invalid-handle-value+)
         nil
-        pipe)))
+        file)))
 
 (defun close-file (file)
   (win32:close-handle file))
