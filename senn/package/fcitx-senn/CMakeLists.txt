@@ -1,37 +1,66 @@
 cmake_minimum_required(VERSION 2.8.6)
 project(fcitx-senn)
 
-set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
+set(CMAKE_MODULE_PATH
+    "${CMAKE_CURRENT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 
 find_package(Fcitx 4.2.8 REQUIRED)
 include(FindPkgConfig)
 
-set(CMAKE_C_FLAGS "-Wall -Wextra -Wno-sign-compare -Wno-unused-parameter")
-set(CMAKE_CXX_FLAGS "-std=c++11 -Wall -Wextra -Wno-sign-compare -Wno-unused-parameter")
-set(CMAKE_SHARED_LINKER_FLAGS "-Wl,--as-needed ${CMAKE_SHARED_LINKER_FLAGS}")
-set(CMAKE_MODULE_LINKER_FLAGS "-Wl,--as-needed ${CMAKE_MODULE_LINKER_FLAGS}")
+set(SENN_CPP_DIR         ${CMAKE_CURRENT_SOURCE_DIR}/../../src-cpp)
+set(SENN_THIRD_PARTY_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../../third-party)
 
-set(SENN_CPP_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../src-cpp)
+set(FCITX_SENN_SOURCES)
+set(FCITX_SENN_LINK_LIBS)
+
+set(SENN_IME "ECL")
+
+if (SENN_IME STREQUAL "ECL")
+  set(FCITX_SENN_SOURCES
+      fcitx_senn.cpp
+      ${SENN_CPP_DIR}/fcitx/im/stateful_ime_proxy.cpp
+      ${SENN_CPP_DIR}/fcitx/im/stateful_ime_ecl.cpp)
+  set(FCITX_SENN_LINK_LIBS
+      /usr/lib/senn/fcitx/ecl/lib/libecl.so
+      ${CMAKE_CURRENT_SOURCE_DIR}/dep-ecl/senn-lib-fcitx--all-systems.a)
+elseif (SENN_IME STREQUAL "SOCKET")
+  set(FCITX_SENN_SOURCES
+      fcitx_senn.cpp
+      ${SENN_CPP_DIR}/fcitx/im/stateful_ime_proxy.cpp
+      ${SENN_CPP_DIR}/fcitx/im/stateful_ime_socket.cpp
+      ${SENN_CPP_DIR}/ipc/socket.cpp)
+  set(FCITX_SENN_LINK_LIBS)
+else ()
+  message(FATAL_ERROR "No such ime")
+endif ()
+
 set(FCITX_SENN_INSTALL_DIR /usr/lib/senn/fcitx)
 
-## Without this, CMake sets runtime path of the shared object to "".
-set(CMAKE_INSTALL_RPATH ${FCITX_SENN_INSTALL_DIR}/ecl/lib/)
+set(CMAKE_C_FLAGS
+    "-Wall -Wextra -Wno-sign-compare -Wno-unused-parameter -D SENN_IME_${SENN_IME}")
+set(CMAKE_CXX_FLAGS
+    "-Wall -Wextra -Wno-sign-compare -Wno-unused-parameter -D SENN_IME_${SENN_IME} -std=c++11")
+set(CMAKE_SHARED_LINKER_FLAGS
+   "-Wl,--as-needed ${CMAKE_SHARED_LINKER_FLAGS}")
+set(CMAKE_MODULE_LINKER_FLAGS
+   "-Wl,--as-needed ${CMAKE_MODULE_LINKER_FLAGS}")
 
 include_directories(
   ${FCITX4_FCITX_INCLUDE_DIRS}
   ${FCITX4_FCITX_CONFIG_INCLUDE_DIRS}
   ${FCITX4_FCITX_UTILS_INCLUDE_DIRS}
-  ../../../third-party/
   ${SENN_CPP_DIR}
-  )
+  ${SENN_THIRD_PARTY_DIR})
+
 
 ### fcitx-senn.so
+
+## Without this, CMake sets runtime path of the shared object to "".
+set(CMAKE_INSTALL_RPATH ${FCITX_SENN_INSTALL_DIR}/ecl/lib/)
+
 fcitx_add_addon_full(senn
-  SOURCES fcitx_senn.cpp
-          ${SENN_CPP_DIR}/fcitx/im/stateful_ime_proxy.cpp
-          ${SENN_CPP_DIR}/fcitx/im/stateful_ime_ecl.cpp
-  LINK_LIBS /usr/lib/senn/fcitx/ecl/lib/libecl.so
-            ${CMAKE_CURRENT_SOURCE_DIR}/dep-ecl/senn-lib-fcitx--all-systems.a
+  SOURCES   ${FCITX_SENN_SOURCES}
+  LINK_LIBS ${FCITX_SENN_LINK_LIBS}
   IM_CONFIG senn.conf)
 
 ### userdict-related objects

@@ -7,12 +7,15 @@
 #include <fcitx/ime.h>
 #include <fcitx/instance.h>
 
-#include "fcitx/im/stateful_ime_ecl.h"
-// #include "fcitx/im/stateful_ime_socket.h"
-// #include "fcitx/im/stateful_ime_sbcl.h"
+#ifdef SENN_IME_ECL
+  #include "fcitx/im/stateful_ime_ecl.h"
 
-const char *kECLDIR = "/usr/lib/senn/fcitx/ecl/lib/ecl-21.2.1/";
-const std::string kKkcEnginePath = "/usr/lib/senn/fcitx/kkc-engine";
+  const char *kECLDIR = "/usr/lib/senn/fcitx/ecl/lib/ecl-21.2.1/";
+  const std::string kKkcEnginePath = "/usr/lib/senn/fcitx/kkc-engine";
+#elif SENN_IME_SOCKET
+  #include "fcitx/im/stateful_ime_socket.h"
+#endif
+// #include "fcitx/im/stateful_ime_sbcl.h"
 
 namespace {
 
@@ -227,7 +230,10 @@ static void FcitxSennDestroy(void *arg) {
   FcitxSenn *senn = (FcitxSenn *)arg;
 
   delete senn->ime;
+
+#ifdef SENN_IME_ECL
   senn::fcitx::im::StatefulIMEEcl::ClShutdown();
+#endif
 
   free(senn);
 
@@ -242,18 +248,19 @@ static void *FcitxSennCreate(FcitxInstance *fcitx) {
   senn->fcitx = fcitx;
 
   // StatefulIME
-  /*
-  senn->ime =
-      senn::fcitx::im::StatefulIMESocket::SpawnAndCreate("/usr/lib/senn/server");
-  */
-  /*
-  senn::fcitx::im::StatefulIMESbcl::Init("/usr/lib/senn/libsennfcitx.core");
-  senn->ime = senn::fcitx::im::StatefulIMESbcl::Create()
-  */
+#ifdef SENN_IME_ECL
   setenv("ECLDIR", kECLDIR, 1);
   senn::fcitx::im::StatefulIMEEcl::ClBoot();
   senn::fcitx::im::StatefulIMEEcl::EclInitModule();
   senn->ime = senn::fcitx::im::StatefulIMEEcl::Create(kKkcEnginePath);
+#elif SENN_IME_SOCKET
+  senn->ime =
+      senn::fcitx::im::StatefulIMESocket::SpawnAndCreate("/usr/lib/senn/server");
+#endif
+  /*
+  senn::fcitx::im::StatefulIMESbcl::Init("/usr/lib/senn/libsennfcitx.core");
+  senn->ime = senn::fcitx::im::StatefulIMESbcl::Create()
+  */
 
   FcitxIMEventHook hk;
   hk.arg = senn;
