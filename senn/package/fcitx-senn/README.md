@@ -13,13 +13,6 @@ Roswell needs to be installed first.
 % cd ecl-21.2.1/
 % ./configure --prefix=/usr/lib/senn/fcitx/ecl && make && sudo make install
 % sudo ln -s /usr/lib/senn/fcitx/ecl/include/ecl/ /usr/local/include/
-
-% cd <path/to/senn>/senn/package/fcitx-senn/
-% mkdir dep-ecl dep-kkc
-% ros use sbcl
-% ros dump executable ../../../senn-kkc-engine/hachee/ros/main-lm.ros -o dep-kkc/kkc-engine
-% ros use ecl
-% ros run -e '(asdf:make-build :senn-lib-fcitx :type :static-library :move-here #P"./dep-ecl" :monolithic t :init-name "init_senn")' -q
 ```
 
 ## Install by CMake
