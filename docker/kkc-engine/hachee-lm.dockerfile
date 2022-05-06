@@ -21,6 +21,7 @@ RUN wget \
       --eval "(quicklisp-quickstart:install)"
 
 COPY hachee                 /app/hachee
+COPY senn-ipc               /app/senn-ipc
 COPY senn-kkc-engine/hachee /app/engine
 
 RUN sbcl \
@@ -32,6 +33,7 @@ RUN sbcl \
       --load "/root/quicklisp/setup.lisp" \
       --eval '(push "/app/engine/" ql:*local-project-directories*)' \
       --eval '(push "/app/hachee/" ql:*local-project-directories*)' \
+      --eval '(push "/app/senn-ipc/" ql:*local-project-directories*)' \
       --eval '(ql:quickload :senn-kkc-engine-hachee-lm)' \
       --eval "(sb-ext:save-lisp-and-die \"/output/kkc-engine\" :toplevel #'senn-kkc-engine.hachee.engine.lm:main :executable t)"
 
