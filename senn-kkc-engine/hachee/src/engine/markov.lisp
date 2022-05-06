@@ -37,7 +37,6 @@
   (values))
 
 (defun main ()
-  #-win32
   (handler-case
       (let ((dirs (list
                    "/usr/lib/senn/fcitx/kkc/"    ;; for fcitx
@@ -48,10 +47,4 @@
       (format *standard-output* "~A~%" e)))
   (labels ((handle (line)
              (senn-kkc-engine.hachee.engine:handle line *kkc*)))
-    #-win32
-    (senn-ipc.server.stdio:start-server #'handle)
-    #+win32
-    (senn-ipc.server.named-pipe:run
-     (lambda (client)
-       (senn-ipc.server:client-loop client :handle-fn #'handle))
-     :pipe-name "\\\\.\\Pipe\\senn\\senn-kkc-engine")))
+    (senn-ipc.server.stdio:start-server #'handle)))

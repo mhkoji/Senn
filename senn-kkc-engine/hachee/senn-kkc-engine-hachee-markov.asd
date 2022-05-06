@@ -6,7 +6,6 @@
    (:file "markov"))
   :depends-on (:hachee-kkc-impl-markov
                :senn-kkc-engine-hachee-user-dict
-               #-win32 :senn-ipc-server-stdio
-               #+win32 :senn-ipc-server-named-pipe
+	       :senn-ipc-server-stdio
                :alexandria
                :jsown))
