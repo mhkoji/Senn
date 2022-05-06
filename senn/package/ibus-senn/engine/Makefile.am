@@ -8,14 +8,11 @@ libexec_PROGRAMS = \
 	ibus-engine-senn \
 	$(NULL)
 
+if SENN_IME_ECL
 ibus_engine_senn_SOURCES = \
 	main.cpp \
 	../../../src-cpp/ibus/im/stateful_ime_proxy.cpp \
-	../../../src-cpp/ibus/im/stateful_ime_ecl.cpp
-#	../../../src-cpp/ibus/im/stateful_ime_socket.cpp
-#	../../../src-cpp/ibus/im/stateful_ime_sbcl.cpp 
-	../../../src-cpp/ipc/socket.cpp \
-	../../../src-cpp/process/process.cpp \
+	../../../src-cpp/ibus/im/stateful_ime_ecl.cpp \
 	$(NULL)
 
 ibus_engine_senn_LDADD = \
@@ -27,15 +24,25 @@ ibus_engine_senn_LDADD = \
 	/usr/lib/senn/ibus/ecl/lib/libecl.so \
 	./senn-lib-ibus--all-systems.a \
 	$(NULL)
-
-ibus_engine_senn_CPPFLAGS = \
-	-I/usr/include/ibus-1.0/ \
-	-I/usr/include/glib-2.0/ \
-	-I/usr/lib/x86_64-linux-gnu/glib-2.0/include \
-	-I../../../src-cpp/ \
-	-I../../../../third-party/ \
-	-std=c++11 \
+else
+if  SENN_IME_SOCKET
+ibus_engine_senn_SOURCES = \
+	main.cpp \
+	../../../src-cpp/ibus/im/stateful_ime_proxy.cpp \
+	../../../src-cpp/ibus/im/stateful_ime_socket.cpp
+	../../../src-cpp/ipc/socket.cpp \
+	../../../src-cpp/process/process.cpp \
 	$(NULL)
+
+ibus_engine_senn_LDADD = \
+	@IBUS_LIBS@ \
+	@GOBJECT2_LIBS@ \
+	@GLIB2_LIBS@ \
+	@GIO2_LIBS@ \
+	@GTHREAD2_LIBS@ \
+	$(NULL)
+endif
+endif
 
 ibus_engine_senn_CFLAGS = \
 	@GLIB2_CFLAGS@ \
@@ -47,12 +54,19 @@ ibus_engine_senn_CFLAGS = \
 	-Wno-unused-function \
 	$(NULL)
 
+ibus_engine_senn_CPPFLAGS = \
+	-I/usr/include/ibus-1.0/ \
+	-I/usr/include/glib-2.0/ \
+	-I/usr/lib/x86_64-linux-gnu/glib-2.0/include \
+	-I../../../src-cpp/ \
+	-I../../../../third-party/ \
+	-std=c++11 \
+	-DSENN_IME_@SENN_IME@ \
+	$(NULL)
+
 ibus_engine_senn_LDFLAGS = \
 	-L/usr/lib/senn/ibus/ecl/lib \
-	-Wl,-R /usr/lib/senn/ibus/ecl/lib
-# 	-lsenn_ibus
-# 	-L/usr/lib/senn/
-# 	-Wl,-R /usr/lib/senn/
+	-Wl,-R /usr/lib/senn/ibus/ecl/lib \
 	$(NULL)
 
 senn-lib-ibus--all-systems.a:

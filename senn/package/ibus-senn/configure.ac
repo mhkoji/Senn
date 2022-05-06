@@ -46,6 +46,10 @@ AC_TYPE_SIZE_T
 # Checks for library functions.
 AC_CHECK_FUNCS([setenv])
 
+AC_SUBST([SENN_IME], 'ECL')
+AM_CONDITIONAL([SENN_IME_ECL], [true])
+AM_CONDITIONAL([SENN_IME_SOCKET], [false])
+
 AC_CONFIG_FILES([Makefile
                  engine/Makefile
                  kkc/Makefile])
