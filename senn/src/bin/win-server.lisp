@@ -11,14 +11,12 @@
 (defun run-internal (kkc)
   (senn-ipc.server.named-pipe:run
    (lambda (client)
-     (unwind-protect
-          (let ((ime (senn.win.stateful-ime:make-ime
-                      :kkc kkc
-                      :predictor nil)))
-            (labels ((handle (req)
-                       (senn.win.server:handle-request ime req)))
-              (senn-ipc.server:client-loop client :handle-fn #'handle)))
-       (senn.im.kkc.named-pipe:close-kkc kkc)))
+     (let ((ime (senn.win.stateful-ime:make-ime
+                 :kkc kkc
+                 :predictor nil)))
+       (labels ((handle (req)
+                 (senn.win.server:handle-request ime req)))
+         (senn-ipc.server:client-loop client :handle-fn #'handle))))
    :pipe-name "\\\\.\\Pipe\\senn\\senn\\bin\\win-server\\run"))
 
 (defun run ()
