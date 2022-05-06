@@ -8,12 +8,12 @@
 #include <fcitx/instance.h>
 
 #ifdef SENN_IME_ECL
-  #include "fcitx/im/stateful_ime_ecl.h"
+#include "fcitx/im/stateful_ime_ecl.h"
 
-  const char *kECLDIR = "/usr/lib/senn/fcitx/ecl/lib/ecl-21.2.1/";
-  const std::string kKkcEnginePath = "/usr/lib/senn/fcitx/kkc-engine";
+const char *kECLDIR = "/usr/lib/senn/fcitx/ecl/lib/ecl-21.2.1/";
+const std::string kKkcEnginePath = "/usr/lib/senn/fcitx/kkc-engine";
 #elif SENN_IME_SOCKET
-  #include "fcitx/im/stateful_ime_socket.h"
+#include "fcitx/im/stateful_ime_socket.h"
 #endif
 // #include "fcitx/im/stateful_ime_sbcl.h"
 
@@ -254,8 +254,8 @@ static void *FcitxSennCreate(FcitxInstance *fcitx) {
   senn::fcitx::im::StatefulIMEEcl::EclInitModule();
   senn->ime = senn::fcitx::im::StatefulIMEEcl::Create(kKkcEnginePath);
 #elif SENN_IME_SOCKET
-  senn->ime =
-      senn::fcitx::im::StatefulIMESocket::SpawnAndCreate("/usr/lib/senn/server");
+  senn->ime = senn::fcitx::im::StatefulIMESocket::SpawnAndCreate(
+      "/usr/lib/senn/server");
 #endif
   /*
   senn::fcitx::im::StatefulIMESbcl::Init("/usr/lib/senn/libsennfcitx.core");

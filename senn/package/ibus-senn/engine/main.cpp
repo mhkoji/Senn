@@ -9,13 +9,16 @@
 
 #include <iostream>
 
+#ifdef SENN_IME_ECL
 #include "ibus/im/stateful_ime_ecl.h"
-// #include "ibus/im/stateful_ime_socket.h"
-// #include "ibus/im/stateful_ime_sbcl.h"
-// #include "ibus/im/stateful_ime_exec.h"
 
 const char *kECLDIR = "/usr/lib/senn/ibus/ecl/lib/ecl-21.2.1/";
 const std::string kKkcEnginePath = "/usr/lib/senn/ibus/kkc-engine";
+#elif SENN_IME_SOCKET
+#include "ibus/im/stateful_ime_socket.h"
+#endif
+// #include "ibus/im/stateful_ime_sbcl.h"
+// #include "ibus/im/stateful_ime_exec.h"
 
 namespace senn {
 namespace ibus_senn {
@@ -212,33 +215,7 @@ void Disable(IBusEngine *p) { ENGINE(p)->ime->ResetIM(); }
 } // namespace ibus_senn
 } // namespace senn
 
-/*
-class SocketIMEFactory : public senn::ibus_senn::engine::IMEFactory {
-public:
-  senn::ibus::im::StatefulIME *CreateIME() {
-    return senn::ibus::im::StatefulIMESocket::ConnectTo(5678);
-  }
-
-  static senn::ibus_senn::engine::IMEFactory *Create() {
-    return new SocketIMEFactory();
-  }
-};
-*/
-
-/*
-class SbclIMEFactory : public senn::ibus_senn::engine::IMEFactory {
-public:
-  senn::ibus::im::StatefulIME *CreateIME() {
-    return senn::ibus::im::StatefulIMESbcl::Create();
-  }
-
-public:
-  static senn::ibus_senn::engine::IMEFactory *Create() {
-    senn::ibus::im::StatefulIMESbcl::Init("/usr/lib/senn/libsenn_ibus.core");
-    return new SbclIMEFactory();
-  }
-};
-*/
+#ifdef SENN_IME_ECL
 
 class EclIMEFactory : public senn::ibus_senn::engine::IMEFactory {
 public:
@@ -256,6 +233,36 @@ public:
     return new EclIMEFactory();
   }
 };
+
+#elif SENN_IME_SOCKET
+
+class SocketIMEFactory : public senn::ibus_senn::engine::IMEFactory {
+public:
+  senn::ibus::im::StatefulIME *CreateIME() {
+    return senn::ibus::im::StatefulIMESocket::ConnectTo(5678);
+  }
+
+  static senn::ibus_senn::engine::IMEFactory *Create() {
+    return new SocketIMEFactory();
+  }
+};
+
+#endif
+
+/*
+class SbclIMEFactory : public senn::ibus_senn::engine::IMEFactory {
+public:
+  senn::ibus::im::StatefulIME *CreateIME() {
+    return senn::ibus::im::StatefulIMESbcl::Create();
+  }
+
+public:
+  static senn::ibus_senn::engine::IMEFactory *Create() {
+    senn::ibus::im::StatefulIMESbcl::Init("/usr/lib/senn/libsenn_ibus.core");
+    return new SbclIMEFactory();
+  }
+};
+*/
 
 /*
 class ExecIMEFactory : public senn::ibus_senn::engine::IMEFactory {
@@ -429,8 +436,11 @@ int main(gint argc, gchar **argv) {
     std::exit(1);
   }
 
+#ifdef SENN_IME_ECL
   g_ime_factory = EclIMEFactory::Create();
-  // g_ime_factory = SocketIMEFactory::Create();
+#elif SENN_IME_SOCKET
+  g_ime_factory = SocketIMEFactory::Create();
+#endif
 
   StartEngine(g_option_ibus);
   return 0;
