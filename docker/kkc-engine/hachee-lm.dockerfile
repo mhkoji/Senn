@@ -2,7 +2,8 @@ FROM ubuntu:18.04
 
 RUN apt update && apt install -y \
     wget \
-    sbcl
+    sbcl \
+ && rm -rf /var/lib/apt/lists/*
 
 RUN mkdir \
     /app \

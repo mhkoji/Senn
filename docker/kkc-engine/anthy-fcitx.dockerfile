@@ -3,7 +3,8 @@ FROM ubuntu:18.04
 RUN apt update && apt install -y \
     build-essential \
     fcitx-libs-dev \
-    libanthy-dev
+    libanthy-dev \
+ && rm -rf /var/lib/apt/lists/*
 
 RUN mkdir \
     /app \

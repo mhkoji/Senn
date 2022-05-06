@@ -5,8 +5,8 @@ RUN apt update && apt install -y \
     cdbs \
     devscripts \
     gnome-common \
-    libanthy-dev \
-    libibus-1.0-dev
+    libibus-1.0-dev \
+ && rm -rf /var/lib/apt/lists/*
 
 RUN mkdir -p \
     /app \

@@ -6,7 +6,7 @@ RUN apt update && apt install -y \
     cmake \
     devscripts \
     fcitx-libs-dev \
-    libanthy-dev
+ && rm -rf /var/lib/apt/lists/*
 
 RUN mkdir \
     /app \
