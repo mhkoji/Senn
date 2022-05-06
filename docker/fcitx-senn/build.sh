@@ -9,4 +9,4 @@ docker build $DIR -t ecl-builder \
        -f ./ecl.dockerfile && \
 docker build $DIR -t deb-builder \
        -f ./deb.dockerfile  && \
-docker run -v $PWD:/host --rm -t deb-builder
+docker run --rm -v $PWD:/host --rm -t deb-builder
