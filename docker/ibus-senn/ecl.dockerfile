@@ -3,7 +3,8 @@ FROM ubuntu:18.04
 RUN apt update && apt install -y \
     build-essential \
     wget \
-    m4
+    m4 \
+ && rm -rf /var/lib/apt/lists/*
 
 RUN mkdir -p\
     /app \

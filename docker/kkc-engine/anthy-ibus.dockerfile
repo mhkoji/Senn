@@ -4,7 +4,8 @@ RUN apt update && apt install -y \
     build-essential \
     libanthy-dev \
     libglib2.0-dev \
-    pkg-config
+    pkg-config \
+ && rm -rf /var/lib/apt/lists/*
 
 RUN mkdir \
     /app \

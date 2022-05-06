@@ -6,13 +6,14 @@ RUN apt update && apt install -y \
     cmake \
     devscripts \
     fcitx-libs-dev \
-    libanthy-dev
+ && rm -rf /var/lib/apt/lists/*
 
 RUN mkdir \
     /app \
     /output
 
 COPY senn /app/senn
+COPY third-party /app/third-party
 COPY senn-kkc-engine/hachee/src-cpp /app/senn-kkc-engine/hachee/src-cpp
 # COPY --from=menu-builder /output /app/senn/package/fcitx-senn/dep-menu
 COPY --from=kkc-builder /output /app/senn/package/fcitx-senn/dep-kkc

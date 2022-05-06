@@ -25,7 +25,7 @@ ibus_engine_senn_LDADD = \
 	@GIO2_LIBS@ \
 	@GTHREAD2_LIBS@ \
 	/usr/lib/senn/ibus/ecl/lib/libecl.so \
-	../dep-ecl/senn-lib-ibus--all-systems.a \
+	./senn-lib-ibus--all-systems.a \
 	$(NULL)
 
 ibus_engine_senn_CPPFLAGS = \
@@ -55,6 +55,11 @@ ibus_engine_senn_LDFLAGS = \
 # 	-Wl,-R /usr/lib/senn/
 	$(NULL)
 
+senn-lib-ibus--all-systems.a:
+	ros use ecl
+	ros run -e '(asdf:make-build :senn-lib-ibus :type :static-library :move-here #P"./" :monolithic t :init-name "init_senn")' -q
+
+
 component_DATA = \
 	senn.xml \
 	$(NULL)
@@ -65,6 +70,7 @@ componentdir = /usr/share/ibus/component
 
 CLEANFILES = \
 	senn.xml \
+	senn-lib-ibus--all-systems.a \
 	$(NULL)
 
 EXTRA_DIST = \
