@@ -13,6 +13,7 @@ RUN mkdir -p \
     /output
 
 COPY senn /app/senn
+COPY third-party /app/third-party
 COPY senn-kkc-engine/hachee/src-cpp /app/senn-kkc-engine/hachee/src-cpp
 COPY --from=kkc-builder /output/kkc-engine /app/senn/package/ibus-senn/kkc/engine
 COPY --from=ecl-builder /output /app/senn/package/ibus-senn/dep-ecl

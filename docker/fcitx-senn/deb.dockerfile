@@ -13,6 +13,7 @@ RUN mkdir \
     /output
 
 COPY senn /app/senn
+COPY third-party /app/third-party
 COPY senn-kkc-engine/hachee/src-cpp /app/senn-kkc-engine/hachee/src-cpp
 # COPY --from=menu-builder /output /app/senn/package/fcitx-senn/dep-menu
 COPY --from=kkc-builder /output /app/senn/package/fcitx-senn/dep-kkc
