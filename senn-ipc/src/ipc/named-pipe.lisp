@@ -59,22 +59,20 @@
 
 
 ;;; Windows File API
-
+;; https://docs.microsoft.com/en-us/windows/win32/ipc/multithreaded-pipe-server
 (defun read-file (file)
   (let ((buf-size 4096))
     (cffi:with-foreign-object (buf :unsigned-char buf-size)
       (cffi:with-foreign-object (bytes-read-ptr 'win32:dword)
-        (let ((return-value (win32:read-file file
-                                             buf
-                                             buf-size
-                                             bytes-read-ptr
-                                             (cffi:null-pointer))))
-          (if (and (numberp return-value)
-                   (= return-value 0))
-              nil
-              ;; succeeds
-              (let ((bytes-read
-                     (cffi:mem-ref bytes-read-ptr 'win32:dword)))
+        (let ((success-p (win32:read-file file
+                                          buf
+                                          buf-size
+                                          bytes-read-ptr
+                                          (cffi:null-pointer))))
+          (let ((bytes-read
+                 (cffi:mem-ref bytes-read-ptr 'win32:dword)))
+            (if (or (not success-p) (= bytes-read 0))
+                nil
                 (let ((octet-list
                        (loop for i from 0 below bytes-read
                           collect (cffi:mem-ref buf :unsigned-char i))))
