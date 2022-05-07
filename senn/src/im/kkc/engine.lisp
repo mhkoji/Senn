@@ -105,7 +105,8 @@
     (handler-case (senn.im.kkc.request:convert
                    (engine-store-engine engine-store)
                    pron)
-      (error ()
+      (error (c)
+        (log:warn c)
         (engine-store-rerun engine-store)
         (list (senn.im.kkc:make-segment
                :pron pron
@@ -117,7 +118,8 @@
     (handler-case (senn.im.kkc.request:list-candidates
                    (engine-store-engine engine-store)
                    pron)
-      (error ()
+      (error (c)
+        (log:warn c)
         (engine-store-rerun engine-store)
         nil))))
 

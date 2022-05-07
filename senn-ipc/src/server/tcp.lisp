@@ -3,43 +3,44 @@
   (:export :start-server))
 (in-package :senn-ipc.server.tcp)
 
-(defstruct client id usocket)
-
-(defmacro log/info (client format-str &rest args)
-  `(log:info ,(concatenate 'string "[~A]: " format-str)
-             (client-id ,client)
-             ,@args))
+(defstruct client socket)
 
 (defmethod senn-ipc.server:client-read-line ((client client))
-  (let ((stream (usocket:socket-stream (client-usocket client))))
+  (let ((stream (usocket:socket-stream (client-socket client))))
     (let ((line (read-line stream nil nil nil)))
-      (log/info client "Read: ~A" line)
+      (senn-ipc.server.log:info "Read: ~A" line)
       line)))
 
 (defmethod senn-ipc.server:client-send-line ((client client) resp)
-  (let ((stream (usocket:socket-stream (client-usocket client))))
+  (let ((stream (usocket:socket-stream (client-socket client))))
     (write-line resp stream)
     (force-output stream)
-    (log/info client "Written: ~A" resp)))
+    (senn-ipc.server.log:info "Written: ~A" resp)))
 
-(defun spawn-client-thread (client client-loop-fn)
-  (log/info client "Connected")
+(defun spawn-thread (socket client-loop-fn name)
   (bordeaux-threads:make-thread
    (lambda ()
-     (funcall client-loop-fn client)
+     (senn-ipc.server.log:info "Connected")
+     (funcall client-loop-fn (make-client :usocket socket))
      (ignore-errors
-       (usocket:socket-close (client-usocket client)))
-     (log/info client "Disconnected"))))
+      (usocket:socket-close socket))
+     (senn-ipc.server.log:info "Disconnected"))
+   :name name))
 
 (defun start-server (client-loop-fn &key (port 5678))
   (usocket:with-server-socket
       (server-socket (usocket:socket-listen "0.0.0.0" port))
-    (let ((threads nil))
-      (log:info "Waiting for client...")
+    (let ((threads nil)
+          (sockets nil))
+      (senn-ipc.server.log:info "Waiting for client...")
       (unwind-protect
-           (loop for client-id from 1 do
-             (let* ((socket (usocket:socket-accept server-socket))
-                    (client (make-client :id client-id :usocket socket))
-                    (thread (spawn-client-thread client client-loop-fn)))
-               (push thread threads)))
-        (mapc #'bordeaux-threads:destroy-thread threads)))))
+           (loop for id from 1
+                 for socket = (usocket:socket-accept server-socket) do
+             (progn
+               (push socket sockets)
+               (push (spawn-thread socket
+                                   client-loop-fn
+                                   (format nil "process-thread-~d" id))
+                     threads)))
+        (mapc #'bordeaux-threads:destroy-thread threads)
+        (mapc #'usocket:socket-close sockets)))))
