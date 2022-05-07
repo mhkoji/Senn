@@ -22,12 +22,12 @@
    (lambda ()
      (senn-ipc.server.log:info "Connected")
      (funcall client-loop-fn (make-client :pipe pipe))
-     (senn-ipc.named-pipe:disconnect-and-close-file pipe)
+     (senn-ipc.named-pipe:disconnect-and-close pipe)
      (senn-ipc.server.log:info "Disconnected"))
    :name name))
 
 (defun start-server (client-loop-fn &key (pipe-name "\\\\.\\Pipe\\senn"))
-  (let ((pipes nil))
+  (let ((pipes nil)
         (threads nil))
     (unwind-protect
          (loop for id from 1
@@ -43,4 +43,4 @@
                                        (format nil "process-thread-~d" id))
                          threads)))
       (mapc #'bordeaux-threads:destroy-thread threads)
-      (mapc #'senn-ipc.named-pipe:disconnect-and-close-file pipes)))
+      (mapc #'senn-ipc.named-pipe:disconnect-and-close pipes))))
