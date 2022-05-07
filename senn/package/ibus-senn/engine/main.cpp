@@ -1,5 +1,3 @@
-#include <ecl/ecl.h>
-
 #include <glib-object.h>
 #include <ibus.h>
 
