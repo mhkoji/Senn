@@ -6,7 +6,7 @@
 
            :create-client-file
            :close-file
-	   
+
            :read-file
            :write-file))
 (in-package :senn-ipc.named-pipe)
@@ -45,10 +45,10 @@
                pipe-name
                (logior win32:+generic-read+
                        win32:+generic-write+)
-	       0
-	       (cffi:null-pointer)
+               0
+               (cffi:null-pointer)
                win32:+open-existing+
-	       win32:+file-attribute-normal+
+               win32:+file-attribute-normal+
                (cffi:null-pointer))))
     (if (h= file win32:+invalid-handle-value+)
         nil
@@ -69,13 +69,12 @@
                                           buf-size
                                           bytes-read-ptr
                                           (cffi:null-pointer))))
-          (let ((bytes-read
-                 (cffi:mem-ref bytes-read-ptr 'win32:dword)))
+          (let ((bytes-read (cffi:mem-ref bytes-read-ptr 'win32:dword)))
             (if (or (not success-p) (= bytes-read 0))
                 nil
                 (let ((octet-list
                        (loop for i from 0 below bytes-read
-                          collect (cffi:mem-ref buf :unsigned-char i))))
+                             collect (cffi:mem-ref buf :unsigned-char i))))
                   (make-array bytes-read
                               :element-type '(unsigned-byte 8)
                               :initial-contents octet-list
