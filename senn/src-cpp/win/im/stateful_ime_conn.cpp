@@ -1,6 +1,6 @@
 #include "stateful_ime_conn.h"
 #include <iostream>
-#include <ws2tcpip.h>
+// #include <ws2tcpip.h>
 
 namespace senn {
 namespace win {
@@ -35,6 +35,7 @@ bool ConnectionIPC::ReadLine(std::string *output) {
   return true;
 }
 
+/*
 ConnectionTCP::ConnectionTCP(SOCKET socket) : socket_(socket) {}
 
 void ConnectionTCP::Close() { closesocket(socket_); }
@@ -63,6 +64,7 @@ bool ConnectionTCP::ReadLine(std::string *output) {
 
   return true;
 }
+*/
 
 StatefulIMEConn::Requester::Requester(Connection *conn) : conn_(conn) {}
 
@@ -91,6 +93,7 @@ StatefulIMEProxy *StatefulIMEConn::IPC(const WCHAR *const named_pipe_path) {
       new StatefulIMEConn::Requester(new ConnectionIPC(pipe))));
 }
 
+/*
 StatefulIMEProxy *StatefulIMEConn::TCP(const std::string &host,
                                        const std::string &port) {
   // https://docs.microsoft.com/ja-jp/windows/win32/winsock/complete-client-code
@@ -121,6 +124,7 @@ StatefulIMEProxy *StatefulIMEConn::TCP(const std::string &host,
   WSACleanup();
   return nullptr;
 }
+*/
 
 } // namespace im
 } // namespace win
