@@ -6,4 +6,5 @@
    (:file "kkc/engine")
    (:file "kkc-store/engine"))
   :depends-on (:jsown
-	       :senn))
+               :log4cl
+               :senn))
