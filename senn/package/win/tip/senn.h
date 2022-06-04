@@ -33,7 +33,7 @@ static const GUID kCategories[] = {
     GUID_TFCAT_TIPCAP_UIELEMENTENABLED,
 };
 
-static const WCHAR kNamedPipePath[] = L"\\\\.\\pipe\\senn";
+static const WCHAR kNamedPipePath[] = L"\\\\.\\Pipe\\senn\\senn\\bin\\win-server\\run";
 
 static const WCHAR kCandidateWindowClassName[] = L"senn-candidate-window";
 

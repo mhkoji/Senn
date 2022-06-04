@@ -32,6 +32,8 @@ private:
   const HANDLE pipe_;
 };
 
+// TODO: Add another file for TCP
+/*
 class ConnectionTCP : public Connection {
 public:
   ConnectionTCP(SOCKET);
@@ -43,6 +45,7 @@ public:
 private:
   const SOCKET socket_;
 };
+*/
 
 class StatefulIMEConn {
   class Requester : public senn::RequesterInterface {
@@ -59,8 +62,10 @@ class StatefulIMEConn {
 
 public:
   static StatefulIMEProxy *IPC(const WCHAR *const named_pipe_path);
+  /*
   static StatefulIMEProxy *TCP(const std::string &host,
                                const std::string &port);
+  */
 };
 
 } // namespace im
