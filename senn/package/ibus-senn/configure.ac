@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.69])
-AC_INIT([ibus_senn], [0.0.6], [], [ibus-senn])
+AC_INIT([ibus_senn], [0.0.7], [], [ibus-senn])
 AM_INIT_AUTOMAKE([1.10 subdir-objects])
 AC_CONFIG_SRCDIR([engine/main.cpp])
 AC_CONFIG_HEADERS([config.h])
