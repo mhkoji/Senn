@@ -1,4 +1,5 @@
 #pragma once
+#pragma once
 
 #include "candidate_ui_list.h"
 #include <msctf.h>
@@ -9,17 +10,60 @@ namespace senn {
 namespace senn_win {
 namespace text_service {
 
-class CompositionHolder {
+template <typename T> class Holder {
 public:
-  CompositionHolder() : composition_(nullptr) {}
+  Holder() : ptr_(nullptr) {}
 
-  ITfComposition *Get() { return composition_; }
+  T *Get() { return ptr_; }
 
-  void Set(ITfComposition *c) { composition_ = c; }
+  void Set(T *p) { ptr_ = p; }
 
 private:
-  ITfComposition *composition_;
+  T *ptr_;
 };
+
+typedef Holder<ITfComposition> CompositionHolder;
+
+class CandidateList : public CandidateListUI::Handlers {
+public:
+  struct State : public candidate_window::View {
+    State() : candidates_(std::vector<std::wstring>()) {}
+
+    // candidate_window::View
+    virtual const std::vector<std::wstring> *candidates() const override {
+      return &candidates_;
+    }
+
+    virtual int current_index() const override { return current_index_; }
+
+    std::vector<std::wstring> candidates_;
+
+    int current_index_ = 0;
+  };
+  ~CandidateList();
+
+  //  CandidateListUI::Handlers
+  virtual HRESULT OnLayoutChange(ITfContext *, ITfContextView *);
+
+  void Update(const senn::win::im::views::Editing &);
+  void Update(const senn::win::im::views::Converting &);
+
+  static CandidateList *Create(ITfContext *, ITfThreadMgr *, ITfComposition *,
+                               TfClientId);
+
+private:
+  State state_;
+
+  CandidateListUI *ui_;
+
+  ITfComposition *composition_;
+
+  TfClientId client_id_;
+
+  CandidateList(ITfComposition *, TfClientId);
+};
+
+typedef Holder<CandidateList> CandidateListHolder;
 
 class EditSessionImplementingIUnknown : public ITfEditSession {
 public:
@@ -66,7 +110,9 @@ private:
 class EditSessionEditing : public EditSessionImplementingIUnknown {
 public:
   EditSessionEditing(const senn::win::im::views::Editing &, ITfContext *,
-                     TfGuidAtom, ITfCompositionSink *, CompositionHolder *);
+                     ITfThreadMgr *, TfClientId, TfGuidAtom,
+                     ITfCompositionSink *, CompositionHolder *,
+                     CandidateListHolder *);
   ~EditSessionEditing() override;
 
 private:
@@ -77,11 +123,17 @@ private:
 
   ITfContext *const context_;
 
+  ITfThreadMgr *const thread_mgr_;
+
+  TfClientId client_id_;
+
   const TfGuidAtom display_attribute_atom_;
 
   ITfCompositionSink *composition_sink_;
 
   CompositionHolder *const composition_holder_;
+
+  CandidateListHolder *const candidate_list_holder_;
 };
 
 class EditSessionConverting : public EditSessionImplementingIUnknown {
@@ -90,30 +142,36 @@ public:
     TfGuidAtom non_focused, focused;
   };
 
-  EditSessionConverting(ITfThreadMgr *,
-                        const senn::win::im::views::Converting &, ITfContext *,
-                        const DisplayAttributeAtoms *, ITfComposition *);
+  EditSessionConverting(const senn::win::im::views::Converting &, ITfContext *,
+                        ITfThreadMgr *, TfClientId,
+                        const DisplayAttributeAtoms *, ITfComposition *,
+                        CandidateListHolder *);
   ~EditSessionConverting() override;
 
 private:
   // ITfEditSession
   HRESULT __stdcall DoEditSession(TfEditCookie ec) override;
 
-  ITfThreadMgr *thread_mgr_;
-
   const senn::win::im::views::Converting view_;
 
   ITfContext *const context_;
 
+  ITfThreadMgr *const thread_mgr_;
+
+  TfClientId client_id_;
+
   const DisplayAttributeAtoms *atoms_;
 
   ITfComposition *const composition_;
+
+  CandidateListHolder *const candidate_list_holder_;
 };
 
 class EditSessionCommitted : public EditSessionImplementingIUnknown {
 public:
   EditSessionCommitted(const senn::win::im::views::Committed &, ITfContext *,
-                       ITfCompositionSink *, CompositionHolder *);
+                       ITfCompositionSink *, CompositionHolder *,
+                       CandidateListHolder *);
   ~EditSessionCommitted() override;
 
 private:
@@ -127,6 +185,8 @@ private:
   ITfCompositionSink *composition_sink_;
 
   CompositionHolder *const composition_holder_;
+
+  CandidateListHolder *const candidate_list_holder_;
 };
 
 class MoveCandidateWindowToTextPositionEditSession
@@ -156,27 +216,7 @@ private:
   CandidateListUI *ui_;
 };
 
-class CandidateListState : public candidate_window::View {
-public:
-  CandidateListState() : candidates_(std::vector<std::wstring>()) {}
-
-  void Update(const senn::win::im::views::Editing &);
-  void Update(const senn::win::im::views::Converting &);
-
-  // candidate_window::View
-  virtual const std::vector<std::wstring> *candidates() const override {
-    return &candidates_;
-  }
-
-  virtual int current_index() const override { return current_index_; }
-
-private:
-  std::vector<std::wstring> candidates_;
-
-  int current_index_ = 0;
-};
-
-class KeyEventHandler : public CandidateListUI::Handlers {
+class KeyEventHandler {
 public:
   class Handlers {
   public:
@@ -200,13 +240,6 @@ public:
   HRESULT OnPreservedKey(ITfContext *pic, REFGUID rguid, BOOL *pfEaten);
 
 private:
-  HRESULT HandleIMEView(ITfContext *, const senn::win::im::views::Editing &);
-  HRESULT HandleIMEView(ITfContext *, const senn::win::im::views::Converting &);
-  HRESULT HandleIMEView(ITfContext *, const senn::win::im::views::Committed &);
-
-  //  CandidateListUI::Handlers
-  virtual HRESULT OnLayoutChange(ITfContext *, ITfContextView *);
-
   ITfThreadMgr *thread_mgr_;
 
   TfClientId client_id_;
@@ -215,8 +248,6 @@ private:
 
   // The input method that manages the states.
   senn::win::im::StatefulIME *ime_;
-
-  CompositionHolder composition_holder_;
 
   // Value of the style for decorating a text when editing
   TfGuidAtom editing_display_attribute_atom_;
@@ -227,9 +258,9 @@ private:
 
   Handlers *handlers_;
 
-  CandidateListState *candidate_list_state_;
+  CompositionHolder composition_holder_;
 
-  CandidateListUI *candidate_list_ui_;
+  CandidateListHolder candidate_list_holder_;
 };
 
 } // namespace text_service

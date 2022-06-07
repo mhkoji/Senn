@@ -72,7 +72,7 @@ HRESULT __stdcall CandidateListUI::GetGUID(GUID *pguid) {
 
 // Not sure if the following methods are implemented correctly.
 HRESULT __stdcall CandidateListUI::Show(BOOL bShow) {
-  if (hwnd_) {
+  if (hwnd_ != nullptr) {
     // If SW_SHOW is used instead of SW_SHOWNA, the window hangs.
     ShowWindow(hwnd_, bShow ? SW_SHOWNA : SW_HIDE);
   }
@@ -83,12 +83,13 @@ HRESULT __stdcall CandidateListUI::IsShown(BOOL *pbShow) {
   if (pbShow == nullptr) {
     return E_INVALIDARG;
   }
-  *pbShow = hwnd_ && IsWindowVisible(hwnd_);
+  
+  *pbShow = hwnd_ != nullptr ? IsWindowVisible(hwnd_) : false;
   return S_OK;
 }
 
 void CandidateListUI::NotifyUpdateUI() {
-  if (hwnd_) {
+  if (hwnd_ != nullptr) {
     // Send WM_PAINT message
     InvalidateRect(hwnd_, nullptr, true);
     UpdateWindow(hwnd_);
@@ -105,7 +106,7 @@ void CandidateListUI::NotifyUpdateUI() {
 }
 
 void CandidateListUI::Move(RECT *rc) {
-  if (hwnd_) {
+  if (hwnd_ != nullptr) {
     // top + 25 so that the candidate windows doesn't covers the composition text.
     SetWindowPos(hwnd_, HWND_TOPMOST, rc->left, rc->top + 25, 100, 400,
                  SWP_NOACTIVATE);
@@ -122,8 +123,9 @@ void CandidateListUI::DestroyUI() {
     }
   }
 
-  if (hwnd_) {
+  if (hwnd_ != nullptr) {
     DestroyWindow(hwnd_);
+    hwnd_ = nullptr;
   } else {
     ITfUIElementMgr *ui_mgr = nullptr;
     if (thread_mgr_->QueryInterface(IID_ITfUIElementMgr, (void **)&ui_mgr) ==
@@ -157,7 +159,6 @@ CandidateListUI *CandidateListUI::Create(ITfContext *context,
                                          ITfThreadMgr *thread_mgr,
                                          candidate_window::View *view,
                                          Handlers *handlers) {
-
   ITfUIElementMgr *ui_mgr = nullptr;
   if (thread_mgr->QueryInterface(IID_ITfUIElementMgr, (void **)&ui_mgr) !=
           S_OK ||
