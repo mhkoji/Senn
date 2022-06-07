@@ -83,6 +83,9 @@ HRESULT __stdcall EditSessionEditing::DoEditSession(TfEditCookie ec) {
     }
   }
 
+  // Process candidate list
+  // In order for a candidate window to be shown always, the window should be
+  // processed in EditSession.
   if (candidate_list_holder_->Get() == nullptr) {
     candidate_list_holder_->Set(CandidateList::Create(
         context_, thread_mgr_, composition_holder_->Get(), client_id_));
