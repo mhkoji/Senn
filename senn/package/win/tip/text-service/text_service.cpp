@@ -32,9 +32,106 @@ void GetHomeDir(std::wstring *out) {
 
 #endif
 
-// ITfTextInputProcessor
-HRESULT TextService::Activate(ITfThreadMgr *thread_mgr, TfClientId client_id) {
-  HRESULT result = ActivateInternal(thread_mgr, client_id);
+HRESULT __stdcall TextService::QueryInterface(REFIID riid, void **ppvObject) {
+  if (ppvObject == NULL) {
+    return E_INVALIDARG;
+  }
+  if (IsEqualIID(riid, IID_IUnknown) ||
+      IsEqualIID(riid, IID_ITfTextInputProcessor)) {
+    *ppvObject = static_cast<ITfTextInputProcessor *>(this);
+  } else if (IsEqualIID(riid, IID_ITfKeyEventSink)) {
+    *ppvObject = static_cast<ITfKeyEventSink *>(this);
+  } else if (IsEqualIID(riid, IID_ITfDisplayAttributeProvider)) {
+    *ppvObject = static_cast<ITfDisplayAttributeProvider *>(this);
+  } else if (IsEqualIID(riid, IID_ITfDisplayAttributeProvider)) {
+    *ppvObject = static_cast<ITfCompositionSink *>(this);
+  } else {
+    *ppvObject = NULL;
+    return E_NOINTERFACE;
+  }
+  AddRef();
+  return S_OK;
+}
+
+ULONG __stdcall TextService::AddRef(void) { return ++ref_count_; }
+
+ULONG __stdcall TextService::Release(void) {
+  if (ref_count_ <= 0) {
+    return 0;
+  }
+
+  const ULONG count = --ref_count_;
+  if (count == 0) {
+    delete this;
+  }
+  return count;
+}
+
+HRESULT __stdcall TextService::OnSetFocus(BOOL fForeground) {
+  assert(key_event_handler_ != nullptr);
+  return key_event_handler_->OnSetFocus(fForeground);
+}
+
+HRESULT __stdcall TextService::OnTestKeyDown(ITfContext *context, WPARAM wParam,
+                                             LPARAM lParam, BOOL *pfEaten) {
+  assert(key_event_handler_ != nullptr);
+  return key_event_handler_->OnTestKeyDown(context, wParam, lParam, pfEaten);
+}
+
+HRESULT __stdcall TextService::OnTestKeyUp(ITfContext *context, WPARAM wParam,
+                                           LPARAM lParam, BOOL *pfEaten) {
+  assert(key_event_handler_ != nullptr);
+  return key_event_handler_->OnTestKeyUp(context, wParam, lParam, pfEaten);
+}
+
+HRESULT __stdcall TextService::OnKeyDown(ITfContext *context, WPARAM wParam,
+                                         LPARAM lParam, BOOL *pfEaten) {
+  assert(key_event_handler_ != nullptr);
+  return key_event_handler_->OnKeyDown(context, wParam, lParam, pfEaten);
+}
+
+HRESULT __stdcall TextService::OnKeyUp(ITfContext *context, WPARAM wParam,
+                                       LPARAM lParam, BOOL *pfEaten) {
+  assert(key_event_handler_ != nullptr);
+  return key_event_handler_->OnKeyUp(context, wParam, lParam, pfEaten);
+}
+
+HRESULT __stdcall TextService::OnPreservedKey(ITfContext *context,
+                                              REFGUID rguid, BOOL *pfEaten) {
+  assert(key_event_handler_ != nullptr);
+  return key_event_handler_->OnPreservedKey(context, rguid, pfEaten);
+}
+
+HRESULT __stdcall TextService::EnumDisplayAttributeInfo(
+    IEnumTfDisplayAttributeInfo **ppEnum) {
+  if (ppEnum == nullptr) {
+    return E_INVALIDARG;
+  }
+  *ppEnum = new ui::EnumDisplayAttributeInfo();
+  return S_OK;
+}
+
+HRESULT __stdcall TextService::GetDisplayAttributeInfo(
+    REFGUID guid, ITfDisplayAttributeInfo **ppInfo) {
+  if (ppInfo == nullptr) {
+    return E_INVALIDARG;
+  }
+  if (IsEqualGUID(guid, ui::editing::kDisplayAttributeGuid)) {
+    *ppInfo = new ui::editing::DisplayAttributeInfo();
+  } else {
+    *ppInfo = nullptr;
+    return E_INVALIDARG;
+  }
+  return S_OK;
+}
+
+HRESULT __stdcall TextService::OnCompositionTerminated(
+    TfEditCookie ecWrite, ITfComposition *pComposition) {
+  return S_OK;
+}
+
+HRESULT __stdcall TextService::Activate(ITfThreadMgr *ptim, TfClientId tid) {
+  HRESULT result = ActivateInternal(ptim, tid);
   if (FAILED(result)) {
     Deactivate();
   }
@@ -168,7 +265,7 @@ HRESULT TextService::ActivateInternal(ITfThreadMgr *thread_mgr,
   return S_OK;
 }
 
-HRESULT TextService::Deactivate() {
+HRESULT __stdcall TextService::Deactivate(void) {
   if (thread_mgr_ == nullptr) {
     return S_OK;
   }
@@ -217,73 +314,6 @@ HRESULT TextService::Deactivate() {
   thread_mgr_->Release();
   thread_mgr_ = nullptr;
   return S_OK;
-}
-
-// ITfDisplayAttributeProvider
-
-HRESULT __stdcall TextService::EnumDisplayAttributeInfo(
-    IEnumTfDisplayAttributeInfo **attribute_info) {
-  if (attribute_info == nullptr) {
-    return E_INVALIDARG;
-  }
-  *attribute_info = new ui::EnumDisplayAttributeInfo();
-  return S_OK;
-}
-
-HRESULT __stdcall TextService::GetDisplayAttributeInfo(
-    REFGUID guid, ITfDisplayAttributeInfo **attribute) {
-  if (attribute == nullptr) {
-    return E_INVALIDARG;
-  }
-  if (IsEqualGUID(guid, ui::editing::kDisplayAttributeGuid)) {
-    *attribute = new ui::editing::DisplayAttributeInfo();
-  } else {
-    *attribute = nullptr;
-    return E_INVALIDARG;
-  }
-  return S_OK;
-}
-
-HRESULT __stdcall TextService::OnCompositionTerminated(
-    TfEditCookie ecWrite, ITfComposition *pComposition) {
-  return S_OK;
-}
-
-// ITfKeyEventSink
-
-HRESULT __stdcall TextService::OnSetFocus(BOOL fForeground) {
-  assert(key_event_handler_ != nullptr);
-  return key_event_handler_->OnSetFocus(fForeground);
-}
-
-HRESULT __stdcall TextService::OnTestKeyDown(ITfContext *context, WPARAM wParam,
-                                             LPARAM lParam, BOOL *pfEaten) {
-  assert(key_event_handler_ != nullptr);
-  return key_event_handler_->OnTestKeyDown(context, wParam, lParam, pfEaten);
-}
-
-HRESULT __stdcall TextService::OnKeyDown(ITfContext *context, WPARAM wParam,
-                                         LPARAM lParam, BOOL *pfEaten) {
-  assert(key_event_handler_ != nullptr);
-  return key_event_handler_->OnKeyDown(context, wParam, lParam, pfEaten);
-}
-
-HRESULT __stdcall TextService::OnTestKeyUp(ITfContext *context, WPARAM wParam,
-                                           LPARAM lParam, BOOL *pfEaten) {
-  assert(key_event_handler_ != nullptr);
-  return key_event_handler_->OnTestKeyUp(context, wParam, lParam, pfEaten);
-}
-
-HRESULT __stdcall TextService::OnKeyUp(ITfContext *context, WPARAM wParam,
-                                       LPARAM lParam, BOOL *pfEaten) {
-  assert(key_event_handler_ != nullptr);
-  return key_event_handler_->OnKeyUp(context, wParam, lParam, pfEaten);
-}
-
-HRESULT __stdcall TextService::OnPreservedKey(ITfContext *context,
-                                              REFGUID rguid, BOOL *pfEaten) {
-  assert(key_event_handler_ != nullptr);
-  return key_event_handler_->OnPreservedKey(context, rguid, pfEaten);
 }
 
 // langbar::InputModeToggleButton::State

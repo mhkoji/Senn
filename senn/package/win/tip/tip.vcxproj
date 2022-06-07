@@ -166,7 +166,6 @@
     <ClInclude Include="text-service\candidate_ui_list.h" />
     <ClInclude Include="text-service\candidate_window.h" />
     <ClInclude Include="text-service\key_event_handler.h" />
-    <ClInclude Include="text-service\hiragana\ui.h" />
     <ClInclude Include="text-service\langbar.h" />
     <ClInclude Include="text-service\object_releaser.h" />
     <ClInclude Include="text-service\text_service.h" />

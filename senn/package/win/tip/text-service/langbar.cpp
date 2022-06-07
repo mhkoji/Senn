@@ -13,6 +13,38 @@ InputModeToggleButton::InputModeToggleButton(CLSID clsid, ULONG sort,
     : ref_count_(1), clsid_(clsid), sort_(sort), lang_bar_item_sink_(nullptr),
       view_(view), handlers_(handlers) {}
 
+HRESULT __stdcall InputModeToggleButton::QueryInterface(REFIID riid,
+                                                        void **ppvObject) {
+  if (ppvObject == NULL) {
+    return E_INVALIDARG;
+  }
+  if (IsEqualIID(riid, IID_IUnknown) || IsEqualIID(riid, IID_ITfLangBarItem) ||
+      IsEqualIID(riid, IID_ITfLangBarItemButton)) {
+    *ppvObject = static_cast<ITfLangBarItemButton *>(this);
+  } else if (IsEqualIID(riid, IID_ITfSource)) {
+    *ppvObject = static_cast<ITfSource *>(this);
+  } else {
+    *ppvObject = NULL;
+    return E_NOINTERFACE;
+  }
+  AddRef();
+  return S_OK;
+}
+
+ULONG __stdcall InputModeToggleButton::AddRef(void) { return ++ref_count_; }
+
+ULONG __stdcall InputModeToggleButton::Release(void) {
+  if (ref_count_ <= 0) {
+    return 0;
+  }
+
+  const ULONG count = --ref_count_;
+  if (count == 0) {
+    delete this;
+  }
+  return count;
+}
+
 HRESULT __stdcall InputModeToggleButton::GetInfo(TF_LANGBARITEMINFO *pInfo) {
   if (!pInfo) {
     return E_INVALIDARG;

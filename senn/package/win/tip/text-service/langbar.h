@@ -36,37 +36,11 @@ public:
 
   InputModeToggleButton(CLSID, ULONG, View *, Handlers *);
 
-  HRESULT __stdcall QueryInterface(REFIID riid, void **ppvObject) {
-    if (ppvObject == NULL) {
-      return E_INVALIDARG;
-    }
-    if (IsEqualIID(riid, IID_IUnknown) ||
-        IsEqualIID(riid, IID_ITfLangBarItem) ||
-        IsEqualIID(riid, IID_ITfLangBarItemButton)) {
-      *ppvObject = static_cast<ITfLangBarItemButton *>(this);
-    } else if (IsEqualIID(riid, IID_ITfSource)) {
-      *ppvObject = static_cast<ITfSource *>(this);
-    } else {
-      *ppvObject = NULL;
-      return E_NOINTERFACE;
-    }
-    AddRef();
-    return S_OK;
-  }
-
-  ULONG __stdcall AddRef(void) { return ++ref_count_; }
-
-  ULONG __stdcall Release(void) {
-    if (ref_count_ <= 0) {
-      return 0;
-    }
-
-    const ULONG count = --ref_count_;
-    if (count == 0) {
-      delete this;
-    }
-    return count;
-  }
+  // ITfLangBarItemButton
+  virtual HRESULT __stdcall QueryInterface(REFIID riid,
+                                           void **ppvObject) override;
+  virtual ULONG __stdcall AddRef(void) override;
+  virtual ULONG __stdcall Release(void) override;
 
   // ITfSource
   virtual HRESULT __stdcall AdviseSink(REFIID riid, IUnknown *punk,

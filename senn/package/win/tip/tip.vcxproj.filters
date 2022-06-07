@@ -48,9 +48,6 @@
     <ClInclude Include="text-service\langbar.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="text-service\hiragana\ui.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="text-service\ui.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>

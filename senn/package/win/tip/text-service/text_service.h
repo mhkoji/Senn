@@ -34,65 +34,39 @@ public:
         ref_count_(1) {}
 
   // IUnknow
-  HRESULT __stdcall QueryInterface(REFIID riid, void **ppvObject) {
-    if (ppvObject == NULL) {
-      return E_INVALIDARG;
-    }
-    if (IsEqualIID(riid, IID_IUnknown) ||
-        IsEqualIID(riid, IID_ITfTextInputProcessor)) {
-      *ppvObject = static_cast<ITfTextInputProcessor *>(this);
-    } else if (IsEqualIID(riid, IID_ITfKeyEventSink)) {
-      *ppvObject = static_cast<ITfKeyEventSink *>(this);
-    } else if (IsEqualIID(riid, IID_ITfDisplayAttributeProvider)) {
-      *ppvObject = static_cast<ITfDisplayAttributeProvider *>(this);
-    } else if (IsEqualIID(riid, IID_ITfDisplayAttributeProvider)) {
-      *ppvObject = static_cast<ITfCompositionSink *>(this);
-    } else {
-      *ppvObject = NULL;
-      return E_NOINTERFACE;
-    }
-    AddRef();
-    return S_OK;
-  }
-
-  ULONG __stdcall AddRef(void) { return ++ref_count_; }
-
-  ULONG __stdcall Release(void) {
-    if (ref_count_ <= 0) {
-      return 0;
-    }
-
-    const ULONG count = --ref_count_;
-    if (count == 0) {
-      delete this;
-    }
-    return count;
-  }
+  virtual HRESULT __stdcall QueryInterface(REFIID riid,
+                                           void **ppvObject) override;
+  virtual ULONG __stdcall AddRef(void) override;
+  virtual ULONG __stdcall Release(void) override;
 
   // ITfKeyEventSink
-  HRESULT __stdcall OnSetFocus(BOOL fForeground) override;
-  HRESULT __stdcall OnTestKeyDown(ITfContext *, WPARAM, LPARAM,
-                                  BOOL *) override;
-  HRESULT __stdcall OnTestKeyUp(ITfContext *, WPARAM, LPARAM, BOOL *) override;
-  HRESULT __stdcall OnKeyDown(ITfContext *, WPARAM, LPARAM, BOOL *) override;
-  HRESULT __stdcall OnKeyUp(ITfContext *, WPARAM, LPARAM, BOOL *) override;
-  HRESULT __stdcall OnPreservedKey(ITfContext *, REFGUID, BOOL *) override;
-
-  // ITfTextInputProcessor
-  HRESULT Activate(ITfThreadMgr *, TfClientId);
-  HRESULT Deactivate();
-
-  // ITfCompositionSink
-  HRESULT __stdcall OnCompositionTerminated(TfEditCookie,
-                                            ITfComposition *) override;
+  virtual HRESULT __stdcall OnSetFocus(BOOL fForeground) override;
+  virtual HRESULT __stdcall OnTestKeyDown(ITfContext *pic, WPARAM wParam,
+                                          LPARAM lParam,
+                                          BOOL *pfEaten) override;
+  virtual HRESULT __stdcall OnTestKeyUp(ITfContext *pic, WPARAM wParam,
+                                        LPARAM lParam, BOOL *pfEaten) override;
+  virtual HRESULT __stdcall OnKeyDown(ITfContext *pic, WPARAM wParam,
+                                      LPARAM lParam, BOOL *pfEaten) override;
+  virtual HRESULT __stdcall OnKeyUp(ITfContext *pic, WPARAM wParam,
+                                    LPARAM lParam, BOOL *pfEaten) override;
+  virtual HRESULT __stdcall OnPreservedKey(ITfContext *pic, REFGUID rguid,
+                                           BOOL *pfEaten) override;
 
   // ITfDisplayAttributeProvider
-  HRESULT __stdcall EnumDisplayAttributeInfo(
-      IEnumTfDisplayAttributeInfo **) override;
-  HRESULT __stdcall GetDisplayAttributeInfo(
-      REFGUID, ITfDisplayAttributeInfo **) override;
+  virtual HRESULT __stdcall EnumDisplayAttributeInfo(
+      IEnumTfDisplayAttributeInfo **ppEnum) override;
+  virtual HRESULT __stdcall GetDisplayAttributeInfo(
+      REFGUID guid, ITfDisplayAttributeInfo **ppInfo) override;
 
-  HRESULT ActivateInternal(ITfThreadMgr *thread_mgr, TfClientId client_id);
+  // ITfCompositionSink
+  virtual HRESULT __stdcall OnCompositionTerminated(
+      TfEditCookie ecWrite, ITfComposition *pComposition) override;
+
+  // ITfTextInputProcessor
+  virtual HRESULT __stdcall Activate(ITfThreadMgr *ptim,
+                                     TfClientId tid) override;
+  virtual HRESULT __stdcall Deactivate(void) override;
 
   // langbar::InputModeToggleButton::View
   virtual void GetIcon(HICON *) const override;
@@ -104,6 +78,8 @@ public:
   virtual void OnToggleInputModeKeyDown() override;
 
   void ToggleInputMode();
+
+  HRESULT ActivateInternal(ITfThreadMgr *thread_mgr, TfClientId client_id);
 
 private:
   CLSID clsid_text_service_;
