@@ -65,13 +65,10 @@
 (defun toggle-input-mode (ime)
   (with-accessors ((input-mode state-input-mode)
                    (input-state state-input-state)) (ime-state ime)
-    (ecase input-mode
-      (:hiragana
-       (setf input-mode :direct)
-       (setf input-state nil))
-      (:direct
-       (setf input-mode :hiragana)
-       (setf input-state (senn.im.inputting:make-state)))))
+    (destructuring-bind (state mode)
+        (senn.win.im.toggle-input-mode:execute input-state input-mode)
+      (setf input-state state)
+      (setf input-mode mode)))
   ;; It seems to need to consume output buffer..
   (format nil "OK~%"))
 
@@ -79,7 +76,7 @@
   (with-accessors ((input-mode state-input-mode)
                    (input-state state-input-state)) (ime-state ime)
     (let ((can-process (senn.win.im.can-process:execute
-                        input-state input-mode key)))
+                        input-state key input-mode)))
       (format nil "~A~%" (if can-process 1 0)))))
 
 (defun process-input (ime key)
@@ -87,7 +84,7 @@
                    (input-mode state-input-mode)
                    (input-state state-input-state)) (ime-state ime)
     (let ((result (senn.win.im.process-input:execute
-                   input-state input-mode ime key)))
+                   input-state ime key input-mode)))
       (destructuring-bind (can-process view
                            &key state committed-segments)
           result
