@@ -10,18 +10,21 @@
 
 (defmethod execute ((s (eql nil))
                     (mode t))
-  (assert (eql mode :direct))
-  (result (senn.im.inputting:make-state) :hiragana))
+  (assert (senn.win.im.input-mode:mode=
+           mode
+           senn.win.im.input-mode:+direct+))
+  (result (senn.im.inputting:make-state)
+          senn.win.im.input-mode:+hiragana+))
 
 (defmethod execute ((s senn.im.inputting:state)
                     (mode t))
-  (ecase mode
+  (senn.win.im.input-mode:mode-case mode
     (:hiragana
      (if (senn.im.inputting:state-buffer-empty-p s)
-         (result nil :direct)
-         (result s :direct)))
+         (result nil senn.win.im.input-mode:+direct+)
+         (result s   senn.win.im.input-mode:+direct+)))
     (:direct
-     (result s :hiragana))))
+     (result s senn.win.im.input-mode:+hiragana+))))
 
 (defmethod execute ((s senn.im.converting:state)
                     (mode t))

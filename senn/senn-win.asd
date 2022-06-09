@@ -4,6 +4,7 @@
   :components
   ((:file "keys")
    (:file "im/ime")
+   (:file "im/input-mode")
    (:file "im/process-input")
    (:file "im/can-process")
    (:file "im/toggle-input-mode")

@@ -59,14 +59,11 @@
 (defmethod execute ((s (eql nil))
                     (ime senn.win.im:ime)
                     (key senn.win.keys:key)
-                    (mode (eql :direct)))
+                    (mode t))
+  (assert (senn.win.im.input-mode:mode=
+           mode
+           senn.win.im.input-mode:+direct+))
   (result nil nil))
-
-(defmethod execute ((s (eql nil))
-                    (ime senn.win.im:ime)
-                    (key senn.win.keys:key)
-                    (mode (eql :hiragana)))
-  (execute (senn.im.inputting:make-state) ime key mode))
 
 (defmethod execute ((s senn.im.converting:state)
                     (ime senn.win.im:ime)
@@ -76,7 +73,7 @@
          (let ((view (committed-view
                       (senn.im.converting:current-input s)))
                (segs (senn.im.converting:state-segments s))
-               (state (ecase mode
+               (state (senn.win.im.input-mode:mode-case mode
                         (:hiragana (senn.im.inputting:make-state))
                         (:direct   nil))))
            (result t view
@@ -105,7 +102,7 @@
 
 (defun oem-key->char (mode key)
   (let ((shift-p (senn.win.keys:key-shift-p key)))
-    (ecase mode
+    (senn.win.im.input-mode:mode-case mode
       (:hiragana
        (cond ((senn.win.keys:oem-minus-p key)  (if shift-p #\＝ #\ー))
              ((senn.win.keys:oem-7-p key)      (if shift-p #\〜 #\＾))
@@ -137,7 +134,7 @@
   (when (senn.win.keys:number-p key)
     (let ((code (senn.win.keys:key-code key))
           (shift-p (senn.win.keys:key-shift-p key)))
-      (ecase mode
+      (senn.win.im.input-mode:mode-case mode
         (:hiragana
          (if shift-p
              (cond ((= code (char-code #\0)) #\〜)
@@ -201,7 +198,7 @@
                    (if (senn.im.inputting:state-buffer-empty-p s)
                        +crlf+
                        (senn.im.inputting:state-buffer-string s))))
-            (state (ecase mode
+            (state (senn.win.im.input-mode:mode-case mode
                      (:hiragana (senn.im.inputting:make-state))
                      (:direct   nil))))
         (return (result t view :state state))))
