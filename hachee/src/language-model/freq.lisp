@@ -15,9 +15,6 @@
 (defstruct freq
   (hash (make-hash-table :test #'equal)))
 
-(defmacro inchash (key hash)
-  `(incf (gethash ,key ,hash 0)))
-
 (defun inc-count (freq tokens)
   (inchash tokens (freq-hash freq)))
 

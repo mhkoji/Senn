@@ -21,7 +21,7 @@
   (bordeaux-threads:make-thread
    (lambda ()
      (senn-ipc.server.log:info "Connected")
-     (funcall client-loop-fn (make-client :usocket socket))
+     (funcall client-loop-fn (make-client :socket socket))
      (ignore-errors
       (usocket:socket-close socket))
      (senn-ipc.server.log:info "Disconnected"))
