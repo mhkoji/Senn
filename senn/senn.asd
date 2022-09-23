@@ -7,16 +7,16 @@
    (:module :im
     :pathname "im"
     :components
-    ((:file "kkc")
-     (:file "predict")
+    ((:file "kkc/kkc")
      (:module :im/predict
       :pathname "predict"
       :components
       (#+nil (:file "prefix")
+       (:file "predict")
        (:file "katakana")))
      (:file "converting")
      (:file "buffer")
      (:file "inputting")
-     (:file "kkc-store"))))
+     (:file "kkc-store/kkc-store"))))
   :depends-on (#+nil :cl-trie
                :alexandria))

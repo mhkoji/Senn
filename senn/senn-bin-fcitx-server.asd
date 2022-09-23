@@ -4,7 +4,7 @@
   :components
   ((:file "im/kkc/hachee")
    (:file "im/kkc-store/hachee/user-dict")
-   (:file "im/kkc-store/hachee")
+   (:file "im/kkc-store/hachee/hachee")
    (:file "bin/fcitx-server"))
   :depends-on (:hachee-kkc-impl-lm
                :hachee-data
