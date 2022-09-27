@@ -5,7 +5,6 @@
   ((:file "keys")
    (:file "im/state")
    (:file "im/view")
-   (:file "im/ime")
    (:file "im/process-input")
    (:file "im/select-candidate")
    (:file "im/im")
