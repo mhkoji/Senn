@@ -4,10 +4,15 @@
 ;;  - Kana-Kanji Conversion
 (defpackage :senn.fcitx.im.process-input
   (:use :cl :senn.fcitx.im.view)
-  (:export :execute))
+  (:export :mixin
+           :execute))
 (in-package :senn.fcitx.im.process-input)
 
-(defgeneric execute (state key ime))
+(defclass mixin (senn.im.inputting:ime
+                 senn.im.converting:ime)
+  ())
+
+(defgeneric execute (state key mixin))
 
 ;;;
 
@@ -16,7 +21,7 @@
 
 (defmethod execute ((s senn.fcitx.im.state:katakana)
                     (key senn.fcitx.keys:key)
-                    (ime senn.fcitx.im.ime:ime))
+                    (ime mixin))
   (cond ((senn.fcitx.keys:enter-p key)
          (let ((new-state (senn.im.inputting:make-state))
                (committed-string (senn.fcitx.im.state:katakana-input s)))
@@ -29,7 +34,7 @@
 
 (defmethod execute ((s senn.fcitx.im.state:selecting-from-predictions)
                     (key senn.fcitx.keys:key)
-                    (ime senn.fcitx.im.ime:ime))
+                    (ime mixin))
   (cond ((senn.fcitx.keys:enter-p key)
          (let ((new-state (senn.im.inputting:make-state))
                (committed-string
@@ -55,7 +60,7 @@
 
 (defmethod execute ((s senn.im.converting:state)
                     (key senn.fcitx.keys:key)
-                    (ime senn.fcitx.im.ime:ime))
+                    (ime mixin))
   (cond ((senn.fcitx.keys:left-p key)
          (senn.im.converting:current-segment-move! s -1)
          (resp t (converting/converting-state s) :state s))
@@ -110,7 +115,7 @@
 
 (defmethod execute ((s senn.im.inputting:state)
                     (key senn.fcitx.keys:key)
-                    (ime senn.fcitx.im.ime:ime))
+                    (ime mixin))
   (cond ((/= (logand (senn.fcitx.keys:key-state key)
                      #b1000000)
              0)
