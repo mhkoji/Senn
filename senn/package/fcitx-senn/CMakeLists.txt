@@ -55,14 +55,6 @@ if (SENN_IME STREQUAL "ECL")
   set(FCITX_SENN_DEPENDS
       ${CMAKE_CURRENT_SOURCE_DIR}/dep-ecl/senn-lib-fcitx--all-systems.a)
 
-  add_custom_command(
-    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/dep-ecl/senn-lib-fcitx--all-systems.a
-    COMMAND mkdir -p ${CMAKE_CURRENT_SOURCE_DIR}/dep-ecl
-    COMMAND ros use ecl
-    COMMAND ros run -e "(asdf:make-build :senn-lib-fcitx :type :static-library :monolithic t :init-name \"init_senn\" :move-here #P\"${CMAKE_CURRENT_SOURCE_DIR}/dep-ecl/\")" -q
-    VERBATIM
-  )
-  add_custom_target(senn_lib_fcitx_all_systems ALL DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/dep-ecl/senn-lib-fcitx--all-systems.a)
 elseif (SENN_IME STREQUAL "SOCKET")
   set(FCITX_SENN_SOURCES
       fcitx_senn.cpp
@@ -84,15 +76,6 @@ fcitx_add_addon_full(senn
 )
 
 ### kkc
-
-#### engine
-add_custom_command(
-  OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/dep-kkc/kkc-engine
-  COMMAND mkdir -p ${CMAKE_CURRENT_SOURCE_DIR}/dep-kkc
-  COMMAND ros use sbcl
-  COMMAND ros dump executable ${SENN_ROOT_DIR}/senn-kkc-engine/hachee/ros/main-lm.ros -o ${CMAKE_CURRENT_SOURCE_DIR}/dep-kkc/kkc-engine
-)
-add_custom_target(kkc_engine ALL DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/dep-kkc/kkc-engine)
 
 #### userdict
 add_executable(userdict_main
