@@ -39,13 +39,16 @@ def main():
         '../../third-party/MPLUS_FONTS/Mplus1-Bold.ttf')
     write_svg('./senn.svg', fontpath, ch)
 
+    size = '32x32'
+    outpath = './senn-' + size + '.png'
     subprocess.run(['convert',
-                    '-size', '40x40',
+                    '-size', size,
                     '-gravity', 'center',
-                    '-extent', '48x48',
+                    '-extent', size,
                     '-background', 'none',
-                    './senn.svg', './senn.png'])
+                    './senn.svg', outpath])
 
+# sudo apt install -y imagemagick
 # pip3 install --user fonttools
 # ./make_icon.py
 if __name__ == '__main__':
