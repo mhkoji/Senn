@@ -1,0 +1,10 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: fcitx5-senn
+Source: https://github.com/mhkoji/Senn
+
+Copyright: 2022 mhkoji <mhkoji2@gmail.com>
+License: The MIT License
+
+Files: debian/*
+Copyright: 2022 mhkoji <mhkoji2@gmail.com>
+License: GPL-2+
