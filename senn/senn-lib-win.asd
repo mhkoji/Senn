@@ -1,7 +1,10 @@
 (asdf:defsystem :senn-lib-win
   :serial t
   :components
-  ((:file "src/lib/win"))
-  :depends-on (:log4cl
-               :senn-win
-	       :senn-im-kkc-named-pipe))
+  ((:file "src/lib/win")
+   (:file "src/lib/win-engine"))
+  :depends-on (:senn-win
+               :senn-im-kkc-engine
+               :log4cl
+               ;:senn-im-kkc-named-pipe
+               ))

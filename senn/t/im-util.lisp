@@ -1,7 +1,7 @@
-(defpackage :senn.t.fcitx-util
+(defpackage :senn.t.im-util
   (:use :cl)
   (:export :converting-state-segment-strings))
-(in-package :senn.t.fcitx-util)
+(in-package :senn.t.im-util)
   
 (defun converting-state-segment-strings (state)
   (mapcar (lambda (seg)
