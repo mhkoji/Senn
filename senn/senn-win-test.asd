@@ -3,8 +3,10 @@
   :components
   ((:file "src/im/kkc/hachee")
    (:file "t/base")
-   (:file "t/win") )
-  :depends-on (:hachee-kkc-impl-lm
-	       :hachee-data
-	       :senn-win
+   (:file "t/im-util")
+   (:file "t/win/win")
+   (:file "t/win/lib"))
+  :depends-on (:senn-lib-win
+               :hachee-kkc-impl-lm
+               :hachee-data
                :fiveam))

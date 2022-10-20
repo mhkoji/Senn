@@ -3,7 +3,7 @@
   :pathname "t/"
   :components
   ((:file "base")
-   (:file "fcitx-util")
+   (:file "im-util")
    (:module :fcitx
     :pathname "fcitx/"
     :components

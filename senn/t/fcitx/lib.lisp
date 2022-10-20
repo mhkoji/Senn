@@ -11,7 +11,7 @@
        (unwind-protect
             (let ((state (senn.im.converting:convert ime "きょうは")))
               (,test (equal
-                      (senn.t.fcitx-util:converting-state-segment-strings
+                      (senn.t.im-util:converting-state-segment-strings
                        state)
                       '("今日/きょう" "は/は"))))
          (senn.lib.fcitx:close-ime ime)))))

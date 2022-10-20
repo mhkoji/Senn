@@ -3,7 +3,7 @@
   :pathname "t/"
   :components
   ((:file "base")
-   (:file "fcitx-util")
+   (:file "im-util")
    (:file "ibus/ibus")
    (:file "ibus/inputting")
    (:file "ibus/converting")

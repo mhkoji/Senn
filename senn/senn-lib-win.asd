@@ -3,7 +3,8 @@
   :components
   ((:file "src/lib/win")
    (:file "src/lib/win-engine"))
-  :depends-on (:log4cl
-               :senn-win
+  :depends-on (:senn-win
+               :senn-im-kkc-engine
+               :log4cl
                ;:senn-im-kkc-named-pipe
                ))

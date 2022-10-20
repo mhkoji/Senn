@@ -1,5 +1,6 @@
 (defpackage :senn.t.win
-  (:use :cl))
+  (:use :cl)
+  (:export :add-tests))
 (in-package :senn.t.win)
 
 (defmethod senn.im.kkc:convert ((kkc (eql 'static-kkc)) (pron string)
@@ -82,6 +83,17 @@
 
 (fiveam:def-suite :senn.t.win :in :senn.t)
 (fiveam:in-suite :senn.t.win)
+
+(defmacro add-tests (name &rest syms)
+  (let ((full-name (intern (concatenate 'string
+                            "SENN.T.WIN." (string-upcase name))
+                           :keyword)))
+    `(progn
+       (fiveam:def-suite ,full-name :in :senn.t.win)
+       ,@(mapcar (lambda (sym)
+                   `(fiveam:def-test ,sym (:suite ,full-name)
+                      (,sym :test fiveam:is)))
+                 syms))))
 
 (fiveam:test test-convert
   (test-convert :test fiveam:is))
