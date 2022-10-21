@@ -1,6 +1,7 @@
 (in-package :senn.lib.win)
 
 (defun make-ime (engine-path)
+  (log:info "Making IME ...")
   (let ((engine-runner (senn.im.kkc.engine:make-engine-runner
                         :program engine-path)))
     (senn.win.stateful-ime:make-ime
