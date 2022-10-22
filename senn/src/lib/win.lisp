@@ -2,6 +2,8 @@
   (:use :cl)
   (:import-from :senn.win.server
                 :handle-request)
-  (:export :make-ime
+  (:export :init
+           :destroy
+           :make-ime
            :close-ime
            :handle-request))
