@@ -22,7 +22,7 @@ Roswell needs to be installed first.
 % mkdir -p dep-ecl
 % ros install ecl/21.2.1
 % ros use ecl
-% ros run -e '(asdf:make-build :senn-lib-fcitx :type :static-library :monolithic t :init-name "init_senn" :move-here #P"dep-ecl/")' -q
+% ros -s senn-lib-fcitx -e '(asdf:make-build :senn-lib-fcitx :type :static-library :monolithic t :init-name "init_senn" :move-here #P"dep-ecl/")' -q
 ```
 
 ## Install by CMake
