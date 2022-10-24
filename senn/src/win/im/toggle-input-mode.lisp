@@ -8,7 +8,7 @@
 (defun result (state mode)
   (list state mode))
 
-(defmethod execute ((s (eql nil))
+(defmethod execute ((s (eql :direct-state))
                     (mode t))
   (assert (senn.win.im.input-mode:mode=
            mode
@@ -20,11 +20,13 @@
                     (mode t))
   (senn.win.im.input-mode:mode-case mode
     (:hiragana
-     (if (senn.im.inputting:state-buffer-empty-p s)
-         (result nil senn.win.im.input-mode:+direct+)
-         (result s   senn.win.im.input-mode:+direct+)))
+     (result (if (senn.im.inputting:state-buffer-empty-p s)
+		 :direct-state
+		 s)
+	     senn.win.im.input-mode:+direct+))
     (:direct
-     (result s senn.win.im.input-mode:+hiragana+))))
+     (result s
+	     senn.win.im.input-mode:+hiragana+))))
 
 (defmethod execute ((s senn.im.converting:state)
                     (mode t))

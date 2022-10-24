@@ -29,7 +29,8 @@
 
 (defun start-server (client-loop-fn &key (port 5678))
   (usocket:with-server-socket
-      (server-socket (usocket:socket-listen "0.0.0.0" port))
+      (server-socket (usocket:socket-listen "0.0.0.0" port
+                                            :reuse-address t))
     (let ((threads nil)
           (sockets nil))
       (senn-ipc.server.log:info "Waiting for client...")

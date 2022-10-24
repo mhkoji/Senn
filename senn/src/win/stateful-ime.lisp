@@ -53,7 +53,7 @@
 (defun make-initial-state ()
   (make-state
    :input-mode :direct
-   :input-state nil
+   :input-state :direct-state
    :history (make-history)))
 
 (defgeneric ime-state (ime))
@@ -121,7 +121,10 @@
   (ime-predictor ime))
 
 (defun make-ime (&key kkc predictor)
-  (make-instance 'ime
-                 :state (make-initial-state)
-                 :kkc kkc
-                 :predictor predictor))
+  (let ((state (make-initial-state)))
+    (when (typep kkc 'history-overwrite-mixin)
+      (setf (slot-value kkc 'history) (state-history state)))
+    (make-instance 'ime
+                   :state state
+                   :kkc kkc
+                   :predictor predictor)))
