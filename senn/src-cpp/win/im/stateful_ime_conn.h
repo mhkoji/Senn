@@ -3,7 +3,9 @@
 #include "stateful_ime_proxy.h"
 #include <string>
 #include <windows.h>
+#ifdef SENN_IME_TCP
 #include <winsock2.h>
+#endif
 
 namespace senn {
 namespace win {
@@ -32,8 +34,8 @@ private:
   const HANDLE pipe_;
 };
 
+#ifdef SENN_IME_TCP
 // TODO: Add another file for TCP
-/*
 class ConnectionTCP : public Connection {
 public:
   ConnectionTCP(SOCKET);
@@ -45,7 +47,7 @@ public:
 private:
   const SOCKET socket_;
 };
-*/
+#endif
 
 class StatefulIMEConn {
   class Requester : public senn::RequesterInterface {
@@ -62,10 +64,10 @@ class StatefulIMEConn {
 
 public:
   static StatefulIMEProxy *IPC(const WCHAR *const named_pipe_path);
-  /*
+#ifdef SENN_IME_TCP
   static StatefulIMEProxy *TCP(const std::string &host,
                                const std::string &port);
-  */
+#endif
 };
 
 } // namespace im
