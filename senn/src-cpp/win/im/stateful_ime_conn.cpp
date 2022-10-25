@@ -1,6 +1,8 @@
 #include "stateful_ime_conn.h"
 #include <iostream>
-// #include <ws2tcpip.h>
+#ifdef SENN_IME_TCP
+#include <ws2tcpip.h>
+#endif
 
 namespace senn {
 namespace win {
@@ -35,7 +37,7 @@ bool ConnectionIPC::ReadLine(std::string *output) {
   return true;
 }
 
-/*
+#ifdef SENN_IME_TCP
 ConnectionTCP::ConnectionTCP(SOCKET socket) : socket_(socket) {}
 
 void ConnectionTCP::Close() { closesocket(socket_); }
@@ -64,7 +66,7 @@ bool ConnectionTCP::ReadLine(std::string *output) {
 
   return true;
 }
-*/
+#endif
 
 StatefulIMEConn::Requester::Requester(Connection *conn) : conn_(conn) {}
 
@@ -93,7 +95,7 @@ StatefulIMEProxy *StatefulIMEConn::IPC(const WCHAR *const named_pipe_path) {
       new StatefulIMEConn::Requester(new ConnectionIPC(pipe))));
 }
 
-/*
+#ifdef SENN_IME_TCP
 StatefulIMEProxy *StatefulIMEConn::TCP(const std::string &host,
                                        const std::string &port) {
   // https://docs.microsoft.com/ja-jp/windows/win32/winsock/complete-client-code
@@ -103,7 +105,6 @@ StatefulIMEProxy *StatefulIMEConn::TCP(const std::string &host,
   hint.ai_socktype = SOCK_STREAM;
   hint.ai_protocol = IPPROTO_TCP;
   if (getaddrinfo(host.c_str(), port.c_str(), &hint, &result) != 0) {
-    WSACleanup();
     return nullptr;
   }
 
@@ -121,10 +122,9 @@ StatefulIMEProxy *StatefulIMEConn::TCP(const std::string &host,
     closesocket(sock);
   }
   freeaddrinfo(result);
-  WSACleanup();
   return nullptr;
 }
-*/
+#endif
 
 } // namespace im
 } // namespace win

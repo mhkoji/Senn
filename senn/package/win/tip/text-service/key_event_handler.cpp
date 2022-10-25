@@ -216,7 +216,7 @@ KeyEventHandler::HandleIMEView(ITfContext *context,
                                 static_cast<CandidateListUI::Handlers *>(this));
   }
 
-  candidate_list_state_->Update(view);
+  candidate_list_state_->Update(view.predictions, -1);
   candidate_list_ui_->NotifyUpdateUI();
 
   HRESULT result;
@@ -247,7 +247,8 @@ KeyEventHandler::HandleIMEView(ITfContext *context,
                                 static_cast<CandidateListUI::Handlers *>(this));
   }
 
-  candidate_list_state_->Update(view);
+  candidate_list_state_->Update(view.cursor_form_candidates,
+                                view.cursor_form_candidate_index);
   candidate_list_ui_->NotifyUpdateUI();
 
   return S_OK;
@@ -394,31 +395,18 @@ bool IsSameCandidateList(const std::vector<std::wstring> &c1,
 
 } // namespace
 
-void CandidateListState::Update(const senn::win::im::views::Editing &view) {
-  current_index_ = -1;
-
-  if (!IsSameCandidateList(candidates_, view.predictions)) {
-    candidates_.clear();
-    for (std::vector<std::wstring>::const_iterator it =
-             view.predictions.begin();
-         it != view.predictions.end(); ++it) {
-      candidates_.push_back(*it);
-    }
-  }
-}
-
-void CandidateListState::Update(const senn::win::im::views::Converting &view) {
+void CandidateListState::Update(const std::vector<std::wstring> &candidates,
+                                int current_index) {
   // Update candidate index
-  current_index_ = view.cursor_form_candidate_index;
+  current_index_ = current_index;
 
   // Update candidates
   // If the updated candidate list is the same as the current one, we don't
   // update.
-  if (!IsSameCandidateList(candidates_, view.cursor_form_candidates)) {
+  if (!IsSameCandidateList(candidates_, candidates)) {
     candidates_.clear();
-    for (std::vector<std::wstring>::const_iterator it =
-             view.cursor_form_candidates.begin();
-         it != view.cursor_form_candidates.end(); ++it) {
+    for (std::vector<std::wstring>::const_iterator it = candidates.begin();
+         it != candidates.end(); ++it) {
       candidates_.push_back(*it);
     }
   }

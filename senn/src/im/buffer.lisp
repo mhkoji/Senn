@@ -4,6 +4,7 @@
            :buffer-cursor-pos
            :buffer-string
            :insert-char
+           :insert-char-direct
            :delete-char
            :move-cursor-pos))
 (in-package :senn.im.buffer)
@@ -20,6 +21,15 @@
                      (subseq str 0 (1- len))
                      "ん")
         str)))
+
+(defun insert-char-direct (buffer char)
+  (let ((string (buffer-string buffer))
+        (pos (buffer-cursor-pos buffer)))
+    (make-buffer :string (concatenate 'string
+                          (subseq string 0 pos)
+                          (string char)
+                          (subseq string pos))
+                 :cursor-pos (1+ pos))))
 
 (defun insert-char (buffer char)
   (let ((string (buffer-string buffer))

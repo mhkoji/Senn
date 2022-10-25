@@ -5,6 +5,7 @@
 
 #ifdef SENN_IME_TCP
 #include <ShlObj_core.h>
+#include <win/im/stateful_ime_conn.h>
 #elif SENN_IME_ECL
 #include <win/im/stateful_ime_conn.h>
 #include <win/im/stateful_ime_ecl.h>
@@ -92,6 +93,9 @@ HRESULT TextService::ActivateInternal(ITfThreadMgr *thread_mgr,
       }
 
       ime_ = senn::win::im::StatefulIMEConn::TCP("localhost", "5678");
+      if (ime_ == nullptr) {
+        return E_FAIL;
+      }
     }
 #elif SENN_IME_ECL
     {

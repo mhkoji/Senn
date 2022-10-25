@@ -4,8 +4,8 @@
 
 #include "../senn.h"
 #include "../variable.h"
-#include "object_releaser.h"
 #include "candidate_ui_list.h"
+#include "object_releaser.h"
 
 namespace senn {
 namespace senn_win {
@@ -83,12 +83,23 @@ HRESULT __stdcall CandidateListUI::IsShown(BOOL *pbShow) {
   if (pbShow == nullptr) {
     return E_INVALIDARG;
   }
-  *pbShow = hwnd_ && IsWindowVisible(hwnd_);
+  *pbShow = hwnd_ ? IsWindowVisible(hwnd_) : false;
   return S_OK;
 }
 
 void CandidateListUI::NotifyUpdateUI() {
   if (hwnd_) {
+    {
+      LONG width = 0, height = 0;
+      HDC hdc = GetDC(hwnd_);
+      candidate_window::CalculateSize(hdc, view_, &width, &height);
+      // SetWindowPos for resizing the candidate window should executed out side
+      // of WM_PAINT, otherwise the window often blinks.
+      SetWindowPos(hwnd_, nullptr, 0, 0, width, height,
+                   SWP_NOMOVE | SWP_NOACTIVATE | SWP_SHOWWINDOW);
+      ReleaseDC(hwnd_, hdc);
+    }
+
     // Send WM_PAINT message
     InvalidateRect(hwnd_, nullptr, true);
     UpdateWindow(hwnd_);
@@ -106,9 +117,10 @@ void CandidateListUI::NotifyUpdateUI() {
 
 void CandidateListUI::Move(RECT *rc) {
   if (hwnd_) {
-    // top + 25 so that the candidate windows doesn't covers the composition text.
-    SetWindowPos(hwnd_, HWND_TOPMOST, rc->left, rc->top + 25, 100, 400,
-                 SWP_NOACTIVATE);
+    // top + 25 so that the candidate windows doesn't covers the composition
+    // text.
+    SetWindowPos(hwnd_, HWND_TOPMOST, rc->left, rc->top + 25, 100, 40,
+                 SWP_NOACTIVATE | SWP_NOSIZE);
   }
 }
 

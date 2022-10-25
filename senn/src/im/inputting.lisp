@@ -14,6 +14,7 @@
            :make-state
 
            :insert-char!
+           :insert-char-direct!
            :delete-char!))
 (in-package :senn.im.inputting)
 
@@ -69,6 +70,11 @@
 (defun insert-char! (state char &optional ime)
   (setf (state-buffer state)
         (senn.im.buffer:insert-char (state-buffer state) char))
+  (state-predictions-update! state ime))
+
+(defun insert-char-direct! (state char &optional ime)
+  (setf (state-buffer state)
+        (senn.im.buffer:insert-char-direct (state-buffer state) char))
   (state-predictions-update! state ime))
 
 (defun delete-char! (state &optional ime)

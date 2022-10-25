@@ -8,12 +8,10 @@
    :program (merge-pathnames ".senn/kkc-engine.exe"
                              (user-homedir-pathname))))
 
-(defun run-with-kkc (kkc)
+(defun start-server (make-ime-fn)
   (senn-ipc.server.named-pipe:start-server
    (lambda (client)
-     (let ((ime (senn.win.stateful-ime:make-ime
-                 :kkc kkc
-                 :predictor nil)))
+     (let ((ime (funcall make-ime-fn)))
        (labels ((handle (req)
                   (senn.win.server:handle-request ime req)))
          (senn-ipc.server:client-loop client :handle-fn #'handle))))
@@ -22,5 +20,9 @@
 (defun run ()
   (let ((kkc (senn.im.kkc.engine:make-kkc-and-run
               (make-engine-runner))))
-    (unwind-protect (run-with-kkc kkc)
+    (unwind-protect
+	 (start-server
+	  (lambda ()
+	    (senn.win.stateful-ime:make-ime
+	     :kkc kkc :predictor nil)))
       (senn.im.kkc.engine:close-kkc kkc))))

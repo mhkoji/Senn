@@ -56,7 +56,7 @@
         :state state
         :committed-segments committed-segments))
 
-(defmethod execute ((s (eql nil))
+(defmethod execute ((s (eql :direct-state))
                     (ime senn.win.im:ime)
                     (key senn.win.keys:key)
                     (mode t))
@@ -178,7 +178,11 @@
                     (number-key->char mode key)
                     (alphabet-key->char key))))
       (when char
-        (senn.im.inputting:insert-char! s char ime)
+	(senn.win.im.input-mode:mode-case mode
+	  (:hiragana
+	   (senn.im.inputting:insert-char! s char ime))
+	  (:direct
+	   (senn.im.inputting:insert-char-direct! s char ime)))
         (return (result t (editing-view s) :state s))))
     (when (senn.win.keys:backspace-p key)
       (return
@@ -200,6 +204,6 @@
                        (senn.im.inputting:state-buffer-string s))))
             (state (senn.win.im.input-mode:mode-case mode
                      (:hiragana (senn.im.inputting:make-state))
-                     (:direct   nil))))
+                     (:direct   :direct-state))))
         (return (result t view :state state))))
     (result nil nil)))
