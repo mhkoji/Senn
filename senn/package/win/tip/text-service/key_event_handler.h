@@ -160,8 +160,7 @@ class CandidateListState : public candidate_window::View {
 public:
   CandidateListState() : candidates_(std::vector<std::wstring>()) {}
 
-  void Update(const senn::win::im::views::Editing &);
-  void Update(const senn::win::im::views::Converting &);
+  void Update(const std::vector<std::wstring> &, int);
 
   // candidate_window::View
   virtual const std::vector<std::wstring> *candidates() const override {
