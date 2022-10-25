@@ -42,41 +42,6 @@ const LONG kMarginY = 10;
 const UINT kDTFormat =
     DT_NOCLIP | DT_NOPREFIX | DT_LEFT | DT_SINGLELINE | DT_NOFULLWIDTHCHARBREAK;
 
-void CalculateSize(HDC hdc, const View *view, LONG *out_width,
-                   LONG *out_height) {
-  const std::vector<std::wstring> *candidates = view->candidates();
-
-  const UINT current_page = view->current_index() / kPageSize;
-
-  const UINT begin_index = current_page * kPageSize;
-
-  const UINT end_index =
-      (std::min)((current_page + 1) * kPageSize, view->candidate_count());
-
-  LONG max_text_width = 0;
-  LONG prev_bottom = 0;
-  for (UINT index = begin_index; index < end_index; ++index) {
-    const std::wstring &s = (*view->candidates())[index];
-
-    RECT r_temp = {0, 0, 0, 0};
-    DrawText(hdc, s.c_str(), -1, &r_temp, DT_CALCRECT | kDTFormat);
-    LONG text_width = r_temp.right;
-    LONG text_height = r_temp.bottom;
-
-    LONG top = prev_bottom;
-    LONG bottom = top + kMarginY + text_height + kMarginY;
-
-    prev_bottom = bottom;
-
-    if (max_text_width < text_width) {
-      max_text_width = text_width;
-    }
-  }
-
-  *out_width = kMarginX + max_text_width + kMarginX;
-  *out_height = prev_bottom;
-}
-
 void DrawCandidates(HDC hdc, const View *view, HBRUSH hbrHighlight,
                     LONG area_width) {
   const std::vector<std::wstring> *candidates = view->candidates();
@@ -85,8 +50,8 @@ void DrawCandidates(HDC hdc, const View *view, HBRUSH hbrHighlight,
 
   const int begin_index = current_page * kPageSize;
 
-  const int end_index =
-      (std::min)((current_page + 1) * kPageSize, static_cast<int>(view->candidate_count()));
+  const int end_index = (std::min)((current_page + 1) * kPageSize,
+                                   static_cast<int>(view->candidate_count()));
 
   SetBkMode(hdc, TRANSPARENT);
 
@@ -148,9 +113,6 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT umsg, WPARAM wparam,
       DeleteDC(hdcmem);
     }
 
-    SetWindowPos(hwnd, nullptr, 0, 0, width, height,
-                 SWP_NOMOVE | SWP_NOACTIVATE | SWP_SHOWWINDOW);
-
     HDC hdcmem = CreateCompatibleDC(hdc);
     RECT rc = {0, 0, width, height};
     HBITMAP hbmpmem = CreateCompatibleBitmap(hdc, rc.right, rc.bottom);
@@ -170,6 +132,41 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT umsg, WPARAM wparam,
     break;
   }
   return DefWindowProc(hwnd, umsg, wparam, lparam);
+}
+
+void CalculateSize(HDC hdc, const View *view, LONG *out_width,
+                   LONG *out_height) {
+  const std::vector<std::wstring> *candidates = view->candidates();
+
+  const UINT current_page = view->current_index() / kPageSize;
+
+  const UINT begin_index = current_page * kPageSize;
+
+  const UINT end_index =
+      (std::min)((current_page + 1) * kPageSize, view->candidate_count());
+
+  LONG max_text_width = 0;
+  LONG prev_bottom = 0;
+  for (UINT index = begin_index; index < end_index; ++index) {
+    const std::wstring &s = (*view->candidates())[index];
+
+    RECT r_temp = {0, 0, 0, 0};
+    DrawText(hdc, s.c_str(), -1, &r_temp, DT_CALCRECT | kDTFormat);
+    LONG text_width = r_temp.right;
+    LONG text_height = r_temp.bottom;
+
+    LONG top = prev_bottom;
+    LONG bottom = top + kMarginY + text_height + kMarginY;
+
+    prev_bottom = bottom;
+
+    if (max_text_width < text_width) {
+      max_text_width = text_width;
+    }
+  }
+
+  *out_width = kMarginX + max_text_width + kMarginX;
+  *out_height = prev_bottom;
 }
 
 } // namespace candidate_window

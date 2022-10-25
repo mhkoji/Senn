@@ -29,6 +29,8 @@ bool RegisterWindowClass(HINSTANCE);
 
 void UnregisterWindowClass(HINSTANCE);
 
+void CalculateSize(HDC, const View *, LONG *, LONG *);
+
 } // namespace candidate_window
 } // namespace text_service
 } // namespace senn_win
