@@ -1,8 +1,8 @@
-(defpackage :senn.im.kkc-store
+(defpackage :senn-kkc.store
   (:use :cl)
   (:export :reload
            :get-kkc))
-(in-package :senn.im.kkc-store)
+(in-package :senn-kkc.store)
 
 (defgeneric reload (store)
   (:method ((kkc t)) nil))
