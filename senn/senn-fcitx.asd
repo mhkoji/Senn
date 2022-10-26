@@ -14,4 +14,4 @@
                :jsown
                :log4cl
                :senn
-	       :senn-im-kkc-engine))
+	       :senn-kkc-engine))

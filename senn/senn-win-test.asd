@@ -1,7 +1,7 @@
 (asdf:defsystem :senn-win-test
   :serial t
   :components
-  ((:file "src/im/kkc/hachee")
+  ((:file "../senn-kkc/src/hachee")
    (:file "t/base")
    (:file "t/im-util")
    (:file "t/win/win")

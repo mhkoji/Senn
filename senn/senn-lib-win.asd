@@ -4,7 +4,7 @@
   ((:file "src/lib/win")
    (:file "src/lib/win-engine"))
   :depends-on (:senn-win
-               :senn-im-kkc-engine
+               :senn-kkc-engine
                :log4cl
                ;:senn-im-kkc-named-pipe
                ))

@@ -4,7 +4,7 @@
 (in-package :senn.bin.win-server)
 
 (defun make-engine-runner ()
-  (senn.im.kkc.engine:make-engine-runner
+  (senn-kkc.engine:make-engine-runner
    :program (merge-pathnames ".senn/kkc-engine.exe"
                              (user-homedir-pathname))))
 
@@ -18,11 +18,11 @@
    :pipe-name "\\\\.\\Pipe\\senn\\senn\\bin\\win-server\\run"))
 
 (defun run ()
-  (let ((kkc (senn.im.kkc.engine:make-kkc-and-run
+  (let ((kkc (senn-kkc.engine:make-kkc-and-run
               (make-engine-runner))))
     (unwind-protect
 	 (start-server
 	  (lambda ()
 	    (senn.win.stateful-ime:make-ime
 	     :kkc kkc :predictor nil)))
-      (senn.im.kkc.engine:close-kkc kkc))))
+      (senn-kkc.engine:close-kkc kkc))))
