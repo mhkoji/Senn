@@ -1,7 +1,7 @@
-(asdf:defsystem :senn-bin-win-server-hachee
+(asdf:defsystem :senn-bin-win-server-tcp-hachee
   :serial t
   :components
-  ((:file "src/bin/win-server-hachee"))
+  ((:file "src/bin/win-server-tcp-hachee"))
   :depends-on (:hachee-kkc-impl-lm
                :hachee-data
                :senn-win
