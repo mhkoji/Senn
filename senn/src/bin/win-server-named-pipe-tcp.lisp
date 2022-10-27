@@ -3,8 +3,9 @@
   (:export :run))
 (in-package :senn.bin.win-server)
 
-(defun run (host port)
-  (senn.bin.win-server.named-pipe:start
-   (lambda (cb)
-     (senn.win.server:with-ime (ime host port)
-       (funcall cb ime)))))
+(defun run (host-str port-str)
+  (let ((port (parse-integer port-str)))
+    (senn.bin.win-server.named-pipe:start
+     (lambda (cb)
+       (senn.win.server:with-ime (ime host-str port)
+         (funcall cb ime))))))

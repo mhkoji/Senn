@@ -13,6 +13,11 @@
 
 (defun handle-request (ime req)
   (let ((stream (ime-stream ime)))
+    (log:info "-> [~A]" req)
     (write-line req stream)
     (force-output stream)
-    (read-line stream nil nil nil)))
+    (loop for resp = (read-line stream nil nil nil)
+          when (string/= resp "")
+            return (progn
+                     (log:info "<- [~A]" resp)
+                     (format nil "~A~%" resp)))))
