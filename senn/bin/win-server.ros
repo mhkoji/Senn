@@ -11,9 +11,8 @@ exec ros -Q -- $0 "$@"
 (defpackage :ros.script.win-server.3860554073
   (:use :cl))
 (in-package :ros.script.win-server.3860554073)
-(ql:quickload :senn-bin-win-server)
 
 (defun main (&rest argv)
   (declare (ignorable argv))
-  (senn.bin.win-server:run))
+  (apply #'senn.bin.win-server:run argv))
 ;;; vim: set ft=lisp lisp:
