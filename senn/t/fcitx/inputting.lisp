@@ -3,7 +3,8 @@
 (in-package :senn.t.fcitx.inputting)
 
 (defmethod senn-kkc:convert ((kkc (eql 'kkc)) (pron string)
-                                &key 1st-boundary-index)
+                             &key 1st-boundary-index)
+  (declare (ignore 1st-boundary-index))
   (assert (string= pron "あ"))
   (list (senn-kkc:make-segment
          :pron "あ"

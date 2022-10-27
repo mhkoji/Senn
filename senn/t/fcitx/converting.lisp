@@ -11,7 +11,7 @@
                   view))))
 
 (defmethod senn-kkc:convert ((kkc (eql 'static-kkc)) (pron string)
-                                &key 1st-boundary-index)
+                             &key 1st-boundary-index)
   (declare (ignore 1st-boundary-index))
   (assert (string= pron "きょうは"))
   (list (senn-kkc:make-segment
@@ -22,14 +22,14 @@
          :candidates (list (senn-kkc:make-candidate :form "は")))))
          
 (defmethod senn-kkc:list-candidates ((kkc (eql 'static-kkc))
-                                        (pron string))
+                                     (pron string))
   (assert (string= pron "きょう"))
   (list (senn-kkc:make-candidate :form "きょう")
         (senn-kkc:make-candidate :form "今日")
         (senn-kkc:make-candidate :form "強")))
 
 (defmethod senn-kkc:convert ((kkc (eql 'nn-kkc)) (pron string)
-                                &key 1st-boundary-index)
+                             &key 1st-boundary-index)
   (declare (ignore 1st-boundary-index))
   (assert (string= pron "ん"))
   (list (senn-kkc:make-segment
