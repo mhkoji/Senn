@@ -4,7 +4,6 @@
   :components
   ((:file "request")
    (:file "engine")
-   (:file "store/store")
    (:file "store/engine"))
   :depends-on (:senn-kkc
                :jsown

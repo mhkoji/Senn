@@ -32,7 +32,7 @@
     :reader connection)))
 
 (defmethod senn-kkc:convert ((kkc kkc) (pron string)
-                                &key 1st-boundary-index)
+                             &key 1st-boundary-index)
   (declare (ignore 1st-boundary-index))
   (handler-case (senn-kkc.request:convert
                  (connection kkc)
