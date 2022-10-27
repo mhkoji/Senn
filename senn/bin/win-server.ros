@@ -14,5 +14,5 @@ exec ros -Q -- $0 "$@"
 
 (defun main (&rest argv)
   (declare (ignorable argv))
-  (senn.bin.win-server:run))
+  (apply #'senn.bin.win-server:run argv))
 ;;; vim: set ft=lisp lisp:

@@ -4,4 +4,5 @@
   ((:file "src/win/server-tcp")
    (:file "src/bin/win-server-named-pipe")
    (:file "src/bin/win-server-named-pipe-tcp"))
-  :depends-on (:senn-ipc-server-named-pipe))
+  :depends-on (:senn-ipc-server-named-pipe
+               :usocket))
