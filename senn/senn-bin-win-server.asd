@@ -3,5 +3,5 @@
   :components
   ((:file "src/bin/win-server"))
   :depends-on (:senn-win
-               :senn-im-kkc-engine
+               :senn-kkc-engine
                :senn-ipc-server-named-pipe))

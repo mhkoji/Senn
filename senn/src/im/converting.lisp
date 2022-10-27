@@ -25,7 +25,7 @@
            :current-segment-candidates-set!
            :current-input
            :convert)
-  (:import-from :senn.im.kkc
+  (:import-from :senn-kkc
                 :candidate
                 :candidate-form))
 (in-package :senn.im.converting)
@@ -91,7 +91,7 @@
 (defun ime-list-candidates (ime pron)
   (with-accessors ((kkc ime-kkc)
                    (max-count ime-max-candidate-count)) ime
-    (let ((cands (senn.im.kkc:list-candidates kkc pron)))
+    (let ((cands (senn-kkc:list-candidates kkc pron)))
       (if max-count
           (take-first cands max-count)
           cands))))
@@ -126,13 +126,13 @@
 
 (defun convert (ime pron)
   (with-accessors ((kkc ime-kkc)) ime
-    (let ((kkc-segs (senn.im.kkc:convert kkc pron)))
+    (let ((kkc-segs (senn-kkc:convert kkc pron)))
       (make-state
        :segments
        (mapcar (lambda (kkc-seg)
                  (make-segment
-                  :pron (senn.im.kkc:segment-pron kkc-seg)
-                  :candidates (senn.im.kkc:segment-candidates kkc-seg)
+                  :pron (senn-kkc:segment-pron kkc-seg)
+                  :candidates (senn-kkc:segment-candidates kkc-seg)
                   :current-index 0
                   :has-more-candidates-p t))
                kkc-segs)

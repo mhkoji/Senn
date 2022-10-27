@@ -2,12 +2,10 @@
   :serial t
   :pathname "src"
   :components
-  ((:file "im/kkc/hachee")
-   (:file "im/kkc-store/hachee/user-dict")
-   (:file "im/kkc-store/hachee/hachee")
-   (:file "bin/fcitx-server"))
+  ((:file "bin/fcitx-server"))
   :depends-on (:hachee-kkc-impl-lm
                :hachee-data
                :senn-fcitx
+               :senn-kkc-hachee
                :senn-ipc-server-unix
                :senn-ipc-server-tcp))

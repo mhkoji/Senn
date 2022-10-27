@@ -1,5 +1,5 @@
 ;; convert/list-candidates depending on a (third-party) kkc engine
-(defpackage :senn.im.kkc.engine
+(defpackage :senn-kkc.engine
   (:use :cl)
   (:export :run-engine
            :kill-engine
@@ -9,7 +9,7 @@
            :kkc
            :close-kkc
            :make-kkc-and-run))
-(in-package :senn.im.kkc.engine)
+(in-package :senn-kkc.engine)
 
 (defstruct engine-runner
   program args)
@@ -85,7 +85,7 @@
 
 ;;;
 
-(defmethod senn.im.kkc.request:send-line ((agent engine) (line string))
+(defmethod senn-kkc.request:send-line ((agent engine) (line string))
   (engine-send-recv agent line))
 
 ;;;
@@ -98,24 +98,24 @@
 (defun kkc-rerun-engine (kkc)
   (engine-store-rerun (engine-store kkc)))
 
-(defmethod senn.im.kkc:convert ((kkc kkc) (pron string)
+(defmethod senn-kkc:convert ((kkc kkc) (pron string)
                                 &key 1st-boundary-index)
   (declare (ignore 1st-boundary-index))
   (with-accessors ((engine-store engine-store)) kkc
-    (handler-case (senn.im.kkc.request:convert
+    (handler-case (senn-kkc.request:convert
                    (engine-store-engine engine-store)
                    pron)
       (error (c)
         (log:warn c)
         (engine-store-rerun engine-store)
-        (list (senn.im.kkc:make-segment
+        (list (senn-kkc:make-segment
                :pron pron
-               :candidates (list (senn.im.kkc:make-candidate
+               :candidates (list (senn-kkc:make-candidate
                                   :form pron))))))))
                
-(defmethod senn.im.kkc:list-candidates ((kkc kkc) (pron string))
+(defmethod senn-kkc:list-candidates ((kkc kkc) (pron string))
   (with-accessors ((engine-store engine-store)) kkc
-    (handler-case (senn.im.kkc.request:list-candidates
+    (handler-case (senn-kkc.request:list-candidates
                    (engine-store-engine engine-store)
                    pron)
       (error (c)

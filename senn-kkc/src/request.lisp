@@ -1,9 +1,9 @@
-(defpackage :senn.im.kkc.request
+(defpackage :senn-kkc.request
   (:use :cl)
   (:export :send-line
            :convert
            :list-candidates))
-(in-package :senn.im.kkc.request)
+(in-package :senn-kkc.request)
 
 (defgeneric send-line (agent jsown))
 
@@ -13,7 +13,7 @@
 
 (defun jsown->candidate (jsown)
   (let ((form (jsown:val jsown "form")))
-    (senn.im.kkc:make-candidate :form form)))
+    (senn-kkc:make-candidate :form form)))
 
 (defun convert (agent pron)
   (let ((j-segs (send-json
@@ -25,7 +25,7 @@
     (mapcar (lambda (j-seg)
               (let ((pron (jsown:val j-seg "pron"))
                     (j-cands (jsown:val j-seg "candidates")))
-                (senn.im.kkc:make-segment
+                (senn-kkc:make-segment
                  :pron pron
                  :candidates (mapcar #'jsown->candidate j-cands))))
             j-segs)))

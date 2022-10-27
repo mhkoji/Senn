@@ -6,4 +6,5 @@
    (:file "src/lib/ibus-engine"))
   :depends-on (:senn-ibus
                ;:sbcl-librarian
+               :senn-kkc-engine
                ))
