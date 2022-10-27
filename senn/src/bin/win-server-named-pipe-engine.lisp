@@ -4,7 +4,7 @@
 (in-package :senn.bin.win-server)
 
 (defun run ()
-  (let ((kkc (senn.im.kkc.engine:make-kkc-and-run
+  (let ((kkc (senn-kkc.engine:make-kkc-and-run
               (senn-kkc.engine:make-engine-runner
                :program (merge-pathnames
                          ".senn/kkc-engine.exe"
