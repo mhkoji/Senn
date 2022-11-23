@@ -42,6 +42,12 @@
           (destructuring-bind (str cost-str) (cl-ppcre:split "\\t" line)
             (let ((int (int-str:to-int int-str str))
                   (cost (parse-integer cost-str)))
+              (when (= int int-str:+UT+)
+                ;; strが"UT"以外の未知語の場合、int-str:to-intがUTを返して
+                ;; 本来のUTのcostが上書きされてしまうのを防ぐ。
+                ;; そもそもstrが"UT"以外の未知語になる場合は、
+                ;; 読み込むデータが不整合になっている。
+                (assert (string= str "UT")))
               (setf (aref array int) cost))))))
     array))
 
@@ -55,6 +61,10 @@
             (let ((i-int (int-str:to-int int-str i-str))
                   (j-int (int-str:to-int int-str j-str))
                   (cost (parse-integer cost-str)))
+              (when (= i-int int-str:+UT+)
+                (assert (string= i-str "UT")))
+              (when (= j-int int-str:+UT+)
+                (assert (string= j-str "UT")))
               (setf (gethash (list i-int j-int) hash) cost))))))
     hash))
 
