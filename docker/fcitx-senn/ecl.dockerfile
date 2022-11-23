@@ -29,6 +29,7 @@ RUN wget \
       -eval "(quicklisp-quickstart:install)"
 
 COPY senn /app
+COPY senn-kkc /app/senn-kkc
 
 RUN /usr/lib/senn/fcitx/ecl/bin/ecl \
       -load "/root/quicklisp/setup.lisp" \
