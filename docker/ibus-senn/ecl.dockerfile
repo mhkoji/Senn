@@ -29,11 +29,11 @@ RUN wget \
       -eval "(quicklisp-quickstart:install)"
 
 COPY senn /app/senn
+COPY senn-kkc /app/senn-kkc
 
 RUN /usr/lib/senn/ibus/ecl/bin/ecl \
       -load "/root/quicklisp/setup.lisp" \
-      -eval '(push "/app/senn/" ql:*local-project-directories*)' \
-      -eval '(push "/app/hachee/" ql:*local-project-directories*)' \
+      -eval '(push "/app" ql:*local-project-directories*)' \
       -eval '(ql:quickload :senn-lib-ibus)' \
       -eval '(asdf:make-build :senn-lib-ibus :type :static-library :move-here #P"/output" :monolithic t :init-name "init_senn")'
 
