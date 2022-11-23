@@ -65,13 +65,35 @@
 
 ;;;
 
+(defun read-task (path-cost-1gram
+                  path-cost-2gram
+                  path-in-dict
+                  path-coeffs
+                  path-int-str)
+  (let ((int-str (read-int-str path-int-str))
+        (coeffs (with-open-file (in path-coeffs)
+                  (read in))))
+    (hachee.kkc.impl.markov:build-task
+     :markov (read-markov path-cost-1gram
+                          path-cost-2gram
+                          int-str)
+     :in-dict (read-in-dict path-in-dict int-str)
+     :coeffs coeffs)))
+
+;;;
+
 (defun read-kkc-paths (&key path-word-int-str
                             path-word-1gram
                             path-word-2gram
                             path-char-int-str
                             path-char-1gram
                             path-char-2gram
-                            path-in-dict)
+                            path-in-dict
+                            path-task-int-str
+                            path-task-1gram
+                            path-task-2gram
+                            path-task-in-dict
+                            path-task-coeffs)
   (let* ((word-int-str (read-int-str path-word-int-str))
          (word-markov  (read-markov path-word-1gram
                                     path-word-2gram
@@ -80,12 +102,18 @@
          (char-int-str (read-int-str path-char-int-str))
          (char-markov  (read-markov path-char-1gram
                                     path-char-2gram
-                                    char-int-str)))
+                                    char-int-str))
+         (task         (read-task path-task-1gram
+                                  path-task-2gram
+                                  path-task-in-dict
+                                  path-task-coeffs
+                                  path-task-int-str)))
     (hachee.kkc.impl.markov:build-kkc
      :word-markov  word-markov
      :in-dict      in-dict
      :char-int-str char-int-str
-     :char-markov  char-markov)))
+     :char-markov  char-markov
+     :task         task)))
 
 (defun read-kkc-dir (dir)
   (labels ((make-path (path)
@@ -97,4 +125,9 @@
      :path-char-int-str (make-path "char/int-str.txt")
      :path-char-1gram   (make-path "char/cost-1gram.tsv")
      :path-char-2gram   (make-path "char/cost-2gram.tsv")
-     :path-in-dict      (make-path "in-dict.tsv"))))
+     :path-in-dict      (make-path "in-dict.tsv")
+     :path-task-int-str (make-path "task/int-str.txt")
+     :path-task-1gram   (make-path "task/cost-1gram.tsv")
+     :path-task-2gram   (make-path "task/cost-2gram.tsv")
+     :path-task-in-dict (make-path "task/in-dict.tsv")
+     :path-task-coeffs  (make-path "task/coeffs.txt"))))

@@ -1,6 +1,7 @@
 (defpackage :hachee.kkc.impl.markov
   (:use :cl)
   (:export :make-markov
+           :build-task
            :build-kkc
            :kkc-set-ex-dict)
   (:local-nicknames (:int-str :hachee.kkc.impl.markov.int-str))
@@ -17,24 +18,34 @@
                (markov-cost-2gram markov))
       (aref (markov-cost-1gram markov) curr)))
 
-(defun markov-sentence-cost (markov tokens)
-  (let ((cost 0)
-        (prev int-str:+BT+))
-    (dolist (curr tokens)
-      (incf cost (markov-transition-cost markov prev curr))
-      (setf prev curr))
-    (+ cost (markov-transition-cost markov prev int-str:+BT+))))
+(defun markov-1gram-cost (markov token)
+  (aref (markov-cost-1gram markov) token))
+
+(defmacro do-as-sentence (((prev curr) tokens) &body body)
+  `(labels ((run (,prev ,curr)
+              ,@body))
+     (let ((prev int-str:+BT+))
+       (dolist (curr ,tokens)
+         (run prev curr)
+         (setq prev curr))
+       (run prev int-str:+BT+))))
+
+(defun char-tokens (string char-int-str)
+  (loop for ch across string
+        collect (int-str:to-int char-int-str (string ch))))
+
+(defun char-based-cost (string char-int-str char-markov char-cost-0gram)
+  (let ((char-tokens (char-tokens string char-int-str))
+        (cost 0))
+    (do-as-sentence ((prev curr) char-tokens)
+      (let ((transition-cost
+             (markov-transition-cost char-markov prev curr))
+            (ut-cost
+             (if (= curr int-str:+UT+) char-cost-0gram 0)))
+        (incf cost (+ transition-cost ut-cost))))
+    cost))
 
 ;;;
-
-(defstruct kkc
-  word-markov
-  in-dict
-  in-dict-prob
-  ex-dict
-  char-markov
-  char-int-str
-  char-cost-0gram)
 
 (defstruct convert-entry
   form
@@ -50,30 +61,155 @@
   (convert-entry-pron e))
 
 (defmethod hachee.kkc.convert:entry-origin ((e convert-entry))
-  (convert-entry-origin e))
+  (let ((origin (convert-entry-origin e)))
+    (case origin
+      (:in-dict hachee.kkc.origin:+vocabulary+)
+      (:ex-dict hachee.kkc.origin:+extended-dictionary+)
+      (:unk     hachee.kkc.origin:+out-of-dictionary+)
+      (t        origin))))
+
+
+(defstruct task
+  markov
+  in-dict
+  cb1 cb2 c11 c21)
+
+(defstruct kkc
+  word-markov
+  in-dict
+  in-dict-prob
+  ex-dict
+  char-markov
+  char-int-str
+  char-cost-0gram
+  task)
 
 (defmethod hachee.kkc.convert:convert-begin-entry ((kkc kkc))
   (make-convert-entry :token int-str:+BT+
-                      :origin hachee.kkc.origin:+vocabulary+))
+                      :origin :in-dict))
 
 (defmethod hachee.kkc.convert:convert-end-entry ((kkc kkc))
   (make-convert-entry :cost 0
                       :token int-str:+BT+
-                      :origin hachee.kkc.origin:+vocabulary+))
+                      :origin :in-dict))
+
+(defun entry-generation-cost (word-markov curr-entry prev-entry)
+  "Compute the generation cost of curr-entry given prev-entry using word-markov"
+  (let ((curr-token (convert-entry-token curr-entry))
+        (prev-token (convert-entry-token prev-entry)))
+    (+
+     ;; 表記の遷移コスト
+     (markov-transition-cost word-markov prev-token curr-token)
+     ;; 現在の表記が与えられた時の読みのコスト
+     (convert-entry-cost curr-entry))))
+
+(defun task-interpolation (cb word-markov-cost task-markov-cost)
+  (- (+ cb word-markov-cost)
+     (hachee.kkc.impl.markov.cost:logadd (- task-markov-cost
+                                            cb
+                                            word-markov-cost))))
+
+;; mysterious threashold
+(defvar *threshold*
+  (1- #x7fffffff))
+
+(defun entry-generation-cost-with-task (task-markov
+                                        cb1 cb2 c11 c21
+                                        char-based-cost-fn
+                                        word-markov
+                                        curr-entry prev-entry)
+  (+
+   ;; 表記の遷移コスト
+   (let* ((curr-origin (convert-entry-origin curr-entry))
+          (curr-token (convert-entry-token curr-entry))
+          (prev-token (convert-entry-token prev-entry))
+          (prev-token-or-UT
+            (if (eql (convert-entry-origin prev-entry) :task-in-dict)
+                int-str:+UT+
+                prev-token)))
+     (cond ((= curr-token int-str:+BT+)
+            ;; curr-entry is end-entry if curr-token is int-str:+BT+
+            (let ((wm-cost (markov-transition-cost word-markov
+                                                   prev-token-or-UT
+                                                   curr-token)))
+              (if (= (markov-1gram-cost task-markov prev-token) *threshold*)
+                  (task-interpolation
+                   cb1 wm-cost (markov-transition-cost
+                                task-markov prev-token curr-token))
+                  (task-interpolation
+                   cb2 wm-cost (+ (markov-1gram-cost task-markov
+                                                     curr-token)
+                                  (- c11) c21)))))
+           ((eql curr-origin :in-dict)
+            (let ((wm-cost (markov-transition-cost word-markov
+                                                   prev-token-or-UT
+                                                   curr-token)))
+              (if (= (markov-1gram-cost task-markov prev-token) *threshold*)
+                  (task-interpolation
+                   cb2 wm-cost (+ (markov-1gram-cost task-markov
+                                                     curr-token)
+                                  (- c11) c21))
+                  (task-interpolation
+                   cb1 wm-cost (markov-transition-cost
+                                task-markov prev-token curr-token)))))
+           ((eql curr-origin :task-in-dict)
+            (let ((wm-cost (+ (markov-transition-cost word-markov
+                                                      prev-token-or-UT
+                                                      int-str:+UT+)
+                              (funcall char-based-cost-fn
+                                       (convert-entry-form curr-entry)))))
+              (if (= (markov-1gram-cost task-markov prev-token) *threshold*)
+                  (task-interpolation
+                   cb1 wm-cost (markov-transition-cost
+                                task-markov prev-token curr-token))
+                  (task-interpolation
+                   cb2 wm-cost (+ (markov-1gram-cost task-markov
+                                                     curr-token)
+                                  (- c11) c21)))))
+           ((or (eql curr-origin :ex-dict)
+                (eql curr-origin :unk))
+            (let ((wm-cost (markov-transition-cost word-markov
+                                                   prev-token-or-UT
+                                                   int-str:+UT+)))
+              (if (= (markov-1gram-cost task-markov prev-token) *threshold*)
+                  (task-interpolation
+                   cb1 wm-cost (markov-transition-cost
+                                task-markov prev-token curr-token))
+                  (task-interpolation
+                   cb2 wm-cost (+ (markov-1gram-cost task-markov
+                                                     int-str:+UT+)
+                                  (- c11) c21)))))
+           (t
+            (markov-transition-cost
+             word-markov prev-token curr-token))))
+   ;; 現在の表記が与えられた時の読みのコスト
+   (convert-entry-cost curr-entry)))
 
 (defmethod hachee.kkc.convert:convert-score-fn ((kkc kkc))
-  (let ((word-markov (kkc-word-markov kkc)))
-    (lambda (curr-entry prev-entry)
-      (let ((cost (+
-                   ;; 表記の遷移コスト
-                   (markov-transition-cost word-markov
-                                           (convert-entry-token prev-entry)
-                                           (convert-entry-token curr-entry))
-                   ;; 現在の表記が与えられた時の読みのコスト
-                   (convert-entry-cost curr-entry))))
-        (- cost)))))
+  (let ((task (kkc-task kkc))
+        (word-markov (kkc-word-markov kkc)))
+    (if task
+        (let ((char-markov (kkc-char-markov kkc))
+              (char-int-str (kkc-char-int-str kkc))
+              (char-cost-0gram (kkc-char-cost-0gram kkc)))
+          (labels ((run-char-based-cost (string)
+                     (char-based-cost string
+                                      char-int-str
+                                      char-markov
+                                      char-cost-0gram)))
+            (lambda (curr-entry prev-entry)
+              (- (entry-generation-cost-with-task
+                  (task-markov task)
+                  (task-cb1 task) (task-cb2 task)
+                  (task-c11 task) (task-c21 task)
+                  #'run-char-based-cost
+                  word-markov
+                  curr-entry prev-entry)))))
+        (lambda (curr-entry prev-entry)
+          (- (entry-generation-cost word-markov curr-entry prev-entry))))))
 
-(defun list-convert-entries (pron in-dict ex-dict char-based-cost-fn)
+(defun list-convert-entries (pron in-dict ex-dict char-based-cost-fn
+                             task-in-dict)
   (let ((entries nil))
     (dolist (dict-entry (in-dict:list-entries in-dict pron))
       (push (make-convert-entry
@@ -81,7 +217,7 @@
              :pron pron
              :cost (in-dict:entry-cost dict-entry)
              :token (in-dict:entry-token dict-entry)
-             :origin hachee.kkc.origin:+vocabulary+)
+             :origin :in-dict)
             entries))
     (dolist (dict-entry (ex-dict:list-entries ex-dict pron))
       (push (make-convert-entry
@@ -89,7 +225,7 @@
              :pron pron
              :cost (ex-dict:entry-cost dict-entry)
              :token int-str:+UT+
-             :origin hachee.kkc.origin:+extended-dictionary+)
+             :origin :ex-dict)
             entries))
     (when (< (length pron) 8) ;; Length up to 8
       (let ((form (hachee.ja:hiragana->katakana pron)))
@@ -98,26 +234,27 @@
                :pron pron
                :cost (funcall char-based-cost-fn form)
                :token int-str:+UT+
-               :origin hachee.kkc.origin:+out-of-dictionary+)
+               :origin :unk)
+              entries)))
+    (when task-in-dict
+      (dolist (dict-entry (in-dict:list-entries task-in-dict pron))
+        (push (make-convert-entry
+               :form (in-dict:entry-form dict-entry)
+               :pron pron
+               :cost (in-dict:entry-cost dict-entry)
+               :token (in-dict:entry-token dict-entry)
+               :origin :task-in-dict)
               entries)))
     entries))
-
-(defun char-tokens (string char-int-str)
-  (loop for ch across string
-        collect (int-str:to-int char-int-str (string ch))))
-
-(defun char-based-cost (string char-int-str char-markov char-cost-0gram)
-  (let ((char-tokens (char-tokens string char-int-str)))
-    (let ((UT-count (count int-str:+UT+ char-tokens :test #'=)))
-      (+ (markov-sentence-cost char-markov char-tokens)
-         (* UT-count char-cost-0gram)))))
 
 (defmethod hachee.kkc.convert:convert-list-entries-fn ((kkc kkc))
   (let ((in-dict (kkc-in-dict kkc))
         (ex-dict (kkc-ex-dict kkc))
         (char-markov (kkc-char-markov kkc))
         (char-int-str (kkc-char-int-str kkc))
-        (char-cost-0gram (kkc-char-cost-0gram kkc)))
+        (char-cost-0gram (kkc-char-cost-0gram kkc))
+        (task-in-dict (when (kkc-task kkc)
+                        (task-in-dict (kkc-task kkc)))))
     (labels ((run-char-based-cost (string)
                (char-based-cost string
                                 char-int-str
@@ -125,7 +262,7 @@
                                 char-cost-0gram)))
       (lambda (pron)
         (list-convert-entries
-         pron in-dict ex-dict #'run-char-based-cost)))))
+         pron in-dict ex-dict #'run-char-based-cost task-in-dict)))))
 
 ;;;
 
@@ -193,7 +330,8 @@
 (defun build-kkc (&key word-markov
                        char-int-str
                        char-markov
-                       in-dict)
+                       in-dict
+                       task)
   (let* ((char-cost-0gram (char-cost-0gram char-int-str))
          (in-dict-prob    (in-dict-prob in-dict
                                         char-int-str
@@ -205,4 +343,16 @@
               :ex-dict      *empty-ex-dict*
               :char-markov  char-markov
               :char-int-str char-int-str
-              :char-cost-0gram char-cost-0gram)))
+              :char-cost-0gram char-cost-0gram
+              :task         task)))
+
+(defun build-task (&key markov in-dict coeffs)
+  (destructuring-bind (l10 l11 l12 l20 l21) coeffs
+    (declare (ignore l12))
+    (make-task
+     :markov markov
+     :in-dict in-dict
+     :cb1 (hachee.kkc.impl.markov.cost:<-probability l10)
+     :cb2 (hachee.kkc.impl.markov.cost:<-probability l20)
+     :c11 (hachee.kkc.impl.markov.cost:<-probability l11)
+     :c21 (hachee.kkc.impl.markov.cost:<-probability l21))))
