@@ -100,7 +100,9 @@ public:
 
   void Clear(fcitx::InputContext *ic) {
     ic->inputPanel().reset();
-    SetPreedit(ic, fcitx::Text(""));
+    // Don't use fcitx::Text(""), otherwise the ja window is shown forever.
+    SetPreedit(ic, fcitx::Text());
+    ic->inputPanel().setCandidateList(nullptr);
     ic->updateUserInterface(fcitx::UserInterfaceComponent::InputPanel);
   }
 
@@ -208,10 +210,9 @@ public:
         });
   }
 
-  void deactivate(const fcitx::InputMethodEntry &,
+  void deactivate(const fcitx::InputMethodEntry &entry,
                   fcitx::InputContextEvent &event) override {
-    ime_->ResetIM();
-    ui_->Clear(event.inputContext());
+    reset(entry, event);
   }
 
   void reset(const fcitx::InputMethodEntry &,
