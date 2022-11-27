@@ -45,6 +45,21 @@ target_link_libraries(senn
 set_target_properties(senn
   PROPERTIES PREFIX "")
 
+#### userdict
+add_executable(userdict_main
+  ${SENN_ROOT_DIR}/senn-kkc-engine/hachee/src-cpp/user_dict_main.cpp
+  ${SENN_ROOT_DIR}/senn-kkc-engine/hachee/src-cpp/user_dict.cpp
+)
+
+set_target_properties(userdict_main
+  PROPERTIES OUTPUT_NAME userdict
+)
+
+#### libuserdict.so
+add_library(userdict SHARED
+  ${SENN_ROOT_DIR}/senn-kkc-engine/hachee/src-cpp/user_dict.cpp
+)
+
 ## This fcitx-senn.png is displayed in the tray as the senn icon.
 install(
   FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../icon/senn-32x32.png
@@ -72,6 +87,16 @@ install(
   PROGRAMS ${CMAKE_CURRENT_SOURCE_DIR}/dep-kkc/kkc-engine
   DESTINATION ${FCITX_SENN_INSTALL_DIR}/kkc/
   RENAME engine)
+
+install(
+  TARGETS userdict_main
+  RUNTIME
+  DESTINATION ${FCITX_SENN_INSTALL_DIR}/kkc/)
+
+install(
+  TARGETS userdict
+  LIBRARY
+  DESTINATION ${FCITX_SENN_INSTALL_DIR}/kkc/)
 
 # install(
 #   PROGRAMS ${CMAKE_CURRENT_SOURCE_DIR}/dep-menu/menu-about
