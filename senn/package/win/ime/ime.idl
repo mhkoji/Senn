@@ -1,0 +1,50 @@
+// clang-format off
+import "oaidl.idl";
+import "ocidl.idl";
+import "unknwn.idl";
+
+// Run "midl ime.idl" to generate header files.
+typedef enum SennInputMode {
+    kUnknown = 0,
+    kDirect,
+    kHiragana,
+ } SennInputMode;
+
+typedef enum SennViewType {
+    kEditing = 1,
+    kConverting,
+    kCommitted,
+} SennViewType;
+
+typedef struct SennView {
+    SennViewType type;    
+} SennView;
+
+[
+    uuid(a376e490-3c73-4d3c-9ed9-8e0d4d982151),
+    version(1.0)
+]
+interface ISennIME : IUnknown {
+  HRESULT CanProcess(ULONGLONG keycode, BOOL *result);
+  HRESULT ProcessInput(ULONGLONG keycode, BYTE *modifiers, SennView **view);
+  HRESULT ToggleInputMode();
+  HRESULT GetInputMode(SennInputMode *mode);
+}
+
+[
+    uuid(9c40c3e8-58ef-4870-9812-a1c385fcd706),
+    version(1.0)
+]
+library SennIMELibrary {
+
+    [
+        uuid(b4574cd7-53ef-4ec6-873d-6d30a5ccccad)
+    ]
+    coclass SennIME
+    {
+        [default]
+        interface ISennIME;
+    };
+};
+
+    // clang-format on

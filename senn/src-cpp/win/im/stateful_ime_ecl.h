@@ -24,7 +24,10 @@ public:
   static void ClBoot();
   static void EclInitModule();
   static void ClShutdown();
-  static StatefulIME *Create(const std::string &);
+
+  static void Init(const std::string &);
+  static void Destroy();
+  static StatefulIME *Create();
 }; // namespace im
 
 } // namespace im

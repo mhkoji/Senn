@@ -151,12 +151,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\src-cpp\win\im\stateful_ime_proxy.cpp" />
+    <ClCompile Include="..\ime\ime_i.c" />
     <ClCompile Include="ime-main.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\..\..\src-cpp\request.h" />
-    <ClInclude Include="..\..\..\src-cpp\win\im\stateful_ime_dll.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

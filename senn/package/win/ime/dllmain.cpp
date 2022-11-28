@@ -1,62 +1,70 @@
 ﻿// dllmain.cpp : DLL アプリケーションのエントリ ポイントを定義します。
+#include "./ecl.h"
+#include "ime_impl.h"
 #include "pch.h"
-#include "variable.h"
-#include <ShlObj_core.h>
-#include <ecl/ecl.h>
-#include <sstream>
+#include <OleCtl.h>
 
-extern "C" {
-void init_senn(cl_object);
-}
+LONG g_locks = 0;
+static HINSTANCE g_module_handle;
 
-char kKkcEnginePath[256];
+static const char *g_entries[][3] = {
+    {"CLSID\\{b4574cd7-53ef-4ec6-873d-6d30a5ccccad}", 0, "Senn IME"},
+    {"CLSID\\{b4574cd7-53ef-4ec6-873d-6d30a5ccccad}\\InprocServer32", 0,
+     (const char *)-1},
+    {"CLSID\\{b4574cd7-53ef-4ec6-873d-6d30a5ccccad}\\InprocServer32",
+     "ThreadingModel", "Apartment"},
 
-void GetHomeDir(std::wstring *out) {
-  PWSTR homedir_path = nullptr;
-  if (SHGetKnownFolderPath(FOLDERID_Profile, KF_FLAG_DEFAULT_PATH, NULL,
-                           &homedir_path) == S_OK) {
-    *out = homedir_path;
-    *out += L"\\";
-  }
-  CoTaskMemFree(homedir_path);
-}
+};
 
-void Init() {
-  std::wstring home_dir = L"";
-  {
-    GetHomeDir(&home_dir);
-    if (home_dir == L"") {
-      return;
+STDAPI DllUnregisterServer(void) {
+  HRESULT hr = S_OK;
+  int nEntries = sizeof(g_entries) / sizeof(*g_entries);
+  for (int i = nEntries - 1; i >= 0; i--) {
+    long err = RegDeleteKeyA(HKEY_CLASSES_ROOT, g_entries[i][0]);
+    if (err != ERROR_SUCCESS) {
+      hr = S_FALSE;
     }
   }
 
-  const std::wstring senn_dir = home_dir + L".senn\\";
-  const std::wstring ecl_dir = senn_dir + L"ecl\\";
-
-  _wputenv_s(L"ECLDIR", ecl_dir.c_str());
-
-  {
-    char ecl_str[16];
-    strncpy_s(ecl_str, "ecl", sizeof(ecl_str));
-    char *ecl[1] = {ecl_str};
-    cl_boot(1, ecl);
-  }
-
-  ecl_init_module(NULL, init_senn);
-
-  const std::wstring kkc_engine_path = senn_dir + L"kkc-engine.exe";
-  size_t size;
-  wcstombs_s(&size, kKkcEnginePath, sizeof(kKkcEnginePath),
-             kkc_engine_path.c_str(), sizeof(kKkcEnginePath) - 1);
+  return hr;
 }
 
-void Destroy() { cl_shutdown(); }
+STDAPI DllRegisterServer(void) {
+  char szFileName[MAX_PATH];
+  GetModuleFileNameA(g_module_handle, szFileName, MAX_PATH);
+
+  int entry_count = sizeof(g_entries) / sizeof(*g_entries);
+  for (int i = 0; i < entry_count; i++) {
+    const char *pszKeyName = g_entries[i][0];
+    const char *pszValueName = g_entries[i][1];
+    const char *pszValue = g_entries[i][2];
+
+    if (pszValue == (const char *)-1) {
+      pszValue = szFileName;
+    }
+
+    HKEY hkey;
+    long err = RegCreateKeyA(HKEY_CLASSES_ROOT, pszKeyName, &hkey);
+    if (ERROR_SUCCESS == err) {
+      err =
+          RegSetValueExA(hkey, pszValueName, 0, REG_SZ, (const BYTE *)pszValue,
+                         static_cast<DWORD>((strlen(pszValue) + 1)));
+      RegCloseKey(hkey);
+    } else if (ERROR_SUCCESS != err) {
+      DllUnregisterServer();
+      return SELFREG_E_CLASS;
+    }
+  }
+  return S_OK;
+}
 
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call,
                       LPVOID lpReserved) {
   switch (ul_reason_for_call) {
   case DLL_PROCESS_ATTACH:
+    g_module_handle = hModule;
     Init();
+
     break;
   case DLL_THREAD_ATTACH:
   case DLL_THREAD_DETACH:
@@ -66,4 +74,20 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call,
     break;
   }
   return TRUE;
+}
+
+STDAPI DllCanUnloadNow(void) { return 0 == g_locks ? S_OK : S_FALSE; }
+
+STDAPI DllGetClassObject(_In_ REFCLSID rclsid, _In_ REFIID riid,
+                         _Outptr_ LPVOID FAR *ppv) {
+  if (rclsid != CLSID_SennIME) {
+    return CLASS_E_CLASSNOTAVAILABLE;
+  }
+  IMEClassFactory *factory = new IMEClassFactory(MakeStatefulIME);
+  if (!factory) {
+    return E_OUTOFMEMORY;
+  }
+  HRESULT hr = factory->QueryInterface(riid, ppv);
+  factory->Release();
+  return hr;
 }
