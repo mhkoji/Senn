@@ -2,12 +2,12 @@
 
 (defun make-ime (engine-path)
   (log:info "Making IME ...")
-  (let ((store (senn.im.kkc.store.engine:make-store-and-run
-                (senn.im.kkc.engine:make-engine-runner
-                 :program engine-path))))
-    (senn.fcitx.stateful-ime:make-ime :kkc-store store)))
+  (let ((kkc (senn.im.kkc.engine:make-kkc-and-run
+              (senn.im.kkc.engine:make-engine-runner
+               :program engine-path))))
+    (senn.fcitx.stateful-ime:make-ime :kkc kkc)))
 
 (defun close-ime (ime)
   (log:info "Closing IME ...")
-  (let ((store (senn.fcitx.stateful-ime:ime-kkc-store ime)))
-    (senn.im.kkc.store.engine:close-store store)))
+  (let ((kkc (senn.fcitx.stateful-ime:ime-kkc ime)))
+    (senn.im.kkc.engine:close-kkc kkc)))

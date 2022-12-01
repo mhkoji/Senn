@@ -1,10 +1,8 @@
 (asdf:defsystem :senn-im-kkc-engine
   :serial t
-  :pathname "src/im/kkc/"
   :components
-  ((:file "request")
-   (:file "engine")
-   (:file "store/engine"))
+  ((:file "src/im/kkc/request")
+   (:file "src/im/kkc/engine"))
   :depends-on (:senn-im-kkc
                :jsown
                :log4cl))

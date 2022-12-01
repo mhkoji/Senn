@@ -4,7 +4,7 @@
            :select-candidate
            :reset-im
            ; :reload-kkc
-           :ime-kkc-store
+           :ime-kkc
            :make-ime))
 (in-package :senn.fcitx.stateful-ime)
 
@@ -12,16 +12,16 @@
   ((state
     :initarg :state
     :accessor ime-state)
-   (kkc-store
-    :initarg :kkc-store
-    :reader ime-kkc-store)
+   (kkc
+    :initarg :kkc
+    :reader ime-kkc)
    (predictor
     :initarg :predictor
     :initform nil
     :reader ime-predictor)))
 
 (defmethod senn.fcitx.im:ime-kkc ((ime ime))
-  (senn.im.kkc.store:get-kkc (ime-kkc-store ime)))
+  (ime-kkc ime))
 
 (defmethod senn.fcitx.im:ime-predictor ((ime ime))
   (ime-predictor ime))
@@ -47,13 +47,12 @@
   (values))
 
 (defun reload-kkc (ime)
-  (senn.im.kkc.store:reload (slot-value ime 'kkc-store))
   (values))
 
 ;;;
 
-(defun make-ime (&key kkc-store predictor)
+(defun make-ime (&key kkc predictor)
   (make-instance 'ime
                  :state (senn.fcitx.im:make-initial-state)
-                 :kkc-store kkc-store
+                 :kkc kkc
                  :predictor predictor))
