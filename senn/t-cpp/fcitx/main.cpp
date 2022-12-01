@@ -36,4 +36,6 @@ int main(void) {
   }
 
   delete ime;
+
+  senn::fcitx::im::StatefulIMEEcl::ClShutdown();
 }

@@ -4,6 +4,4 @@
   ((:file "src/lib/fcitx")
    (:file "src/lib/fcitx-engine"))
   :depends-on (:senn-fcitx
-               :senn-im-kkc-engine
-               ;:sbcl-librarian
-               ))
+               :senn-im-kkc-engine))

@@ -6,4 +6,5 @@
    (:file "server/log")
    (:file "server")
    (:file "server/unix"))
-  :depends-on (:log4cl))
+  :depends-on (:log4cl
+               #+ecl :sb-bsd-sockets))

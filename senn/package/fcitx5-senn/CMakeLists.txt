@@ -40,7 +40,9 @@ target_link_libraries(senn
  Fcitx5::Core
  Fcitx5::Config
  ecl
- ${CMAKE_CURRENT_SOURCE_DIR}/dep-ecl/senn-lib-fcitx--all-systems.a)
+ ${CMAKE_CURRENT_SOURCE_DIR}/dep-ecl/senn-lib-fcitx--all-systems.a
+ # ${CMAKE_CURRENT_SOURCE_DIR}/dep-ecl/senn-lib-fcitx-kkc-proxy--all-systems.a
+ )
 
 set_target_properties(senn
   PROPERTIES PREFIX "")

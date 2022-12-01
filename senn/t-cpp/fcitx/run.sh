@@ -1,10 +1,14 @@
 #!/bin/bash -eux
 
-rm -f senn-lib-fcitx--all-systems.a
+LIB=senn-lib-fcitx--all-systems.a
+
+rm -f $LIB
+
+ros use ecl
 
 ros \
     -s senn-lib-fcitx \
-    -e '(asdf:make-build :senn-lib-fcitx :type :static-library :monolithic t :init-name "init_senn" :move-here "./")' \
+    -e "(asdf:make-build :senn-lib-fcitx :type :static-library :monolithic t :init-name \"init_senn\" :move-here \"./\")" \
     -q
 
 g++ \
@@ -14,7 +18,7 @@ g++ \
     main.cpp \
     ../../src-cpp/fcitx/im/stateful_ime_ecl.cpp \
     ../../src-cpp/fcitx/im/stateful_ime_proxy.cpp \
-    senn-lib-fcitx--all-systems.a \
+    $LIB \
     `~/.roswell/impls/x86-64/linux/ecl/21.2.1/bin/ecl-config --ldflags` \
     -lecl \
     -o main
