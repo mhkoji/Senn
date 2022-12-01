@@ -4,5 +4,5 @@
   ((:file "src/lib/win")
    (:file "src/lib/win-engine"))
   :depends-on (:senn-win
-               :senn-kkc-engine
+               :senn-im-kkc-engine
                :log4cl))

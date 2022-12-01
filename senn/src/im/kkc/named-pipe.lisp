@@ -1,9 +1,9 @@
-(defpackage :senn-kkc.named-pipe
+(defpackage :senn.im.kkc.named-pipe
   (:use :cl)
   (:export :kkc
            :close-kkc
            :make-kkc-and-connect))
-(in-package :senn-kkc.named-pipe)
+(in-package :senn.im.kkc.named-pipe)
 
 (defstruct connection file pipe-name)
 
@@ -17,7 +17,7 @@
 (defun disconnect (conn)
   (senn-ipc.named-pipe:close-file (connection-file conn)))
 
-(defmethod senn-kkc.request:send-line ((conn connection)
+(defmethod senn.im.kkc.request:send-line ((conn connection)
                                           (line string))
   (let ((file (connection-file conn)))
     (let ((octets (babel:string-to-octets line :encoding :utf-8)))
@@ -31,21 +31,21 @@
     :initarg :connection
     :reader connection)))
 
-(defmethod senn-kkc:convert ((kkc kkc) (pron string)
+(defmethod senn.im.kkc:convert ((kkc kkc) (pron string)
                              &key 1st-boundary-index)
   (declare (ignore 1st-boundary-index))
-  (handler-case (senn-kkc.request:convert
+  (handler-case (senn.im.kkc.request:convert
                  (connection kkc)
                  pron)
     (error (e)
       (log:warn "~A" e)
-      (list (senn-kkc:make-segment
+      (list (senn.im.kkc:make-segment
              :pron pron
-             :candidates (list (senn-kkc:make-candidate
+             :candidates (list (senn.im.kkc:make-candidate
                                   :form pron)))))))
 
-(defmethod senn-kkc:list-candidates ((kkc kkc) (pron string))
-  (handler-case (senn-kkc.request:list-candidates
+(defmethod senn.im.kkc:list-candidates ((kkc kkc) (pron string))
+  (handler-case (senn.im.kkc.request:list-candidates
                  (connection kkc)
                  pron)
     (error (e)

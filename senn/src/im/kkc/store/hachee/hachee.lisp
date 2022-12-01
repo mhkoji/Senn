@@ -1,8 +1,8 @@
-(defpackage :senn-kkc.store.hachee
+(defpackage :senn.im.kkc.store.hachee
   (:use :cl)
   (:export :make-store)
-  (:local-nicknames (:user-dict :senn-kkc.store.hachee.user-dict)))
-(in-package :senn-kkc.store.hachee)
+  (:local-nicknames (:user-dict :senn.im.kkc.store.hachee.user-dict)))
+(in-package :senn.im.kkc.store.hachee)
 
 (defstruct (store (:constructor %make-store))
   kkc
@@ -17,7 +17,7 @@
 (defun make-kkc (hachee-impl-lm-kkc)
   (let ((user-dict (user-dict:read-file)))
     (let ((ex-dict (build-ex-dict user-dict hachee-impl-lm-kkc)))
-      (make-instance 'senn-kkc.hachee:kkc
+      (make-instance 'senn.im.kkc.hachee:kkc
        :hachee-impl-lm-kkc hachee-impl-lm-kkc
        :extended-dictionary ex-dict))))
 
@@ -25,10 +25,10 @@
   (%make-store :kkc (make-kkc hachee-impl-lm-kkc)
                :hachee-impl-lm-kkc hachee-impl-lm-kkc))
 
-(defmethod senn-kkc.store:get-kkc ((store store))
+(defmethod senn.im.kkc.store:get-kkc ((store store))
   (store-kkc store))
 
-(defmethod senn-kkc.store:reload ((store store))
+(defmethod senn.im.kkc.store:reload ((store store))
   (setf (store-kkc store) (make-kkc (store-hachee-impl-lm-kkc store)))
   (values))
 

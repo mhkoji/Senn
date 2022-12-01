@@ -5,18 +5,18 @@
 
 (defun init (engine-path)
   (let ((engine-runner
-         (senn-kkc.engine:make-engine-runner
+         (senn.im.kkc.engine:make-engine-runner
           :program engine-path)))
     (setq *kkc*
-          (make-instance 'senn-kkc.engine:kkc
+          (make-instance 'senn.im.kkc.engine:kkc
            :engine-store
-           (senn-kkc.engine:make-engine-store
-            :engine (senn-kkc.engine:run-engine engine-runner)
+           (senn.im.kkc.engine:make-engine-store
+            :engine (senn.im.kkc.engine:run-engine engine-runner)
             :engine-runner engine-runner)))))
 
 (defun destroy ()
   (when *kkc*
-    (senn-kkc.engine:close-kkc *kkc*)))
+    (senn.im.kkc.engine:close-kkc *kkc*)))
 
 (defun make-ime ()
   (log:info "Making IME ...")

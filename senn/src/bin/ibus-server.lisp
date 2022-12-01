@@ -6,19 +6,19 @@
 
 (defun make-hachee-ime (kkc)
   (senn.ibus.stateful-ime:make-ime
-   :kkc (make-instance 'senn-kkc.hachee:kkc
+   :kkc (make-instance 'senn.im.kkc.hachee:kkc
                        :hachee-impl-lm-kkc kkc)))
 
 (defmacro with-engine-ime ((ime runner) &body body)
-  `(let ((kkc (make-instance 'senn-kkc.engine:kkc
+  `(let ((kkc (make-instance 'senn.im.kkc.engine:kkc
                :engine-store
-               (senn-kkc.engine:make-engine-store
-                :engine (senn-kkc.engine:run-engine ,runner)
+               (senn.im.kkc.engine:make-engine-store
+                :engine (senn.im.kkc.engine:run-engine ,runner)
                 :engine-runner ,runner))))
      (unwind-protect
           (let ((,ime (senn.ibus.stateful-ime:make-ime :kkc kkc)))
             ,@body)
-       (senn-kkc.engine:close-kkc kkc))))
+       (senn.im.kkc.engine:close-kkc kkc))))
 
 (defun ime-client-loop (client ime)
   (labels ((handle (req)

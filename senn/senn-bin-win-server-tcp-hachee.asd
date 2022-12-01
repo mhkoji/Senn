@@ -5,5 +5,5 @@
   :depends-on (:hachee-kkc-impl-lm
                :hachee-data
                :senn-win
-               :senn-kkc-hachee
+               :senn-im-kkc-hachee
                :senn-ipc-server-tcp))

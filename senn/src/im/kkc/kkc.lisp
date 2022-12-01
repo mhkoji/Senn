@@ -1,4 +1,4 @@
-(defpackage :senn-kkc
+(defpackage :senn.im.kkc
   (:use :cl)
   (:export :segment-pron
            :segment-candidates
@@ -10,7 +10,7 @@
 
            :convert
            :list-candidates))
-(in-package :senn-kkc)
+(in-package :senn.im.kkc)
 
 (defstruct segment pron candidates)
 

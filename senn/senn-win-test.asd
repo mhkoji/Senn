@@ -6,7 +6,7 @@
    (:file "t/win/win")
    (:file "t/win/lib"))
   :depends-on (:senn-lib-win
-               :senn-kkc-hachee
+               :senn-im-kkc-hachee
                :hachee-kkc-impl-lm
                :hachee-data
                :fiveam))

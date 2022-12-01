@@ -5,7 +5,7 @@
 
 (defun main ()
   (let ((ime (senn.ibus.stateful-ime:engine-make-ime
-              (senn-kkc.engine:make-engine-runner
+              (senn.im.kkc.engine:make-engine-runner
                :program "/usr/lib/senn/kkc-engine"))))
     (unwind-protect
          (senn-ipc.server.stdio:start-server

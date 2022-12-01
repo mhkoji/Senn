@@ -16,6 +16,6 @@
      (:file "converting")
      (:file "buffer")
      (:file "inputting"))))
-  :depends-on (:senn-kkc
+  :depends-on (:senn-im-kkc
                :alexandria
                #+nil :cl-trie))

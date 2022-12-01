@@ -3,13 +3,13 @@
   (:export :add-tests))
 (in-package :senn.t.win)
 
-(defmethod senn-kkc:convert ((kkc (eql 'static-kkc)) (pron string)
+(defmethod senn.im.kkc:convert ((kkc (eql 'static-kkc)) (pron string)
                                 &key 1st-boundary-index)
   (declare (ignore 1st-boundary-index))
   (assert (string= pron "そら"))
-  (list (senn-kkc:make-segment
+  (list (senn.im.kkc:make-segment
          :pron "そら"
-         :candidates (list (senn-kkc:make-candidate :form "空")))))
+         :candidates (list (senn.im.kkc:make-candidate :form "空")))))
 
 (defun editing-view (input)
   (let ((json (jsown:new-js
@@ -71,9 +71,9 @@
 
 (defmacro hachee-convert (&key test)
   `(let ((ime (senn.win.stateful-ime:make-ime
-	       :kkc (make-instance 'senn-kkc.hachee:kkc
+	       :kkc (make-instance 'senn.im.kkc.hachee:kkc
 		     :hachee-impl-lm-kkc
-		     (senn-kkc.hachee:build-hachee-impl-lm-kkc)))))
+		     (senn.im.kkc.hachee:build-hachee-impl-lm-kkc)))))
      (,test
       (equal
        (converting-state-segment-strings

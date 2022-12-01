@@ -12,8 +12,8 @@
 (defmacro hachee-convert (&key test)
   `(let ((ime (senn.fcitx.stateful-ime:make-ime
                :kkc-store
-               (senn-kkc.store.hachee:make-store
-                (senn-kkc.hachee:build-hachee-impl-lm-kkc)))))
+               (senn.im.kkc.store.hachee:make-store
+                (senn.im.kkc.hachee:build-hachee-impl-lm-kkc)))))
      (let ((state (senn.im.converting:convert ime "とうきょうにいきました")))
        (,test (equal
                (senn.t.im-util:converting-state-segment-strings state)
