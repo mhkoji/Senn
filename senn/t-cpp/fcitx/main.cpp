@@ -2,7 +2,7 @@
 #include <iostream>
 
 const char *kECLDIR = "/usr/lib/senn/fcitx/ecl/lib/ecl-21.2.1/";     // TODO
-const std::string kKkcEnginePath = "/usr/lib/senn/fcitx/kkc-engine"; // TODO
+const std::string kKkcEnginePath = "/usr/lib/senn/fcitx/kkc/engine"; // TODO
 
 void PrintConverting(const senn::fcitx::im::views::Converting *view) {
   std::cout << "Converting:";
