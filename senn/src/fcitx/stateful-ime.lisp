@@ -21,7 +21,7 @@
     :reader ime-predictor)))
 
 (defmethod senn.fcitx.im:ime-kkc ((ime ime))
-  (senn-kkc.store:get-kkc (ime-kkc-store ime)))
+  (senn.im.kkc.store:get-kkc (ime-kkc-store ime)))
 
 (defmethod senn.fcitx.im:ime-predictor ((ime ime))
   (ime-predictor ime))
@@ -47,7 +47,7 @@
   (values))
 
 (defun reload-kkc (ime)
-  (senn-kkc.store:reload (slot-value ime 'kkc-store))
+  (senn.im.kkc.store:reload (slot-value ime 'kkc-store))
   (values))
 
 ;;;

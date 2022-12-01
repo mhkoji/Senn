@@ -6,6 +6,6 @@
   :depends-on (:hachee-kkc-impl-lm
                :hachee-data
                :senn-fcitx
-               :senn-kkc-hachee
+               :senn-im-kkc-hachee
                :senn-ipc-server-unix
                :senn-ipc-server-tcp))

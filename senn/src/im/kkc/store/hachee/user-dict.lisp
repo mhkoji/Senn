@@ -1,4 +1,4 @@
-(defpackage :senn-kkc.store.hachee.user-dict
+(defpackage :senn.im.kkc.store.hachee.user-dict
   (:use :cl)
   (:export :dict
            :entry-form
@@ -6,7 +6,7 @@
            :entry
            :dict-entries
            :read-file))
-(in-package :senn-kkc.store.hachee.user-dict)
+(in-package :senn.im.kkc.store.hachee.user-dict)
 
 (defun user-dict-pathname ()
   (merge-pathnames ".senn/user-dict.txt"

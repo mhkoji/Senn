@@ -11,23 +11,23 @@
          (string= view-expected
                   view))))
 
-(defmethod senn-kkc:convert ((kkc (eql 'static-kkc)) (pron string)
+(defmethod senn.im.kkc:convert ((kkc (eql 'static-kkc)) (pron string)
                                 &key 1st-boundary-index)
   (declare (ignore 1st-boundary-index))
   (assert (string= pron "きょうは"))
-  (list (senn-kkc:make-segment
+  (list (senn.im.kkc:make-segment
          :pron "きょう"
-         :candidates (list (senn-kkc:make-candidate :form "きょう")))
-        (senn-kkc:make-segment
+         :candidates (list (senn.im.kkc:make-candidate :form "きょう")))
+        (senn.im.kkc:make-segment
          :pron "は"
-         :candidates (list (senn-kkc:make-candidate :form "は")))))
+         :candidates (list (senn.im.kkc:make-candidate :form "は")))))
 
-(defmethod senn-kkc:list-candidates ((kkc (eql 'static-kkc))
+(defmethod senn.im.kkc:list-candidates ((kkc (eql 'static-kkc))
                                         (pron string))
   (assert (string= pron "きょう"))
-  (list (senn-kkc:make-candidate :form "きょう")
-        (senn-kkc:make-candidate :form "今日")
-        (senn-kkc:make-candidate :form "強")))
+  (list (senn.im.kkc:make-candidate :form "きょう")
+        (senn.im.kkc:make-candidate :form "今日")
+        (senn.im.kkc:make-candidate :form "強")))
 
 (defun converting-view (&key forms
                              cursor-form-index

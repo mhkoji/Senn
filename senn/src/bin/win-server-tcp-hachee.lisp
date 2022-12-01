@@ -12,7 +12,7 @@
          (senn-ipc.server:client-loop client :handle-fn #'handle))))))
 
 (defclass kkc (senn.win.stateful-ime:history-overwrite-mixin
-               senn-kkc.hachee:kkc)
+               senn.im.kkc.hachee:kkc)
   ())
 
 (defvar *hachee-impl-lm-kkc* nil)
@@ -20,7 +20,7 @@
 (defun run ()
   (when (not *hachee-impl-lm-kkc*)
     (setq *hachee-impl-lm-kkc*
-          (senn-kkc.hachee:build-hachee-impl-lm-kkc)))
+          (senn.im.kkc.hachee:build-hachee-impl-lm-kkc)))
   (start-server
    (lambda ()
      (senn.win.stateful-ime:make-ime
