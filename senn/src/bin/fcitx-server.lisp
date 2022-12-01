@@ -6,18 +6,19 @@
 
 (defun make-hachee-ime (kkc-impl)
   (senn.fcitx.stateful-ime:make-ime
-   :kkc-store (senn.im.kkc.store.hachee:make-store kkc-impl)
+   :kkc (make-instance 'senn.im.kkc.hachee:kkc
+         :hachee-impl-lm-kkc kkc-impl)
    :predictor (make-instance 'senn.im.predict.katakana:predictor)))
 
 (defmacro with-engine-ime ((ime runner) &body body)
-  `(let ((store (senn.im.kkc.store.engine:make-store-and-run ,runner)))
-    (unwind-protect
+  `(let ((kkc (senn.im.kkc.engine:make-kkc-and-run ,runner)))
+     (unwind-protect
          (let ((,ime (senn.fcitx.stateful-ime:make-ime
-                      :kkc-store store
+                      :kkc kkc
                       :predictor (make-instance
                                   'senn.im.predict.katakana:predictor))))
            ,@body)
-      (senn.im.kkc.store.engine:close-store store))))
+       (senn.im.kkc.engine:close-kkc kkc))))
 
 (defun ime-client-loop (client ime)
   (labels ((handle (req)
