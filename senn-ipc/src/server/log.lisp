@@ -2,7 +2,7 @@
   (:export :info :warn)
   (:import-from :log
                 :info
-                :warn))
+                #-ecl :warn))
 
 (log:config
  :pattern
