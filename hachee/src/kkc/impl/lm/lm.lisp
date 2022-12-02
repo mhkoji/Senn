@@ -140,7 +140,8 @@
                        word-dictionary-pathnames
                        char-dictionary
                        trusted-word-dictionary
-                       class-token-to-word-file-path)
+                       class-token-to-word-file-path
+                       weights)
   (let ((vocabulary (hachee.kkc.impl.lm.build:build-vocabulary-with-unk
                      pathnames-segmented)))
     (when (and pathnames-inaccurately-segmented
@@ -161,9 +162,9 @@
                               (hachee.kkc.impl.lm.build:build-classifier
                                class-token-to-word-file-path
                                vocabulary)
-                              :weights (list 0.115267 0.884733))
+                              :weights weights)
                (make-instance 'hachee.language-model.n-gram:model
-                              :weights (list 0.253401 0.746599)))))
+                              :weights weights))))
       (hachee.kkc.impl.lm.build:train-n-gram-model
        n-gram-model pathnames vocabulary)
       (let* ((word-dictionary
