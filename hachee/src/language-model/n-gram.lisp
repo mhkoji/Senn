@@ -224,8 +224,10 @@
         (token-freq (class-model-token-freq class-model))
         (class-token-freq (class-model-class-token-freq class-model)))
     (let ((class-token (class-token classifier token)))
-      (/ (gethash token token-freq)
-         (gethash class-token class-token-freq)))))
+      (let ((token-count (gethash token token-freq)))
+        (if token-count
+            (/ token-count (gethash class-token class-token-freq))
+            0)))))
 
 (defmethod transition-probability ((model class-model)
                                    (token t)
