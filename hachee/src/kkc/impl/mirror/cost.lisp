@@ -1,9 +1,9 @@
-(defpackage :hachee.kkc.impl.markov.cost
+(defpackage :hachee.kkc.impl.mirror.cost
   (:use :cl)
   (:export :<-probability
            :->probability
            :logadd))
-(in-package :hachee.kkc.impl.markov.cost)
+(in-package :hachee.kkc.impl.mirror.cost)
 
 (defvar *log-probability-to-cost-multiple* #x10000)
 

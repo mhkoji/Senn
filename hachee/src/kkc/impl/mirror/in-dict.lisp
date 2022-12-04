@@ -1,4 +1,4 @@
-(defpackage :hachee.kkc.impl.markov.in-dict
+(defpackage :hachee.kkc.impl.mirror.in-dict
   (:use :cl)
   (:export :entry-form
            :entry-cost
@@ -7,7 +7,7 @@
            :list-entries
            :do-entries
            :make-in-dict))
-(in-package :hachee.kkc.impl.markov.in-dict)
+(in-package :hachee.kkc.impl.mirror.in-dict)
 
 (defstruct in-dict
   hash)

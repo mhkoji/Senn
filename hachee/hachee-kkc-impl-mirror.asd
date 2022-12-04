@@ -1,6 +1,6 @@
-(asdf:defsystem :hachee-kkc-impl-markov
+(asdf:defsystem :hachee-kkc-impl-mirror
   :serial t
-  :pathname "src/kkc/impl/markov/"
+  :pathname "src/kkc/impl/mirror/"
   :components
   ((:file "cost")
    (:file "int-str")
