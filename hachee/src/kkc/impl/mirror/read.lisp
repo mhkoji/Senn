@@ -1,10 +1,10 @@
 ;; in-dict, int-str, markovは読み込み処理が似ているのでこのパッケージにまとめた。
-(defpackage :hachee.kkc.impl.markov.read
+(defpackage :hachee.kkc.impl.mirror.read
   (:use :cl)
   (:export :read-kkc-dir
            :read-kkc-paths)
-  (:local-nicknames (:int-str :hachee.kkc.impl.markov.int-str)))
-(in-package :hachee.kkc.impl.markov.read)
+  (:local-nicknames (:int-str :hachee.kkc.impl.mirror.int-str)))
+(in-package :hachee.kkc.impl.mirror.read)
 
 (defun read-int-str (path)
   (let ((str->int (make-hash-table :test #'equal)))
@@ -25,12 +25,12 @@
       (loop for line = (read-line stream nil nil) while line do
         (progn
           (destructuring-bind (pron form cost) (cl-ppcre:split "\\t" line)
-            (let ((entry (hachee.kkc.impl.markov.in-dict:make-entry
+            (let ((entry (hachee.kkc.impl.mirror.in-dict:make-entry
                           :form form
                           :cost (parse-integer cost)
                           :token (int-str:to-int int-str form))))
               (push entry (gethash pron hash)))))))
-    (hachee.kkc.impl.markov.in-dict:make-in-dict :hash hash)))
+    (hachee.kkc.impl.mirror.in-dict:make-in-dict :hash hash)))
 
 ;;;
 
@@ -69,7 +69,7 @@
     hash))
 
 (defun read-markov (1gram-path 2gram-path int-str)
-  (hachee.kkc.impl.markov:make-markov
+  (hachee.kkc.impl.mirror:make-markov
    :cost-1gram (read-cost-1gram 1gram-path int-str)
    :cost-2gram (read-cost-2gram 2gram-path int-str)))
 
@@ -83,7 +83,7 @@
   (let ((int-str (read-int-str path-int-str))
         (coeffs (with-open-file (in path-coeffs)
                   (read in))))
-    (hachee.kkc.impl.markov:build-task
+    (hachee.kkc.impl.mirror:build-task
      :markov (read-markov path-cost-1gram
                           path-cost-2gram
                           int-str)
@@ -118,7 +118,7 @@
                                   path-task-in-dict
                                   path-task-coeffs
                                   path-task-int-str)))
-    (hachee.kkc.impl.markov:build-kkc
+    (hachee.kkc.impl.mirror:build-kkc
      :word-markov  word-markov
      :in-dict      in-dict
      :char-int-str char-int-str

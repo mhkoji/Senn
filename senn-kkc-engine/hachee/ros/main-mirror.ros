@@ -11,12 +11,12 @@ exec ros -Q -- $0 "$@"
 (defpackage :ros.script.engine.3847071133
   (:use :cl))
 (in-package :ros.script.engine.3847071133)
-(ql:quickload :senn-kkc-engine-hachee-markov)
+(ql:quickload :senn-kkc-engine-hachee-mirror)
 
-(senn-kkc-engine.hachee.engine.markov:set-kkc)
+(senn-kkc-engine.hachee.engine.mirror:set-kkc)
 
-;; ros dynamic-space-size=2048 -- dump executable main-markov.ros -o kkc-engine
+;; ros dynamic-space-size=2048 -- dump executable main-mirror.ros -o kkc-engine
 (defun main (&rest argv)
   (declare (ignorable argv))
-  (senn-kkc-engine.hachee.engine.markov:main))
+  (senn-kkc-engine.hachee.engine.mirror:main))
 ;;; vim: set ft=lisp lisp:

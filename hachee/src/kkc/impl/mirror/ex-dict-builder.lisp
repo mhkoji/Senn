@@ -1,10 +1,10 @@
-(defpackage :hachee.kkc.impl.markov.ex-dict-builder
+(defpackage :hachee.kkc.impl.mirror.ex-dict-builder
   (:use :cl)
   (:export :item-pron
            :item-form
            :list-items
            :build))
-(in-package :hachee.kkc.impl.markov.ex-dict-builder)
+(in-package :hachee.kkc.impl.mirror.ex-dict-builder)
 
 (defgeneric list-items (source))
 (defgeneric item-pron (item))
@@ -14,10 +14,10 @@
   (labels ((in-dict-contains-p (item)
              (let ((form (item-form item))
                    (pron (item-pron item)))
-               (find form (hachee.kkc.impl.markov.in-dict:list-entries
+               (find form (hachee.kkc.impl.mirror.in-dict:list-entries
                            in-dict pron)
                      :test #'string=
-                     :key #'hachee.kkc.impl.markov.in-dict:entry-form))))
+                     :key #'hachee.kkc.impl.mirror.in-dict:entry-form))))
     (remove-if #'in-dict-contains-p (list-items source))))
 
 (defun build (source in-dict in-dict-prob char-based-cost-fn)
@@ -28,11 +28,11 @@
             for form = (item-form item)
             for pron = (item-pron item)
             for cost = (funcall char-based-cost-fn form)
-            for prob = (hachee.kkc.impl.markov.cost:->probability cost)
+            for prob = (hachee.kkc.impl.mirror.cost:->probability cost)
             for new-prob = (+ prob each-added-probability)
-            for new-cost = (hachee.kkc.impl.markov.cost:<-probability
+            for new-cost = (hachee.kkc.impl.mirror.cost:<-probability
                             new-prob)
-            for entry = (hachee.kkc.impl.markov.ex-dict:make-entry
+            for entry = (hachee.kkc.impl.mirror.ex-dict:make-entry
                          :form form :cost new-cost)
             do (progn (push entry (gethash pron hash)))))
-    (hachee.kkc.impl.markov.ex-dict:make-ex-dict :hash hash)))
+    (hachee.kkc.impl.mirror.ex-dict:make-ex-dict :hash hash)))

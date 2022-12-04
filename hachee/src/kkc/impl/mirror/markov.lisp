@@ -1,13 +1,13 @@
-(defpackage :hachee.kkc.impl.markov
+(defpackage :hachee.kkc.impl.mirror
   (:use :cl)
   (:export :make-markov
            :build-task
            :build-kkc
            :kkc-set-ex-dict)
-  (:local-nicknames (:int-str :hachee.kkc.impl.markov.int-str))
-  (:local-nicknames (:in-dict :hachee.kkc.impl.markov.in-dict))
-  (:local-nicknames (:ex-dict :hachee.kkc.impl.markov.ex-dict)))
-(in-package :hachee.kkc.impl.markov)
+  (:local-nicknames (:int-str :hachee.kkc.impl.mirror.int-str))
+  (:local-nicknames (:in-dict :hachee.kkc.impl.mirror.in-dict))
+  (:local-nicknames (:ex-dict :hachee.kkc.impl.mirror.ex-dict)))
+(in-package :hachee.kkc.impl.mirror)
 
 (defstruct markov
   cost-1gram
@@ -105,7 +105,7 @@
 
 (defun task-interpolation (cb word-markov-cost task-markov-cost)
   (- (+ cb word-markov-cost)
-     (hachee.kkc.impl.markov.cost:logadd (- task-markov-cost
+     (hachee.kkc.impl.mirror.cost:logadd (- task-markov-cost
                                             cb
                                             word-markov-cost))))
 
@@ -297,7 +297,7 @@
     (labels ((run-char-based-cost (string)
                (char-based-cost
                 string char-int-str char-markov char-cost-0gram)))
-      (let ((ex-dict (hachee.kkc.impl.markov.ex-dict-builder:build
+      (let ((ex-dict (hachee.kkc.impl.mirror.ex-dict-builder:build
                       ex-dict-source
                       (kkc-in-dict kkc)
                       (kkc-in-dict-prob kkc)
@@ -315,7 +315,7 @@
       (let* ((form (in-dict:entry-form entry))
              (cost (char-based-cost
                     form char-int-str char-markov char-cost-0gram))
-             (prob (hachee.kkc.impl.markov.cost:->probability cost)))
+             (prob (hachee.kkc.impl.mirror.cost:->probability cost)))
         (incf sum-prob prob)))
     sum-prob))
 
@@ -325,7 +325,7 @@
     ;; 2 for UT and BT
     (let ((unk-char-size (- pron-alphabet-size (- char-int-str-size 2))))
       (assert (< 0 unk-char-size))
-      (hachee.kkc.impl.markov.cost:<-probability (/ 1 unk-char-size)))))
+      (hachee.kkc.impl.mirror.cost:<-probability (/ 1 unk-char-size)))))
 
 (defun build-kkc (&key word-markov
                        char-int-str
@@ -352,7 +352,7 @@
     (make-task
      :markov markov
      :in-dict in-dict
-     :cb1 (hachee.kkc.impl.markov.cost:<-probability l10)
-     :cb2 (hachee.kkc.impl.markov.cost:<-probability l20)
-     :c11 (hachee.kkc.impl.markov.cost:<-probability l11)
-     :c21 (hachee.kkc.impl.markov.cost:<-probability l21))))
+     :cb1 (hachee.kkc.impl.mirror.cost:<-probability l10)
+     :cb2 (hachee.kkc.impl.mirror.cost:<-probability l20)
+     :c11 (hachee.kkc.impl.mirror.cost:<-probability l11)
+     :c21 (hachee.kkc.impl.mirror.cost:<-probability l21))))
