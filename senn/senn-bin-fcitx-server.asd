@@ -3,9 +3,7 @@
   :pathname "src"
   :components
   ((:file "bin/fcitx-server"))
-  :depends-on (:hachee-kkc-impl-lm
-               :hachee-data
-               :senn-fcitx
+  :depends-on (:senn-fcitx
                :senn-im-kkc-hachee
                :senn-ipc-server-unix
                :senn-ipc-server-tcp))

@@ -2,8 +2,6 @@
   :serial t
   :components
   ((:file "src/bin/win-server-tcp-hachee"))
-  :depends-on (:hachee-kkc-impl-lm
-               :hachee-data
-               :senn-win
+  :depends-on (:senn-win
                :senn-im-kkc-hachee
                :senn-ipc-server-tcp))
