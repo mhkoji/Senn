@@ -16,23 +16,12 @@
 (defclass kkc ()
   ((hachee-impl-lm-kkc
     :initarg :hachee-impl-lm-kkc
-    :reader kkc-hachee-impl-lm-kkc)
-   (extended-dictionary
-    :initarg :extended-dictionary
-    :initform nil
-    :reader kkc-extended-dictionary)))
-
-(defun hachee-kkc-convert (kkc)
-  (if (kkc-extended-dictionary kkc)
-      (hachee.kkc.impl.lm:make-kkc-convert
-       :kkc (kkc-hachee-impl-lm-kkc kkc)
-       :extended-dictionary (kkc-extended-dictionary kkc))
-      (kkc-hachee-impl-lm-kkc kkc)))
+    :reader kkc-hachee-impl-lm-kkc)))
 
 (defmethod senn.im.kkc:convert ((kkc kkc) (pron string)
                                 &key 1st-boundary-index)
   (let ((entries (hachee.kkc.convert:execute
-                  (hachee-kkc-convert kkc) pron
+                  (kkc-hachee-impl-lm-kkc kkc) pron
                   :1st-boundary-index 1st-boundary-index)))
     (mapcar (lambda (e)
               (let ((pron (hachee.kkc.convert:entry-pron e))
