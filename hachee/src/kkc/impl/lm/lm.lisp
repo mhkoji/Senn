@@ -20,63 +20,6 @@
   unknown-word-vocabulary
   unknown-word-n-gram-model)
 
-(defun save-kkc (kkc pathname)
-  (hachee.kkc.impl.lm.persist:do-save-into-zip (add-entry pathname)
-    (add-entry "n-gram-model.txt"
-               (kkc-n-gram-model kkc)
-               (if (typep (kkc-n-gram-model kkc)
-                          'hachee.language-model.n-gram:class-model)
-                   'hachee.language-model.n-gram:class-model
-                   'hachee.language-model.n-gram:model))
-    (add-entry "vocabulary.txt"
-               (kkc-vocabulary kkc))
-    (add-entry "word-dictionary.txt"
-               (kkc-word-dictionary kkc))
-    (add-entry "char-dictionary.txt"
-               (kkc-char-dictionary kkc))
-    (add-entry "unknown-word-vocabulary.txt"
-               (kkc-unknown-word-vocabulary kkc))
-    (add-entry "unknown-word-n-gram-model.txt"
-               (kkc-unknown-word-n-gram-model kkc)))
-  (values))
-
-
-(defun string->sentence (str unknown-word-char-vocabulary)
-  (hachee.language-model:make-sentence
-   :tokens (loop for ch across str
-                 for unit = (hachee.kkc.impl.lm.unit:make-unit
-                             :form (string ch)
-                             :pron (string ch))
-                 for token = (hachee.language-model.vocabulary:to-int-or-unk
-                              unknown-word-char-vocabulary
-                              (hachee.kkc.impl.lm.unit:unit->key unit))
-                 collect token)))
-
-(defun load-kkc (pathname)
-  (let ((entry-alist (hachee.kkc.impl.lm.persist:load-from-zip pathname)))
-    (labels ((ensure-not-null (x)
-               (assert x)
-               x)
-             (get-entry (filename)
-               (ensure-not-null
-                (cdr (assoc filename entry-alist :test #'string=)))))
-      (let ((unknown-word-vocabulary
-             (get-entry "unknown-word-vocabulary.txt"))
-            (unknown-word-n-gram-model
-             (get-entry "unknown-word-n-gram-model.txt"))
-            (word-dictionary
-             (get-entry "word-dictionary.txt")))
-        (make-kkc
-         :n-gram-model
-         (get-entry "n-gram-model.txt")
-         :vocabulary
-         (get-entry "vocabulary.txt")
-         :word-dictionary word-dictionary
-         :char-dictionary
-         (get-entry "char-dictionary.txt")
-         :unknown-word-vocabulary unknown-word-vocabulary
-         :unknown-word-n-gram-model unknown-word-n-gram-model)))))
-
 (defun build-kkc-simple (pathnames &key char-dictionary)
   (let ((vocabulary (hachee.kkc.impl.lm.build:build-vocabulary pathnames))
         (n-gram-model (make-instance 'hachee.language-model.n-gram:model)))
@@ -167,6 +110,17 @@
   n-gram-model
   unknown-word-vocabulary
   unknown-word-n-gram-model)
+
+(defun string->sentence (str unknown-word-char-vocabulary)
+  (hachee.language-model:make-sentence
+   :tokens (loop for ch across str
+                 for unit = (hachee.kkc.impl.lm.unit:make-unit
+                             :form (string ch)
+                             :pron (string ch))
+                 for token = (hachee.language-model.vocabulary:to-int-or-unk
+                              unknown-word-char-vocabulary
+                              (hachee.kkc.impl.lm.unit:unit->key unit))
+                 collect token)))
 
 (defun unknown-word-log-probability (score-calc-dto form)
   (with-accessors ((unknown-word-vocabulary
