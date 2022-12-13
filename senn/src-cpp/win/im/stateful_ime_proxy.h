@@ -1,6 +1,5 @@
 #pragma once
 
-#include "../../request.h"
 #include "stateful_ime.h"
 #include <memory>
 
@@ -10,8 +9,7 @@ namespace im {
 
 class StatefulIMEProxy : public StatefulIME {
 public:
-  StatefulIMEProxy(std::unique_ptr<senn::RequesterInterface>);
-  ~StatefulIMEProxy() override;
+  virtual void Request(const std::string &, std::string *) = 0;
 
   bool CanProcess(uint64_t) override;
   bool ProcessInput(uint64_t, BYTE *,
@@ -20,9 +18,6 @@ public:
                     std::function<void(const views::Committed &)>) override;
   void ToggleInputMode() override;
   InputMode GetInputMode() override;
-
-private:
-  std::unique_ptr<senn::RequesterInterface> requester_;
 };
 
 } // namespace im

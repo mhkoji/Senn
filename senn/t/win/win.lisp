@@ -30,7 +30,7 @@
     (format nil "CONVERTING ~A" json-string)))
 
 (defun resp (can-process view)
-  (format nil "~A ~A~%" (if can-process 1 0) view))
+  (format nil "~A ~A" (if can-process 1 0) view))
 
 (defun make-ime ()
   (senn.win.stateful-ime:make-ime :kkc 'static-kkc))

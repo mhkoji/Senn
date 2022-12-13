@@ -1,0 +1,7 @@
+LIBRARY "com-ime-server"
+
+EXPORTS
+    DllCanUnloadNow     PRIVATE
+    DllRegisterServer   PRIVATE
+    DllUnregisterServer PRIVATE
+    DllGetClassObject   PRIVATE

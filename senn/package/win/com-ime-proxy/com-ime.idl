@@ -1,0 +1,32 @@
+import "oaidl.idl";
+import "ocidl.idl";
+
+// clang-format off
+
+[
+    uuid(5F3E54F4-C755-4048-B601-562219BBE767),
+    version(1.0)
+]
+interface ISennComIme : IUnknown {
+    HRESULT Request(LPCSTR req, [out] LPSTR *res);
+}
+
+
+[
+    uuid(2BDDB756-8970-4868-BB95-72305AEC0E7B),
+    version(1.0)
+]
+library SennLibrary
+{
+    [
+        uuid(BB56A7D4-F240-4494-A081-354F4F2BA873),
+        version(1.0)
+    ]
+    coclass Senn
+    {
+        [default]
+        interface ISennComIme;
+    };
+}
+
+// clang-format on

@@ -1,7 +1,6 @@
 #pragma once
 
 #include <msctf.h>
-
 #include <string>
 
 namespace senn {

@@ -1,0 +1,8 @@
+LIBRARY "com-ime-proxy"
+
+EXPORTS
+    DllCanUnloadNow         PRIVATE
+    DllGetClassObject       PRIVATE
+    GetProxyDllInfo         PRIVATE
+    DllRegisterServer       PRIVATE
+    DllUnregisterServer     PRIVATE
