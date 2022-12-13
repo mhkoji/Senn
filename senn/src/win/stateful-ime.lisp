@@ -60,7 +60,7 @@
 
 
 (defun get-input-mode (ime)
-  (format nil "~A~%" (state-input-mode (ime-state ime))))
+  (format nil "~A" (state-input-mode (ime-state ime))))
 
 (defun toggle-input-mode (ime)
   (with-accessors ((input-mode state-input-mode)
@@ -70,14 +70,14 @@
       (setf input-state state)
       (setf input-mode mode)))
   ;; It seems to need to consume output buffer..
-  (format nil "OK~%"))
+  "OK")
 
 (defun can-process (ime key)
   (with-accessors ((input-mode state-input-mode)
                    (input-state state-input-state)) (ime-state ime)
     (let ((can-process (senn.win.im.can-process:execute
                         input-state key input-mode)))
-      (format nil "~A~%" (if can-process 1 0)))))
+      (format nil "~A" (if can-process 1 0)))))
 
 (defun process-input (ime key)
   (with-accessors ((history state-history)
@@ -97,7 +97,7 @@
              history
              (senn.im.converting:segment-pron seg)
              (senn.im.converting:segment-cursor-pos-form seg))))
-        (format nil "~A ~A~%"
+        (format nil "~A ~A"
                 (if (and can-process view) 1 0)
                 (or view ""))))))
 
