@@ -5,8 +5,8 @@
 
 (defmacro make-ime (&key test)
   `(let ((engine-path (merge-pathnames
-                       "bin/mock-kkc-engine.py"
-                       (asdf:system-source-directory :senn-ibus))))
+                       "t/kkc-engine-today.py"
+                       (asdf:system-source-directory :senn))))
      (let ((ime (senn.lib.ibus:make-ime engine-path)))
        (unwind-protect
             (let ((state (senn.im.converting:convert ime "きょうは")))

@@ -6,8 +6,8 @@
 (defmacro make-ime (&key test)
   `(progn
      (senn.lib.win:init (merge-pathnames
-                         "bin/mock-kkc-engine.py"
-                         (asdf:system-source-directory :senn-win)))
+                         "t/kkc-engine-today.py"
+                         (asdf:system-source-directory :senn)))
      (unwind-protect
           (let* ((ime (senn.lib.win:make-ime))
                  (state (senn.im.converting:convert ime "きょうは")))
