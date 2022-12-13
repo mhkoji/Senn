@@ -4,13 +4,14 @@
 #include <string>
 #include <windows.h>
 
+#include "../../com-ime-proxy/com-ime_h.h"
 #include "../senn.h"
 #include "../win/text-service/class_factory.h"
 #include "direct.h"
 #include "key_event_handler.h"
 #include "langbar.h"
 #include "ui.h"
-#include <win/im/stateful_ime.h>
+#include "win/im/stateful_ime.h"
 
 namespace senn {
 namespace senn_win {
@@ -27,7 +28,7 @@ public:
   TextService()
       : clsid_text_service_(kClsid), thread_mgr_(nullptr),
         client_id_(TF_CLIENTID_NULL), input_mode_toggle_button_(nullptr),
-        ime_(nullptr), key_event_handler_(nullptr),
+        com_ime_(nullptr), ime_(nullptr), key_event_handler_(nullptr),
         editing_display_attribute_atom_(TF_INVALID_GUIDATOM),
         converting_display_attribute_atoms_(
             {TF_INVALID_GUIDATOM, TF_INVALID_GUIDATOM}),
@@ -114,6 +115,8 @@ private:
 
   // Button to switch the current input mode.
   langbar::InputModeToggleButton *input_mode_toggle_button_;
+
+  ISennComIme *com_ime_;
 
   senn::win::im::StatefulIME *ime_;
 

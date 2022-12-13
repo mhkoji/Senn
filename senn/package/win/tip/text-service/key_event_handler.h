@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../../com-ime-proxy/com-ime_h.h"
 #include "candidate_ui_list.h"
 #include <msctf.h>
 #include <string>
@@ -223,6 +224,8 @@ private:
   // Values of the style for decorating a text when converting
   const EditSessionConverting::DisplayAttributeAtoms
       *converting_display_attribute_atoms_;
+
+  ISennComIme *com_ime_;
 
   Handlers *handlers_;
 

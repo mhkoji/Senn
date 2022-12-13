@@ -1,5 +1,5 @@
 #include "stateful_ime_proxy.h"
-#include <picojson/picojson.h>
+#include "../../../../third-party/picojson/picojson.h"
 #include <sstream>
 
 namespace senn {
@@ -19,12 +19,6 @@ int ToWString(const std::string &char_string, std::wstring *output) {
 
 } // namespace
 
-StatefulIMEProxy::StatefulIMEProxy(
-    std::unique_ptr<senn::RequesterInterface> requester)
-    : requester_(std::move(requester)) {}
-
-StatefulIMEProxy::~StatefulIMEProxy() { requester_.reset(); }
-
 void StatefulIMEProxy::ToggleInputMode() {
   std::string response;
   {
@@ -32,7 +26,7 @@ void StatefulIMEProxy::ToggleInputMode() {
     ss << "{"
        << "\"op\": \"toggle-input-mode\""
        << "}";
-    requester_->Request(ss.str(), &response);
+    Request(ss.str(), &response);
   }
   // It seems to need to consume output buffer...
   std::istringstream iss(response);
@@ -47,7 +41,7 @@ InputMode StatefulIMEProxy::GetInputMode() {
     ss << "{"
        << "\"op\": \"get-input-mode\""
        << "}";
-    requester_->Request(ss.str(), &response);
+    Request(ss.str(), &response);
   }
 
   std::istringstream iss(response);
@@ -72,7 +66,7 @@ bool StatefulIMEProxy::CanProcess(uint64_t keycode) {
        << "\"args\": {"
        << "\"keycode\": " << keycode << "}"
        << "}";
-    requester_->Request(ss.str(), &response);
+    Request(ss.str(), &response);
   }
 
   std::istringstream iss(response);
@@ -95,7 +89,7 @@ bool StatefulIMEProxy::ProcessInput(
        << "\"keycode\": " << keycode << ","
        << "\"shift\": " << (modifiers[VK_SHIFT] ? "true" : "false") << "}"
        << "}";
-    requester_->Request(ss.str(), &response);
+    Request(ss.str(), &response);
   }
 
   std::istringstream iss(response);

@@ -1,37 +1,31 @@
 #include "text_service.h"
 #include "object_releaser.h"
 #include "ui.h"
+#include "win/im/stateful_ime_proxy.h"
 #include <cassert>
-
-#ifdef SENN_IME_TCP
-#include <ShlObj_core.h>
-#include <win/im/stateful_ime_conn.h>
-#elif SENN_IME_ECL
-#include <win/im/stateful_ime_conn.h>
-#include <win/im/stateful_ime_ecl.h>
-#else
-#include <win/im/stateful_ime_conn.h>
-#endif
 
 namespace senn {
 namespace senn_win {
 namespace text_service {
 
-#ifdef SENN_IME_ECL
+class ComStatefulIme : public senn::win::im::StatefulIMEProxy {
+public:
+  // StatefulIMEProxy
+  ComStatefulIme(ISennComIme *com_ime) : com_ime_(com_ime){};
 
-namespace {
-void GetHomeDir(std::wstring *out) {
-  PWSTR homedir_path = nullptr;
-  if (SHGetKnownFolderPath(FOLDERID_Profile, KF_FLAG_DEFAULT_PATH, NULL,
-                           &homedir_path) == S_OK) {
-    *out = homedir_path;
-    *out += L"\\";
+  virtual void Request(const std::string &req, std::string *res) override {
+    LPSTR response;
+    if (FAILED(com_ime_->Request(req.c_str(), &response))) {
+      return;
+    }
+    *res = response;
+    CoTaskMemFree(response);
+    return;
   }
-  CoTaskMemFree(homedir_path);
-}
-} // namespace
 
-#endif
+private:
+  ISennComIme *com_ime_;
+};
 
 // ITfTextInputProcessor
 HRESULT TextService::Activate(ITfThreadMgr *thread_mgr, TfClientId client_id) {
@@ -49,12 +43,10 @@ HRESULT TextService::ActivateInternal(ITfThreadMgr *thread_mgr,
 
   client_id_ = client_id;
 
-  HRESULT result;
-
   // Register guids for display attribute to decorate composing texts.
   {
     ITfCategoryMgr *category_mgr = nullptr;
-    result =
+    HRESULT result =
         CoCreateInstance(CLSID_TF_CategoryMgr, nullptr, CLSCTX_INPROC_SERVER,
                          IID_ITfCategoryMgr, (void **)&category_mgr);
     if (FAILED(result)) {
@@ -82,49 +74,28 @@ HRESULT TextService::ActivateInternal(ITfThreadMgr *thread_mgr,
 
   // Create a key event handle that processes user keyboard inputs
   {
-
-    // Create a stateful IM to process user inputs of keys.
-#ifdef SENN_IME_TCP
-    {
-      // Load dll for TCP
-      WSADATA wsaData;
-      if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
-        return E_FAIL;
-      }
-
-      ime_ = senn::win::im::StatefulIMEConn::TCP("localhost", "5678");
-      if (ime_ == nullptr) {
-        return E_FAIL;
-      }
+    HRESULT result = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
+    if (FAILED(result)) {
+      return result;
     }
-#elif SENN_IME_ECL
-    {
-      std::wstring home_dir = L"";
-      GetHomeDir(&home_dir);
-      if (home_dir == L"") {
-        return E_FAIL;
-      }
 
-      std::wstring senn_dir = home_dir + L".senn\\";
-      std::wstring ecl_dir = senn_dir + L"ecl\\";
-      std::wstring kkc_engine_path = senn_dir + L"kkc-engine.exe";
-
-      _wputenv_s(L"ECLDIR", ecl_dir.c_str());
-      senn::win::im::StatefulIMEEcl::ClBoot();
-      senn::win::im::StatefulIMEEcl::EclInitModule();
-
-      size_t size;
-      char buf[256];
-      wcstombs_s(&size, buf, sizeof(buf), kkc_engine_path.c_str(),
-                 sizeof(buf) - 1);
-      ime_ = senn::win::im::StatefulIMEEcl::Create(buf);
+    IClassFactory *factory;
+    // https://learn.microsoft.com/en-us/windows/win32/learnwin32/com-coding-practices
+    result = CoGetClassObject(__uuidof(Senn), CLSCTX_LOCAL_SERVER, nullptr,
+                              IID_IClassFactory, (LPVOID *)&factory);
+    if (FAILED(result)) {
+      return result;
     }
-#else
-    ime_ = senn::win::im::StatefulIMEConn::IPC(kNamedPipePath);
-    if (ime_ == nullptr) {
-      return E_FAIL;
+
+    result = factory->CreateInstance(nullptr, __uuidof(ISennComIme), (void **)&com_ime_);
+
+    factory->Release();
+
+    if (FAILED(result)) {
+      return result;
     }
-#endif
+
+    ime_ = new ComStatefulIme(com_ime_);
 
     key_event_handler_ = new KeyEventHandler(
         thread_mgr_, client_id_, static_cast<ITfCompositionSink *>(this), ime_,
@@ -143,7 +114,7 @@ HRESULT TextService::ActivateInternal(ITfThreadMgr *thread_mgr,
       return E_FAIL;
     }
 
-    result = keystroke_mgr->AdviseKeyEventSink(
+    HRESULT result = keystroke_mgr->AdviseKeyEventSink(
         client_id, static_cast<ITfKeyEventSink *>(this), TRUE);
 
     keystroke_mgr->Release();
@@ -165,7 +136,6 @@ HRESULT TextService::ActivateInternal(ITfThreadMgr *thread_mgr,
         static_cast<langbar::InputModeToggleButton::View *>(this),
         static_cast<langbar::InputModeToggleButton::Handlers *>(this));
     lang_bar_item_mgr->AddItem(input_mode_toggle_button_);
-
     lang_bar_item_mgr->Release();
   }
 
@@ -178,29 +148,24 @@ HRESULT TextService::Deactivate() {
   }
 
   // Remove language bar items.
-  {
+  if (input_mode_toggle_button_ != nullptr) {
     ITfLangBarItemMgr *lang_bar_item_mgr = nullptr;
     if (thread_mgr_->QueryInterface(IID_ITfLangBarItemMgr,
-                                    (void **)&lang_bar_item_mgr) != S_OK) {
-      return S_OK;
-    }
-    if (input_mode_toggle_button_ != nullptr) {
+                                    (void **)&lang_bar_item_mgr) == S_OK) {
       lang_bar_item_mgr->RemoveItem(input_mode_toggle_button_);
       input_mode_toggle_button_->Release();
       input_mode_toggle_button_ = nullptr;
+      lang_bar_item_mgr->Release();
     }
-
-    lang_bar_item_mgr->Release();
   }
 
   {
     ITfKeystrokeMgr *keystroke_mgr = nullptr;
     if (thread_mgr_->QueryInterface(IID_ITfKeystrokeMgr,
-                                    (void **)&keystroke_mgr) != S_OK) {
-      return S_OK;
+                                    (void **)&keystroke_mgr) == S_OK) {
+      keystroke_mgr->UnadviseKeyEventSink(client_id_);
+      keystroke_mgr->Release();
     }
-    keystroke_mgr->UnadviseKeyEventSink(client_id_);
-    keystroke_mgr->Release();
   }
 
   if (key_event_handler_ != nullptr) {
@@ -211,12 +176,11 @@ HRESULT TextService::Deactivate() {
     delete ime_;
   }
 
-#ifdef SENN_IME_TCP
-  // Unload dll for TCP
-  WSACleanup();
-#elif SENN_IME_ECL
-  senn::win::im::StatefulIMEEcl::ClShutdown();
-#endif
+  if (com_ime_ != nullptr) {
+    com_ime_->Release();
+    com_ime_ = nullptr;
+    CoUninitialize();
+  }
 
   thread_mgr_->Release();
   thread_mgr_ = nullptr;
