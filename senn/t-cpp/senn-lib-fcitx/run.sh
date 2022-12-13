@@ -1,6 +1,7 @@
 #!/bin/bash -eux
 
 LIB=senn-lib-fcitx--all-systems.a
+ENGINE=$(cd $(dirname $0)/../ && pwd)/kkc-engine-goto-tokyo.py
 
 rm -f $LIB
 
@@ -23,7 +24,7 @@ g++ \
     -lecl \
     -o main
 
-DIFF=`./main | grep Sym: | diff - expected.txt`
+DIFF=`./main $ENGINE | grep Sym: | diff - expected.txt`
 if [ $? -ne 0 ]; then
     echo $DIFF
 fi
