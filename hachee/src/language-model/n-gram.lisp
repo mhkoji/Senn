@@ -29,12 +29,12 @@
     (let ((extended-tokens (append bos-tokens tokens eos-tokens)))
       (let ((length (length extended-tokens)))
         (dotimes (start length)
-          (loop for diff from (min n (- length start))
-                              downto 0
-                for end = (+ start diff)
-                for subseq = (subseq extended-tokens start end)
-                do (funcall callback subseq)
-                while (not (eq (car (last subseq)) BOS))))))))
+          (loop for diff from (min n (- length start)) downto 0
+                for end = (+ start diff) do
+            (progn
+              (when (not (and (< start (1- n)) (< end (1- n))))
+                (funcall callback
+                         (subseq extended-tokens start end))))))))))
 
 (labels ((list-subseqs (BOS tokens EOS n)
            (let ((result nil))
@@ -54,6 +54,13 @@
                    (  3   4) (  3) NIL
                    (  4 EOS) (  4) NIL
                              (EOS) NIL)))
+  (assert (equal (list-subseqs 'A '(1 2 3 4) 'A 2)
+                 '((A  1) (A)
+                   (1  2) (1) NIL
+                   (2  3) (2) NIL
+                   (3  4) (3) NIL
+                   (4  A) (4) NIL
+                          (A) NIL)))
   (assert (equal (list-subseqs 'BOS '(1 2 3 4) 'EOS 3)
                  '((BOS BOS   1) (BOS BOS)
                    (BOS   1   2) (BOS   1) (BOS)
