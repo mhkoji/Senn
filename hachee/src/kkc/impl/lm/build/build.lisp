@@ -196,11 +196,6 @@
                                    vocabulary
                                    hachee.language-model.vocabulary:+BOS+)
                                   to-class-map)
-                         class-token)
-                   (setf (gethash (to-int
-                                   vocabulary
-                                   hachee.language-model.vocabulary:+EOS+)
-                                  to-class-map)
                          class-token))
                   (t
                    (let* ((forms
@@ -220,5 +215,11 @@
                                      :pron (apply #'concatenate
                                                   'string prons))))))
                      (setf (gethash token to-class-map) class-token))))))))
+    (let ((EOS-class-token
+           (hachee.language-model.vocabulary::vocabulary-size vocabulary)))
+      (setf (gethash (to-int vocabulary
+                             hachee.language-model.vocabulary:+EOS+)
+                     to-class-map)
+            EOS-class-token))
     (hachee.language-model.n-gram:make-classifier
      :to-class-map to-class-map)))
