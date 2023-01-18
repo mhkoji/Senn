@@ -318,3 +318,17 @@
 
 (defmethod hachee.kkc.lookup:item-origin ((item lookup-item))
   (lookup-item-origin item))
+
+;;; dump
+
+(defmethod hachee.kkc.impl.lm.dump:kkc-class-vocabulary ((kkc kkc))
+  (kkc-vocabulary kkc))
+
+(defmethod hachee.kkc.impl.lm.dump:kkc-class-model ((kkc kkc))
+  (kkc-n-gram-model kkc))
+
+(defmethod hachee.kkc.impl.lm.dump:kkc-unk-vocabulary ((kkc kkc))
+  (kkc-unknown-word-vocabulary kkc))
+
+(defmethod hachee.kkc.impl.lm.dump:kkc-unk-model ((kkc kkc))
+  (kkc-unknown-word-n-gram-model kkc))
