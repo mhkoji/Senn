@@ -2,7 +2,8 @@
 (defpackage :hachee.kkc.impl.class-2-gram
   (:use :cl)
   (:shadow :word)
-  (:export :read-kkc))
+  (:export :set-ex-dict
+           :read-kkc))
 (in-package :hachee.kkc.impl.class-2-gram)
 
 (defstruct word
@@ -86,70 +87,141 @@
                                 (if (= curr UNK) unk-char-log-prob 0))))
                        (rec curr (1+ index) (+ sum log-prob))))))
         (rec BOS 0 0)))))
-            
-(defstruct entry
-  pron form word (unk-log-probability 0))
 
-(defstruct entry-set
+(defstruct class-vocab-entry
+  form word)
+
+(defstruct class-vocab
   str-entry-hash
   unk-word
   bos-word
   eos-word)
 
-(defun list-entries (entry-set unk-vocab unk-model pron)
-  (let ((unk-word (entry-set-unk-word entry-set))
-        (str-entry-hash (entry-set-str-entry-hash entry-set)))
-    (or (gethash pron str-entry-hash)
-        (list (make-entry
-               :form pron
-               :pron pron
-               :word unk-word
-               :unk-log-probability (unk-log-probability
-                                     unk-vocab unk-model pron))))))
-  
 (defstruct kkc
-  entry-set
+  class-vocab
+  class-model
   unk-model
   unk-vocab
-  class-model)
+  ex-dict)
 
-(defmethod hachee.kkc.convert:entry-form ((e entry))
-  (entry-form e))
 
-(defmethod hachee.kkc.convert:entry-pron ((e entry))
-  (entry-pron e))
+;;; convert
 
-(defmethod hachee.kkc.convert:entry-origin ((e entry))
-  ;; TODO
-  :u)
+(defstruct convert-entry
+  word form pron origin
+  (unk-log-probability 0))
 
+(defun list-convert-entries (class-vocab
+                             ex-dict
+                             unk-vocab
+                             unk-model
+                             pron)
+  (let ((convert-entry-list nil))
+    (let ((str-entry-hash (class-vocab-str-entry-hash class-vocab)))
+      (dolist (class-vocab-entry (gethash pron str-entry-hash))
+        (push (make-convert-entry
+               :word (class-vocab-entry-word class-vocab-entry)
+               :form (class-vocab-entry-form class-vocab-entry)
+               :pron pron
+               :origin :vocab
+               :unk-log-probability 0)
+              convert-entry-list)))
+    (let ((unk-word (class-vocab-unk-word class-vocab)))
+      (dolist (ex-dict-entry
+               (hachee.kkc.impl.class-2-gram.ex-dict:list-entries
+                ex-dict pron))
+        (push (make-convert-entry
+               :word unk-word
+               :form (hachee.kkc.impl.class-2-gram.ex-dict:entry-form
+                      ex-dict-entry)
+               :pron pron
+               :origin :ex-dict
+               :unk-log-probability (hachee.kkc.impl.class-2-gram.ex-dict:entry-unk-log-probability ex-dict-entry))
+              convert-entry-list))
+      (when (< (length pron) 8) ;; Length up to 8
+        (push (make-convert-entry
+               :word unk-word
+               :form (hachee.ja:hiragana->katakana pron)
+               :pron pron
+               :origin :unk
+               :unk-log-probability (unk-log-probability
+                                     unk-vocab unk-model pron))
+              convert-entry-list)))
+    convert-entry-list))
+
+(defmethod hachee.kkc.convert:entry-form ((e convert-entry))
+  (convert-entry-form e))
+
+(defmethod hachee.kkc.convert:entry-pron ((e convert-entry))
+  (convert-entry-pron e))
+
+(defmethod hachee.kkc.convert:entry-origin ((e convert-entry))
+  (convert-entry-origin e))
 
 (defmethod hachee.kkc.convert:convert-begin-entry ((kkc kkc))
-  (make-entry :word (entry-set-bos-word (kkc-entry-set kkc))))
+  (make-convert-entry :word (class-vocab-bos-word (kkc-class-vocab kkc))))
 
 (defmethod hachee.kkc.convert:convert-end-entry ((kkc kkc))
-  (make-entry :word (entry-set-eos-word (kkc-entry-set kkc))))
+  (make-convert-entry :word (class-vocab-eos-word (kkc-class-vocab kkc))))
 
 (defmethod hachee.kkc.convert:convert-list-entries-fn ((kkc kkc))
-  (let ((entry-set (kkc-entry-set kkc))
+  (let ((class-vocab (kkc-class-vocab kkc))
+        (ex-dict (kkc-ex-dict kkc))
         (unk-vocab (kkc-unk-vocab kkc))
         (unk-model (kkc-unk-model kkc)))
     (lambda (pron)
-      (list-entries entry-set unk-vocab unk-model pron))))
+      (list-convert-entries
+       class-vocab ex-dict unk-vocab unk-model pron))))
 
 (defmethod hachee.kkc.convert:convert-score-fn ((kkc kkc))
   (let ((class-model (kkc-class-model kkc)))
     (lambda (curr-entry prev-entry)
       (+ (word-transition-log-probability class-model
-                                          (entry-word curr-entry)
-                                          (entry-word prev-entry))
-         (entry-unk-log-probability curr-entry)))))
+                                          (convert-entry-word curr-entry)
+                                          (convert-entry-word prev-entry))
+         (convert-entry-unk-log-probability curr-entry)))))
+
+;;; ex-dict
+
+(defmethod hachee.kkc.impl.class-2-gram.ex-dict-builder:kkc-probability
+    ((kkc kkc) (string string))
+  (let ((unk-vocab (kkc-unk-vocab kkc))
+        (unk-model (kkc-unk-model kkc)))
+    (exp (unk-log-probability unk-vocab unk-model string))))
+
+(defmethod hachee.kkc.impl.class-2-gram.ex-dict-builder:kkc-contains-p
+    ((kkc kkc) item)
+  (let ((str-entry-hash (class-vocab-str-entry-hash (kkc-class-vocab kkc)))
+        (form (hachee.kkc.impl.class-2-gram.ex-dict-builder:item-form item))
+        (pron (hachee.kkc.impl.class-2-gram.ex-dict-builder:item-pron item)))
+    (find form (gethash pron str-entry-hash)
+          :test #'string=
+          :key #'class-vocab-entry-form)))
+
+(defmethod hachee.kkc.impl.class-2-gram.ex-dict-builder:kkc-vocabulary-probability ((kkc kkc))
+  (let ((sum-prob 0)
+        (str-entry-hash (class-vocab-str-entry-hash (kkc-class-vocab kkc)))
+        (unk-vocab (kkc-unk-vocab kkc))
+        (unk-model (kkc-unk-model kkc)))
+    (loop for entries being the hash-value of str-entry-hash do
+        (dolist (entry entries)
+          (let* ((form (class-vocab-entry-form entry))
+                 (prob (exp (unk-log-probability unk-vocab unk-model form))))
+            (incf sum-prob prob))))
+    sum-prob))
+
+(defun set-ex-dict (kkc ex-dict-source)
+  (let ((ex-dict (hachee.kkc.impl.class-2-gram.ex-dict-builder:build
+                  kkc ex-dict-source)))
+    (setf (kkc-ex-dict kkc) ex-dict)))
+
+;;;
 
 (defvar +UNK+ "<UNK>")
 (defvar +BOS+ "<BOS>")
 (defvar +EOS+ "<EOS>")
 
-(defun read-entry-set (vocab-path)
+(defun read-class-vocab (vocab-path)
   (let ((hash (make-hash-table :test #'equal))
         (unk-word nil)
         (bos-word nil)
@@ -167,15 +239,15 @@
                   (t
                    (destructuring-bind (form pron)
                        (cl-ppcre:split "/" form-pron)
-                     (push (make-entry :pron pron :form form :word word)
+                     (push (make-class-vocab-entry :form form :word word)
                            (gethash pron hash)))))))))
     (assert unk-word)
     (assert bos-word)
     (assert eos-word)
-    (make-entry-set :unk-word unk-word
-                    :bos-word bos-word
-                    :eos-word eos-word
-                    :str-entry-hash hash)))
+    (make-class-vocab :unk-word unk-word
+                      :bos-word bos-word
+                      :eos-word eos-word
+                      :str-entry-hash hash)))
 
 (defun read-counts (counts-path)
   (let ((counts (make-hash-table :test #'equal)))
@@ -240,10 +312,12 @@
                  unk-ngram-counts-path
                  char-set-size-pah)
   (make-kkc
-   :entry-set (read-entry-set class-vocab-path)
+   :class-vocab (read-class-vocab class-vocab-path)
+   :class-model (read-class-model class-weights-path
+                                  class-ngram-counts-path
+                                  class-word-counts-path)
    :unk-vocab (read-unk-vocab unk-vocab-path)
    :unk-model (read-unk-model unk-ngram-counts-path
                               char-set-size-pah)
-   :class-model (read-class-model class-weights-path
-                                  class-ngram-counts-path
-                                  class-word-counts-path)))
+   :ex-dict (hachee.kkc.impl.class-2-gram.ex-dict:make-ex-dict
+             :hash (make-hash-table :test #'equal))))

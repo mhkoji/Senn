@@ -2,6 +2,8 @@
   :serial t
   :pathname "src/kkc/impl/class-2-gram/"
   :components
-  ((:file "class-2-gram"))
+  ((:file "ex-dict")
+   (:file "ex-dict-builder")
+   (:file "class-2-gram"))
   :depends-on (:hachee-kkc
                :cl-ppcre))
