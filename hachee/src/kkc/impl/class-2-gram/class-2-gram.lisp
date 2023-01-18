@@ -181,6 +181,41 @@
                                           (convert-entry-word prev-entry))
          (convert-entry-unk-log-probability curr-entry)))))
 
+;;; lookup
+
+(defstruct lookup-item form origin)
+
+(defmethod hachee.kkc.lookup:item-form ((item lookup-item))
+  (lookup-item-form item))
+
+(defmethod hachee.kkc.lookup:item-origin ((item lookup-item))
+  (lookup-item-origin item))
+
+(defun list-lookup-items (class-vocab ex-dict pron)
+  (let ((items nil))
+    (let ((str-entry-hash (class-vocab-str-entry-hash class-vocab)))
+      (dolist (class-vocab-entry (gethash pron str-entry-hash))
+        (push (make-lookup-item
+               :form (class-vocab-entry-form class-vocab-entry)
+               :origin :vocab)
+              items)))
+    (dolist (ex-dict-entry
+             (hachee.kkc.impl.class-2-gram.ex-dict:list-entries
+              ex-dict pron))
+      (push (make-lookup-item
+             :form (hachee.kkc.impl.class-2-gram.ex-dict:entry-form
+                    ex-dict-entry)
+             :origin :ex-dict)
+            items))
+    items))
+
+(defmethod hachee.kkc.lookup:execute ((kkc kkc) (pron string)
+                                      &key prev next)
+  (declare (ignore prev next))
+  (list-lookup-items (kkc-class-vocab kkc)
+                     (kkc-ex-dict kkc)
+                     pron))
+
 ;;; ex-dict
 
 (defmethod hachee.kkc.impl.class-2-gram.ex-dict-builder:kkc-probability
