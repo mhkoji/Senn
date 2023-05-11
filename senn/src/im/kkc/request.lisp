@@ -15,26 +15,32 @@
   (let ((form (jsown:val jsown "form")))
     (senn.im.kkc:make-candidate :form form)))
 
+(defun jsown->seg (jsown)
+  (let ((pron (jsown:val jsown "pron"))
+        (j-cands (jsown:val jsown "candidates")))
+    (senn.im.kkc:make-segment
+     :pron pron
+     :candidates (mapcar #'jsown->candidate j-cands))))
+
 (defun convert (agent pron)
-  (let ((j-segs (send-json
-                 agent
-                 (jsown:new-js
-                   ("op" :convert)
-                   ("args" (jsown:new-js
-                             ("pron" pron)))))))
-    (mapcar (lambda (j-seg)
-              (let ((pron (jsown:val j-seg "pron"))
-                    (j-cands (jsown:val j-seg "candidates")))
-                (senn.im.kkc:make-segment
-                 :pron pron
-                 :candidates (mapcar #'jsown->candidate j-cands))))
-            j-segs)))
+  (let ((jsown (send-json
+                agent
+                (jsown:new-js
+                  ("op" :convert)
+                  ("args" (jsown:new-js
+                            ("pron" pron)))))))
+    (if jsown
+        (mapcar #'jsown->seg jsown)
+        (list (senn.im.kkc:make-segment
+               :pron pron
+               :candidates (list (senn.im.kkc:make-candidate
+                                  :form pron)))))))
 
 (defun list-candidates (agent pron)
-  (let ((j-cands (send-json
-                  agent
-                  (jsown:new-js
-                    ("op" :list_candidates)
-                    ("args" (jsown:new-js
-                              ("pron" pron)))))))
-    (mapcar #'jsown->candidate j-cands)))
+  (let ((jsown (send-json
+                agent
+                (jsown:new-js
+                  ("op" :list_candidates)
+                  ("args" (jsown:new-js
+                            ("pron" pron)))))))
+    (mapcar #'jsown->candidate jsown)))
