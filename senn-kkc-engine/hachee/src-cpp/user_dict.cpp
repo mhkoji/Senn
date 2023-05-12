@@ -5,6 +5,8 @@
 #include <vector>
 #include <set>
 
+#define DLL_PUBLIC __attribute__ ((visibility ("default")))
+
 namespace {
 
 struct Entry {
@@ -17,7 +19,7 @@ struct UserDict {
 };
 }
 
-user_dict_t user_dict_load(const char *path) {
+DLL_PUBLIC user_dict_t user_dict_load(const char *path) {
   std::ifstream in(path);
   if (!in) {
     return NULL;
@@ -51,27 +53,27 @@ user_dict_t user_dict_load(const char *path) {
   return new UserDict({entries});
 }
 
-void user_dict_destroy(user_dict_t p) {
+DLL_PUBLIC void user_dict_destroy(user_dict_t p) {
   UserDict *ud = (UserDict *)p;
   delete ud;
 }
 
-int user_dict_count(user_dict_t p) {
+DLL_PUBLIC int user_dict_count(user_dict_t p) {
   UserDict *ud = (UserDict *)p;
   return ud->entries.size();
 }
 
-entry_t user_dict_entry(user_dict_t p, int index) {
+DLL_PUBLIC entry_t user_dict_entry(user_dict_t p, int index) {
   UserDict *ud = (UserDict *)p;
   return &(ud->entries[index]);
 }
 
-const char *entry_pron(entry_t p) {
+DLL_PUBLIC const char *entry_pron(entry_t p) {
   Entry *e = (Entry *)p;
   return e->pron.c_str();
 }
 
-const char *entry_form(entry_t p) {
+DLL_PUBLIC const char *entry_form(entry_t p) {
   Entry *e = (Entry *)p;
   return e->form.c_str();
 }
