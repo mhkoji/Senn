@@ -9,7 +9,10 @@
 
 (defun send-json (agent jsown)
   (let ((line (jsown:to-json jsown)))
-    (jsown:parse (send-line agent line))))
+    (handler-case
+        (jsown:parse (send-line agent line))
+      (error (c)
+        nil))))
 
 (defun jsown->candidate (jsown)
   (let ((form (jsown:val jsown "form")))

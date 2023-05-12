@@ -25,7 +25,9 @@ exec ros -Q -- $0 "$@"
                         :senn-ibus
                         :senn-ibus-test
                         :senn-win
-                        :senn-win-test))
+                        :senn-win-test
+                        :senn-im-kkc-engine
+                        :senn-im-kkc-engine-test))
     (asdf:oos 'asdf:load-op system-key :force t))
   (if argv
       (let ((name (string-upcase (car argv))))
