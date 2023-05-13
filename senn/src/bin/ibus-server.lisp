@@ -10,11 +10,7 @@
                        :hachee-impl-lm-kkc kkc)))
 
 (defmacro with-engine-ime ((ime runner) &body body)
-  `(let ((kkc (make-instance 'senn.im.kkc.engine:kkc
-               :engine-store
-               (senn.im.kkc.engine:make-engine-store
-                :engine (senn.im.kkc.engine:run-engine ,runner)
-                :engine-runner ,runner))))
+  `(let ((kkc (senn.im.kkc.engine:start-kkc ,runner)))
      (unwind-protect
           (let ((,ime (senn.ibus.stateful-ime:make-ime :kkc kkc)))
             ,@body)
