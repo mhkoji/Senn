@@ -3,6 +3,6 @@
   :pathname "t/"
   :components
   ((:file "base")
-   (:file "im/kkc/request"))
+   (:file "im/kkc/engine"))
   :depends-on (:senn-im-kkc-engine
                :fiveam))
