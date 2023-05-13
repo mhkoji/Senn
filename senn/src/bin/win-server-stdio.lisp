@@ -47,7 +47,7 @@
              (jsown:to-json "unknown"))))))
 
 (defun run (engine-path)
-  (let ((kkc (senn.im.kkc.engine:make-kkc-and-run
+  (let ((kkc (senn.im.kkc.engine:start-kkc
               (senn.im.kkc.engine:make-engine-runner
                :program engine-path))))
     (unwind-protect

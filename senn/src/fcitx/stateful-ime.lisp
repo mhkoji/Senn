@@ -46,8 +46,8 @@
   (setf (ime-state ime) (senn.fcitx.im:make-initial-state))
   (values))
 
-(defun reload-kkc (ime)
-  (values))
+;; (defun reload-kkc (ime)
+;;   (values))
 
 ;;;
 

@@ -1,15 +1,46 @@
 ;; convert/list-candidates depending on a (third-party) kkc engine
 (defpackage :senn.im.kkc.engine
   (:use :cl)
-  (:export :run-engine
-           :kill-engine
-           :make-engine-runner
-           :make-engine-store
-           :kkc-rerun-engine
+  (:export :make-engine-runner
            :kkc
-           :close-kkc
-           :make-kkc-and-run))
+           :start-kkc
+           :close-kkc))
 (in-package :senn.im.kkc.engine)
+
+(defgeneric store-get-engine (engine-store))
+(defgeneric store-restart-engine (engine-store))
+
+(defclass kkc ()
+  ((engine-store
+    :initarg :engine-store
+    :reader engine-store)))
+
+(defmethod senn.im.kkc:convert ((kkc kkc) (pron string)
+                                &key 1st-boundary-index)
+  (declare (ignore 1st-boundary-index))
+  (with-accessors ((engine-store engine-store)) kkc
+    (handler-case (senn.im.kkc.request:convert
+                   (store-get-engine engine-store)
+                   pron)
+      (error (c)
+        (log:warn c)
+        (store-restart-engine engine-store)
+        (list (senn.im.kkc:make-segment
+               :pron pron
+               :candidates (list (senn.im.kkc:make-candidate
+                                  :form pron))))))))
+
+(defmethod senn.im.kkc:list-candidates ((kkc kkc) (pron string))
+  (with-accessors ((engine-store engine-store)) kkc
+    (handler-case (senn.im.kkc.request:list-candidates
+                   (store-get-engine engine-store)
+                   pron)
+      (error (c)
+        (log:warn c)
+        (store-restart-engine engine-store)
+        nil))))
+
+;;;
 
 (defstruct engine-runner
   program args)
@@ -75,62 +106,30 @@
       (force-output stream)
       (read-line stream nil nil nil))))
 
-(defstruct engine-store engine engine-runner)
-
-(defun engine-store-rerun (engine-store)
-  (with-accessors ((engine engine-store-engine)
-                   (runner engine-store-engine-runner)) engine-store
-    (kill-engine engine)
-    (setf engine (run-engine runner))))
-
 ;;;
 
 (defmethod senn.im.kkc.request:send-line ((agent engine) (line string))
   (engine-send-recv agent line))
 
+(defstruct engine-store engine engine-runner)
+
+(defmethod store-get-engine ((store engine-store))
+  (engine-store-engine store))
+
+(defmethod store-restart-engine ((store engine-store))
+  (with-accessors ((engine engine-store-engine)
+                   (runner engine-store-engine-runner)) store
+    (kill-engine engine)
+    (setf engine (run-engine runner))))
+
 ;;;
 
-(defclass kkc ()
-  ((engine-store
-    :initarg :engine-store
-    :reader engine-store)))
-
-(defun kkc-rerun-engine (kkc)
-  (engine-store-rerun (engine-store kkc)))
-
-(defmethod senn.im.kkc:convert ((kkc kkc) (pron string)
-                                &key 1st-boundary-index)
-  (declare (ignore 1st-boundary-index))
-  (with-accessors ((engine-store engine-store)) kkc
-    (handler-case (senn.im.kkc.request:convert
-                   (engine-store-engine engine-store)
-                   pron)
-      (error (c)
-        (log:warn c)
-        (engine-store-rerun engine-store)
-        (list (senn.im.kkc:make-segment
-               :pron pron
-               :candidates (list (senn.im.kkc:make-candidate
-                                  :form pron))))))))
-
-(defmethod senn.im.kkc:list-candidates ((kkc kkc) (pron string))
-  (with-accessors ((engine-store engine-store)) kkc
-    (handler-case (senn.im.kkc.request:list-candidates
-                   (engine-store-engine engine-store)
-                   pron)
-      (error (c)
-        (log:warn c)
-        (engine-store-rerun engine-store)
-        nil))))
-
-(defun close-kkc (kkc)
-  (kill-engine (engine-store-engine (engine-store kkc))))
-
-;;
-
-(defun make-kkc-and-run (runner)
+(defun start-kkc (runner)
   (let ((initial-engine (run-engine runner)))
     (let ((store (make-engine-store
                   :engine initial-engine
                   :engine-runner runner)))
       (make-instance 'kkc :engine-store store))))
+
+(defun close-kkc (kkc)
+  (kill-engine (engine-store-engine (engine-store kkc))))

@@ -4,15 +4,9 @@
   nil)
 
 (defun init (engine-path)
-  (let ((engine-runner
-         (senn.im.kkc.engine:make-engine-runner
-          :program engine-path)))
-    (setq *kkc*
-          (make-instance 'senn.im.kkc.engine:kkc
-           :engine-store
-           (senn.im.kkc.engine:make-engine-store
-            :engine (senn.im.kkc.engine:run-engine engine-runner)
-            :engine-runner engine-runner)))))
+  (setq *kkc* (senn.im.kkc.engine:start-kkc
+               (senn.im.kkc.engine:make-engine-runner
+                :program engine-path))))
 
 (defun destroy ()
   (when *kkc*

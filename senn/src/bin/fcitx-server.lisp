@@ -11,7 +11,7 @@
    :predictor (make-instance 'senn.im.predict.katakana:predictor)))
 
 (defmacro with-engine-ime ((ime runner) &body body)
-  `(let ((kkc (senn.im.kkc.engine:make-kkc-and-run ,runner)))
+  `(let ((kkc (senn.im.kkc.engine:start-kkc ,runner)))
      (unwind-protect
          (let ((,ime (senn.fcitx.stateful-ime:make-ime
                       :kkc kkc
