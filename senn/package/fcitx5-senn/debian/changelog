@@ -1,5 +1,5 @@
-fcitx5-senn (0.0.8-1) UNRELEASED; urgency=medium
+fcitx5-senn (0.0.8-1) unstable; urgency=medium
 
-  * TODO
+  * Initial release
 
- -- mhkoji <mhkoji2@gmail.com>  Wed, 23 Nov 2022 21:15:22 +0900
+ -- mhkoji <mhkoji2@gmail.com>  Sat, 13 May 2023 10:05:27 +0900
