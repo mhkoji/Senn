@@ -1,4 +1,4 @@
-(defpackage :senn.fcitx.im
+(defpackage :senn.fcitx.im.immutable
   (:use :cl)
   (:export :ime
            :ime-max-candidate-count
@@ -7,9 +7,9 @@
            :process-input
            :select-candidate
            :make-initial-state))
-(in-package :senn.fcitx.im)
+(in-package :senn.fcitx.im.immutable)
 
-(defclass ime (senn.fcitx.im.process-input:mixin)
+(defclass ime (senn.fcitx.im.immutable.process-input:mixin)
   ())
 
 (defgeneric ime-max-candidate-count (ime)
@@ -23,10 +23,10 @@
     nil))
 
 (defun process-input (ime state key)
-  (senn.fcitx.im.process-input:execute state key ime))
+  (senn.fcitx.im.immutable.process-input:execute state key ime))
 
 (defun select-candidate (state index)
-  (senn.fcitx.im.select-candidate:execute state index))
+  (senn.fcitx.im.immutable.select-candidate:execute state index))
 
 (defun make-initial-state ()
   (senn.im.inputting:make-state))

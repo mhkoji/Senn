@@ -5,9 +5,9 @@
   (let ((kkc (senn.im.kkc.engine:start-kkc
               (senn.im.kkc.engine:make-engine-runner
                :program engine-path))))
-    (senn.fcitx.stateful-ime:make-ime :kkc kkc)))
+    (senn.fcitx.im.mutable:make-ime :kkc kkc)))
 
 (defun close-ime (ime)
   (log:info "Closing IME ...")
-  (let ((kkc (senn.fcitx.stateful-ime:ime-kkc ime)))
+  (let ((kkc (senn.fcitx.im.mutable:ime-kkc ime)))
     (senn.im.kkc.engine:close-kkc kkc)))

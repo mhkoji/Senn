@@ -5,11 +5,11 @@
   ((:file "keys")
    (:file "im/state")
    (:file "im/view")
-   (:file "im/process-input")
-   (:file "im/select-candidate")
-   (:file "im/im")
-   (:file "stateful-ime")
-   (:file "server"))
+   (:file "im/immutable/process-input")
+   (:file "im/immutable/select-candidate")
+   (:file "im/immutable/ime")
+   (:file "im/mutable")
+   (:file "im/server"))
   :depends-on (:babel
                :jsown
                :log4cl

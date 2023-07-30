@@ -19,7 +19,7 @@
 
 ;;;
 
-(defclass ime (senn.fcitx.im:ime)
+(defclass ime (senn.fcitx.im.immutable:ime)
   ((state
     :initarg :state
     :accessor ime-state)
@@ -32,7 +32,7 @@
                    (fcitx-state state-fcitx-state)) (ime-state ime)
     (if (eq input-mode :hiragana)
         (destructuring-bind (resp state)
-            (senn.fcitx.im:process-input ime fcitx-state key)
+            (senn.fcitx.im.immutable:process-input ime fcitx-state key)
           (when state
             (setf fcitx-state state))
           resp)
@@ -47,7 +47,7 @@
        (setf fcitx-state nil))
       (:direct
        (setf input-mode :hiragana)
-       (setf fcitx-state (senn.fcitx.im:make-initial-state))))
+       (setf fcitx-state (senn.fcitx.im.immutable:make-initial-state))))
     (format nil "~A" input-mode)))
 
 (defun select-candidate (ime index)
@@ -55,7 +55,7 @@
                    (fcitx-state state-fcitx-state)) (ime-state ime)
     (if (eq input-mode :hiragana)
         (destructuring-bind (resp state)
-            (senn.fcitx.im:select-candidate fcitx-state index)
+            (senn.fcitx.im.immutable:select-candidate fcitx-state index)
           (when state
             (setf fcitx-state state))
           resp)
@@ -67,10 +67,10 @@
 
 ;;;
 
-(defmethod senn.fcitx.im:ime-kkc ((ime ime))
+(defmethod senn.fcitx.im.immutable:ime-kkc ((ime ime))
   (ime-kkc ime))
 
-(defmethod senn.fcitx.im:ime-max-candidate-count ((ime ime))
+(defmethod senn.fcitx.im.immutable:ime-max-candidate-count ((ime ime))
   ;; An error occurs if the candidate count >= 16.
   15)
 

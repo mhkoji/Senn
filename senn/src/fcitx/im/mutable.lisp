@@ -1,4 +1,4 @@
-(defpackage :senn.fcitx.stateful-ime
+(defpackage :senn.fcitx.im.mutable
   (:use :cl)
   (:export :process-input
            :select-candidate
@@ -6,9 +6,9 @@
            ; :reload-kkc
            :ime-kkc
            :make-ime))
-(in-package :senn.fcitx.stateful-ime)
+(in-package :senn.fcitx.im.mutable)
 
-(defclass ime (senn.fcitx.im:ime)
+(defclass ime (senn.fcitx.im.immutable:ime)
   ((state
     :initarg :state
     :accessor ime-state)
@@ -20,30 +20,30 @@
     :initform nil
     :reader ime-predictor)))
 
-(defmethod senn.fcitx.im:ime-kkc ((ime ime))
+(defmethod senn.fcitx.im.immutable:ime-kkc ((ime ime))
   (ime-kkc ime))
 
-(defmethod senn.fcitx.im:ime-predictor ((ime ime))
+(defmethod senn.fcitx.im.immutable:ime-predictor ((ime ime))
   (ime-predictor ime))
 
 ;;;
 
 (defun process-input (ime key)
   (destructuring-bind (resp state)
-      (senn.fcitx.im:process-input ime (ime-state ime) key)
+      (senn.fcitx.im.immutable:process-input ime (ime-state ime) key)
     (when state
       (setf (ime-state ime) state))
     resp))
 
 (defun select-candidate (ime index)
   (destructuring-bind (resp state)
-      (senn.fcitx.im:select-candidate (ime-state ime) index)
+      (senn.fcitx.im.immutable:select-candidate (ime-state ime) index)
     (when state
       (setf (ime-state ime) state))
     resp))
 
 (defun reset-im (ime)
-  (setf (ime-state ime) (senn.fcitx.im:make-initial-state))
+  (setf (ime-state ime) (senn.fcitx.im.immutable:make-initial-state))
   (values))
 
 ;; (defun reload-kkc (ime)
@@ -53,6 +53,6 @@
 
 (defun make-ime (&key kkc predictor)
   (make-instance 'ime
-                 :state (senn.fcitx.im:make-initial-state)
+                 :state (senn.fcitx.im.immutable:make-initial-state)
                  :kkc kkc
                  :predictor predictor))

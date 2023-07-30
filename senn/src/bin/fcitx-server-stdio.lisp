@@ -7,14 +7,14 @@
 (defun start-server (ime)
   (senn-ipc.server.stdio:start-server
    (lambda (line)
-     (senn.fcitx.server:handle-request ime line))))
+     (senn.fcitx.im.server:handle-request ime line))))
 
 (defun run (engine-path)
   (let ((kkc (senn.im.kkc.engine:start-kkc
               (senn.im.kkc.engine:make-engine-runner
                :program engine-path))))
     (unwind-protect
-         (start-server (senn.fcitx.stateful-ime:make-ime :kkc kkc))
+         (start-server (senn.fcitx.im.mutable:make-ime :kkc kkc))
       (senn.im.kkc.engine:close-kkc kkc))))
 
 (defun main ()
