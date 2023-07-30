@@ -10,7 +10,7 @@
           (senn.im.converting:state-segments state)))
 
 (defmacro hachee-convert (&key test)
-  `(let ((ime (senn.fcitx.stateful-ime:make-ime
+  `(let ((ime (senn.fcitx.im.mutable:make-ime
                :kkc (make-instance
                      'senn.im.kkc.hachee:kkc
                      :hachee-impl-lm-kkc

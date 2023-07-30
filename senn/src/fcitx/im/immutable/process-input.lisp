@@ -2,11 +2,11 @@
 ;; This process is described by state transition that includes:
 ;;  - Latin-to-Hiragana conversion
 ;;  - Kana-Kanji Conversion
-(defpackage :senn.fcitx.im.process-input
+(defpackage :senn.fcitx.im.immutable.process-input
   (:use :cl :senn.fcitx.im.view)
   (:export :mixin
            :execute))
-(in-package :senn.fcitx.im.process-input)
+(in-package :senn.fcitx.im.immutable.process-input)
 
 (defclass mixin (senn.im.inputting:ime
                  senn.im.converting:ime)

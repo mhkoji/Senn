@@ -1,7 +1,7 @@
-(defpackage :senn.fcitx.im.select-candidate
+(defpackage :senn.fcitx.im.immutable.select-candidate
   (:use :cl :senn.fcitx.im.view)
   (:export :execute))
-(in-package :senn.fcitx.im.select-candidate)
+(in-package :senn.fcitx.im.immutable.select-candidate)
 
 (defgeneric execute (state index))
 
