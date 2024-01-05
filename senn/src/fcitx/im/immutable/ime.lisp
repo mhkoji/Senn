@@ -29,19 +29,18 @@
   (senn.fcitx.im.immutable.select-candidate:execute state index))
 
 (defun make-initial-state ()
-  (senn.im.inputting:make-state))
+  (senn.fcitx.im.state.inputting:make-state))
 
 ;;;
 
-(defmethod senn.im.inputting:ime-max-candidate-count ((ime ime))
+(defmethod senn.fcitx.im.state.inputting:ime-max-candidate-count ((ime ime))
   (ime-max-candidate-count ime))
 
-(defmethod senn.im.inputting:ime-predictor ((ime ime))
-
+(defmethod senn.fcitx.im.state.inputting:ime-predictor ((ime ime))
   (ime-predictor ime))
 
-(defmethod senn.im.converting:ime-max-candidate-count ((ime ime))
+(defmethod senn.fcitx.im.state.converting:ime-max-candidate-count ((ime ime))
   (ime-max-candidate-count ime))
 
-(defmethod senn.im.converting:ime-kkc ((ime ime))
+(defmethod senn.fcitx.im.state.converting:ime-kkc ((ime ime))
   (ime-kkc ime))

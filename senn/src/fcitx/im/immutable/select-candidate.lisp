@@ -11,19 +11,22 @@
 (defmethod execute ((s t) index)
   (resp nil nil))
 
-(defmethod execute ((s senn.im.converting:state)
+(defmethod execute ((s senn.fcitx.im.state.converting:state)
                     (index integer))
-  (senn.im.converting:current-segment-candidates-set! s index)
-  (resp t (converting/converting-state s) :state s))
+  (senn.fcitx.im.state.converting:current-segment-candidates-set! s index)
+  (resp t (senn.fcitx.im.state.converting:converting-view s)
+        :state s))
 
-(defmethod execute ((s senn.im.inputting:state)
+(defmethod execute ((s senn.fcitx.im.state.inputting:state)
                     (index integer))
-  (let ((predictions (senn.im.inputting:state-predictions s)))
+  (let ((predictions (senn.fcitx.im.state.inputting:state-predictions s)))
     (if (< -1 index (length predictions))
         (let* ((new-state
-                (senn.fcitx.im.state:make-selecting-from-predictions
+                (senn.fcitx.im.state.selecting-from-predictions:make-state
                  :predictions predictions
                  :current-index index))
-               (view (editing/selecting-from-predictions-state new-state)))
+               (view
+                (senn.fcitx.im.state.selecting-from-predictions:editing-view
+                 new-state)))
           (resp t view :state new-state))
         (resp nil nil))))
