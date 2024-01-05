@@ -1,5 +1,9 @@
 (defpackage :senn.fcitx.im.immutable.select-candidate
-  (:use :cl :senn.fcitx.im.view)
+  (:use :cl)
+  (:local-nicknames (:inputting :senn.fcitx.im.state.inputting)
+                    (:converting :senn.fcitx.im.state.converting)
+                    (:selecting-from-predictions
+                     :senn.fcitx.im.state.selecting-from-predictions))
   (:export :execute))
 (in-package :senn.fcitx.im.immutable.select-candidate)
 
@@ -11,22 +15,18 @@
 (defmethod execute ((s t) index)
   (resp nil nil))
 
-(defmethod execute ((s senn.fcitx.im.state.converting:state)
+(defmethod execute ((s converting:state)
                     (index integer))
-  (senn.fcitx.im.state.converting:current-segment-candidates-set! s index)
-  (resp t (senn.fcitx.im.state.converting:converting-view s)
-        :state s))
+  (converting:current-segment-candidates-set! s index)
+  (resp t (converting:converting-view s) :state s))
 
-(defmethod execute ((s senn.fcitx.im.state.inputting:state)
+(defmethod execute ((s inputting:state)
                     (index integer))
-  (let ((predictions (senn.fcitx.im.state.inputting:state-predictions s)))
+  (let ((predictions (inputting:state-predictions s)))
     (if (< -1 index (length predictions))
-        (let* ((new-state
-                (senn.fcitx.im.state.selecting-from-predictions:make-state
-                 :predictions predictions
-                 :current-index index))
-               (view
-                (senn.fcitx.im.state.selecting-from-predictions:editing-view
-                 new-state)))
+        (let* ((new-state (selecting-from-predictions:make-state
+                           :predictions predictions
+                           :current-index index))
+               (view (selecting-from-predictions:editing-view new-state)))
           (resp t view :state new-state))
         (resp nil nil))))
