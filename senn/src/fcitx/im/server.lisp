@@ -3,11 +3,11 @@
   (:export :handle-request))
 (in-package :senn.fcitx.im.server)
 
-(defun format-resp (resp)
-  (destructuring-bind (consumed-p view) resp
+(defun format-output (output)
+  (destructuring-bind (consumed-p view) output
     (format nil "~A ~A"
             (if consumed-p 1 0)
-            (if (and consumed-p view) view "NONE"))))
+            (or view "NONE"))))
 
 (defun handle-request (mutable-ime line)
   (let ((jsown (jsown:parse line)))
@@ -16,7 +16,7 @@
                 (jsown:val jsown "op")))))
       (case op
         (:process-input
-         (format-resp
+         (format-output
           (senn.fcitx.im.mutable:process-input
            mutable-ime
            (senn.fcitx.keys:make-key
@@ -26,7 +26,7 @@
          (senn.fcitx.im.mutable:reset-im mutable-ime)
          "OK")
         (:select-candidate
-         (format-resp
+         (format-output
           (senn.fcitx.im.mutable:select-candidate
            mutable-ime
            (jsown:val (jsown:val jsown "args") "index"))))))))

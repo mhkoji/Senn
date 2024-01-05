@@ -6,10 +6,22 @@
            :ime-predictor
            :process-input
            :select-candidate
-           :make-initial-state))
+           :make-initial-state
+           :resp
+           :view->output))
 (in-package :senn.fcitx.im.immutable)
 
-(defclass ime (senn.fcitx.im.immutable.process-input:mixin)
+(defun view->output (view)
+  (let ((consumed-p (and view t)))
+    (list consumed-p view)))
+
+(defun resp (view &key state)
+  (list (view->output view) state))
+
+;;;
+
+(defclass ime (senn.fcitx.im.state.inputting:ime
+               senn.fcitx.im.state.converting:ime)
   ())
 
 (defgeneric ime-max-candidate-count (ime)
@@ -21,15 +33,6 @@
 (defgeneric ime-predictor (ime)
   (:method ((ime ime))
     nil))
-
-(defun process-input (ime state key)
-  (senn.fcitx.im.immutable.process-input:execute state key ime))
-
-(defun select-candidate (state index)
-  (senn.fcitx.im.immutable.select-candidate:execute state index))
-
-(defun make-initial-state ()
-  (senn.fcitx.im.state.inputting:make-state))
 
 ;;;
 
@@ -44,3 +47,15 @@
 
 (defmethod senn.fcitx.im.state.converting:ime-kkc ((ime ime))
   (ime-kkc ime))
+
+;;;
+
+(defgeneric process-input (ime state key)
+  (:documentation "This method processes user (keyboard) inputs. This process is described by state transition that includes:
+- Latin-to-Hiragana conversion
+- Kana-Kanji Conversion"))
+
+(defgeneric select-candidate (state index))
+
+(defun make-initial-state ()
+  (senn.fcitx.im.state.inputting:make-state))

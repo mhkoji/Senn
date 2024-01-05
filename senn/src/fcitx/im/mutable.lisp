@@ -29,18 +29,18 @@
 ;;;
 
 (defun process-input (ime key)
-  (destructuring-bind (resp state)
+  (destructuring-bind (output state)
       (senn.fcitx.im.immutable:process-input ime (ime-state ime) key)
     (when state
       (setf (ime-state ime) state))
-    resp))
+    output))
 
 (defun select-candidate (ime index)
-  (destructuring-bind (resp state)
+  (destructuring-bind (output state)
       (senn.fcitx.im.immutable:select-candidate (ime-state ime) index)
     (when state
       (setf (ime-state ime) state))
-    resp))
+    output))
 
 (defun reset-im (ime)
   (setf (ime-state ime) (senn.fcitx.im.immutable:make-initial-state))

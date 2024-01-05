@@ -31,12 +31,12 @@
   (with-accessors ((input-mode state-input-mode)
                    (fcitx-state state-fcitx-state)) (ime-state ime)
     (if (eq input-mode :hiragana)
-        (destructuring-bind (resp state)
+        (destructuring-bind (output state)
             (senn.fcitx.im.immutable:process-input ime fcitx-state key)
           (when state
             (setf fcitx-state state))
-          resp)
-        (list nil nil))))
+          output)
+        (senn.fcitx.im.immutable:view->output nil))))
 
 (defun toggle-input-mode (ime)
   (with-accessors ((input-mode state-input-mode)
@@ -54,12 +54,12 @@
   (with-accessors ((input-mode state-input-mode)
                    (fcitx-state state-fcitx-state)) (ime-state ime)
     (if (eq input-mode :hiragana)
-        (destructuring-bind (resp state)
+        (destructuring-bind (output state)
             (senn.fcitx.im.immutable:select-candidate fcitx-state index)
           (when state
             (setf fcitx-state state))
-          resp)
-        (list nil nil))))
+          output)
+        (senn.fcitx.im.immutable:view->output nil))))
 
 (defun reset-im (ime)
   (setf (ime-state ime) (make-initial-state))
