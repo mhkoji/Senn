@@ -4,8 +4,6 @@
            :ime-max-candidate-count
            :ime-kkc
            :ime-predictor
-           :process-input
-           :select-candidate
            :make-initial-state
            :resp
            :view->output))
@@ -49,13 +47,6 @@
   (ime-kkc ime))
 
 ;;;
-
-(defgeneric process-input (ime state key)
-  (:documentation "This method processes user (keyboard) inputs. This process is described by state transition that includes:
-- Latin-to-Hiragana conversion
-- Kana-Kanji Conversion"))
-
-(defgeneric select-candidate (state index))
 
 (defun make-initial-state ()
   (senn.fcitx.im.state.inputting:make-state))

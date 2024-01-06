@@ -1,7 +1,11 @@
+;; This modules processes user (keyboard) inputs.
+;; This process is described by state transition that includes:
+;;  - Latin-to-Hiragana conversion
+;;  - Kana-Kanji Conversion
 (defpackage :senn.fcitx.im.immutable.process-input
   (:use :cl)
+  (:export :execute)
   (:import-from :senn.fcitx.im.immutable
-                :process-input
                 :ime
                 :resp)
   (:local-nicknames (:inputting :senn.fcitx.im.state.inputting)
@@ -11,9 +15,11 @@
                     (:katakana :senn.fcitx.im.state.katakana)))
 (in-package :senn.fcitx.im.immutable.process-input)
 
-(defmethod process-input ((ime ime)
-                          (s katakana:state)
-                          (key senn.fcitx.keys:key))
+(defgeneric execute (state key ime))
+
+(defmethod execute ((s katakana:state)
+                    (key senn.fcitx.keys:key)
+                    (ime ime))
   (cond ((senn.fcitx.keys:enter-p key)
          (let ((new-state (inputting:make-state))
                (committed-string (katakana:state-input s)))
@@ -23,9 +29,9 @@
         (t
          (resp (katakana:editing-view s)))))
 
-(defmethod process-input ((ime ime)
-                          (s selecting-from-predictions:state)
-                          (key senn.fcitx.keys:key))
+(defmethod execute ((s selecting-from-predictions:state)
+                    (key senn.fcitx.keys:key)
+                    (ime ime))
   (cond ((senn.fcitx.keys:enter-p key)
          (let ((new-state (inputting:make-state))
                (committed-string
@@ -46,9 +52,9 @@
         (t
          (resp (selecting-from-predictions:editing-view s)))))
 
-(defmethod process-input ((ime ime)
-                          (s converting:state)
-                          (key senn.fcitx.keys:key))
+(defmethod execute ((s converting:state)
+                    (key senn.fcitx.keys:key)
+                    (ime ime))
   (cond ((senn.fcitx.keys:left-p key)
          (converting:current-segment-move! s -1)
          (resp (converting:converting-view s) :state s))
@@ -98,9 +104,9 @@
                   new-state :committed-string committed-string)
                  :state new-state)))))
 
-(defmethod process-input ((ime ime)
-                          (s inputting:state)
-                          (key senn.fcitx.keys:key))
+(defmethod execute ((s inputting:state)
+                    (key senn.fcitx.keys:key)
+                    (ime ime))
   (cond ((/= (logand (senn.fcitx.keys:key-state key)
                      #b1000000)
              0)

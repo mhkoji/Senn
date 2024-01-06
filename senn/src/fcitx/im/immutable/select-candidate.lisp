@@ -1,7 +1,7 @@
 (defpackage :senn.fcitx.im.immutable.select-candidate
   (:use :cl)
+  (:export :execute)
   (:import-from :senn.fcitx.im.immutable
-                :select-candidate
                 :resp)
   (:local-nicknames (:inputting :senn.fcitx.im.state.inputting)
                     (:converting :senn.fcitx.im.state.converting)
@@ -9,16 +9,16 @@
                      :senn.fcitx.im.state.selecting-from-predictions)))
 (in-package :senn.fcitx.im.immutable.select-candidate)
 
-(defmethod select-candidate ((s t) index)
+(defgeneric execute (state index))
+
+(defmethod execute ((s t) index)
   (resp nil))
 
-(defmethod select-candidate ((s converting:state)
-                             (index integer))
+(defmethod execute ((s converting:state) (index integer))
   (converting:current-segment-candidates-set! s index)
   (resp (converting:converting-view s) :state s))
 
-(defmethod select-candidate ((s inputting:state)
-                             (index integer))
+(defmethod execute ((s inputting:state) (index integer))
   (let ((predictions (inputting:state-predictions s)))
     (if (< -1 index (length predictions))
         (let* ((new-state (selecting-from-predictions:make-state

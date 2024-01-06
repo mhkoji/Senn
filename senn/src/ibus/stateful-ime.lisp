@@ -32,7 +32,8 @@
                    (fcitx-state state-fcitx-state)) (ime-state ime)
     (if (eq input-mode :hiragana)
         (destructuring-bind (output state)
-            (senn.fcitx.im.immutable:process-input ime fcitx-state key)
+            (senn.fcitx.im.immutable.process-input:execute
+             fcitx-state key ime)
           (when state
             (setf fcitx-state state))
           output)
@@ -55,7 +56,8 @@
                    (fcitx-state state-fcitx-state)) (ime-state ime)
     (if (eq input-mode :hiragana)
         (destructuring-bind (output state)
-            (senn.fcitx.im.immutable:select-candidate fcitx-state index)
+            (senn.fcitx.im.immutable.select-candidate:execute
+             fcitx-state index)
           (when state
             (setf fcitx-state state))
           output)
