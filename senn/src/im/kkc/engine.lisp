@@ -23,7 +23,7 @@
                    (store-get-engine engine-store)
                    pron)
       (error (c)
-        (log:warn c)
+        (format *error-output* "~A~%" c)
         (store-restart-engine engine-store)
         (list (senn.im.kkc:make-segment
                :pron pron
@@ -36,7 +36,7 @@
                    (store-get-engine engine-store)
                    pron)
       (error (c)
-        (log:warn c)
+        (format *error-output* "~A~%" c)
         (store-restart-engine engine-store)
         nil))))
 

@@ -9,5 +9,4 @@
                :senn-ipc-server-stdio
                :alexandria
                :cl-fad
-               :jsown
-               :log4cl))
+               :jsown))
