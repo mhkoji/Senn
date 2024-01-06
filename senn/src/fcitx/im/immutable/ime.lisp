@@ -20,8 +20,8 @@
 
 ;;;
 
-(defclass ime (senn.fcitx.im.state.inputting:ime
-               senn.fcitx.im.state.converting:ime)
+(defclass ime (senn.fcitx.im.state.inputting:mixin
+               senn.fcitx.im.state.converting:mixin)
   ())
 
 (defgeneric ime-max-candidate-count (ime)

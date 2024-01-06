@@ -1,6 +1,6 @@
 (defpackage :senn.fcitx.im.state.converting
   (:use :cl :senn.im.converting)
-  (:export :ime
+  (:export :mixin
            :ime-kkc
            :ime-max-candidate-count
 

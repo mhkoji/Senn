@@ -1,6 +1,6 @@
 (defpackage :senn.fcitx.im.state.inputting
   (:use :cl :senn.im.inputting)
-  (:export :ime
+  (:export :mixin
            :ime-predictor
            :ime-max-candidate-count
 
