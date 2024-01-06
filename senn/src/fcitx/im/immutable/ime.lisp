@@ -4,12 +4,22 @@
            :ime-max-candidate-count
            :ime-kkc
            :ime-predictor
-           :process-input
-           :select-candidate
-           :make-initial-state))
+           :make-initial-state
+           :resp
+           :view->output))
 (in-package :senn.fcitx.im.immutable)
 
-(defclass ime (senn.fcitx.im.immutable.process-input:mixin)
+(defun view->output (view)
+  (let ((consumed-p (and view t)))
+    (list consumed-p view)))
+
+(defun resp (view &key state)
+  (list (view->output view) state))
+
+;;;
+
+(defclass ime (senn.fcitx.im.state.inputting:mixin
+               senn.fcitx.im.state.converting:mixin)
   ())
 
 (defgeneric ime-max-candidate-count (ime)
@@ -22,26 +32,21 @@
   (:method ((ime ime))
     nil))
 
-(defun process-input (ime state key)
-  (senn.fcitx.im.immutable.process-input:execute state key ime))
+;;;
 
-(defun select-candidate (state index)
-  (senn.fcitx.im.immutable.select-candidate:execute state index))
+(defmethod senn.fcitx.im.state.inputting:ime-max-candidate-count ((ime ime))
+  (ime-max-candidate-count ime))
 
-(defun make-initial-state ()
-  (senn.im.inputting:make-state))
+(defmethod senn.fcitx.im.state.inputting:ime-predictor ((ime ime))
+  (ime-predictor ime))
+
+(defmethod senn.fcitx.im.state.converting:ime-max-candidate-count ((ime ime))
+  (ime-max-candidate-count ime))
+
+(defmethod senn.fcitx.im.state.converting:ime-kkc ((ime ime))
+  (ime-kkc ime))
 
 ;;;
 
-(defmethod senn.im.inputting:ime-max-candidate-count ((ime ime))
-  (ime-max-candidate-count ime))
-
-(defmethod senn.im.inputting:ime-predictor ((ime ime))
-
-  (ime-predictor ime))
-
-(defmethod senn.im.converting:ime-max-candidate-count ((ime ime))
-  (ime-max-candidate-count ime))
-
-(defmethod senn.im.converting:ime-kkc ((ime ime))
-  (ime-kkc ime))
+(defun make-initial-state ()
+  (senn.fcitx.im.state.inputting:make-state))

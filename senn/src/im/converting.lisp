@@ -1,6 +1,6 @@
 (defpackage :senn.im.converting
   (:use :cl)
-  (:export :ime
+  (:export :mixin
            :ime-kkc
            :ime-max-candidate-count
 
@@ -79,18 +79,18 @@
   pronunciation
   (current-segment-index 0))
 
-(defclass ime () ())
-(defgeneric ime-kkc (ime))
-(defgeneric ime-max-candidate-count (ime))
+(defclass mixin () ())
+(defgeneric ime-kkc (mixin))
+(defgeneric ime-max-candidate-count (mixin))
 
 (defun take-first (list n)
   (if (< n (length list))
       (subseq list 0 n)
       list))
 
-(defun ime-list-candidates (ime pron)
+(defun ime-list-candidates (mixin pron)
   (with-accessors ((kkc ime-kkc)
-                   (max-count ime-max-candidate-count)) ime
+                   (max-count ime-max-candidate-count)) mixin
     (let ((cands (senn.im.kkc:list-candidates kkc pron)))
       (if max-count
           (take-first cands max-count)
@@ -104,10 +104,10 @@
     (when (<= 0 new-index (1- (length (state-segments state))))
       (setf (state-current-segment-index state) new-index))))
 
-(defun current-segment-candidates-move! (state diff ime)
+(defun current-segment-candidates-move! (state diff mixin)
   (with-accessors ((segment current-segment)) state
     (labels ((list-candidates ()
-               (ime-list-candidates ime (segment-pron segment))))
+               (ime-list-candidates mixin (segment-pron segment))))
       (segment-ensure-candidates-appended! segment #'list-candidates)
       (segment-cursor-pos-move! segment diff)
       (setf (segment-shows-katakana-p segment) nil))))
@@ -124,8 +124,8 @@
   (format nil "~{~A~}"
           (mapcar #'segment-cursor-pos-form (state-segments state))))
 
-(defun convert (ime pron)
-  (with-accessors ((kkc ime-kkc)) ime
+(defun convert (mixin pron)
+  (with-accessors ((kkc ime-kkc)) mixin
     (let ((kkc-segs (senn.im.kkc:convert kkc pron)))
       (make-state
        :segments

@@ -1,6 +1,6 @@
 (defpackage :senn.im.inputting
   (:use :cl)
-  (:export :ime
+  (:export :mixin
            :ime-predictor
            :ime-max-candidate-count
 
@@ -44,42 +44,42 @@
       (subseq list 0 n)
       list))
 
-(defclass ime () ())
-(defgeneric ime-predictor (ime))
-(defgeneric ime-max-candidate-count (ime))
+(defclass mixin () ())
+(defgeneric ime-predictor (mixin))
+(defgeneric ime-max-candidate-count (mixin))
 
-(defun ime-list-predictions (ime string)
+(defun ime-list-predictions (mixin string)
   (if (string= string "")
       nil
       (with-accessors ((predictor ime-predictor)
-                       (max-count ime-max-candidate-count)) ime
+                       (max-count ime-max-candidate-count)) mixin
         (let ((cands (senn.im.predict:execute predictor string)))
           (if max-count
               (take-first cands max-count)
               cands)))))
 
-(defun state-predictions-update! (state ime)
-  (when ime
+(defun state-predictions-update! (state mixin)
+  (when mixin
     (setf (state-predictions state)
-          (ime-list-predictions ime (state-buffer-string state)))))
+          (ime-list-predictions mixin (state-buffer-string state)))))
 
 (defun state-buffer-cursor-pos-move! (state diff)
   (setf (state-buffer state)
         (senn.im.buffer:move-cursor-pos (state-buffer state) diff)))
 
-(defun insert-char! (state char &optional ime)
+(defun insert-char! (state char &optional mixin)
   (setf (state-buffer state)
         (senn.im.buffer:insert-char (state-buffer state) char))
-  (state-predictions-update! state ime))
+  (state-predictions-update! state mixin))
 
-(defun insert-char-direct! (state char &optional ime)
+(defun insert-char-direct! (state char &optional mixin)
   (setf (state-buffer state)
         (senn.im.buffer:insert-char-direct (state-buffer state) char))
-  (state-predictions-update! state ime))
+  (state-predictions-update! state mixin))
 
-(defun delete-char! (state &optional ime)
+(defun delete-char! (state &optional mixin)
   (when (not (state-buffer-empty-p state))
     (setf (state-buffer state)
           (senn.im.buffer:delete-char (state-buffer state)))
-    (state-predictions-update! state ime)
+    (state-predictions-update! state mixin)
     t))

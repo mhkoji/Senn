@@ -5,8 +5,8 @@
            :ime-predictor))
 (in-package :senn.win.im)
 
-(defclass ime (senn.im.inputting:ime
-               senn.im.converting:ime)
+(defclass ime (senn.im.inputting:mixin
+               senn.im.converting:mixin)
   ())
 
 (defgeneric ime-kkc (ime))
