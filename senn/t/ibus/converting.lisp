@@ -3,13 +3,11 @@
   (:export :run))
 (in-package :senn.t.ibus.converting)
 
-(defun resp= (expected consumed-p view)
-  (destructuring-bind (consumed-p-expected view-expected)
-      expected
-    (and (eq consumed-p-expected
-             consumed-p)
-         (string= view-expected
-                  view))))
+(defmacro resp= (test expected consumed-p view)
+  `(destructuring-bind (consumed-p-expected view-expected)
+       ,expected
+     (,test (eq consumed-p-expected ,consumed-p))
+     (,test (string= view-expected ,view))))
 
 (defmethod senn.im.kkc:convert ((kkc (eql 'static-kkc)) (pron string)
                                 &key 1st-boundary-index)
@@ -53,14 +51,14 @@
      (dolist (char '(#\k #\y #\o #\u #\h #\a))
        (senn.ibus.stateful-ime:process-input
         ime (senn.fcitx.keys:make-key :sym (char-code char) :state 0)))
-     (,test (resp=
-             (senn.ibus.stateful-ime:process-input
-              ime (senn.fcitx.keys:make-key :sym 32 :state 0))
-             t (converting-view
-                :forms '("きょう" "は")
-                :cursor-form-index 0
-                :cursor-form-candidates nil
-                :cursor-form-candidate-index 0)))))
+     (resp= ,test
+            (senn.ibus.stateful-ime:process-input
+             ime (senn.fcitx.keys:make-key :sym 32 :state 0))
+            t (converting-view
+               :forms '("きょう" "は")
+               :cursor-form-index 0
+               :cursor-form-candidates nil
+               :cursor-form-candidate-index 0))))
 
 (senn.t.ibus:add-tests
   :converting
