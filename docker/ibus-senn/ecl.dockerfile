@@ -1,9 +1,13 @@
-FROM ubuntu:18.04
+FROM ubuntu:22.04
 
 RUN apt update && apt install -y \
-    build-essential \
+    ecl \
+    # https://github.com/daewok/lisp-devel-docker/issues/4
+    # Without netbase, the following error occurs during (quicklisp-quickstart:install).
+    # > An error occurred during initialization:
+    # > Protocol not found: "tcp".
+    netbase \
     wget \
-    m4 \
  && rm -rf /var/lib/apt/lists/*
 
 RUN mkdir -p\
@@ -12,25 +16,16 @@ RUN mkdir -p\
     /output
 
 RUN wget \
-      https://common-lisp.net/project/ecl/static/files/release/ecl-21.2.1.tgz \
-      --directory-prefix /app-build && \
-    cd /app-build && \
-    tar zxvf ecl-21.2.1.tgz && \
-    cd ecl-21.2.1 && \
-    ./configure --prefix=/usr/lib/senn/ibus/ecl/ && \
-    make && \
-    make install && \
-    wget \
       https://beta.quicklisp.org/quicklisp.lisp \
       --directory-prefix /app-build && \
-    /usr/lib/senn/ibus/ecl/bin/ecl \
+    ecl \
       -norc \
       -load /app-build/quicklisp.lisp \
       -eval "(quicklisp-quickstart:install)"
 
 COPY senn /app/senn
 
-RUN /usr/lib/senn/ibus/ecl/bin/ecl \
+RUN ecl \
       -load "/root/quicklisp/setup.lisp" \
       -eval '(push "/app" ql:*local-project-directories*)' \
       -eval '(ql:quickload :senn-lib-ibus)' \
