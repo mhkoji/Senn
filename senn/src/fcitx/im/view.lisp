@@ -14,19 +14,6 @@
         (cursor-pos (senn.im.buffer:buffer-cursor-pos buffer)))
     (length-utf8 (subseq string 0 cursor-pos))))
 
-(defmethod yason:encode ((string string) &optional (stream *standard-output*))
-  (write-char #\" stream)
-  (flet ((write-str (string)
-           (loop for c across string do
-             (write-char c stream))))
-    (loop for char across string do
-      (if (and (>= (char-code char) (char-code #\ ))
-               (<= (char-code char) (char-code #\~)))
-          (write-char char stream)
-          (write-str (format nil "\\u~4,'0X" (char-code char))))))
-  (write-char #\" stream)
-  string)
-
 (defun editing-view (cursor-pos
                      input
                      predictions

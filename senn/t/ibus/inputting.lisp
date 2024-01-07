@@ -13,13 +13,18 @@
                           predictions
                           prediction-index
                           committed-input)
-  (let ((json (jsown:new-js
-                ("cursor-pos"       cursor-pos)
-                ("input"            input)
-                ("predictions"      predictions)
-                ("prediction-index" (or prediction-index -1))
-                ("committed-input"  committed-input))))
-    (format nil "EDITING ~A" (jsown:to-json json))))
+  (let ((view
+         (yason:with-output-to-string* ()
+           (yason:encode
+            (alexandria:plist-hash-table
+             (list
+              "cursor-pos"       cursor-pos
+              "input"            input
+              "predictions"      (or predictions #())
+              "prediction-index" (or prediction-index -1)
+              "committed-input"  committed-input)
+             :test #'equal)))))
+    (format nil "EDITING ~A" view)))
 
 (defun make-ime ()
   (senn.ibus.stateful-ime:make-ime :kkc nil))

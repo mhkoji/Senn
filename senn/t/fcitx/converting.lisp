@@ -39,15 +39,21 @@
                              cursor-form-index
                              cursor-form-candidates
                              cursor-form-candidate-index)
-  (let ((json
-         (jsown:new-js
-           ("forms"             forms)
-           ("cursor-form-index" cursor-form-index)
-           ("cursor-form"
-            (jsown:new-js
-              ("candidates"      cursor-form-candidates)
-              ("candidate-index" cursor-form-candidate-index))))))
-    (format nil "CONVERTING ~A" (jsown:to-json json))))
+  (let ((view
+         (yason:with-output-to-string* ()
+           (yason:encode
+            (alexandria:plist-hash-table
+             (list
+              "forms"             forms
+              "cursor-form-index" cursor-form-index
+              "cursor-form"
+              (alexandria:plist-hash-table
+               (list
+                "candidates"      (or cursor-form-candidates #())
+                "candidate-index" cursor-form-candidate-index)
+               :test #'equal))
+             :test #'equal)))))
+    (format nil "CONVERTING ~A" view)))
 
 (defmacro space-then-convert (&key test)
   `(let ((ime (senn.fcitx.im.mutable:make-ime :kkc 'static-kkc)))
