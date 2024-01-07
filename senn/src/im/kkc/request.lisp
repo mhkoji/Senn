@@ -5,44 +5,55 @@
            :list-candidates))
 (in-package :senn.im.kkc.request)
 
-(defgeneric send-line (agent jsown))
+(defgeneric send-line (agent line))
 
-(defun send-json (agent jsown)
-  (let ((line (jsown:to-json jsown)))
-    (handler-case
-        (jsown:parse (send-line agent line))
-      (error () nil))))
+(defun send-json (agent hash)
+  (handler-case
+      (let ((line
+             (yason:with-output-to-string* ()
+               (yason:encode hash))))
+        (yason:parse (send-line agent line)))
+    (error () nil)))
 
-(defun jsown->candidate (jsown)
-  (let ((form (jsown:val jsown "form")))
+(defun obj->candidate (hash)
+  (let ((form (gethash "form" hash)))
     (senn.im.kkc:make-candidate :form form)))
 
-(defun jsown->seg (jsown)
-  (let ((pron (jsown:val jsown "pron"))
-        (j-cands (jsown:val jsown "candidates")))
+(defun obj->seg (hash)
+  (let ((pron (gethash "pron" hash))
+        (obj-cands (gethash "candidates" hash)))
     (senn.im.kkc:make-segment
      :pron pron
-     :candidates (mapcar #'jsown->candidate j-cands))))
+     :candidates (mapcar #'obj->candidate obj-cands))))
 
 (defun convert (agent pron)
-  (let ((jsown (send-json
-                agent
-                (jsown:new-js
-                  ("op" :convert)
-                  ("args" (jsown:new-js
-                            ("pron" pron)))))))
-    (if jsown
-        (mapcar #'jsown->seg jsown)
+  (let ((array
+         (send-json
+          agent
+          (alexandria:plist-hash-table
+           (list
+            "op" "CONVERT"
+            "args" (alexandria:plist-hash-table
+                    (list "pron" pron)
+                    :test #'equal))
+           :test #'equal))))
+    (if array
+        (mapcar #'obj->seg array)
         (list (senn.im.kkc:make-segment
                :pron pron
                :candidates (list (senn.im.kkc:make-candidate
                                   :form pron)))))))
 
 (defun list-candidates (agent pron)
-  (let ((jsown (send-json
-                agent
-                (jsown:new-js
-                  ("op" :list_candidates)
-                  ("args" (jsown:new-js
-                            ("pron" pron)))))))
-    (mapcar #'jsown->candidate jsown)))
+  (let ((array
+         (send-json
+          agent
+          (alexandria:plist-hash-table
+           (list
+            "op" "LIST_CANDIDATES"
+            "args" (alexandria:plist-hash-table
+                    (list
+                     "pron" pron)
+                    :test #'equal))
+           :test #'equal))))
+    (mapcar #'obj->candidate array)))
