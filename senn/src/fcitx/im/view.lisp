@@ -14,18 +14,35 @@
         (cursor-pos (senn.im.buffer:buffer-cursor-pos buffer)))
     (length-utf8 (subseq string 0 cursor-pos))))
 
+(defmethod yason:encode ((string string) &optional (stream *standard-output*))
+  (write-char #\" stream)
+  (flet ((write-str (string)
+           (loop for c across string do
+             (write-char c stream))))
+    (loop for char across string do
+      (if (and (>= (char-code char) (char-code #\ ))
+               (<= (char-code char) (char-code #\~)))
+          (write-char char stream)
+          (write-str (format nil "\\u~4,'0X" (char-code char))))))
+  (write-char #\" stream)
+  string)
+
 (defun editing-view (cursor-pos
                      input
                      predictions
                      prediction-index
                      committed-string)
-  (let ((json (jsown:new-js
-                ("cursor-pos"       cursor-pos)
-                ("input"            input)
-                ("predictions"      predictions)
-                ("prediction-index" (or prediction-index -1))
-                ("committed-input"  committed-string))))
-    (format nil "EDITING ~A" (jsown:to-json json))))
+  (let ((view
+         (yason:with-output-to-string* ()
+           (yason:encode
+            (alexandria:plist-hash-table
+             (list "cursor-pos"       cursor-pos
+                   "input"            input
+                   "predictions"      (or predictions #())
+                   "prediction-index" (or prediction-index -1)
+                   "committed-input"  committed-string)
+             :test #'equal)))))
+    (format nil "EDITING ~A" view)))
 
 (defun editing-by-string (string predictions prediction-index)
   (editing-view (length-utf8 string) string predictions prediction-index ""))
@@ -38,13 +55,18 @@
                 committed-string))
 
 (defun converting-cursor-form (candidates candidate-index)
-  (jsown:new-js
-   ("candidates"      candidates)
-   ("candidate-index" candidate-index)))
+  (alexandria:plist-hash-table
+   (list "candidates"      (or candidates #())
+         "candidate-index" candidate-index)
+   :test #'equal))
 
 (defun converting (forms cursor-form-index cursor-form)
-  (let ((json (jsown:new-js
-               ("forms" forms)
-               ("cursor-form-index" cursor-form-index)
-               ("cursor-form" cursor-form))))
-    (format nil "CONVERTING ~A" (jsown:to-json json))))
+  (let ((view
+         (yason:with-output-to-string* ()
+           (yason:encode
+            (alexandria:plist-hash-table
+             (list "forms" (or forms #())
+                   "cursor-form-index" cursor-form-index
+                   "cursor-form" cursor-form)
+             :test #'equal)))))
+    (format nil "CONVERTING ~A" view)))

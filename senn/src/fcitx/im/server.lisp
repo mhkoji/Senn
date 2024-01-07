@@ -10,18 +10,18 @@
             (or view "NONE"))))
 
 (defun handle-request (mutable-ime line)
-  (let ((jsown (jsown:parse line)))
+  (let ((hash (yason:parse line)))
     (let ((op (alexandria:make-keyword
                (string-upcase
-                (jsown:val jsown "op")))))
+                (gethash "op" hash)))))
       (case op
         (:process-input
          (format-output
           (senn.fcitx.im.mutable:process-input
            mutable-ime
            (senn.fcitx.keys:make-key
-            :sym (jsown:val (jsown:val jsown "args") "sym")
-            :state (jsown:val (jsown:val jsown "args") "state")))))
+            :sym (gethash "sym" (gethash "args" hash))
+            :state (gethash "state" (gethash "args" hash))))))
         (:reset-im
          (senn.fcitx.im.mutable:reset-im mutable-ime)
          "OK")
@@ -29,4 +29,4 @@
          (format-output
           (senn.fcitx.im.mutable:select-candidate
            mutable-ime
-           (jsown:val (jsown:val jsown "args") "index"))))))))
+           (gethash "index" (gethash "args" hash)))))))))

@@ -14,5 +14,5 @@
    (:file "im/mutable")
    (:file "im/server"))
   :depends-on (:babel
-               :jsown
+               :yason
                :senn))
