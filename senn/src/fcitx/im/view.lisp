@@ -20,7 +20,7 @@
                      prediction-index
                      committed-string)
   (let ((view
-         (yason:with-output-to-string* ()
+         (with-output-to-string (*standard-output*)
            (yason:encode
             (alexandria:plist-hash-table
              (list "cursor-pos"       cursor-pos
@@ -49,7 +49,7 @@
 
 (defun converting (forms cursor-form-index cursor-form)
   (let ((view
-         (yason:with-output-to-string* ()
+         (with-output-to-string (*standard-output*)
            (yason:encode
             (alexandria:plist-hash-table
              (list "forms" (or forms #())
