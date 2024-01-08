@@ -1,0 +1,59 @@
+#!/bin/sh
+#|-*- mode:lisp -*-|#
+#|
+exec ros -Q -- $0 "$@"
+|#
+(progn ;;init forms
+  (ros:ensure-asdf)
+  #+quicklisp(ql:quickload '() :silent t)
+  )
+
+(defpackage :ros.script.list-deps.3913690423
+  (:use :cl))
+(in-package :ros.script.list-deps.3913690423)
+
+(defun append-deps (parent hash)
+  (let ((visit-list (list parent)))
+    (loop while visit-list
+          for name = (pop visit-list) do
+      (progn
+        (multiple-value-bind (ignore foundp)
+            (gethash name hash)
+          (declare (ignore ignore))
+          (when (not foundp)
+            (let ((system (asdf:find-system name)))
+              (let ((deps (asdf:system-depends-on system)))
+                (setf (gethash name hash)
+                      (sort (copy-list deps) #'string<))
+                (setf visit-list (append visit-list deps))))))))))
+
+(defun replace-minus (string)
+  (let ((chars (loop for ch across string
+                     collect (if (char= ch #\-) #\_ ch))))
+    (make-array (length chars)
+                :initial-contents chars
+                :element-type 'character)))
+
+(defun print-as-dot (parents)
+  (format *standard-output* "digraph {~%")
+  (let ((deps-alist nil))
+    (let ((hash (make-hash-table :test #'equal)))
+      (dolist (parent parents)
+        (append-deps parent hash))
+      (maphash (lambda (name deps)
+                 (push (cons name deps) deps-alist))
+               hash))
+    (setq deps-alist (sort deps-alist #'string< :key #'car))
+    (loop for (parent . children) in deps-alist do
+      (dolist (child children)
+        (format *standard-output* "  ~A -> ~A~%"
+                (replace-minus parent)
+                (replace-minus child)))))
+  (format *standard-output* "}~%"))
+
+(defun main (&rest argv)
+  (declare (ignorable argv))
+  (print-as-dot '("senn-lib-ibus"
+                  "senn-kkc-engine-hachee-class-2-gram")))
+  
+;;; vim: set ft=lisp lisp:

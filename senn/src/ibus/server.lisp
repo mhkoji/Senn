@@ -10,10 +10,10 @@
             (if (and consumed-p view) view "NONE"))))
 
 (defun handle-request (stateful-ime line)
-  (let ((jsown (jsown:parse line)))
+  (let ((hash (yason:parse line)))
     (let ((op (alexandria:make-keyword
                (string-upcase
-                (jsown:val jsown "op")))))
+                (gethash "op" hash)))))
       (case op
         (:reset-im
          (senn.ibus.stateful-ime:reset-im stateful-ime)
@@ -23,12 +23,12 @@
           (senn.ibus.stateful-ime:process-input
            stateful-ime
            (senn.fcitx.keys:make-key
-            :sym (jsown:val (jsown:val jsown "args") "sym")
-            :state (jsown:val (jsown:val jsown "args") "state")))))
+            :sym (gethash "sym" (gethash "args" hash))
+            :state (gethash "state" (gethash "args" hash))))))
         (:select-candidate
          (format-resp
           (senn.ibus.stateful-ime:select-candidate
            stateful-ime
-           (jsown:val (jsown:val jsown "args") "index"))))
+           (gethash "index" (gethash "args" hash)))))
         (:toggle-input-mode
          (senn.ibus.stateful-ime:toggle-input-mode stateful-ime))))))

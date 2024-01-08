@@ -4,10 +4,9 @@
   :components
   ((:file "engine")
    (:file "lm"))
-  :depends-on (:hachee-kkc-impl-lm
-               :hachee-data
-               :senn-ipc-server-stdio
-               :alexandria
+  :depends-on (:alexandria
                :cl-fad
-               :jsown
-               :log4cl))
+               :yason
+               :hachee-kkc-impl-lm
+               :hachee-data
+               :senn-ipc-server-stdio))

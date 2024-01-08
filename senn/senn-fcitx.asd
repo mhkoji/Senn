@@ -14,6 +14,5 @@
    (:file "im/mutable")
    (:file "im/server"))
   :depends-on (:babel
-               :jsown
-               :log4cl
+               :yason
                :senn))

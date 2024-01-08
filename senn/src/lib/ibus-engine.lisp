@@ -1,13 +1,13 @@
 (in-package :senn.lib.ibus)
 
 (defun make-ime (engine-path)
-  (log:info "Making IME ...")
+  (format *error-output* "Making IME ...~%")
   (let ((kkc (senn.im.kkc.engine:start-kkc
               (senn.im.kkc.engine:make-engine-runner
                :program engine-path))))
     (senn.ibus.stateful-ime:make-ime :kkc kkc)))
 
 (defun close-ime (ime)
-  (log:info "Closing IME ...")
+  (format *error-output* "Closing IME ...~%")
   (let ((kkc (senn.ibus.stateful-ime:ime-kkc ime)))
     (senn.im.kkc.engine:close-kkc kkc)))

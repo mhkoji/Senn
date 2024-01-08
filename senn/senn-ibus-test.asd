@@ -8,6 +8,5 @@
    (:file "ibus/inputting")
    (:file "ibus/converting")
    (:file "ibus/lib"))
-  :depends-on (:senn-bin-ibus-server
-               :senn-lib-ibus
+  :depends-on (:senn-lib-ibus
                :fiveam))

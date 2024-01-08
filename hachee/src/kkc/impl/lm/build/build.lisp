@@ -42,7 +42,7 @@
 
 (defun build-vocabulary-with-unk (pathnames &key (overlap 2))
   (assert (<= overlap (length pathnames)))
-  (log:info "Building initial vocabulary...")
+  (format *error-output* "Building initial vocabulary ...~%")
   (let ((vocab (hachee.language-model.vocabulary:make-vocabulary))
         (word-key->freq (make-hash-table :test #'equal)))
     (dolist (pathname pathnames)
@@ -62,7 +62,7 @@
 (defun extend-existing-vocabulary (vocabulary
                                    trusted-word-dictionary
                                    pathnames-inaccurately-segmented)
-  (log:info "Extending vocabulary...")
+  (format *error-output* "Extending vocabulary ...~%")
   (dolist (pathname pathnames-inaccurately-segmented)
     (dolist (sentence (hachee.kkc.impl.lm.build.file:file->sentences
                        pathname))
@@ -73,7 +73,7 @@
   vocabulary)
 
 (defun build-word-dictionary (pathnames vocabulary)
-  (log:info "Building dictionary...")
+  (format *error-output* "Building dictionary ...~%")
   (let ((dict (hachee.kkc.impl.lm.dictionary:make-dictionary)))
     (dolist (pathname pathnames)
       (dolist (sentence (hachee.kkc.impl.lm.build.file:file->sentences
@@ -88,7 +88,7 @@
     dict))
 
 (defun train-n-gram-model (model pathnames vocabulary)
-  (log:info "Building n-gram model...")
+  (format *error-output* "Building n-gram model ...~%")
   (let ((BOS (to-int vocabulary hachee.language-model.vocabulary:+BOS+))
         (EOS (to-int vocabulary hachee.language-model.vocabulary:+EOS+)))
     (dolist (pathname pathnames)
@@ -103,7 +103,7 @@
     model))
 
 (defun build-unknown-word-vocabulary (pathnames vocabulary &key (overlap 2))
-  (log:info "Building...")
+  (format *error-output* "Building unknown word vocabulary ...~%")
   (let ((key->freq (make-hash-table :test #'equal))
         (pron-vocab (hachee.language-model.vocabulary:make-vocabulary)))
     (dolist (pathname pathnames)
@@ -136,7 +136,7 @@
 (defun build-unknown-word-n-gram-model (pathnames
                                         vocabulary
                                         unknown-word-vocabulary)
-  (log:info "Building...")
+  (format *error-output* "Building unknown word n-gram model ...~%")
   (let ((BOS (to-int unknown-word-vocabulary
                      hachee.language-model.vocabulary:+BOS+))
         (EOS (to-int unknown-word-vocabulary
@@ -156,7 +156,7 @@
   model))
 
 (defun add-to-word-dictionary-from-resources (dict pathnames)
-  (log:info "Building...")
+  (format *error-output* "Building word dictionary ...~%")
   (dolist (pathname pathnames)
     (with-open-file (in pathname)
       (loop for line = (read-line in nil nil) while line do

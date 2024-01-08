@@ -27,27 +27,37 @@
 
 ;;;
 
-(defun candidate->jsown (cand)
-  (jsown:new-js
-    ("form" (candidate-form cand))))
+(defun candidate->obj (cand)
+  (alexandria:plist-hash-table
+   (list
+    "form" (candidate-form cand))
+   :test #'equal))
 
-(defun segment->jsown (seg)
-  (jsown:new-js
-    ("pron" (segment-pron seg))
-    ("candidates" (mapcar #'candidate->jsown (segment-candidates seg)))))
+(defun segment->obj (seg)
+  (alexandria:plist-hash-table
+   (list
+    "pron" (segment-pron seg)
+    "candidates" (or (mapcar #'candidate->obj
+                             (segment-candidates seg))
+                     #()))
+   :test #'equal))
 
 (defun handle (line kkc)
-  (let ((jsown (jsown:parse line)))
-    (let ((j-op (jsown:val jsown "op"))
-          (j-args (jsown:val jsown "args")))
-      (ecase (alexandria:make-keyword j-op)
+  (let ((obj (yason:parse line)))
+    (let ((op (gethash "op" obj))
+          (args (gethash "args" obj)))
+      (ecase (alexandria:make-keyword op)
         (:convert
-         (let ((pron (jsown:val j-args "pron")))
+         (let ((pron (gethash "pron" args)))
            (let ((segs (convert kkc pron)))
-             (let ((jsown (mapcar #'segment->jsown segs)))
-               (jsown:to-json jsown)))))
+             (let ((obj (or (mapcar #'segment->obj segs) #())))
+               (with-output-to-string (stream)
+                 (yason:with-output (stream)
+                   (yason:encode obj)))))))
         (:list_candidates
-         (let ((pron (jsown:val j-args "pron")))
+         (let ((pron (gethash "pron" args)))
            (let ((cands (list-candidates kkc pron)))
-             (let ((jsown (mapcar #'candidate->jsown cands)))
-               (jsown:to-json jsown)))))))))
+             (let ((obj (or (mapcar #'candidate->obj cands) #())))
+               (with-output-to-string (stream)
+                 (yason:with-output (stream)
+                   (yason:encode obj)))))))))))

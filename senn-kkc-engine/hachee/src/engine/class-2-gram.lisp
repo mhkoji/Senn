@@ -50,7 +50,7 @@
         (user-dict:with-library-loaded (dirs)
           (kkc-apply-user-dict *kkc*)))
     (error (e)
-      (format *standard-output* "~A~%" e)))
+      (format *error-output* "~A~%" e)))
   (labels ((handle (line)
              (senn-kkc-engine.hachee.engine:handle line *kkc*)))
     (senn-ipc.server.stdio:start-server #'handle)))

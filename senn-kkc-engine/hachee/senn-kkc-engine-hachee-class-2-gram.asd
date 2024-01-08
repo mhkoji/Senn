@@ -4,8 +4,8 @@
   :components
   ((:file "engine")
    (:file "class-2-gram"))
-  :depends-on (:hachee-kkc-impl-class-2-gram
+  :depends-on (:alexandria
+               :yason
+               :hachee-kkc-impl-class-2-gram
                :senn-kkc-engine-hachee-user-dict
-	       :senn-ipc-server-stdio
-               :alexandria
-               :jsown))
+	       :senn-ipc-server-stdio))

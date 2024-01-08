@@ -10,5 +10,4 @@
    (:file "lm"))
   :depends-on (:hachee-kkc
                :hachee-language-model
-               :cl-ppcre
-               :log4cl))
+               :cl-ppcre))
