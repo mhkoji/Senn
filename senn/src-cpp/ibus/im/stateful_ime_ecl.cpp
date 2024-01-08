@@ -7,17 +7,6 @@ extern "C" {
 void init_senn(cl_object);
 }
 
-namespace {
-
-void EclToString(cl_object obj, std::string *str) {
-  struct ecl_string ecl_str = obj->string;
-  for (int i = 0; i < ecl_str.fillp; i += 1) {
-    *str += (__typeof(ecl_str.elttype))ecl_str.self[i];
-  }
-}
-
-} // namespace
-
 namespace senn {
 namespace ibus {
 namespace im {
@@ -32,10 +21,14 @@ StatefulIMEEcl::Requester::~Requester() {
 void StatefulIMEEcl::Requester::Request(const std::string &req,
                                         std::string *res) {
   // std::cout << req << std::endl;
-  cl_object response = cl_funcall(
+  cl_object octets = ecl_alloc_simple_vector(req.size(), ecl_aet_b8);
+  for (size_t i = 0; i < req.size(); i++) {
+    ecl_aset1(octets, i, ecl_make_uint8_t(req[i]));
+  }
+  cl_object output = cl_funcall(
       3, cl_eval(c_string_to_object("'senn.lib.ibus:handle-request")), ime_,
-      ecl_make_constant_base_string(req.c_str(), -1));
-  EclToString(response, res);
+      octets);
+  *res = std::string((const char *)(ecl_row_major_ptr(output, 0, 0)));
   // std::cout << *res << std::endl;
 }
 
