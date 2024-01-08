@@ -4,8 +4,8 @@
   :components
   ((:file "engine")
    (:file "mirror"))
-  :depends-on (:hachee-kkc-impl-mirror
+  :depends-on (:alexandria
+               :yason
+               :hachee-kkc-impl-mirror
                :senn-kkc-engine-hachee-user-dict
-	       :senn-ipc-server-stdio
-               :alexandria
-               :jsown))
+	       :senn-ipc-server-stdio))
