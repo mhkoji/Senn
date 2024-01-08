@@ -20,15 +20,17 @@
                      prediction-index
                      committed-string)
   (let ((view
-         (with-output-to-string (*standard-output*)
-           (yason:encode
-            (alexandria:plist-hash-table
-             (list "cursor-pos"       cursor-pos
-                   "input"            input
-                   "predictions"      (or predictions #())
-                   "prediction-index" (or prediction-index -1)
-                   "committed-input"  committed-string)
-             :test #'equal)))))
+         (with-output-to-string (stream)
+           (yason:with-output (stream)
+             (yason:encode
+              (alexandria:plist-hash-table
+               (list "cursor-pos"       cursor-pos
+                     "input"            input
+                     "predictions"      (or predictions #())
+                     "prediction-index" (or prediction-index -1)
+                     "committed-input"  committed-string)
+               :test #'equal)
+              stream)))))
     (format nil "EDITING ~A" view)))
 
 (defun editing-by-string (string predictions prediction-index)
@@ -49,11 +51,13 @@
 
 (defun converting (forms cursor-form-index cursor-form)
   (let ((view
-         (with-output-to-string (*standard-output*)
-           (yason:encode
-            (alexandria:plist-hash-table
-             (list "forms" (or forms #())
-                   "cursor-form-index" cursor-form-index
-                   "cursor-form" cursor-form)
-             :test #'equal)))))
+         (with-output-to-string (stream)
+           (yason:with-output (stream)
+             (yason:encode
+              (alexandria:plist-hash-table
+               (list "forms" (or forms #())
+                     "cursor-form-index" cursor-form-index
+                     "cursor-form" cursor-form)
+               :test #'equal)
+              stream)))))
     (format nil "CONVERTING ~A" view)))

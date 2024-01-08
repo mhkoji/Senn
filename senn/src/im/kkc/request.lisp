@@ -10,8 +10,9 @@
 (defun send-json (agent hash)
   (handler-case
       (let ((line
-             (with-output-to-string (*standard-output*)
-               (yason:encode hash))))
+             (with-output-to-string (stream)
+               (yason:with-output (stream)
+                 (yason:encode hash stream)))))
         (yason:parse (send-line agent line)))
     (error () nil)))
 
