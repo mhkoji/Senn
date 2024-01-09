@@ -1,44 +1,35 @@
 FROM ubuntu:18.04
 
 RUN apt update && apt install -y \
-    wget \
-    sbcl \
- && rm -rf /var/lib/apt/lists/*
+    cl-alexandria \
+    cl-bordeaux-threads \
+    cl-fad \
+    cl-yason \
+    sbcl && \
+    rm -rf /var/lib/apt/lists/*
 
 RUN mkdir \
-    /app \
-    /app-build \
+    /build \
     /output
 
-RUN wget \
-      https://beta.quicklisp.org/quicklisp.lisp \
-      --directory-prefix /app-build && \
-    sbcl \
-      --noinform \
-      --no-userinit \
-      --no-sysinit \
-      --non-interactive \
-      --load /app-build/quicklisp.lisp \
-      --eval "(quicklisp-quickstart:install)"
-
-COPY hachee                 /app/hachee
-COPY senn-ipc               /app/senn-ipc
-COPY senn-kkc-engine/hachee /app/engine
+COPY hachee                 /build/hachee
+COPY senn-ipc               /build/senn-ipc
+COPY senn-kkc-engine/hachee /build/engine
 
 RUN sbcl \
       --dynamic-space-size 2048 \
       --noinform \
       --no-userinit \
-       --no-sysinit \
+      --no-sysinit \
       --non-interactive \
-      --load "/root/quicklisp/setup.lisp" \
-      --eval '(push "/app/engine/" ql:*local-project-directories*)' \
-      --eval '(push "/app/hachee/" ql:*local-project-directories*)' \
-      --eval '(push "/app/senn-ipc/" ql:*local-project-directories*)' \
-      --eval '(ql:quickload :senn-kkc-engine-hachee-lm)' \
-      --eval '(push "/app/senn-ipc/" ql:*local-project-directories*)' \
+      --eval '(require :asdf)' \
+      --eval '(push #p"/build/engine/" asdf:*central-registry*)' \
+      --eval '(push #p"/build/hachee/" asdf:*central-registry*)' \
+      --eval '(push #p"/build/senn-ipc/" asdf:*central-registry*)' \
+      --eval '(asdf:load-system :senn-kkc-engine-hachee-lm)' \
       --eval '(senn-kkc-engine.hachee.engine.lm:set-kkc (senn-kkc-engine.hachee.engine.lm:build-kkc-using-hachee-corpus))' \
       --eval "(sb-ext:save-lisp-and-die \"/output/kkc-engine\" :toplevel #'senn-kkc-engine.hachee.engine.lm:main :executable t)"
 
-COPY docker/script/copy-output.sh /app
-CMD ["/app/copy-output.sh"]
+COPY docker/script/copy-output.sh /build
+
+CMD ["/build/copy-output.sh"]
