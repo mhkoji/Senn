@@ -4,5 +4,5 @@
   ((:file "src/server/log")
    (:file "src/server")
    (:file "src/server/named-pipe"))
-  :depends-on (:senn-ipc-named-pipe
-	       :log4cl))
+  :depends-on (:bordeaux-threads
+               :senn-ipc-named-pipe))

@@ -1,9 +1,18 @@
 (defpackage :senn-ipc.server.log
-  (:export :info :warn)
-  (:import-from :log
-                :info
-                #-ecl :warn))
+  (:use :cl)
+  (:shadow :warn)
+  (:export :info :warn))
+(in-package :senn-ipc.server.log)
 
-(log:config
- :pattern
- "%D{%Y-%m-%d %H:%M:%S} %<%;<;;>;p [%t] %g{}{}{:downcase}%:; ;F (%C{}{ }{:downcase})%2.2N - %m%>%n")
+(defmacro info (&rest args)
+  `(progn
+     (format *error-output* ,@args)
+     (format *error-output* "~%")
+     (values)))
+
+
+(defmacro warn (&rest args)
+  `(progn
+     (format *error-output* ,@args)
+     (format *error-output* "~%")
+     (values)))

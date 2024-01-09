@@ -4,5 +4,5 @@
   ((:file "src/server/log")
    (:file "src/server")
    (:file "src/server/tcp"))
-  :depends-on (:usocket
-	       :log4cl))
+  :depends-on (:bordeaux-threads
+               :usocket))
