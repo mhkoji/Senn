@@ -36,7 +36,7 @@
                  (connection kkc)
                  pron)
     (error (e)
-      (log:warn "~A" e)
+      (format *error-output* "~A" e)
       (list (senn.im.kkc:make-segment
              :pron pron
              :candidates (list (senn.im.kkc:make-candidate
@@ -47,7 +47,7 @@
                  (connection kkc)
                  pron)
     (error (e)
-      (log:warn "~A" e)
+      (format *error-output* "~A" e)
       nil)))
 
 (defun close-kkc (kkc)
