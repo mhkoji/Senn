@@ -2,8 +2,8 @@ Source: ibus-senn
 Section: utils
 Priority: optional
 Maintainer: mhkoji <mhkoji2@gmail.com>
-Build-Depends: debhelper (>= 10), libibus-1.0-dev
-Standards-Version: 4.4.1
+Build-Depends: debhelper (>= 13), libibus-1.0-dev, ecl
+Standards-Version: 4.6.0
 Homepage: https://github.com/mhkoji/Senn
 #Vcs-Browser: https://salsa.debian.org/debian/ibus-senn
 #Vcs-Git: https://salsa.debian.org/debian/ibus-senn.git

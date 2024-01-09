@@ -21,7 +21,7 @@ ibus_engine_senn_LDADD = \
 	@GLIB2_LIBS@ \
 	@GIO2_LIBS@ \
 	@GTHREAD2_LIBS@ \
-	/usr/lib/senn/ibus/ecl/lib/libecl.so \
+	-lecl \
 	./senn-lib-ibus--all-systems.a \
 	$(NULL)
 else
@@ -59,14 +59,11 @@ ibus_engine_senn_CPPFLAGS = \
 	-I/usr/include/glib-2.0/ \
 	-I/usr/lib/x86_64-linux-gnu/glib-2.0/include \
 	-I../../../src-cpp/ \
-	-I../../../../third-party/ \
 	-std=c++11 \
 	-DSENN_IME_@SENN_IME@ \
 	$(NULL)
 
 ibus_engine_senn_LDFLAGS = \
-	-L/usr/lib/senn/ibus/ecl/lib \
-	-Wl,-R /usr/lib/senn/ibus/ecl/lib \
 	$(NULL)
 
 senn-lib-ibus--all-systems.a:

@@ -10,7 +10,7 @@ include(GNUInstallDirs)
 
 set(SENN_ROOT_DIR         ${CMAKE_CURRENT_SOURCE_DIR}/../../..)
 set(SENN_SRC_CPP_DIR      ${SENN_ROOT_DIR}/senn/src-cpp)
-set(SENN_THIRD_PARTY_DIR  ${SENN_ROOT_DIR}/third-party)
+set(SENN_THIRD_PARTY_DIR  ${SENN_ROOT_DIR}/third-party/picojson)
 
 set(FCITX_SENN_INSTALL_DIR /usr/lib/senn/fcitx)
 
