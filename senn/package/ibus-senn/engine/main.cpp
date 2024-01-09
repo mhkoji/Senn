@@ -10,7 +10,6 @@
 #ifdef SENN_IME_ECL
 #include "ibus/im/stateful_ime_ecl.h"
 
-const char *kECLDIR = "/usr/lib/senn/ibus/ecl/lib/ecl-21.2.1/";
 const std::string kKkcEnginePath = "/usr/lib/senn/ibus/kkc-engine";
 #elif SENN_IME_SOCKET
 #include "ibus/im/stateful_ime_socket.h"
@@ -225,7 +224,6 @@ public:
 
 public:
   static senn::ibus_senn::engine::IMEFactory *Create() {
-    setenv("ECLDIR", kECLDIR, 1);
     senn::ibus::im::StatefulIMEEcl::ClBoot();
     senn::ibus::im::StatefulIMEEcl::EclInitModule();
     return new EclIMEFactory();
