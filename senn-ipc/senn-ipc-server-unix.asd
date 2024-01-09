@@ -7,4 +7,4 @@
    (:file "server")
    (:file "server/unix"))
   :depends-on (:bordeaux-threads
-               #+ecl :sb-bsd-sockets))
+               :sb-bsd-sockets))
