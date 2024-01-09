@@ -18,7 +18,9 @@ RUN apt update && apt install -y \
     # debuild
     gnome-common \
     # debuild
-    libibus-1.0-dev && \
+    libibus-1.0-dev \
+    # debuild
+    picojson-dev && \
     rm -rf /var/lib/apt/lists/*
 
 RUN mkdir -p \
@@ -33,7 +35,6 @@ RUN ecl \
       -eval '(push #p"/build/senn/" asdf:*central-registry*)' \
       -eval '(asdf:make-build :senn-lib-ibus :type :static-library :move-here #p"/build/senn/package/ibus-senn/engine/" :monolithic t :init-name "init_senn")'
 
-COPY third-party /build/third-party
 COPY senn-kkc-engine/hachee/src-cpp /build/senn-kkc-engine/hachee/src-cpp
 COPY --from=kkc-builder /output/kkc-engine /build/senn/package/ibus-senn/kkc/engine
 

@@ -41,7 +41,7 @@ RUN sbcl \
         -eval "(asdf:make-build :senn-lib-fcitx-kkc-proxy :type :static-library :monolithic t :init-name \"init_senn\" :move-here #p\"/build/\" :prologue-code '(progn (require :sockets) (require :asdf)))"
 
 COPY senn/src-cpp /build/senn/src-cpp
-COPY third-party /build/third-party
+COPY third-party/picojson /build/third-party/picojson
 COPY docker/test-senn-lib-fcitx/main.cpp /build/
 
 RUN g++ \
@@ -50,7 +50,7 @@ RUN g++ \
         /build/senn/src-cpp/fcitx/im/stateful_ime_proxy.cpp \
         /build/senn-lib-fcitx-kkc-proxy--all-systems.a \
         -I./build/senn/src-cpp \
-        -I./build/third-party \
+        -I./build/third-party/picojson \
         -lecl \
         -o /app/main
 

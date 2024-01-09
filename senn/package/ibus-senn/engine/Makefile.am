@@ -59,7 +59,6 @@ ibus_engine_senn_CPPFLAGS = \
 	-I/usr/include/glib-2.0/ \
 	-I/usr/lib/x86_64-linux-gnu/glib-2.0/include \
 	-I../../../src-cpp/ \
-	-I../../../../third-party/ \
 	-std=c++11 \
 	-DSENN_IME_@SENN_IME@ \
 	$(NULL)
