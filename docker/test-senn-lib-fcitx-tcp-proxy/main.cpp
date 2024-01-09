@@ -1,8 +1,6 @@
 #include "fcitx/im/stateful_ime_ecl.h"
 #include <iostream>
 
-const char *kECLDIR = "/usr/lib/x86_64-linux-gnu/ecl-21.2.1/";
-
 void PrintConverting(const senn::fcitx::im::views::Converting *view) {
   std::cout << "Converting:";
   for (size_t i = 0; i < view->forms.size(); i++) {
@@ -19,7 +17,6 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  setenv("ECLDIR", kECLDIR, 1);
   senn::fcitx::im::StatefulIMEEcl::ClBoot();
   senn::fcitx::im::StatefulIMEEcl::EclInitModule();
 

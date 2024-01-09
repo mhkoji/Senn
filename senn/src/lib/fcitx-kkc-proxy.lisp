@@ -16,9 +16,11 @@
 (defun make-kkc (socket-name engine-path proxy-path)
   (loop for num-tries from 0
         for kkc = (handler-case
-                      (senn.im.kkc.unix:make-kkc-and-connect socket-name)
+                      (progn
+                        (format *error-output* "Connecting (~A)~%" num-tries)
+                        (senn.im.kkc.unix:make-kkc-and-connect socket-name))
                     (error (e)
-                      (log:info "~A" e)
+                      (format *error-output* "~A~%" e)
                       nil))
         when kkc return kkc
         if (< 5 num-tries) do (error "max retries") else do
@@ -30,14 +32,15 @@
             (sleep 0.1))))
 
 (defun make-ime (engine-path)
-  (log:info "Making IME ...")
+  (format *error-output* "Making IME ...~%")
   (let ((kkc (make-kkc "/tmp/senn-kkc-proxy"
                        engine-path
                        "/usr/lib/senn/fcitx/kkc-proxy")))
+    (format *error-output* "Connected~%")
     (senn.fcitx.im.mutable:make-ime :kkc kkc)))
 
 (defun close-ime (ime)
-  (log:info "Closing IME ...")
+  (format *error-output* "Making IME ...~%")
   (let ((kkc (senn.fcitx.im.mutable:ime-kkc ime)))
     (senn.im.kkc.unix:close-kkc kkc))
   (when *process*
