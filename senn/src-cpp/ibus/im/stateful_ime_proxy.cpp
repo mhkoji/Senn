@@ -1,7 +1,7 @@
 #include "stateful_ime_proxy.h"
 #include "fcitx/im/views_json.h"
 #include <cassert>
-#include <picojson.h>
+#include <picojson/picojson.h>
 #include <sstream>
 
 namespace senn {

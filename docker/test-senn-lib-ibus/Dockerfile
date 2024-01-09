@@ -11,8 +11,6 @@ RUN apt update && apt install -y \
     cl-yason \
     # asdf:make-build, g++, test.sh
     ecl \
-    # g++
-    picojson-dev \
     # test.sh
     python3 && \
     rm -rf /var/lib/apt/lists/*
@@ -30,6 +28,7 @@ RUN ecl \
         -eval '(asdf:make-build :senn-lib-ibus :type :static-library :move-here #P"/build/" :monolithic t :init-name "init_senn")'
 
 COPY senn/src-cpp /build/senn/src-cpp/
+COPY third-party /build/third-party
 COPY docker/test-senn-lib-ibus/main.cpp /build/
 
 RUN g++ \
@@ -38,6 +37,7 @@ RUN g++ \
         /build/senn/src-cpp/ibus/im/stateful_ime_proxy.cpp \
         /build/senn-lib-ibus--all-systems.a \
         -I./build/senn/src-cpp \
+        -I./build/third-party \
         -lecl \
         -o /app/main
 

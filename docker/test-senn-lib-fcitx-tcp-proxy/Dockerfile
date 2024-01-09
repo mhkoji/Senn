@@ -13,8 +13,6 @@ RUN apt update && apt install -y \
     cl-yason \
     # asdf:make-build, g++, test.sh
     ecl \
-    # g++
-    picojson-dev \
     # test.sh
     python3 \
     # sb-ext:save-lisp-and-die
@@ -42,7 +40,8 @@ RUN sbcl \
         -eval '(push #p"/build/senn-ipc/" asdf:*central-registry*)' \
         -eval "(asdf:make-build :senn-lib-fcitx-kkc-proxy :type :static-library :monolithic t :init-name \"init_senn\" :move-here #p\"/build/\" :prologue-code '(progn (require :sockets) (require :asdf)))"
 
-COPY senn/src-cpp /build/senn/src-cpp/
+COPY senn/src-cpp /build/senn/src-cpp
+COPY third-party /build/third-party
 COPY docker/test-senn-lib-fcitx/main.cpp /build/
 
 RUN g++ \
@@ -51,6 +50,7 @@ RUN g++ \
         /build/senn/src-cpp/fcitx/im/stateful_ime_proxy.cpp \
         /build/senn-lib-fcitx-kkc-proxy--all-systems.a \
         -I./build/senn/src-cpp \
+        -I./build/third-party \
         -lecl \
         -o /app/main
 

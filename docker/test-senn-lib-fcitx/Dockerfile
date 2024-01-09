@@ -11,8 +11,6 @@ RUN apt update && apt install -y \
     cl-yason \
     # asdf:make-build, g++, test.sh
     ecl \
-    # g++
-    picojson-dev \
     # test.sh
     python3 && \
     rm -rf /var/lib/apt/lists/*
@@ -36,7 +34,8 @@ RUN ecl \
 ## but have not been created
         -eval '(asdf:make-build :senn-lib-fcitx :type :static-library :move-here #P"/build/" :monolithic t :init-name "init_senn")'
 
-COPY senn/src-cpp /build/senn/src-cpp/
+COPY senn/src-cpp /build/senn/src-cpp
+COPY third-party /build/third-party
 COPY docker/test-senn-lib-fcitx/main.cpp /build/
 
 RUN g++ \
@@ -45,6 +44,7 @@ RUN g++ \
         /build/senn/src-cpp/fcitx/im/stateful_ime_proxy.cpp \
         /build/senn-lib-fcitx--all-systems.a \
         -I./build/senn/src-cpp \
+        -I./build/third-party \
         -lecl \
         -o /app/main
 
