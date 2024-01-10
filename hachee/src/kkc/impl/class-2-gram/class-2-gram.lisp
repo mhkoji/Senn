@@ -261,7 +261,9 @@
         (unk-word nil)
         (bos-word nil)
         (eos-word nil))
-    (with-open-file (in vocab-path)
+    (with-open-file (in vocab-path
+                        :direction :input
+                        :external-format :utf-8)
       (loop for line = (read-line in nil nil) while line do
         (destructuring-bind (form-pron word-id-str class-id-str)
             (cl-ppcre:split "\\t" line)
@@ -286,7 +288,9 @@
 
 (defun read-counts (counts-path)
   (let ((counts (make-hash-table :test #'equal)))
-    (with-open-file (in counts-path :direction :input)
+    (with-open-file (in counts-path
+                        :direction :input
+                        :external-format :utf-8)
       (loop for line = (read-line in nil nil) while line do
         (destructuring-bind (count-str &rest str-list)
             (cl-ppcre:split "," line)
@@ -300,7 +304,9 @@
                          class-word-counts-path)
   (let ((ngram-counts (read-counts class-ngram-counts-path))
         (word-counts (read-counts class-word-counts-path))
-        (weights (with-open-file (in class-weights-path)
+        (weights (with-open-file (in class-weights-path
+                                     :direction :input
+                                     :external-format :utf-8)
                    (let ((line (read-line in nil nil)))
                      (destructuring-bind (w1 w2)
                          (cl-ppcre:split "\\t" line)
@@ -314,7 +320,9 @@
 (defun read-unk-model (unk-ngram-counts-path char-set-size-path)
   (make-unk-model
    :ngram-counts (read-counts unk-ngram-counts-path)
-   :char-set-size (with-open-file (in char-set-size-path :direction :input)
+   :char-set-size (with-open-file (in char-set-size-path
+                                      :direction :input
+                                      :external-format :utf-8)
                     (read in))))
 
 (defun read-unk-vocab (vocab-path)
@@ -322,7 +330,9 @@
         (UNK-id nil)
         (BOS-id nil)
         (EOS-id nil))
-    (with-open-file (in vocab-path)
+    (with-open-file (in vocab-path
+                        :direction :input
+                        :external-format :utf-8)
       (loop for line = (read-line in nil nil) while line do
         (destructuring-bind (id-str str)
             (cl-ppcre:split "\\t" line)
