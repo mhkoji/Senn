@@ -14,10 +14,10 @@ RUN mkdir \
     /build \
     /output
 
-COPY hachee                 /build/hachee
-COPY senn-ipc               /build/senn-ipc
+COPY hachee /build/hachee
+COPY senn-ipc /build/senn-ipc
 COPY senn-kkc-engine/hachee /build/engine
-COPY data/class-2-gram      /build/data
+COPY docker/kkc-engine/hachee-class-2-gram/data /build/data
 
 RUN sbcl \
       --dynamic-space-size 2048 \
