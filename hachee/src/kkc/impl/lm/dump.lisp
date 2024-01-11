@@ -95,26 +95,28 @@
           (format out "~A~A~A~%" tok #\tab str))))))
 
 (defun dump-unk-model (model vocab unk-ngram-counts-path)
-  (let ((freq (hachee.language-model.n-gram::model-freq model))
-        (vocab-size (hachee.language-model.vocabulary::vocabulary-size
-                     vocab)))
+  (let ((freq (hachee.language-model.n-gram::model-freq model)))
     (with-open-file (out unk-ngram-counts-path :direction :output)
-      ;; 0-gram
-      (let ((count (hachee.language-model.freq:get-count freq nil)))
-        (format out "~A~%" count))
-      ;; 1-gram
-      (dotimes (token vocab-size)
-        (let ((count (hachee.language-model.freq:get-count
-                      freq (list token))))
-          (assert count)
-          (format out "~A,~A~%" count token)))
-      ;; 2-gram
-      (dotimes (prev vocab-size)
-        (dotimes (next vocab-size)
-          (let ((count (hachee.language-model.freq:get-count
-                        freq (list prev next))))
-            (when count
-              (format out "~A,~A,~A~%" count prev next))))))))
+      (let ((0-gram-count (hachee.language-model.freq:get-count freq nil)))
+        (if (not 0-gram-count)
+            (format out "0~%")
+            (let ((vocab-size
+                   (hachee.language-model.vocabulary::vocabulary-size vocab)))
+              ;; 0-gram
+              (format out "~A~%" 0-gram-count)
+              ;; 1-gram
+              (dotimes (token vocab-size)
+                (let ((count (hachee.language-model.freq:get-count
+                              freq (list token))))
+                  (assert count)
+                  (format out "~A,~A~%" count token)))
+              ;; 2-gram
+              (dotimes (prev vocab-size)
+                (dotimes (next vocab-size)
+                  (let ((count (hachee.language-model.freq:get-count
+                                freq (list prev next))))
+                    (when count
+                      (format out "~A,~A,~A~%" count prev next)))))))))))
 
 (defun execute (kkc
                 class-vocab-path
