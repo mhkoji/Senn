@@ -125,7 +125,7 @@
                 unk-ngram-counts-path
                 char-set-size-path)
   (dump-class-vocabulary
-   (kkc-vocabulary kkc)
+   (kkc-class-vocabulary kkc)
    (hachee.language-model.n-gram::class-model-classifier
     (kkc-class-model kkc))
    class-vocab-path)
