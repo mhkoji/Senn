@@ -20,22 +20,32 @@
   unknown-word-vocabulary
   unknown-word-n-gram-model)
 
-(defun build-kkc-simple (pathnames &key char-dictionary)
-  (let ((vocabulary (hachee.kkc.impl.lm.build:build-vocabulary pathnames))
-        (n-gram-model (make-instance 'hachee.language-model.n-gram:model)))
-    (hachee.kkc.impl.lm.build:train-n-gram-model
-     n-gram-model pathnames vocabulary)
-    (make-kkc
-     :n-gram-model n-gram-model
-     :vocabulary vocabulary
-     :word-dictionary
-     (hachee.kkc.impl.lm.build:build-word-dictionary pathnames vocabulary)
-     :char-dictionary (or char-dictionary
-                          (hachee.kkc.impl.lm.dictionary:make-dictionary))
-     :unknown-word-vocabulary
-     (hachee.language-model.vocabulary:make-vocabulary)
-     :unknown-word-n-gram-model
-     (make-instance 'hachee.language-model.n-gram:model))))
+(defun build-kkc-simple (pathnames
+                         &key class-token-to-word-file-path
+                              char-dictionary)
+  (let ((vocabulary
+         (hachee.kkc.impl.lm.build:build-vocabulary pathnames)))
+    (let ((n-gram-model
+           (if class-token-to-word-file-path
+               (make-instance 'hachee.language-model.n-gram:class-model
+                              :classifier
+                              (hachee.kkc.impl.lm.build:build-classifier
+                               class-token-to-word-file-path
+                               vocabulary))
+               (make-instance 'hachee.language-model.n-gram:model))))
+      (hachee.kkc.impl.lm.build:train-n-gram-model
+       n-gram-model pathnames vocabulary)
+      (make-kkc
+       :n-gram-model n-gram-model
+       :vocabulary vocabulary
+       :word-dictionary
+       (hachee.kkc.impl.lm.build:build-word-dictionary pathnames vocabulary)
+       :char-dictionary (or char-dictionary
+                            (hachee.kkc.impl.lm.dictionary:make-dictionary))
+       :unknown-word-vocabulary
+       (hachee.language-model.vocabulary:make-vocabulary)
+       :unknown-word-n-gram-model
+       (make-instance 'hachee.language-model.n-gram:model)))))
 
 (defun build-kkc (pathnames-segmented
                   &key pathnames-inaccurately-segmented

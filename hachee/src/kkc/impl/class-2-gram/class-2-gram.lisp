@@ -50,10 +50,15 @@
   EOS-id
   UNK-id)
 
-(defun unk-char-log-probability (unk-model)
+
+(defun unk-model-empty-p (unk-model)
+  (with-accessors ((ngram-counts unk-model-ngram-counts)) unk-model
+    (= (count-get ngram-counts) 0)))
+
+(defun unk-model-char-log-probability (unk-model)
   (log (/ 1 (unk-model-char-set-size unk-model))))
 
-(defun unk-transition-log-probability (unk-model curr-id prev-id)
+(defun unk-model-transition-log-probability (unk-model curr-id prev-id)
   (with-accessors ((ngram-counts unk-model-ngram-counts)) unk-model
     (let ((prob
            (+ (* 0.8
@@ -67,26 +72,28 @@
 
 (defun unk-log-probability (unk-vocab unk-model string)
   (let ((length (length string))
-        (unk-char-log-prob (unk-char-log-probability unk-model)))
-    (with-accessors ((str-id-hash unk-vocab-str-id-hash)
-                     (BOS unk-vocab-BOS-id)
-                     (EOS unk-vocab-EOS-id)
-                     (UNK unk-vocab-UNK-id)) unk-vocab
-      (labels ((rec (prev index sum)
-                 (if (= index length)
-                     (+ sum (unk-transition-log-probability
-                             unk-model EOS prev))
-                     (let* ((curr-ch
-                             (aref string index))
-                            (curr
-                             (or (gethash (string curr-ch) str-id-hash)
-                                 UNK))
-                            (log-prob
-                             (+ (unk-transition-log-probability
-                                 unk-model curr prev)
-                                (if (= curr UNK) unk-char-log-prob 0))))
-                       (rec curr (1+ index) (+ sum log-prob))))))
-        (rec BOS 0 0)))))
+        (unk-char-log-prob (unk-model-char-log-probability unk-model)))
+    (if (unk-model-empty-p unk-model)
+        (* unk-char-log-prob length)
+        (with-accessors ((str-id-hash unk-vocab-str-id-hash)
+                         (BOS unk-vocab-BOS-id)
+                         (EOS unk-vocab-EOS-id)
+                         (UNK unk-vocab-UNK-id)) unk-vocab
+          (labels ((rec (prev index sum)
+                     (if (= index length)
+                         (+ sum (unk-model-transition-log-probability
+                                 unk-model EOS prev))
+                         (let* ((curr-ch
+                                 (aref string index))
+                                (curr
+                                 (or (gethash (string curr-ch) str-id-hash)
+                                     UNK))
+                                (log-prob
+                                 (+ (unk-model-transition-log-probability
+                                     unk-model curr prev)
+                                    (if (= curr UNK) unk-char-log-prob 0))))
+                           (rec curr (1+ index) (+ sum log-prob))))))
+            (rec BOS 0 0))))))
 
 (defstruct class-vocab-entry
   form word)

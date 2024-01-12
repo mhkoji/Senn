@@ -31,13 +31,20 @@
            (hachee.kkc.impl.lm.build.file:sentence-units file-sentence))))
 
 (defun build-vocabulary (pathnames)
-  (let ((vocab (hachee.language-model.vocabulary:make-vocabulary)))
+  (let ((vocab (hachee.language-model.vocabulary:make-vocabulary))
+        (word-key->freq (make-hash-table :test #'equal)))
     (dolist (pathname pathnames)
       (dolist (sentence (hachee.kkc.impl.lm.build.file:file->sentences
                          pathname))
         (dolist (word (hachee.kkc.impl.lm.build.file:sentence-units
                        sentence))
-          (add-new vocab (unit->key word)))))
+          (incf (gethash (unit->key word) word-key->freq 0)))))
+    (let ((skipped-for-UNK-p nil))
+      (maphash (lambda (word-key count)
+                 (if (or (< 1 count) skipped-for-UNK-p)
+                     (add-new vocab word-key)
+                     (setq skipped-for-UNK-p t)))
+               word-key->freq))
     vocab))
 
 (defun build-vocabulary-with-unk (pathnames &key (overlap 2))
@@ -180,7 +187,9 @@
 
 (defun build-classifier (class-token-to-word-file-path vocabulary)
   (let ((to-class-map (make-hash-table :test #'equal)))
-    (with-open-file (in class-token-to-word-file-path)
+    (with-open-file (in class-token-to-word-file-path
+                        :direction :input
+                        :external-format :utf-8)
       (loop for line = (read-line in nil nil) while line do
         (destructuring-bind (class-token-string form-pron-string)
             (cl-ppcre:split " " line)
