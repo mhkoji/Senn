@@ -1,0 +1,21 @@
+Source: senn-common
+Section: utils
+Priority: optional
+Maintainer: mhkoji <mhkoji2@gmail.com>
+Build-Depends:
+  cl-alexandria,
+  cl-bordeaux-threads,
+  cl-cffi,
+  cl-ppcre,
+  cl-trivial-gray-streams,
+  cl-yason,
+  debhelper (>= 10),
+  sbcl
+Standards-Version: 4.6.0
+Homepage: https://github.com/mhkoji/Senn
+
+Package: senn-common
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Common utilities of Senn.
+ Senn is an input method editor for Japanese.

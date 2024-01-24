@@ -1,32 +1,68 @@
 (defpackage :senn-kkc-engine.hachee.engine.class-2-gram
   (:use :cl)
   (:export :set-kkc
-           :main)
-  (:local-nicknames (:user-dict :senn-kkc-engine.hachee.user-dict)))
+           :main))
 (in-package :senn-kkc-engine.hachee.engine.class-2-gram)
 
 ;;; user-dict
 
+(defstruct user-dict entries)
+(defstruct user-dict-entry pron form)
+
+(defun read-user-dict ()
+  (let ((path (merge-pathnames ".senn/user-dict.txt"
+                               (user-homedir-pathname))))
+    (when (uiop/filesystem:file-exists-p path)
+      (let ((entries nil))
+        (with-open-file (in path
+                            :direction :input
+                            :external-format :utf-8)
+          (loop for line = (read-line in nil nil) while line do
+            (when (and (not (string= line ""))
+                       (not (char= (char line 0) #\#)))
+              (destructuring-bind (form pron)
+                  (cl-ppcre:split "\\s" line)
+                (when (and (not (string= form ""))
+                           (not (string= pron "")))
+                  (push (make-user-dict-entry :pron pron
+                                              :form form)
+                        entries))))))
+        (make-user-dict :entries (nreverse entries))))))
+
 (defmethod hachee.kkc.impl.class-2-gram.ex-dict-builder:item-pron
-    ((item user-dict:entry))
-  (user-dict:entry-pron item))
+    ((item user-dict-entry))
+  (user-dict-entry-pron item))
 
 (defmethod hachee.kkc.impl.class-2-gram.ex-dict-builder:item-form
-    ((item user-dict:entry))
-  (user-dict:entry-form item))
+    ((item user-dict-entry))
+  (user-dict-entry-form item))
 
 (defmethod hachee.kkc.impl.class-2-gram.ex-dict-builder:list-items
-    ((source user-dict:dict))
-  (user-dict:dict-entries source))
-
-(defun kkc-apply-user-dict (kkc)
-  (let ((dict (user-dict:read-file)))
-    (when dict
-      (hachee.kkc.impl.class-2-gram:set-ex-dict kkc dict))))
+    ((source user-dict))
+  (user-dict-entries source))
 
 ;;;
 
 (defvar *kkc*)
+
+(defun start-server ()
+  (let ((dict (read-user-dict)))
+    (when dict
+      (hachee.kkc.impl.class-2-gram:set-ex-dict *kkc* dict)))
+  (labels ((handle (line)
+             (senn-kkc-engine.hachee.engine:handle line *kkc*)))
+    (senn-ipc.server.stdio:start-server #'handle)))
+
+(defun show-user-dict ()
+  (let ((dict (read-user-dict)))
+    (when dict
+      (format *standard-output* "form pron~%")
+      (dolist (entry (user-dict-entries dict))
+        (format *standard-output* "~A ~A~%"
+                (user-dict-entry-form entry)
+                (user-dict-entry-pron entry)))
+      (force-output *standard-output*)))
+  (values))
 
 (defun set-kkc (&optional dir-pathname)
   (unless dir-pathname
@@ -43,14 +79,8 @@
   (values))
 
 (defun main ()
-  (handler-case
-      (let ((dirs (list
-                   "/usr/lib/senn/fcitx/kkc/"    ;; for fcitx
-                   "/usr/lib/senn/ibus/kkc/")))  ;; for ibus
-        (user-dict:with-library-loaded (dirs)
-          (kkc-apply-user-dict *kkc*)))
-    (error (e)
-      (format *error-output* "~A~%" e)))
-  (labels ((handle (line)
-             (senn-kkc-engine.hachee.engine:handle line *kkc*)))
-    (senn-ipc.server.stdio:start-server #'handle)))
+  (let ((args (cdr sb-ext:*posix-argv*)))
+    (cond ((null args)
+           (start-server))
+          ((string= (car args) "--show-userdict")
+           (show-user-dict)))))

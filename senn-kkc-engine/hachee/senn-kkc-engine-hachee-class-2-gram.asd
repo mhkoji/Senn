@@ -5,7 +5,7 @@
   ((:file "engine")
    (:file "class-2-gram"))
   :depends-on (:alexandria
+               :cl-ppcre
                :yason
                :hachee-kkc-impl-class-2-gram
-               :senn-kkc-engine-hachee-user-dict
 	       :senn-ipc-server-stdio))
