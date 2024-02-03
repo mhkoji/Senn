@@ -30,11 +30,6 @@ RUN mkdir -p \
 
 COPY senn /build/senn
 
-RUN ecl \
-      -eval '(require :asdf)' \
-      -eval '(push #p"/build/senn/" asdf:*central-registry*)' \
-      -eval '(asdf:make-build :senn-lib-ibus :type :static-library :move-here #p"/build/senn/package/ibus-senn/engine/" :monolithic t :init-name "init_senn")'
-
 RUN cd /build/senn/package/ibus-senn && \
     touch NEWS README AUTHORS ChangeLog && \
     mkdir m4 && \
