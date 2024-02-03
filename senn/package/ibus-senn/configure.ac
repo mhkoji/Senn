@@ -12,8 +12,6 @@ AC_CONFIG_MACRO_DIRS([m4])
 
 # Checks for programs.
 AC_PROG_CXX
-AC_PROG_INSTALL
-AC_PROG_LIBTOOL
 
 # Checks for libraries.
 m4_define([ibus_required_version], [1.5.0])

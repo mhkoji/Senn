@@ -1,7 +1,3 @@
-# Locations to which components and binaries are installed.
-libexecdir = /usr/lib/ibus
-componentdir = /usr/share/ibus/component
-
 AUTOMAKE_OPTIONS = \
 	subdir-objects \
 	$(NULL)
@@ -79,6 +75,9 @@ senn-lib-ibus--all-systems.a:
 component_DATA = \
 	senn.xml \
 	$(NULL)
+
+componentdir = \
+	 $(datadir)/ibus/component
 
 CLEANFILES = \
 	senn.xml \
