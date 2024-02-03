@@ -19,7 +19,7 @@ StatefulIMEEcl::Requester::~Requester() {
 
 void StatefulIMEEcl::Requester::Request(const std::string &req,
                                         std::string *res) {
-  // std::cout << req << std::endl;
+  // std::cerr << req << std::endl;
   cl_object octets = ecl_alloc_simple_vector(req.size(), ecl_aet_b8);
   for (size_t i = 0; i < req.size(); i++) {
     ecl_aset1(octets, i, ecl_make_uint8_t(req[i]));
@@ -27,8 +27,17 @@ void StatefulIMEEcl::Requester::Request(const std::string &req,
   cl_object output = cl_funcall(
       3, cl_eval(c_string_to_object("'senn.lib.fcitx:handle-request")), ime_,
       octets);
-  *res = std::string((const char *)(ecl_row_major_ptr(output, 0, 0)));
-  // std::cout << *res << std::endl;
+  cl_fixnum output_len = ecl_length(output);
+  for (cl_fixnum i = 0; i < output_len; i++) {
+    *res += fixint(ecl_aref1(output, i)) & 0xFF;
+  }
+  // `*res = (const char *)(ecl_row_major_ptr(output, 0, output_len));' adds garbage data:
+  //   - output = (72 73 82 65 71 65 78 65)
+  //   - *res = (72 73 82 65 71 65 78 65 1) ;; Where did `1' come from?
+  // for (cl_fixnum i = 0; i < output_len; i++) {
+  //   std::cerr << "[" << (static_cast<unsigned int>((*res)[i]) & 0xFF) << "]";
+  // }
+  // std::cerr << res->size() << "," << output_len << std::endl;
 }
 
 void StatefulIMEEcl::ClBoot() {

@@ -23,8 +23,10 @@ int main(int argc, char *argv[]) {
   senn::ibus::im::StatefulIME *ime =
       senn::ibus::im::StatefulIMEEcl::Create(std::string(argv[1]));
 
-  ime->ToggleInputMode();
-  
+  assert(ime->ToggleInputMode() == senn::ibus::im::InputMode::kHiragana);
+  assert(ime->ToggleInputMode() == senn::ibus::im::InputMode::kDirect);
+  assert(ime->ToggleInputMode() == senn::ibus::im::InputMode::kHiragana);
+ 
   std::vector<uint32_t> syms = {116, 111, 117, 107, 121, 111, 117,
                                 110, 105, 105, 107, 105, 109, 97,
                                 115, 105, 116, 97,  32};
