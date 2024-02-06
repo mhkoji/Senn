@@ -16,6 +16,11 @@ Homepage: https://github.com/mhkoji/Senn
 
 Package: ibus-senn
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, ibus
-Description: Senn support for ibus
- Senn is an input method editor for the Japanese language.
+Depends: ${shlibs:Depends}, ${misc:Depends}, ibus, senn-common
+Description: Senn input method editor based on IBus
+ Senn is a Japanese input method editor.
+ It accepts an input sequence of keys from a keyboard,
+ transforms the sequence to the corresponding kana characters
+ and converts it to a sequence of kana and kanji characters.
+ .
+ ibus-senn is senn based on IBus.
