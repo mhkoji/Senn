@@ -1,5 +1,3 @@
-# vim:set noet ts=4:
-
 AUTOMAKE_OPTIONS = \
 	subdir-objects \
 	$(NULL)
@@ -67,17 +65,19 @@ ibus_engine_senn_LDFLAGS = \
 	$(NULL)
 
 senn-lib-ibus--all-systems.a:
-	ros use ecl
-	ros run -e '(asdf:make-build :senn-lib-ibus :type :static-library :move-here #P"./" :monolithic t :init-name "init_senn")' -q
-
+## Intended to be used from docker/ibus-senn
+	ecl \
+	  -eval '(require :asdf)' \
+	  -eval '(push #p"/build/senn/" asdf:*central-registry*)' \
+	  -eval '(asdf:make-build :senn-lib-ibus :type :static-library :move-here #p"./" :monolithic t :init-name "init_senn")' \
+	  -eval '(quit)'
 
 component_DATA = \
 	senn.xml \
 	$(NULL)
 
-# Locations to which components and binaries are installed.
-libexecdir = /usr/lib/ibus
-componentdir = /usr/share/ibus/component
+componentdir = \
+	 $(datadir)/ibus/component
 
 CLEANFILES = \
 	senn.xml \

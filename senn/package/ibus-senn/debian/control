@@ -2,14 +2,20 @@ Source: ibus-senn
 Section: utils
 Priority: optional
 Maintainer: mhkoji <mhkoji2@gmail.com>
-Build-Depends: debhelper (>= 13), libibus-1.0-dev, ecl
+Build-Depends:
+  cl-alexandria,
+  cl-babel,
+  cl-yason,
+  debhelper (>= 10),
+  ecl,
+  gnome-common,
+  libibus-1.0-dev,
+  picojson-dev
 Standards-Version: 4.6.0
 Homepage: https://github.com/mhkoji/Senn
-#Vcs-Browser: https://salsa.debian.org/debian/ibus-senn
-#Vcs-Git: https://salsa.debian.org/debian/ibus-senn.git
 
 Package: ibus-senn
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, ibus
+Depends: ${shlibs:Depends}, ${misc:Depends}, ibus, ecl
 Description: Senn support for ibus
  Senn is an input method editor for the Japanese language.

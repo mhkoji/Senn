@@ -10,7 +10,7 @@
 #ifdef SENN_IME_ECL
 #include "ibus/im/stateful_ime_ecl.h"
 
-const std::string kKkcEnginePath = "/usr/lib/senn/ibus/kkc-engine";
+const std::string kSennKkcEnginePath = "/usr/lib/senn/kkc/engine";
 #elif SENN_IME_SOCKET
 #include "ibus/im/stateful_ime_socket.h"
 #endif
@@ -217,7 +217,7 @@ void Disable(IBusEngine *p) { ENGINE(p)->ime->ResetIM(); }
 class EclIMEFactory : public senn::ibus_senn::engine::IMEFactory {
 public:
   senn::ibus::im::StatefulIME *CreateIME() {
-    return senn::ibus::im::StatefulIMEEcl::Create(kKkcEnginePath);
+    return senn::ibus::im::StatefulIMEEcl::Create(kSennKkcEnginePath);
   }
 
   ~EclIMEFactory() { senn::ibus::im::StatefulIMEEcl::ClShutdown(); }

@@ -2,6 +2,7 @@ bin_PROGRAMS = engine
 bindir = /usr/lib/senn/kkc/
 
 engine$(EXEEXT):
+## Intended to be used from docker/senn-common
 	sbcl \
 	  --dynamic-space-size 2048 \
 	  --noinform \
