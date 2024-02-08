@@ -16,6 +16,6 @@ Homepage: https://github.com/mhkoji/Senn
 
 Package: ibus-senn
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, ibus, ecl
+Depends: ${shlibs:Depends}, ${misc:Depends}, ibus
 Description: Senn support for ibus
  Senn is an input method editor for the Japanese language.
