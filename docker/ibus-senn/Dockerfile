@@ -33,7 +33,6 @@ COPY senn /build/senn
 RUN cd /build/senn/package/ibus-senn && \
     touch NEWS README AUTHORS ChangeLog && \
     mkdir m4 && \
-    autoreconf -i && \
     debuild -us -uc -b && \
     mv /build/senn/package/*.deb /output/
 

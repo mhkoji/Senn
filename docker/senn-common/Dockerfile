@@ -26,7 +26,6 @@ COPY senn/package/senn-common /build/senn-common
 RUN cd /build/senn-common && \
     touch NEWS README AUTHORS ChangeLog && \
     mkdir m4 && \
-    autoreconf -i && \
     debuild -us -uc -b && \
     mv /build/*.deb /output/
 
