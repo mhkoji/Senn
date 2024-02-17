@@ -20,15 +20,14 @@ RUN mkdir -p \
 
 COPY hachee /build/hachee
 COPY senn-ipc /build/senn-ipc
-COPY senn-kkc-engine/hachee /build/engine
-COPY senn/package/senn-common /build/senn-common
+COPY senn-common /build/senn-common
+COPY package/senn-common /build/package/senn-common
 
-RUN cd /build/senn-common && \
+RUN cd /build/package/senn-common && \
     touch NEWS README AUTHORS ChangeLog && \
     mkdir m4 && \
-    autoreconf -i && \
     debuild -us -uc -b && \
-    mv /build/*.deb /output/
+    mv /build/package/*.deb /output/
 
 COPY docker/script/copy-output.sh /app
 

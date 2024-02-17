@@ -2,4 +2,4 @@
 
 DIR=../../
 docker build $DIR -t ibus-senn -f ./Dockerfile && \
-docker run --rm -v $PWD:/host --rm -t ibus-senn
+docker run --rm -v $PWD:/host -t ibus-senn

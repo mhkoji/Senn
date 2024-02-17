@@ -10,7 +10,7 @@ engine$(EXEEXT):
 	  --no-sysinit \
 	  --non-interactive \
 	  --eval '(require :asdf)' \
-	  --eval '(push #p"/build/engine/" asdf:*central-registry*)' \
+	  --eval '(push #p"/build/senn-common/kkc-engine/hachee/" asdf:*central-registry*)' \
 	  --eval '(push #p"/build/hachee/" asdf:*central-registry*)' \
 	  --eval '(push #p"/build/senn-ipc/" asdf:*central-registry*)' \
 	  --eval '(asdf:load-system :senn-kkc-engine-hachee-class-2-gram)' \
