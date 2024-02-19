@@ -21,13 +21,12 @@ RUN mkdir -p \
 COPY hachee /build/hachee
 COPY senn-ipc /build/senn-ipc
 COPY senn-common /build/senn-common
-COPY package/senn-common /build/package/senn-common
 
-RUN cd /build/package/senn-common && \
+RUN cd /build/senn-common/package && \
     touch NEWS README AUTHORS ChangeLog && \
     mkdir m4 && \
     debuild -us -uc -b && \
-    mv /build/package/*.deb /output/
+    mv /build/senn-common/*.deb /output/
 
 COPY docker/script/copy-output.sh /app
 

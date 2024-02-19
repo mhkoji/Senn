@@ -9,8 +9,8 @@ libexec_PROGRAMS = \
 if SENN_IME_ECL
 ibus_engine_senn_SOURCES = \
 	main.cpp \
-	../../../senn/src-cpp/ibus/im/stateful_ime_proxy.cpp \
-	../../../senn/src-cpp/ibus/im/stateful_ime_ecl.cpp \
+	../../../src-cpp/ibus/im/stateful_ime_proxy.cpp \
+	../../../src-cpp/ibus/im/stateful_ime_ecl.cpp \
 	$(NULL)
 
 ibus_engine_senn_LDADD = \
@@ -26,10 +26,10 @@ else
 if  SENN_IME_SOCKET
 ibus_engine_senn_SOURCES = \
 	main.cpp \
-	../../../senn/src-cpp/ibus/im/stateful_ime_proxy.cpp \
-	../../../senn/src-cpp/ibus/im/stateful_ime_socket.cpp
-	../../../senn/src-cpp/ipc/socket.cpp \
-	../../../senn/src-cpp/process/process.cpp \
+	../../../src-cpp/ibus/im/stateful_ime_proxy.cpp \
+	../../../src-cpp/ibus/im/stateful_ime_socket.cpp
+	../../../src-cpp/ipc/socket.cpp \
+	../../../src-cpp/process/process.cpp \
 	$(NULL)
 
 ibus_engine_senn_LDADD = \
@@ -56,7 +56,7 @@ ibus_engine_senn_CPPFLAGS = \
 	-I/usr/include/ibus-1.0/ \
 	-I/usr/include/glib-2.0/ \
 	-I/usr/lib/x86_64-linux-gnu/glib-2.0/include \
-	-I../../../senn/src-cpp/ \
+	-I../../../src-cpp/ \
 	-std=c++11 \
 	-DSENN_IME_@SENN_IME@ \
 	$(NULL)

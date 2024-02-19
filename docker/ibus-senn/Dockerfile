@@ -29,13 +29,12 @@ RUN mkdir -p \
     /output
 
 COPY senn /build/senn
-COPY package/ibus-senn /build/package/ibus-senn
 
-RUN cd /build/package/ibus-senn && \
+RUN cd /build/senn/package/ibus-senn && \
     touch NEWS README AUTHORS ChangeLog && \
     mkdir m4 && \
     debuild -us -uc -b && \
-    mv /build/package/*.deb /output/
+    mv /build/senn/package/*.deb /output/
 
 COPY docker/script/copy-output.sh /app
 
