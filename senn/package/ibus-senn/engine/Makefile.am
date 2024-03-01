@@ -68,7 +68,7 @@ senn-lib-ibus--all-systems.a:
 ## Intended to be used from docker/ibus-senn
 	ecl \
 	  -eval '(require :asdf)' \
-	  -eval '(push #p"/build/senn/" asdf:*central-registry*)' \
+	  -eval '(push #p"$(shell pwd)/../../../" asdf:*central-registry*)' \
 	  -eval '(asdf:make-build :senn-lib-ibus :type :static-library :move-here #p"./" :monolithic t :init-name "init_senn")' \
 	  -eval '(quit)'
 
