@@ -3,8 +3,6 @@ FROM ubuntu:22.04
 RUN apt update && apt install -y \
     # debuild
     build-essential \
-    # debuild
-    cdbs \
     # asdf:make-build
     cl-alexandria \
     # asdf:make-build
@@ -12,11 +10,11 @@ RUN apt update && apt install -y \
     # asdf:make-build
     cl-yason \
     # debuild
+    debhelper \
+    # debuild
     devscripts \
     # asdf:make-build, debuild
     ecl \
-    # debuild
-    gnome-common \
     # debuild
     libibus-1.0-dev \
     # debuild

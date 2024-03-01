@@ -2,13 +2,13 @@ FROM ubuntu:22.04
 
 RUN apt update && DEBIAN_FRONTEND=noninteractive apt install -y \
     build-essential \
-    cdbs \
     cl-alexandria \
     cl-bordeaux-threads \
     cl-cffi \
     cl-ppcre \
     cl-trivial-gray-streams \
     cl-yason \
+    debhelper \
     devscripts \
     sbcl && \
     rm -rf /var/lib/apt/lists/*
