@@ -6,7 +6,7 @@ Build-Depends:
   cl-alexandria,
   cl-babel,
   cl-yason,
-  debhelper (>= 10),
+  debhelper (>= 13),
   ecl,
   gnome-common,
   libibus-1.0-dev,

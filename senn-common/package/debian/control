@@ -9,7 +9,7 @@ Build-Depends:
   cl-ppcre,
   cl-trivial-gray-streams,
   cl-yason,
-  debhelper (>= 10),
+  debhelper (>= 13),
   sbcl
 Standards-Version: 4.6.0
 Homepage: https://github.com/mhkoji/Senn
