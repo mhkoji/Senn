@@ -1,9 +1,8 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
-
-AC_PREREQ([2.69])
-AC_INIT([ibus_senn], [0.0.9], [], [ibus-senn])
-AM_INIT_AUTOMAKE([1.10 subdir-objects])
+m4_include([../../../version.m4])
+AC_INIT([ibus_senn], m4_defn([senn_VERSION]))
+AM_INIT_AUTOMAKE([foreign subdir-objects])
 AC_CONFIG_SRCDIR([main.cpp])
 AC_CONFIG_HEADERS([config.h])
 
