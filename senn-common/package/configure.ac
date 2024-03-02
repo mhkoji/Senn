@@ -1,9 +1,8 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
-
-AC_PREREQ([2.69])
-AC_INIT([senn_common], [0.0.9], [], [senn-common])
-AM_INIT_AUTOMAKE([1.10 subdir-objects])
+m4_include([../../version.m4])
+AC_INIT([senn_common], m4_defn([senn_VERSION]))
+AM_INIT_AUTOMAKE([foreign subdir-objects])
 
 ## The usual way to define 'am__fastdepCC' is to add 'AC_PROG_CC'
 ## to 'configure.ac' and run 'aclocal' and 'autoconf' again

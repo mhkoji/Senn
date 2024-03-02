@@ -22,7 +22,7 @@ RUN apt update && apt install -y \
 
 COPY . /Senn/
 
-RUN cd /Senn/ && \
+RUN cd /Senn && \
     debuild -us -uc -b && \
     mkdir -p /output && \
     mv /*.deb /output/
