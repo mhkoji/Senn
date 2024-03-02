@@ -1,0 +1,2 @@
+build-ibus-senn/libexec/ibus-engine-senn /usr/libexec/
+build-ibus-senn/share/ibus/component/senn.xml /usr/share/ibus/component/
