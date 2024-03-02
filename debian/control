@@ -3,20 +3,20 @@ Section: utils
 Priority: optional
 Maintainer: mhkoji <mhkoji2@gmail.com>
 Build-Depends:
-  debhelper (>= 13),  
+  debhelper (>= 13),
 ## ibus-senn, senn-common
   cl-alexandria, cl-yason,
 ## ibus-senn
   cl-babel,
   ecl,
   libibus-1.0-dev,
-  picojson-dev
+  picojson-dev,
 ## senn-common
-#  cl-bordeaux-threads,
-#  cl-cffi,
-#  cl-ppcre,
-#  cl-trivial-gray-streams,
-#  sbcl
+  cl-bordeaux-threads,
+  cl-cffi,
+  cl-ppcre,
+  cl-trivial-gray-streams,
+  sbcl
 Standards-Version: 4.6.0
 Homepage: https://github.com/mhkoji/Senn
 

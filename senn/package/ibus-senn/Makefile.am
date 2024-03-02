@@ -85,6 +85,5 @@ CLEANFILES = \
 
 senn.xml: senn.xml.in
 	$(AM_V_GEN) sed \
-		-e 's|@package_version[@]|$(PACKAGE_VERSION)|g' \
-		-e 's|@libexecdir[@]|$(libexecdir)|g' $< > $@.tmp && \
+		-e 's|@package_version[@]|$(PACKAGE_VERSION)|g' $< > $@.tmp && \
 		mv $@.tmp $@
