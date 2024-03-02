@@ -13,7 +13,7 @@
 # package maintainers to append LDFLAGS
 #export DEB_LDFLAGS_MAINT_APPEND = -Wl,--as-needed
 
-override_dh_auto_build: build-ibus-senn
+override_dh_auto_build: build-ibus-senn build-senn-common
 
 build-ibus-senn:
 	mkdir $(CURDIR)/build-ibus-senn && \
@@ -23,6 +23,23 @@ build-ibus-senn:
 	./configure --prefix=$(CURDIR)/build-ibus-senn && \
 	make && \
 	make install
+
+build-senn-common:
+	mkdir $(CURDIR)/build-senn-common && \
+	cd senn-common/package && \
+	touch NEWS README AUTHORS ChangeLog && mkdir m4 && \
+	autoreconf -i && \
+	./configure --prefix=$(CURDIR)/build-senn-common && \
+	make && \
+	make install
+
+# https://bugs.launchpad.net/sbcl/+bug/310108
+override_dh_strip:
+	dh_strip --exclude kkc-engine
+
+# https://bugs.launchpad.net/sbcl/+bug/310108
+override_dh_dwz:
+	dh_dwz --exclude kkc-engine
 
 %:
 	dh $@

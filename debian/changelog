@@ -1,5 +1,5 @@
-senn (0.0.1-1) unstable; urgency=medium
+senn (0.0.9-1) UNRELEASED; urgency=medium
 
-  * Initial release (Closes: #nnnn)  <nnnn is the bug number of your ITP>
+  * ibus-senn: Various updates for release
 
- -- mhkoji <mhkoji2@gmail.com>  Sat, 02 Mar 2024 10:21:28 +0900
+ -- mhkoji <mhkoji2@gmail.com>  Mon, 15 May 2023 02:07:06 +0900
