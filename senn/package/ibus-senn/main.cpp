@@ -10,7 +10,7 @@
 #ifdef SENN_IME_ECL
 #include "ibus/im/stateful_ime_ecl.h"
 
-const std::string kSennKkcEnginePath = "/usr/lib/senn/kkc/engine";
+const std::string kSennKkcEnginePath = "/usr/lib/senn/kkc-engine";
 #elif SENN_IME_SOCKET
 #include "ibus/im/stateful_ime_socket.h"
 #endif

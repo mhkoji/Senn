@@ -17,6 +17,5 @@ AC_CONFIG_MACRO_DIRS([m4])
 # Checks for header files.
 # Checks for typedefs, structures, and compiler characteristics.
 # Checks for library functions.
-AC_CONFIG_FILES([Makefile
-                 kkc/Makefile])
+AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
