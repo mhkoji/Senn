@@ -12,9 +12,9 @@ RUN mkdir \
     /build \
     /output
 
-COPY hachee                 /build/hachee
-COPY senn-ipc               /build/senn-ipc
-COPY senn-kkc-engine/hachee /build/engine
+COPY hachee /build/hachee
+COPY senn-ipc /build/senn-ipc
+COPY senn-common/kkc-engine/hachee /build/engine
 
 RUN sbcl \
       --dynamic-space-size 2048 \
