@@ -1,5 +1,6 @@
 #pragma once
 #include "fcitx/im/views.h"
+#include <cstdint>
 #include <functional>
 #include <string>
 
