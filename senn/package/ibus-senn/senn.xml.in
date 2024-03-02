@@ -2,7 +2,7 @@
 <component>
 	<name>org.freedesktop.IBus.Senn</name>
 	<description>Senn Component</description>
-	<exec>/usr/libexec/ibus-engine-senn --ibus</exec>
+	<exec>@libexecdir@/ibus-engine-senn --ibus</exec>
 	<version>@package_version@</version>
 	<author>mhkoji</author>
 	<license>MIT</license>
