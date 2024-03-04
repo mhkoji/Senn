@@ -8,8 +8,8 @@ libexec_PROGRAMS = \
 if SENN_IME_ECL
 ibus_engine_senn_SOURCES = \
 	main.cpp \
-	../../src-cpp/ibus/im/stateful_ime_proxy.cpp \
-	../../src-cpp/ibus/im/stateful_ime_ecl.cpp \
+	$(srcdir)/../../src-cpp/ibus/im/stateful_ime_proxy.cpp \
+	$(srcdir)/../../src-cpp/ibus/im/stateful_ime_ecl.cpp \
 	$(NULL)
 
 ibus_engine_senn_LDADD = \
@@ -26,17 +26,17 @@ senn-lib-ibus--all-systems.a:
 ## Intended to be used from docker/ibus-senn
 	ecl \
 	  -eval '(require :asdf)' \
-	  -eval '(push #p"$(shell pwd)/../../" asdf:*central-registry*)' \
+	  -eval '(push #p"$(srcdir)/../../" asdf:*central-registry*)' \
 	  -eval '(asdf:make-build :senn-lib-ibus :type :static-library :move-here #p"./" :monolithic t :init-name "init_senn")' \
 	  -eval '(quit)'
 else
 if  SENN_IME_SOCKET
 ibus_engine_senn_SOURCES = \
 	main.cpp \
-	../../src-cpp/ibus/im/stateful_ime_proxy.cpp \
-	../../src-cpp/ibus/im/stateful_ime_socket.cpp
-	../../src-cpp/ipc/socket.cpp \
-	../../src-cpp/process/process.cpp \
+	$(srcdir)/../../src-cpp/ibus/im/stateful_ime_proxy.cpp \
+	$(srcdir)/../../src-cpp/ibus/im/stateful_ime_socket.cpp
+	$(srcdir)/../../src-cpp/ipc/socket.cpp \
+	$(srcdir)/../../src-cpp/process/process.cpp \
 	$(NULL)
 
 ibus_engine_senn_LDADD = \
@@ -63,7 +63,7 @@ ibus_engine_senn_CPPFLAGS = \
 	-I/usr/include/ibus-1.0/ \
 	-I/usr/include/glib-2.0/ \
 	-I/usr/lib/x86_64-linux-gnu/glib-2.0/include \
-	-I../../src-cpp/ \
+	-I$(srcdir)/../../src-cpp/ \
 	-std=c++11 \
 	-DSENN_IME_@SENN_IME@ \
 	$(NULL)
@@ -86,5 +86,5 @@ CLEANFILES = \
 senn.xml: senn.xml.in
 	$(AM_V_GEN) sed \
 		-e 's|@package_version[@]|$(PACKAGE_VERSION)|g' \
-                -e 's|@libexecdir[@]|$(libexecdir)|g' $< > $@.tmp && \
+		-e 's|@libexecdir[@]|$(libexecdir)|g' $< > $@.tmp && \
 		mv $@.tmp $@

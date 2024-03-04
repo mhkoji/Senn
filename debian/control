@@ -3,6 +3,7 @@ Section: utils
 Priority: optional
 Maintainer: mhkoji <mhkoji2@gmail.com>
 Build-Depends:
+  cmake,
   debhelper (>= 13),
 ## ibus-senn, senn-common
   cl-alexandria, cl-yason,

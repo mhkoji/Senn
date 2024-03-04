@@ -13,9 +13,9 @@ kkc-engine$(EXEEXT):
 	  --no-sysinit \
 	  --non-interactive \
 	  --eval '(require :asdf)' \
-	  --eval '(push #p"$(shell pwd)/../../hachee/" asdf:*central-registry*)' \
-	  --eval '(push #p"$(shell pwd)/../../senn-ipc/" asdf:*central-registry*)' \
-	  --eval '(push #p"$(shell pwd)/../kkc-engine/hachee/" asdf:*central-registry*)' \
+	  --eval '(push #p"$(srcdir)/../../hachee/" asdf:*central-registry*)' \
+	  --eval '(push #p"$(srcdir)/../../senn-ipc/" asdf:*central-registry*)' \
+	  --eval '(push #p"$(srcdir)/../kkc-engine/hachee/" asdf:*central-registry*)' \
           --eval '(asdf:load-system :senn-kkc-engine-hachee-class-2-gram)' \
-	  --eval '(senn-kkc-engine.hachee.engine.class-2-gram:set-kkc "./kkc-engine-data/")' \
+	  --eval '(senn-kkc-engine.hachee.engine.class-2-gram:set-kkc "$(srcdir)/kkc-engine-data/")' \
 	  --eval "(sb-ext:save-lisp-and-die \"kkc-engine\" :toplevel #'senn-kkc-engine.hachee.engine.class-2-gram:main :executable t)"
