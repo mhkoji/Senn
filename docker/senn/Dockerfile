@@ -2,6 +2,7 @@ FROM ubuntu:22.04
 
 RUN apt update && apt install -y \
       build-essential \
+      cmake \
       debhelper \
       devscripts \
       # ibus-senn, senn-common
