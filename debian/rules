@@ -15,11 +15,15 @@
 
 # https://bugs.launchpad.net/sbcl/+bug/310108
 override_dh_strip:
-	dh_strip --exclude kkc-engine
+	mv debian/senn-common/usr/lib/senn/kkc-engine debian/senn-common/usr/lib/senn/kkc-engine-sbcl
+	dh_strip --exclude sbcl
+	mv debian/senn-common/usr/lib/senn/kkc-engine-sbcl debian/senn-common/usr/lib/senn/kkc-engine
 
 # https://bugs.launchpad.net/sbcl/+bug/310108
 override_dh_dwz:
-	dh_dwz --exclude kkc-engine
+	mv debian/senn-common/usr/lib/senn/kkc-engine debian/senn-common/usr/lib/senn/kkc-engine-sbcl
+	dh_dwz --exclude sbcl
+	mv debian/senn-common/usr/lib/senn/kkc-engine-sbcl debian/senn-common/usr/lib/senn/kkc-engine
 
 %:
 	dh $@
