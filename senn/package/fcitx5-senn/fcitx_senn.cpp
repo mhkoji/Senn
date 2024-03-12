@@ -5,7 +5,7 @@
 #include <fcitx/inputpanel.h>
 
 #include "fcitx/im/stateful_ime_ecl.h"
-const std::string kKkcEnginePath = "/usr/lib/senn/fcitx/kkc-engine";
+const std::string kKkcEnginePath = "/usr/lib/senn/kkc-engine";
 
 namespace fcitx5_senn {
 
