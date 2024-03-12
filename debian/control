@@ -32,6 +32,17 @@ Description: Senn input method editor based on IBus
  .
  ibus-senn is senn based on IBus.
 
+Package: fcitx5-senn
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, fcitx5, senn-common
+Description: Senn input method editor based on IBus
+ Senn is a Japanese input method editor.
+ It accepts an input sequence of keys from a keyboard,
+ transforms the sequence to the corresponding kana characters
+ and converts it to a sequence of kana and kanji characters.
+ .
+ fcitx5-senn is senn based on Fcitx5.
+
 Package: senn-common
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
