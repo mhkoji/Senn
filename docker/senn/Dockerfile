@@ -5,9 +5,11 @@ RUN apt update && apt install -y \
       cmake \
       debhelper \
       devscripts \
-      # ibus-senn, senn-common
+      # senn-common, ibus-senn
       cl-alexandria \
       cl-yason \
+      # fcitx5-senn
+      libfcitx5core-dev \
       # ibus-senn
       cl-babel \
       ecl \

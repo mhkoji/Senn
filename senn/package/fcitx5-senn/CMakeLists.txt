@@ -2,17 +2,15 @@ cmake_minimum_required(VERSION 3.6)
 project(fcitx5-senn)
 
 find_package(Fcitx5Core 5.0.6 REQUIRED)
-# Without GNUInstallDirs, some files are copied to inappropriate directories as follows:
+# Without GNUInstallDirs, some files like shown below are copied to inappropriate directories:
 # - ./fcitx5/inputmethod/senn.conf
 # - ./icons/hicolor/32x32/apps/fcitx-senn.png
 # - ./metainfo/org.fcitx.Fcitx5.Addon.Senn.metainfo.xml
 include(GNUInstallDirs)
 
-set(SENN_ROOT_DIR         ${CMAKE_CURRENT_SOURCE_DIR}/../../..)
-set(SENN_SRC_CPP_DIR      ${SENN_ROOT_DIR}/senn/src-cpp)
-set(SENN_THIRD_PARTY_DIR  ${SENN_ROOT_DIR}/third-party/picojson)
-
-set(FCITX_SENN_INSTALL_DIR /usr/lib/senn/fcitx)
+set(SENN_ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../..)
+set(SENN_SRC_CPP_DIR ${SENN_ROOT_DIR}/senn/src-cpp)
+set(FCITX_SENN_INSTALL_DIR ${CMAKE_INSTALL_LIBDIR}/senn/fcitx)
 
 set(CMAKE_C_FLAGS
   "-Wall -Wextra -Wno-sign-compare -Wno-unused-parameter")
@@ -27,46 +25,30 @@ include(
   ${FCITX_INSTALL_CMAKECONFIG_DIR}/Fcitx5Utils/Fcitx5CompilerSettings.cmake)
 
 include_directories(
-  ${SENN_SRC_CPP_DIR}
-  ${SENN_THIRD_PARTY_DIR}
-)
+  ${SENN_SRC_CPP_DIR})
 
 add_library(senn
-  MODULE fcitx_senn.cpp
-         ${SENN_SRC_CPP_DIR}/fcitx/im/stateful_ime_proxy.cpp
-         ${SENN_SRC_CPP_DIR}/fcitx/im/stateful_ime_ecl.cpp)
-
+  MODULE
+  fcitx_senn.cpp
+  ${SENN_SRC_CPP_DIR}/fcitx/im/stateful_ime_proxy.cpp
+  ${SENN_SRC_CPP_DIR}/fcitx/im/stateful_ime_ecl.cpp
+  ## This line adds a depencency on the object file to senn.
+  senn-lib-fcitx--all-systems.a)
 target_link_libraries(senn
- Fcitx5::Core
- Fcitx5::Config
- ecl
- ${CMAKE_CURRENT_SOURCE_DIR}/dep-ecl/senn-lib-fcitx--all-systems.a
- # ${CMAKE_CURRENT_SOURCE_DIR}/dep-ecl/senn-lib-fcitx-kkc-proxy--all-systems.a
- )
-
+  Fcitx5::Core
+  Fcitx5::Config
+  ecl
+  ## This line adds a link to the object file.
+  ${CMAKE_CURRENT_BINARY_DIR}/senn-lib-fcitx--all-systems.a)
+## The object file name must be senn.so not libsenn.so.
 set_target_properties(senn
   PROPERTIES PREFIX "")
 
-#### userdict
-add_executable(userdict_main
-  ${SENN_ROOT_DIR}/senn-kkc-engine/hachee/src-cpp/user_dict_main.cpp
-  ${SENN_ROOT_DIR}/senn-kkc-engine/hachee/src-cpp/user_dict.cpp
-)
+add_custom_command(
+  OUTPUT senn-lib-fcitx--all-systems.a
+  COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/build-lib.sh
+  COMMAND mv ${CMAKE_CURRENT_SOURCE_DIR}/senn-lib-fcitx--all-systems.a ${CMAKE_CURRENT_BINARY_DIR})
 
-set_target_properties(userdict_main
-  PROPERTIES OUTPUT_NAME userdict
-)
-
-#### libuserdict.so
-add_library(userdict SHARED
-  ${SENN_ROOT_DIR}/senn-kkc-engine/hachee/src-cpp/user_dict.cpp
-)
-
-## This fcitx-senn.png is displayed in the tray as the senn icon.
-install(
-  FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../icon/senn-32x32.png
-  DESTINATION ${CMAKE_INSTALL_DATADIR}/icons/hicolor/32x32/apps
-  RENAME fcitx-senn.png)
 
 install(
   FILES senn.conf
@@ -84,24 +66,3 @@ install(
 install(
   TARGETS senn
   DESTINATION ${CMAKE_INSTALL_LIBDIR}/fcitx5)
-
-install(
-  PROGRAMS ${CMAKE_CURRENT_SOURCE_DIR}/dep-kkc/kkc-engine
-  DESTINATION ${FCITX_SENN_INSTALL_DIR}/kkc/
-  RENAME engine)
-
-install(
-  TARGETS userdict_main
-  RUNTIME
-  DESTINATION ${FCITX_SENN_INSTALL_DIR}/kkc/)
-
-install(
-  TARGETS userdict
-  LIBRARY
-  DESTINATION ${FCITX_SENN_INSTALL_DIR}/kkc/)
-
-# install(
-#   PROGRAMS ${CMAKE_CURRENT_SOURCE_DIR}/dep-menu/menu-about
-#   RENAME menu-about
-#   CONFIGURATIONS Release
-#   RUNTIME DESTINATION ${FCITX_SENN_INSTALL_DIR})
