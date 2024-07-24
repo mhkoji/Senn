@@ -373,11 +373,11 @@ void StartEngine(bool exec_by_daemon) {
 
   {
     IBusComponent *component = ibus_component_new(
-        "org.freedesktop.IBus.Senn", "Senn Component", PACKAGE_VERSION, "MIT",
+        "org.freedesktop.IBus.Senn", "Senn Component", PACKAGE_VERSION, "BSD-2-clause",
         "mhkoji", "", "", "ibus-senn");
     ibus_component_add_engine(
         component, ibus_engine_desc_new("senn-jp", "Senn", "Senn Component",
-                                        "ja", "MIT", "mhkoji", "", "default"));
+                                        "ja", "BSD-2-clause", "mhkoji", "", "default"));
 
     {
       IBusFactory *factory = ibus_factory_new(ibus_bus_get_connection(bus));

@@ -5,7 +5,7 @@
 	<exec>@libexecdir@/ibus-engine-senn --ibus</exec>
 	<version>@package_version@</version>
 	<author>mhkoji</author>
-	<license>MIT</license>
+	<license>BSD-2-clause</license>
 	<homepage></homepage>
 	<textdomain>ibus-senn</textdomain>
 
