@@ -2,8 +2,12 @@
 <component type="addon">
   <id>org.fcitx.Fcitx5.Addon.Senn</id>
   <extends>org.fcitx.Fcitx5</extends>
-  <metadata_license>CC0-1.0</metadata_license>
-  <project_license>MIT</project_license>
+  <!--
+    Supress: W: senn source: inconsistent-appstream-metadata-license senn/package/fcitx5-senn/org.fcitx.Fcitx5.Addon.Senn.metainfo.xml (cc0-1.0 != bsd-2-clause)
+    Should this be CC0-1.0 ?
+  -->
+  <metadata_license>BSD-2-clause</metadata_license>
+  <project_license>BSD-2-clause</project_license>
   <name>Senn for Fcitx 5</name>
   <summary>Japanese input method based on Senn</summary>
   <url type="homepage">https://github.com/mhkoji/Senn</url>
