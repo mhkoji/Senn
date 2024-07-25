@@ -1,6 +1,8 @@
 (defpackage :senn.t.fcitx
   (:use :cl)
-  (:export :add-tests))
+  (:export :add-tests
+           :char-key
+           :space-key))
 (in-package :senn.t.fcitx)
 
 (fiveam:def-suite* :senn.t.fcitx :in :senn.t)
@@ -15,3 +17,9 @@
                    `(fiveam:def-test ,sym (:suite ,full-name)
                       (,sym :test fiveam:is)))
                  syms))))
+
+(defun char-key (char)
+  (senn.fcitx.keys:make-key :sym (char-code char) :state 0))
+
+(defun space-key ()
+  (senn.fcitx.keys:make-key :sym 32 :state 0))

@@ -1,5 +1,8 @@
 (defpackage :senn.t.fcitx.converting
-  (:use :cl))
+  (:use :cl)
+  (:import-from :senn.t.fcitx
+                :char-key
+                :space-key))
 (in-package :senn.t.fcitx.converting)
 
 (defmacro resp= (test expected consumed-p view)
@@ -58,11 +61,9 @@
 (defmacro space-then-convert (&key test)
   `(let ((ime (senn.fcitx.im.mutable:make-ime :kkc 'static-kkc)))
      (dolist (char '(#\k #\y #\o #\u #\h #\a))
-       (senn.fcitx.im.mutable:process-input
-        ime (senn.fcitx.keys:make-key :sym (char-code char) :state 0)))
+       (senn.fcitx.im.mutable:process-input ime (char-key char)))
      (resp= ,test
-            (senn.fcitx.im.mutable:process-input
-             ime (senn.fcitx.keys:make-key :sym 32 :state 0))
+            (senn.fcitx.im.mutable:process-input ime (space-key))
             t (converting-view
                :forms '("きょう" "は")
                :cursor-form-index 0
@@ -72,10 +73,8 @@
 (defmacro segment-cursor-goes-around (&key test)
   `(let ((ime (senn.fcitx.im.mutable:make-ime :kkc 'static-kkc)))
      (dolist (char '(#\k #\y #\o #\u #\h #\a))
-       (senn.fcitx.im.mutable:process-input
-        ime (senn.fcitx.keys:make-key :sym (char-code char) :state 0)))
-     (senn.fcitx.im.mutable:process-input
-      ime (senn.fcitx.keys:make-key :sym 32 :state 0))
+       (senn.fcitx.im.mutable:process-input ime (char-key char)))
+     (senn.fcitx.im.mutable:process-input ime (space-key))
      (resp= ,test
             (senn.fcitx.im.mutable:process-input
              ime (senn.fcitx.keys:make-key :sym 65363 :state 0))
@@ -96,10 +95,8 @@
 (defmacro segment-cursor-does-not-go-beyond-the-both-ends (&key test)
   `(let ((ime (senn.fcitx.im.mutable:make-ime :kkc 'static-kkc)))
      (dolist (char '(#\k #\y #\o #\u #\h #\a))
-       (senn.fcitx.im.mutable:process-input
-        ime (senn.fcitx.keys:make-key :sym (char-code char) :state 0)))
-     (senn.fcitx.im.mutable:process-input
-      ime (senn.fcitx.keys:make-key :sym 32 :state 0))
+       (senn.fcitx.im.mutable:process-input ime (char-key char)))
+     (senn.fcitx.im.mutable:process-input ime (space-key))
      (resp= ,test
             (senn.fcitx.im.mutable:process-input
              ime (senn.fcitx.keys:make-key :sym 65361 :state 0))
@@ -128,13 +125,10 @@
 (defmacro space-multiple-times-then-more-candidates (&key test)
   `(let ((ime (senn.fcitx.im.mutable:make-ime :kkc 'static-kkc)))
      (dolist (char '(#\k #\y #\o #\u #\h #\a))
-       (senn.fcitx.im.mutable:process-input
-        ime (senn.fcitx.keys:make-key :sym (char-code char) :state 0)))
-     (senn.fcitx.im.mutable:process-input
-      ime (senn.fcitx.keys:make-key :sym 32 :state 0))
+       (senn.fcitx.im.mutable:process-input ime (char-key char)))
+     (senn.fcitx.im.mutable:process-input ime (space-key))
      (resp= ,test
-            (senn.fcitx.im.mutable:process-input
-             ime (senn.fcitx.keys:make-key :sym 32 :state 0))
+            (senn.fcitx.im.mutable:process-input ime (space-key))
             t (converting-view
                :forms '("今日" "は")
                :cursor-form-index 0
@@ -144,12 +138,9 @@
 (defmacro candidate-cursor-goes-around (&key test)
   `(let ((ime (senn.fcitx.im.mutable:make-ime :kkc 'static-kkc)))
      (dolist (char '(#\k #\y #\o #\u #\h #\a))
-       (senn.fcitx.im.mutable:process-input
-        ime (senn.fcitx.keys:make-key :sym (char-code char) :state 0)))
-     (senn.fcitx.im.mutable:process-input
-      ime (senn.fcitx.keys:make-key :sym 32 :state 0))
-     (senn.fcitx.im.mutable:process-input
-      ime (senn.fcitx.keys:make-key :sym 32 :state 0))
+       (senn.fcitx.im.mutable:process-input ime (char-key char)))
+     (senn.fcitx.im.mutable:process-input ime (space-key))
+     (senn.fcitx.im.mutable:process-input ime (space-key))
      (resp= ,test
             (senn.fcitx.im.mutable:process-input
              ime (senn.fcitx.keys:make-key :sym 65364 :state 0))
@@ -178,12 +169,9 @@
 (defmacro candidate-cursor-loops (&key test)
   `(let ((ime (senn.fcitx.im.mutable:make-ime :kkc 'static-kkc)))
      (dolist (char '(#\k #\y #\o #\u #\h #\a))
-       (senn.fcitx.im.mutable:process-input
-        ime (senn.fcitx.keys:make-key :sym (char-code char) :state 0)))
-     (senn.fcitx.im.mutable:process-input
-      ime (senn.fcitx.keys:make-key :sym 32 :state 0))
-     (senn.fcitx.im.mutable:process-input
-      ime (senn.fcitx.keys:make-key :sym 32 :state 0))
+       (senn.fcitx.im.mutable:process-input ime (char-key char)))
+     (senn.fcitx.im.mutable:process-input ime (space-key))
+     (senn.fcitx.im.mutable:process-input ime (space-key))
      (resp= ,test
             (senn.fcitx.im.mutable:process-input
              ime (senn.fcitx.keys:make-key :sym 65362 :state 0))
@@ -235,11 +223,9 @@
 
 (defmacro convert-adds-latin-n-to-make-hiragana-letter-n (&key test)
   `(let ((ime (senn.fcitx.im.mutable:make-ime :kkc 'nn-kkc)))
-     (senn.fcitx.im.mutable:process-input
-      ime (senn.fcitx.keys:make-key :sym (char-code #\n) :state 0))
+     (senn.fcitx.im.mutable:process-input ime (char-key #\n))
      (resp= ,test
-            (senn.fcitx.im.mutable:process-input
-             ime (senn.fcitx.keys:make-key :sym 32 :state 0))
+            (senn.fcitx.im.mutable:process-input ime (space-key))
             t (converting-view
                :forms '("ん")
                :cursor-form-index 0
@@ -249,12 +235,9 @@
 (defmacro select-candidate (&key test)
   `(let ((ime (senn.fcitx.im.mutable:make-ime :kkc 'static-kkc)))
      (dolist (char '(#\k #\y #\o #\u #\h #\a))
-       (senn.fcitx.im.mutable:process-input
-        ime (senn.fcitx.keys:make-key :sym (char-code char) :state 0)))
-     (senn.fcitx.im.mutable:process-input
-      ime (senn.fcitx.keys:make-key :sym 32 :state 0))
-     (senn.fcitx.im.mutable:process-input
-      ime (senn.fcitx.keys:make-key :sym 32 :state 0))
+       (senn.fcitx.im.mutable:process-input ime (char-key char)))
+     (senn.fcitx.im.mutable:process-input ime (space-key))
+     (senn.fcitx.im.mutable:process-input ime (space-key))
      (resp= ,test
             (senn.fcitx.im.mutable:select-candidate ime 2)
             t (converting-view
