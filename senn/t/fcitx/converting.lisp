@@ -37,26 +37,25 @@
          :pron pron
          :candidates (list (senn.im.kkc:make-candidate :form pron)))))
 
-
 (defun converting-view (&key forms
                              cursor-form-index
                              cursor-form-candidates
                              cursor-form-candidate-index)
-  (let ((view
-         (yason:with-output-to-string* ()
-           (yason:encode
-            (alexandria:plist-hash-table
-             (list
-              "forms"             forms
-              "cursor-form-index" cursor-form-index
-              "cursor-form"
-              (alexandria:plist-hash-table
-               (list
-                "candidates"      (or cursor-form-candidates #())
-                "candidate-index" cursor-form-candidate-index)
-               :test #'equal))
-             :test #'equal)))))
-    (format nil "CONVERTING ~A" view)))
+  (senn.fcitx.im.view:converting
+   forms
+   cursor-form-index
+   (senn.fcitx.im.view:converting-cursor-form
+    cursor-form-candidates
+    cursor-form-candidate-index)))
+
+(defmacro test-converting-view (&key test)
+  `(,test (string=
+           (converting-view
+            :forms '("今日" "は")
+            :cursor-form-index 0
+            :cursor-form-candidates (list "きょう" "今日" "強")
+            :cursor-form-candidate-index 1)
+           "CONVERTING {\"forms\":[\"今日\",\"は\"],\"cursor-form-index\":0,\"cursor-form\":{\"candidates\":[\"きょう\",\"今日\",\"強\"],\"candidate-index\":1}}")))
 
 (defmacro space-then-convert (&key test)
   `(let ((ime (senn.fcitx.im.mutable:make-ime :kkc 'static-kkc)))
@@ -248,6 +247,7 @@
 
 (senn.t.fcitx:add-tests
  :converting
+ test-converting-view
  space-then-convert
  convert-adds-latin-n-to-make-hiragana-letter-n
  segment-cursor-goes-around

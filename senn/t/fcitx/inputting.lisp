@@ -29,18 +29,21 @@
                           predictions
                           prediction-index
                           committed-input)
-  (let ((view
-         (yason:with-output-to-string* ()
-           (yason:encode
-            (alexandria:plist-hash-table
-             (list
-              "cursor-pos"       cursor-pos
-              "input"            input
-              "predictions"      (or predictions #())
-              "prediction-index" (or prediction-index -1)
-              "committed-input"  committed-input)
-             :test #'equal)))))
-    (format nil "EDITING ~A" view)))
+  (senn.fcitx.im.view::editing-view
+   cursor-pos
+   input
+   predictions
+   prediction-index
+   committed-input))
+
+(defmacro test-editing-view (&key test)
+  `(,test (string=
+           (editing-view :cursor-pos 3
+                         :input "あ"
+                         :predictions '("ア" "あ")
+                         :prediction-index -1
+                         :committed-input "")
+           "EDITING {\"cursor-pos\":3,\"input\":\"あ\",\"predictions\":[\"ア\",\"あ\"],\"prediction-index\":-1,\"committed-input\":\"\"}")))
 
 (defmacro buffer-cursor-goes-around-in-the-buffer (&key test)
   `(let ((ime (senn.fcitx.im.mutable:make-ime)))
@@ -346,6 +349,7 @@
 
 (senn.t.fcitx:add-tests
  :inputting
+ test-editing-view
  buffer-cursor-goes-around-in-the-buffer
  buffer-cursor-does-not-go-beyond-the-left-end
  buffer-cursor-does-not-go-beyond-the-right-end
