@@ -1,0 +1,20 @@
+{"op": "toggle-input-mode"} "HIRAGANA"
+{"op": "process-input", "sym": 116} {"type": "e", "input": "t"}
+{"op": "process-input", "sym": 111} {"type": "e", "input": "と"}
+{"op": "process-input", "sym": 117} {"type": "e", "input": "とう"}
+{"op": "process-input", "sym": 107} {"type": "e", "input": "とうk"}
+{"op": "process-input", "sym": 121} {"type": "e", "input": "とうky"}
+{"op": "process-input", "sym": 111} {"type": "e", "input": "とうきょ"}
+{"op": "process-input", "sym": 117} {"type": "e", "input": "とうきょう"}
+{"op": "process-input", "sym": 110} {"type": "e", "input": "とうきょうn"}
+{"op": "process-input", "sym": 105} {"type": "e", "input": "とうきょうに"}
+{"op": "process-input", "sym": 105} {"type": "e", "input": "とうきょうにい"}
+{"op": "process-input", "sym": 107} {"type": "e", "input": "とうきょうにいk"}
+{"op": "process-input", "sym": 105} {"type": "e", "input": "とうきょうにいき"}
+{"op": "process-input", "sym": 109} {"type": "e", "input": "とうきょうにいきm"}
+{"op": "process-input", "sym": 97}  {"type": "e", "input": "とうきょうにいきま"}
+{"op": "process-input", "sym": 115} {"type": "e", "input": "とうきょうにいきまs"}
+{"op": "process-input", "sym": 105} {"type": "e", "input": "とうきょうにいきまし"}
+{"op": "process-input", "sym": 116} {"type": "e", "input": "とうきょうにいきましt"}
+{"op": "process-input", "sym": 97}  {"type": "e", "input": "とうきょうにいきました"}
+{"op": "process-input", "sym": 32}  {"type": "c", "input": "東京 に 行 き ま し た"}

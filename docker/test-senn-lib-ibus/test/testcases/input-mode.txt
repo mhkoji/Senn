@@ -1,0 +1,3 @@
+{"op": "toggle-input-mode"} "HIRAGANA"
+{"op": "toggle-input-mode"} "DIRECT"
+{"op": "toggle-input-mode"} "HIRAGANA"

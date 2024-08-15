@@ -30,12 +30,12 @@ RUN ecl \
         -eval '(asdf:make-build :senn-lib-ibus :type :static-library :move-here #P"/build/" :monolithic t :init-name "init_senn")'
 
 COPY senn/src-cpp /build/senn/src-cpp/
-COPY docker/test-senn-lib-ibus/main.cpp /build/
 
 RUN g++ \
-        /build/main.cpp \
         /build/senn/src-cpp/ibus/im/stateful_ime_ecl.cpp \
         /build/senn/src-cpp/ibus/im/stateful_ime_proxy.cpp \
+        /build/senn/src-cpp/ibus/im/test.cpp \
+        /build/senn/src-cpp/ibus/im/test_ime_ecl_main.cpp \
         /build/senn-lib-ibus--all-systems.a \
         -I./build/senn/src-cpp \
         -lecl \
