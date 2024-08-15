@@ -37,12 +37,12 @@ RUN ecl \
         -eval '(asdf:make-build :senn-lib-fcitx :type :static-library :move-here #P"/build/" :monolithic t :init-name "init_senn")'
 
 COPY senn/src-cpp /build/senn/src-cpp
-COPY docker/test-senn-lib-fcitx/main.cpp /build/
 
 RUN g++ \
-        /build/main.cpp \
         /build/senn/src-cpp/fcitx/im/stateful_ime_ecl.cpp \
         /build/senn/src-cpp/fcitx/im/stateful_ime_proxy.cpp \
+        /build/senn/src-cpp/fcitx/im/test.cpp \
+        /build/senn/src-cpp/fcitx/im/test_ime_ecl_main.cpp \
         /build/senn-lib-fcitx--all-systems.a \
         -I./build/senn/src-cpp \
         -lecl \
