@@ -41,6 +41,9 @@ RUN g++ \
         -lecl \
         -o /app/main
 
-COPY docker/script/kkc-engine-goto-tokyo.py docker/test-senn-lib-ibus/test /app/
+COPY docker/script/kkc-engine-goto-tokyo.py \
+     docker/script/test.sh \
+     docker/test-senn-lib-ibus/test \
+     /app/
 
-CMD ["/app/test.sh"]
+CMD ["/app/test.sh", "/app", "/app/testcases"]
