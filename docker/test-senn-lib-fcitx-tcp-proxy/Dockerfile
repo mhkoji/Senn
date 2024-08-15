@@ -43,7 +43,6 @@ RUN sbcl \
         -eval "(asdf:make-build :senn-lib-fcitx-kkc-proxy :type :static-library :monolithic t :init-name \"init_senn\" :move-here #p\"/build/\" :prologue-code '(progn (require :sockets) (require :asdf)))"
 
 COPY senn/src-cpp /build/senn/src-cpp
-COPY docker/test-senn-lib-fcitx-tcp-proxy/main.cpp /build/
 
 RUN g++ \
         /build/senn/src-cpp/fcitx/im/stateful_ime_ecl.cpp \
