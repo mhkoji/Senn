@@ -5,26 +5,27 @@
            :node-entry))
 (in-package :hachee.kkc.convert.viterbi-2nd)
 
-(defstruct node entry score-so-far prev1-node prev2-node)
+(defstruct node entry score-so-far prev2-node prev1-node)
 
-(defun compute-score (score-fn curr prev1 prev2)
-  (funcall score-fn curr prev1 prev2))
+(defun compute-score (score-fn curr prev2 prev1)
+  (funcall score-fn curr prev2 prev1))
 
-(defun connect-by-max-score (score-fn nodes prev1-nodes prev2-nodes &key print-p)
-  (when prev1-nodes
-    (dolist (prev1-node prev1-nodes)
-      (when (null (node-score-so-far prev1-node))
-        (error "prev1-node without score: ~A" prev1-node))
-      (dolist (prev2-node prev2-nodes)
-        (when prev2-nodes
-          (when (null (node-score-so-far prev2-node))
-            (error "prev2-node without score: ~A" prev2-node))
+(defun connect-by-max-score (score-fn nodes prev2-nodes prev1-nodes &key print-p)
+  (dolist (prev2-node prev2-nodes)
+    (when (null (node-score-so-far prev2-node))
+      (error "prev2-node without score: ~A" prev2-node))
+    (let ((prev2-entry (node-entry prev2-node))
+          (prev2-score-so-far (node-score-so-far prev2-node)))
+      (dolist (prev1-node prev1-nodes)
+        (when (null (node-score-so-far prev1-node))
+          (error "prev1-node without score: ~A" prev1-node))
+        (let ((prev1-entry (node-entry prev1-node)))
           (dolist (node nodes)
-            (let ((score-so-far (+ (node-score-so-far prev2-node)
+            (let ((score-so-far (+ prev2-score-so-far
                                    (compute-score score-fn
                                                   (node-entry node)
-                                                  (node-entry prev1-node)
-                                                  (node-entry prev2-node)))))
+                                                  prev2-entry
+                                                  prev1-entry))))
               (when print-p
                 (print (list (node-entry node)
                              (node-score-so-far node))))
@@ -35,6 +36,16 @@
                 (setf (node-score-so-far node) score-so-far))))))))
   (values))
 
+(defstruct table (hash (make-hash-table)))
+
+(defun table-put (table start nodes end)
+  (push (cons start nodes)
+        (gethash end (table-hash table))))
+
+(defmacro do-table-nodes (((start nodes) table end) &body body)
+  `(loop for (,start . ,nodes) in (gethash ,end (table-hash ,table))
+         do (progn ,@body)))
+
 (defun execute (pronunciation &key begin-entry
                                    end-entry
                                    score-fn
@@ -44,24 +55,23 @@
              (<= 8 1st-boundary-index))
     ;; Can not create an unknown word of length longer than 7
     (setq 1st-boundary-index 7))
-  (let ((table (make-hash-table))
+  (let ((table (make-table))
         (length (length pronunciation))
         (end-node (make-node :entry end-entry)))
     ;; Create table
-    (push (cons -2 (list
-                    (make-node :entry begin-entry
-                               :score-so-far 0
-                               :prev1-node nil
-                               :prev2-node nil)))
-          (gethash -1 table))
-    (push (cons -1 (list
-                    (make-node :entry begin-entry
-                               :score-so-far 0
-                               :prev1-node nil
-                               :prev2-node nil)))
-          (gethash 0 table))
-    (push (cons length (list end-node))
-          (gethash (1+ length) table))
+    (table-put table -2
+               (list (make-node :entry begin-entry
+                                :score-so-far 0
+                                :prev1-node nil
+                                :prev2-node nil))
+               -1)
+    (table-put table -1
+               (list (make-node :entry begin-entry
+                                :score-so-far 0
+                                :prev1-node nil
+                                :prev2-node nil))
+               0)
+    (table-put table length (list end-node) (1+ length))
     (loop for end from 1 to length do
       (loop for start from 0 below end do
         (when (or (not 1st-boundary-index)
@@ -72,13 +82,13 @@
                  (nodes (mapcar (lambda (ent)
                                   (make-node :entry ent))
                                 (funcall list-entries-fn sub-pron))))
-            (push (cons start nodes) (gethash end table))))))
+            (table-put table start nodes end)))))
     ;; DP
     (loop for end from 1 to (1+ length) do
-      (loop for (start . nodes) in (gethash end table) do
-        (loop for (prev1-start . prev1-nodes) in (gethash start table) do
-          (loop for (prev2-start . prev2-nodes) in (gethash prev1-start table) do
-            (connect-by-max-score score-fn nodes prev1-nodes prev2-nodes :print-p nil)))))
+      (do-table-nodes ((start nodes) table end)
+        (do-table-nodes ((prev1-start prev1-nodes) table start)
+          (do-table-nodes ((prev2-start prev2-nodes) table prev1-start)
+            (connect-by-max-score score-fn nodes prev2-nodes prev1-nodes :print-p nil)))))
     (labels ((backtrack (prev1-node prev2-node acc)
                (if (null (node-prev2-node prev2-node))
                    (cons prev1-node acc)
