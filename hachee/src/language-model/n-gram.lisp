@@ -81,8 +81,13 @@
     :reader model-freq)
    (weights
     :initarg :weights
-    :initform (list 0.2d0 0.8d0)
+    :initform nil
     :reader model-weights)))
+
+(defmethod initialize-instance :after ((m model) &key)
+  (with-slots (weights) m
+    (when (not weights)
+      (setf weights (list 0.2d0 0.8d0)))))
 
 (defun model-n (model)
   (length (model-weights model)))
