@@ -22,6 +22,7 @@
 
 (defun build-kkc-simple (pathnames
                          &key class-token-to-word-file-path
+                              weights
                               char-dictionary)
   (let ((vocabulary
          (hachee.kkc.impl.lm.build:build-vocabulary pathnames)))
@@ -32,7 +33,8 @@
                               (hachee.kkc.impl.lm.build:build-classifier
                                class-token-to-word-file-path
                                vocabulary))
-               (make-instance 'hachee.language-model.n-gram:model))))
+               (make-instance 'hachee.language-model.n-gram:model
+                              :weights weights))))
       (hachee.kkc.impl.lm.build:train-n-gram-model
        n-gram-model pathnames vocabulary)
       (make-kkc
@@ -116,7 +118,7 @@
    :pron pron
    :form (hachee.ja:hiragana->katakana pron)))
 
-(defstruct score-calc-dto
+(defstruct score-calculator
   n-gram-model
   unknown-word-vocabulary
   unknown-word-n-gram-model)
@@ -132,31 +134,30 @@
                               (hachee.kkc.impl.lm.unit:unit->key unit))
                  collect token)))
 
-(defun unknown-word-log-probability (score-calc-dto form)
-  (with-accessors ((unknown-word-vocabulary
-                    score-calc-dto-unknown-word-vocabulary)
-                   (unknown-word-n-gram-model
-                    score-calc-dto-unknown-word-n-gram-model)) score-calc-dto
+(defun unknown-word-log-probability (score-calculator form)
+  (let ((unknown-word-vocabulary
+         (score-calculator-unknown-word-vocabulary score-calculator))
+        (unknown-word-n-gram-model
+         (score-calculator-unknown-word-n-gram-model score-calculator)))
     (let ((sentence (string->sentence form unknown-word-vocabulary))
           (bos (hachee.language-model.vocabulary:to-int
                 unknown-word-vocabulary
                 hachee.language-model.vocabulary:+BOS+))
           (eos (hachee.language-model.vocabulary:to-int
                 unknown-word-vocabulary
-                 hachee.language-model.vocabulary:+EOS+)))
+                hachee.language-model.vocabulary:+EOS+)))
       (hachee.language-model.n-gram:sentence-log-probability
        unknown-word-n-gram-model sentence :BOS bos :EOS eos))))
 
-(defun transit-probability (score-calc-dto curr-entry prev-entry)
-  (let ((curr-token (convert-entry-token curr-entry))
-        (prev-token (convert-entry-token prev-entry))
-        (n-gram-model (score-calc-dto-n-gram-model score-calc-dto)))
-    (hachee.language-model.n-gram:transition-probability
-     n-gram-model curr-token (list prev-token))))
+(defun transit-probability (score-calculator curr-entry history-entry-list)
+  (hachee.language-model.n-gram:transition-probability
+   (score-calculator-n-gram-model score-calculator)
+   (convert-entry-token curr-entry)
+   (mapcar #'convert-entry-token history-entry-list)))
 
-(defun compute-convert-score (score-calc-dto curr-entry prev-entry)
+(defun compute-convert-score (score-calculator curr-entry &rest history-entry-list)
   (let ((prob-transit (transit-probability
-                       score-calc-dto curr-entry prev-entry)))
+                       score-calculator curr-entry history-entry-list)))
     (if (= prob-transit 0)
         ;; The n-gram model was not able to predict the current token
         ;; For example, if the current token is unknown, and the model
@@ -166,7 +167,7 @@
                (if (from-vocabulary-p curr-entry)
                    0
                    (unknown-word-log-probability
-                    score-calc-dto
+                    score-calculator
                     (hachee.kkc.convert:entry-form curr-entry)))))
           (+ (log prob-transit) log-prob-unk)))))
 
@@ -209,13 +210,13 @@
 
 (defmethod hachee.kkc.convert:entry-form ((e convert-entry))
   (hachee.kkc.impl.lm.unit:unit-form (convert-entry-unit e)))
-                                          
+
 (defmethod hachee.kkc.convert:entry-pron ((e convert-entry))
   (hachee.kkc.impl.lm.unit:unit-pron (convert-entry-unit e)))
-                                          
+
 (defmethod hachee.kkc.convert:entry-origin ((e convert-entry))
   (convert-entry-origin e))
-                                          
+
 (defmethod hachee.kkc.convert:convert-begin-entry ((kkc kkc))
   (make-convert-entry
    :token (hachee.language-model.vocabulary:to-int
@@ -230,23 +231,35 @@
            hachee.language-model.vocabulary:+EOS+)
    :origin hachee.kkc.origin:+vocabulary+))
 
-(defmethod hachee.kkc.convert:convert-score-fn ((kkc kkc))
-  (let ((score-calc-dto (make-score-calc-dto
-                         :n-gram-model
-                         (kkc-n-gram-model kkc)
-                         :unknown-word-vocabulary
-                         (kkc-unknown-word-vocabulary kkc)
-                         :unknown-word-n-gram-model
-                         (kkc-unknown-word-n-gram-model kkc))))
-    (lambda (curr-entry prev-entry)
-      (compute-convert-score score-calc-dto curr-entry prev-entry))))
-
 (defmethod hachee.kkc.convert:convert-list-entries-fn ((kkc kkc))
   (let ((list-dto (make-list-dto
                    :vocabulary (kkc-vocabulary kkc)
                    :dictionaries (list (kkc-word-dictionary kkc)))))
     (lambda (pron)
       (list-entries list-dto pron))))
+
+(defmethod hachee.kkc.convert:convert-score-fn ((kkc kkc))
+  (let ((score-calculator (make-score-calculator
+                           :n-gram-model
+                           (kkc-n-gram-model kkc)
+                           :unknown-word-vocabulary
+                           (kkc-unknown-word-vocabulary kkc)
+                           :unknown-word-n-gram-model
+                           (kkc-unknown-word-n-gram-model kkc))))
+    (lambda (curr-entry prev-entry)
+      (compute-convert-score score-calculator curr-entry prev-entry))))
+
+(defmethod hachee.kkc.convert:convert-viterbi-2nd-score-fn ((kkc kkc))
+  (let ((score-calculator (make-score-calculator
+                           :n-gram-model
+                           (kkc-n-gram-model kkc)
+                           :unknown-word-vocabulary
+                           (kkc-unknown-word-vocabulary kkc)
+                           :unknown-word-n-gram-model
+                           (kkc-unknown-word-n-gram-model kkc))))
+    (lambda (curr-entry prev2-entry prev1-entry)
+      (compute-convert-score score-calculator
+                             curr-entry prev2-entry prev1-entry))))
 
 ;;; lookup
 
