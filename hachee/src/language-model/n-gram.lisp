@@ -1,27 +1,16 @@
 (defpackage :hachee.language-model.n-gram
   (:use :cl)
-  (:import-from :alexandria
-                :curry
-                :when-let)
-  (:import-from :hachee.language-model
-                :sentence-tokens)
-  (:import-from :hachee.language-model.freq
-                :inc-count
-                :get-count)
-  (:export :model
-           :class-model
-           :make-classifier
+  (:export :sentence
+           :make-sentence
            :train
            :transition-probability
-           :sentence-log-probability
            :save-model
-           :load-model))
+           :load-model
+           :sentence-log-probability
+           :model
+           :class-model
+           :make-classifier))
 (in-package :hachee.language-model.n-gram)
-
-(defun conditional-probability (freq token history-tokens)
-  (when-let ((numer (get-count freq (append history-tokens (list token))))
-             (denom (get-count freq history-tokens)))
-    (/ numer denom)))
 
 (defun each-n-gram-subseq (BOS tokens EOS n callback)
   (let ((bos-tokens (make-list (1- n) :initial-element BOS))
@@ -70,6 +59,57 @@
                                  (  4 EOS) (  4) NIL
                                            (EOS) NIL))))
 
+(defmacro inchash (key hash)
+  `(incf (gethash ,key ,hash 0)))
+
+(defstruct freq
+  (hash (make-hash-table :test #'equal)))
+
+(defun freq-to-alist (freq)
+  (alexandria:hash-table-alist (freq-hash freq)))
+
+(defun make-freq-by-alist (alist)
+  (make-freq :hash (alexandria:alist-hash-table alist :test #'equal)))
+
+(defun inc-count (freq tokens)
+  (inchash tokens (freq-hash freq)))
+
+(defun get-count (freq tokens)
+  (gethash tokens (freq-hash freq)))
+
+(defun conditional-probability (freq token history-tokens)
+  (alexandria:when-let
+      ((numer (get-count freq (append history-tokens (list token))))
+       (denom (get-count freq history-tokens)))
+    (/ numer denom)))
+
+(defstruct sentence tokens)
+
+(defgeneric train (model sentences &key BOS EOS))
+
+(defgeneric transition-probability (model token history-tokens))
+
+(defgeneric save-model (model stream))
+
+(defgeneric load-model (type stream))
+
+
+(defun sentence-log-probability (model sentence &key BOS EOS)
+  (let ((n (model-n model)))
+    (let ((bos-tokens (make-list (1- n) :initial-element BOS))
+          (eos-tokens (list EOS)))
+      (let ((tokens (append bos-tokens
+                            (sentence-tokens sentence)
+                            eos-tokens)))
+        (loop for curr-index from (1- n) to (1- (length tokens))
+              for p = (transition-probability
+                       model
+                       (nth curr-index tokens)
+                       (subseq tokens (- curr-index (1- n)) curr-index))
+              when (= p 0) return -10000
+              sum (log p))))))
+
+
 ;; N-gram model is implemented as a little application of freq.
 ;; An n-gram language model provides the functions of:
 ;; - counting the n-gram tokens in a sentence
@@ -77,7 +117,7 @@
 (defclass model ()
   ((freq
     :initarg :freq
-    :initform (hachee.language-model.freq:make-empty)
+    :initform (make-freq)
     :reader model-freq)
    (weights
     :initarg :weights
@@ -87,35 +127,28 @@
 (defmethod initialize-instance :after ((m model) &key)
   (with-slots (weights) m
     (when (not weights)
-      (setf weights (list 0.2d0 0.8d0)))))
+      (setf weights (list 0.8d0 0.2d0)))))
 
 (defun model-n (model)
   (length (model-weights model)))
 
 (defun count-n-grams (model tokens &key BOS EOS)
-  (let ((inc-count (curry #'inc-count (model-freq model))))
+  (let ((inc-count (alexandria:curry #'inc-count (model-freq model))))
     (each-n-gram-subseq BOS tokens EOS (model-n model) inc-count)))
 
 (defun interpolated-probability (model token history-tokens)
   (assert (= (length history-tokens) (1- (model-n model))))
-  (let ((sub-history-tokens-list
-         (loop repeat (model-n model)
+  (let ((freq (model-freq model))
+        (weights (model-weights model)))
+    (loop for weight in weights
 
-               for sub-history-begin
-                   from (length history-tokens) downto 0
+          for sub-history-tokens = history-tokens
+              then (cdr sub-history-tokens)
 
-               for sub-history-tokens
-                   = (subseq history-tokens sub-history-begin)
+          for prob = (conditional-probability
+                      freq token sub-history-tokens)
 
-               collect sub-history-tokens)))
-    (reduce #'+
-            (mapcar (lambda (weight sub-history-tokens)
-                      (* weight
-                         (or (conditional-probability (model-freq model)
-                                                      token
-                                                      sub-history-tokens)
-                             0)))
-                    (model-weights model) sub-history-tokens-list))))
+          when prob sum (* weight prob))))
 
 (assert
  (let ((model (make-instance 'model)))
@@ -126,7 +159,7 @@
               ))
         (= (interpolated-probability model 'a '(BOS))
            (+ (* 0.2d0 2/6) ;; a
-              (* 0.8d0 1)   ;; a | EOS
+              (* 0.8d0 1)   ;; a | BOS
               )))))
 
 (assert
@@ -137,6 +170,29 @@
          (* 0.2d0 1/3)   ;; b | b
          (* 0.7d0 1/2)   ;; b | a b
          ))))
+
+(defmethod train ((model model) (sentences list) &key BOS EOS)
+  (dolist (sentence sentences)
+    (let ((sentence-tokens (sentence-tokens sentence)))
+      (count-n-grams model sentence-tokens :BOS BOS :EOS EOS)))
+  model)
+
+(defmethod transition-probability ((model model)
+                                   (token t)
+                                   (history-tokens list))
+  (interpolated-probability model token history-tokens))
+
+(defmethod save-model ((model model) stream)
+  (print (list :freq (freq-to-alist (model-freq model))
+               :weights (model-weights model))
+         stream)
+  (values))
+
+(defmethod load-model ((type (eql 'model)) stream)
+  (let ((list (read stream)))
+    (make-instance 'model
+                   :freq (make-freq-by-alist (getf list :freq))
+                   :weights (getf list :weights))))
 
 
 (defclass class-model (model)
@@ -154,47 +210,9 @@
 
 (defstruct classifier to-class-map)
 
-
-(defgeneric train (model sentences &key BOS EOS))
-
-(defgeneric transition-probability (model token history-tokens))
-
-(defgeneric save-model (model stream))
-
-(defgeneric load-model (type stream))
-
-(defmethod train ((model model) (sentences list) &key BOS EOS)
-  (dolist (sentence sentences)
-    (let ((sentence-tokens (sentence-tokens sentence)))
-      (count-n-grams model sentence-tokens :BOS BOS :EOS EOS)))
-  model)
-
-(defmethod transition-probability ((model model)
-                                   (token t)
-                                   (history-tokens list))
-  (interpolated-probability model token history-tokens))
-
-(defmethod save-model ((model model) stream)
-  (print (list :freq (hachee.language-model.freq:to-alist
-                      (model-freq model))
-               :weights (model-weights model))
-         stream)
-  (values))
-
-(defmethod load-model ((type (eql 'model)) stream)
-  (let ((list (read stream)))
-    (make-instance 'model
-                   :freq (hachee.language-model.freq:make-by-alist
-                          (getf list :freq))
-                   :weights (getf list :weights))))
-
-
 (defun class-token (classifier x)
   (or (gethash x (classifier-to-class-map classifier))
       (error "Unknown token: ~A" x)))
-
-(defmacro inchash (key hash)
-  `(incf (gethash ,key ,hash 0)))
 
 (defmethod train ((model class-model) (sentences list) &key BOS EOS)
   (let ((classifier (class-model-classifier model))
@@ -226,7 +244,8 @@
     (let ((class-token
            (class-token classifier token))
           (history-class-tokens
-           (mapcar (curry #'class-token classifier) history-tokens)))
+           (mapcar (alexandria:curry #'class-token classifier)
+                   history-tokens)))
       (interpolated-probability class-model
                                 class-token
                                 history-class-tokens))))
@@ -277,18 +296,3 @@
                   :class-token-freq
                   (alexandria:alist-hash-table
                    (getf plist :class-token-freq) :test #'equal))))
-
-(defun sentence-log-probability (model sentence &key BOS EOS)
-  (let ((n (model-n model)))
-    (let ((bos-tokens (make-list (1- n) :initial-element BOS))
-          (eos-tokens (list EOS)))
-      (let ((tokens (append bos-tokens
-                            (sentence-tokens sentence)
-                            eos-tokens)))
-        (loop for curr-index from (1- n) to (1- (length tokens))
-              for p = (transition-probability
-                       model
-                       (nth curr-index tokens)
-                       (subseq tokens (- curr-index (1- n)) curr-index))
-              when (= p 0) return -10000
-              sum (log p))))))
