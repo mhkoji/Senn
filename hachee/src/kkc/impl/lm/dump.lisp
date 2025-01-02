@@ -57,24 +57,23 @@
            (sort (loop for class being the hash-value of to-class-map
                        collect class)
                  #'<)
-           :test #'=))
-         (freq
-          (hachee.language-model.n-gram::model-freq class-model)))
+           :test #'=)))
     (with-open-file (out class-ngram-counts-path :direction :output)
       ;; 0-gram
-      (let ((count (hachee.language-model.freq:get-count freq nil)))
+      (let ((count (hachee.language-model.n-gram:get-count
+                    class-model nil)))
         (format out "~A~%" count))
       ;; 1-gram
       (dolist (class class-list)
-        (let ((count (hachee.language-model.freq:get-count
-                      freq (list class))))
+        (let ((count (hachee.language-model.n-gram:get-count
+                      class-model (list class))))
           (assert count)
           (format out "~A,~A~%" count class)))
       ;; 2-gram
       (dolist (prev class-list)
         (dolist (next class-list)
-          (let ((count (hachee.language-model.freq:get-count
-                        freq (list prev next))))
+          (let ((count (hachee.language-model.n-gram:get-count
+                        class-model (list prev next))))
             (when count
               (format out "~A,~A,~A~%" count prev next))))))))
 
@@ -95,28 +94,27 @@
           (format out "~A~A~A~%" tok #\tab str))))))
 
 (defun dump-unk-model (model vocab unk-ngram-counts-path)
-  (let ((freq (hachee.language-model.n-gram::model-freq model)))
-    (with-open-file (out unk-ngram-counts-path :direction :output)
-      (let ((0-gram-count (hachee.language-model.freq:get-count freq nil)))
-        (if (not 0-gram-count)
-            (format out "0~%")
-            (let ((vocab-size
-                   (hachee.language-model.vocabulary::vocabulary-size vocab)))
-              ;; 0-gram
-              (format out "~A~%" 0-gram-count)
-              ;; 1-gram
-              (dotimes (token vocab-size)
-                (let ((count (hachee.language-model.freq:get-count
-                              freq (list token))))
-                  (assert count)
-                  (format out "~A,~A~%" count token)))
-              ;; 2-gram
-              (dotimes (prev vocab-size)
-                (dotimes (next vocab-size)
-                  (let ((count (hachee.language-model.freq:get-count
-                                freq (list prev next))))
-                    (when count
-                      (format out "~A,~A,~A~%" count prev next)))))))))))
+  (with-open-file (out unk-ngram-counts-path :direction :output)
+    (let ((0-gram-count (hachee.language-model.n-gram:get-count model nil)))
+      (if (not 0-gram-count)
+          (format out "0~%")
+          (let ((vocab-size
+                 (hachee.language-model.vocabulary::vocabulary-size vocab)))
+            ;; 0-gram
+            (format out "~A~%" 0-gram-count)
+            ;; 1-gram
+            (dotimes (token vocab-size)
+              (let ((count (hachee.language-model.n-gram:get-count
+                            model (list token))))
+                (assert count)
+                (format out "~A,~A~%" count token)))
+            ;; 2-gram
+            (dotimes (prev vocab-size)
+              (dotimes (next vocab-size)
+                (let ((count (hachee.language-model.n-gram:get-count
+                              model (list prev next))))
+                  (when count
+                    (format out "~A,~A,~A~%" count prev next))))))))))
 
 (defun execute (kkc
                 class-vocab-path
