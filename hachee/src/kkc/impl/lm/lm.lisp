@@ -150,62 +150,59 @@
        unknown-word-n-gram-model sentence :BOS bos :EOS eos))))
 
 (defun transit-probability (score-calculator curr-entry history-entry-list)
-  (hachee.language-model.n-gram:transition-probability
-   (score-calculator-n-gram-model score-calculator)
-   (convert-entry-token curr-entry)
-   (mapcar #'convert-entry-token history-entry-list)))
+  (let ((model (score-calculator-n-gram-model score-calculator))
+        (token (convert-entry-token curr-entry))
+        (history-tokens (mapcar #'convert-entry-token history-entry-list)))
+    (hachee.language-model.n-gram:transition-probability
+     model token history-tokens)))
+
+(defun convert-entry-unk-log-probability (score-calculator entry)
+  (if (from-vocabulary-p entry)
+      0
+      (let ((form (hachee.kkc.convert:entry-form entry)))
+        (unknown-word-log-probability score-calculator form))))
 
 (defun compute-convert-score (score-calculator curr-entry &rest history-entry-list)
   (let ((prob-transit (transit-probability
                        score-calculator curr-entry history-entry-list)))
-    (if (= prob-transit 0)
+    (if (< prob-transit 0)
+        (+ (log prob-transit)
+           (convert-entry-unk-log-probability score-calculator curr-entry))
         ;; The n-gram model was not able to predict the current token
         ;; For example, if the current token is unknown, and the model
         ;; can't predict unknown tokens, the probability will be 0.
-        (- #xFFFF)
-        (let ((log-prob-unk
-               (if (from-vocabulary-p curr-entry)
-                   0
-                   (unknown-word-log-probability
-                    score-calculator
-                    (hachee.kkc.convert:entry-form curr-entry)))))
-          (+ (log prob-transit) log-prob-unk)))))
+        (- #xFFFF))))
 
-
-(defstruct list-dto dictionaries vocabulary)
-
-(defun list-entries (list-dto sub-pron)
+(defun list-entries (sub-pron dictionaries vocabulary)
   (let ((entries nil))
-    (with-accessors ((vocabulary list-dto-vocabulary)
-                     (dictionaries list-dto-dictionaries)) list-dto
-      ;; Add entries from dictionaries
-      (dolist (dict dictionaries)
-        (dolist (dict-entry (hachee.kkc.impl.lm.dictionary:lookup
-                             dict sub-pron))
-          (let* ((unit (hachee.kkc.impl.lm.dictionary:entry-unit dict-entry))
-                 (token (hachee.language-model.vocabulary:to-int-or-unk
-                         vocabulary
-                         (hachee.kkc.impl.lm.unit:unit->key unit)))
-                 (origin (hachee.kkc.impl.lm.dictionary:entry-origin
-                          dict-entry)))
+    ;; Add entries from dictionaries
+    (dolist (dict dictionaries)
+      (dolist (dict-entry (hachee.kkc.impl.lm.dictionary:lookup
+                           dict sub-pron))
+        (let* ((unit (hachee.kkc.impl.lm.dictionary:entry-unit dict-entry))
+               (token (hachee.language-model.vocabulary:to-int-or-unk
+                       vocabulary
+                       (hachee.kkc.impl.lm.unit:unit->key unit)))
+               (origin (hachee.kkc.impl.lm.dictionary:entry-origin
+                        dict-entry)))
+          (push (make-convert-entry
+                 :unit unit :token token :origin origin)
+                entries))))
+    ;; Add unknown word entry if necessary
+    (when (< (length sub-pron) 8) ;; Length up to 8
+      (let ((unk-unit (make-unknown-word-unit sub-pron)))
+        (when (not (some (lambda (dict)
+                           (hachee.kkc.impl.lm.dictionary:contains-p
+                            dict
+                            unk-unit))
+                         dictionaries))
+          (let ((token (hachee.language-model.vocabulary:to-int
+                        vocabulary
+                        hachee.language-model.vocabulary:+UNK+))
+                (origin hachee.kkc.origin:+out-of-dictionary+))
             (push (make-convert-entry
-                   :unit unit :token token :origin origin)
-                  entries))))
-      ;; Add unknown word entry if necessary
-      (when (< (length sub-pron) 8) ;; Length up to 8
-        (let ((unk-unit (make-unknown-word-unit sub-pron)))
-          (when (not (some (lambda (dict)
-                             (hachee.kkc.impl.lm.dictionary:contains-p
-                              dict
-                              unk-unit))
-                           dictionaries))
-            (let ((token (hachee.language-model.vocabulary:to-int
-                          vocabulary
-                          hachee.language-model.vocabulary:+UNK+))
-                  (origin hachee.kkc.origin:+out-of-dictionary+))
-              (push (make-convert-entry
-                     :unit unk-unit :token token :origin origin)  
-                    entries))))))
+                   :unit unk-unit :token token :origin origin)
+                  entries)))))
     (nreverse entries)))
 
 (defmethod hachee.kkc.convert:entry-form ((e convert-entry))
@@ -232,11 +229,10 @@
    :origin hachee.kkc.origin:+vocabulary+))
 
 (defmethod hachee.kkc.convert:convert-list-entries-fn ((kkc kkc))
-  (let ((list-dto (make-list-dto
-                   :vocabulary (kkc-vocabulary kkc)
-                   :dictionaries (list (kkc-word-dictionary kkc)))))
+  (let ((vocabulary (kkc-vocabulary kkc))
+        (dictionaries (list (kkc-word-dictionary kkc))))
     (lambda (pron)
-      (list-entries list-dto pron))))
+      (list-entries pron dictionaries vocabulary))))
 
 (defmethod hachee.kkc.convert:convert-score-fn ((kkc kkc))
   (let ((score-calculator (make-score-calculator
