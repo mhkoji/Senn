@@ -1,8 +1,7 @@
 (defpackage :hachee.kkc.impl.lm.build.file
   (:use :cl)
-  (:import-from :alexandria
-                :with-gensyms)
-  (:export :file->sentences
+  (:export :with-sentence-reader
+           :file->sentences
            :sentence-units))
 (in-package :hachee.kkc.impl.lm.build.file)
 
@@ -10,19 +9,19 @@
 
 (defstruct sentence line)
 
-(defmacro with-each-line ((line filename) &body body)
-  (with-gensyms (in line-count)
-    `(with-open-file (,in ,filename
-                          :external-format +external-format+)
-       (loop for ,line = (read-line ,in nil nil)
-             for ,line-count from 1
-             while ,line do (progn ,@body)))))
+(defmacro with-sentence-reader ((read-fn filename) &body body)
+  `(with-open-file (in ,filename
+                      :external-format +external-format+)
+     (labels ((,read-fn ()
+                (let ((line (read-line in nil nil)))
+                  (when line
+                    (make-sentence :line line)))))
+       (progn ,@body))))
 
 (defun file->sentences (pathname)
-  (let ((sentences nil))
-    (with-each-line (line pathname)
-      (push (make-sentence :line line) sentences))
-    (nreverse sentences)))
+  (with-sentence-reader (read-sentence pathname)
+    (loop for sentence = (read-sentence)
+          while sentence collect sentence)))
 
 (defun sentence-units (sentence)
   (mapcar (lambda (form-pron-str)

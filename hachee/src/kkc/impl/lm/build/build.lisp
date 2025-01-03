@@ -99,15 +99,15 @@
   (let ((BOS (to-int vocabulary hachee.language-model.vocabulary:+BOS+))
         (EOS (to-int vocabulary hachee.language-model.vocabulary:+EOS+)))
     (dolist (pathname pathnames)
-      (let ((sentences
-             (mapcar (lambda (s)
-                       (to-token-sentence s vocabulary))
-                     (hachee.kkc.impl.lm.build.file:file->sentences
-                      pathname))))
-        (hachee.language-model.n-gram:train model sentences
-                                            :BOS BOS
-                                            :EOS EOS)))
-    model))
+      (hachee.kkc.impl.lm.build.file:with-sentence-reader
+          (next-file-sentence pathname)
+        (labels ((next-token-sentence ()
+                   (let ((file-sentence (next-file-sentence)))
+                     (when file-sentence
+                       (to-token-sentence file-sentence vocabulary)))))
+          (hachee.language-model.n-gram:train
+           model #'next-token-sentence :BOS BOS :EOS EOS)))))
+  model)
 
 (defun build-unknown-word-vocabulary (pathnames vocabulary &key (overlap 2))
   (format *error-output* "Building unknown word vocabulary ...~%")
