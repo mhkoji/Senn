@@ -81,6 +81,8 @@
 
 (defstruct sentence tokens)
 
+(defgeneric train (model sentence-fn &key BOS EOS))
+
 (defgeneric transition-probability (model token history-tokens))
 
 ;; N-gram model is implemented as a little application of freq.
@@ -147,8 +149,12 @@
          (* 0.7d0 1/2)   ;; b | a b
          ))))
 
-(defmethod train ((model model) (sentences list) &key BOS EOS)
-  (dolist (sentence sentences)
+(defmacro do-sentence ((s sentence-provider) &body body)
+  `(loop for ,s = (funcall ,sentence-provider)
+         while ,s do (progn ,@body)))
+
+(defmethod train ((model model) (sentence-provider function) &key BOS EOS)
+  (do-sentence (sentence sentence-provider)
     (add-counts model (sentence-tokens sentence) :BOS BOS :EOS EOS))
   model)
 
@@ -177,13 +183,13 @@
     :initform (make-hash-table :test #'equal)
     :reader class-model-class-token-freq)))
 
-(defmethod train ((model class-model) (sentences list) &key BOS EOS)
+(defmethod train ((model class-model) (sentence-provider function) &key BOS EOS)
   (let* ((classifier (class-model-classifier model))
          (token-freq (class-model-token-freq model))
          (class-token-freq (class-model-class-token-freq model))
          (class-BOS (class-token classifier BOS))
          (class-EOS (class-token classifier EOS)))
-    (dolist (sentence sentences)
+    (do-sentence (sentence sentence-provider)
       (let ((sentence-tokens (sentence-tokens sentence)))
         (dolist (token sentence-tokens)
           (inchash token token-freq))
