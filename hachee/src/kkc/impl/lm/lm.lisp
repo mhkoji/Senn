@@ -165,7 +165,7 @@
 (defun compute-convert-score (score-calculator curr-entry &rest history-entry-list)
   (let ((prob-transit (transit-probability
                        score-calculator curr-entry history-entry-list)))
-    (if (< prob-transit 0)
+    (if (< 0 prob-transit)
         (+ (log prob-transit)
            (convert-entry-unk-log-probability score-calculator curr-entry))
         ;; The n-gram model was not able to predict the current token
