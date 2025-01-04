@@ -3,5 +3,7 @@
   :pathname "src/language-model/"
   :components
   ((:file "vocabulary")
-   (:file "n-gram"))
+   (:file "corpus")
+   (:file "n-gram/n-gram")
+   (:file "n-gram/esitmate-weights"))
   :depends-on (:alexandria))
