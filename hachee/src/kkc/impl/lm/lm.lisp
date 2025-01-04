@@ -141,7 +141,7 @@
   unknown-word-n-gram-model)
 
 (defun string->sentence (str unknown-word-char-vocabulary)
-  (hachee.language-model.n-gram:make-sentence
+  (hachee.language-model.corpus:make-sentence
    :tokens (loop for ch across str
                  for unit = (hachee.kkc.impl.lm.unit:make-unit
                              :form (string ch)
