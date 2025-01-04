@@ -160,7 +160,7 @@
             (hachee.language-model.n-gram:train model (list sentence)
                                                 :BOS BOS
                                                 :EOS EOS))))))
-  model))
+    model))
 
 (defun add-to-word-dictionary-from-resources (dict pathnames)
   (format *error-output* "Building word dictionary ...~%")

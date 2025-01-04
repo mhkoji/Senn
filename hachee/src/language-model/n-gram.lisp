@@ -81,7 +81,12 @@
 
 (defstruct sentence tokens)
 
-(defgeneric train (model sentence-fn &key BOS EOS))
+(defgeneric train (model sentence-provider &key BOS EOS))
+
+(defmethod train ((model t) (list list) &key BOS EOS)
+  (labels ((next ()
+             (pop list)))
+    (train model #'next :BOS BOS :EOS EOS)))
 
 (defgeneric transition-probability (model token history-tokens))
 
