@@ -4,7 +4,7 @@
   :components
   ((:file "ja")
    (:file "kkc/origin")
-   (:file "kkc/convert/viterbi")
-   (:file "kkc/convert/viterbi-2nd")
+   (:file "kkc/convert/viterbi-2gram")
+   (:file "kkc/convert/viterbi-3gram")
    (:file "kkc/convert/convert")
    (:file "kkc/lookup")))

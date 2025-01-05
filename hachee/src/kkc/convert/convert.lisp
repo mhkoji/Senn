@@ -31,7 +31,7 @@
 
 (defmethod execute ((convert 2gram-convert) (pronunciation string)
                     &key 1st-boundary-index)
-  (hachee.kkc.convert.viterbi:execute pronunciation
+  (hachee.kkc.convert.viterbi-2gram:execute pronunciation
    :begin-entry (convert-begin-entry convert)
    :end-entry (convert-end-entry convert)
    :score-fn (convert-score-fn convert)
@@ -40,7 +40,7 @@
 
 (defmethod execute ((convert 3gram-convert) (pronunciation string)
                     &key 1st-boundary-index)
-  (hachee.kkc.convert.viterbi-2nd:execute pronunciation
+  (hachee.kkc.convert.viterbi-3gram:execute pronunciation
    :begin-entry (convert-begin-entry convert)
    :end-entry (convert-end-entry convert)
    :score-fn (convert-score-fn convert)
