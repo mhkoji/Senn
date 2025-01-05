@@ -1,9 +1,9 @@
-(defpackage :hachee.kkc.convert.viterbi-2nd
+(defpackage :hachee.kkc.convert.viterbi-3gram
   (:use :cl)
   (:export :execute
            :node
            :node-entry))
-(in-package :hachee.kkc.convert.viterbi-2nd)
+(in-package :hachee.kkc.convert.viterbi-3gram)
 
 (defstruct node entry score-so-far prev2-node prev1-node)
 
