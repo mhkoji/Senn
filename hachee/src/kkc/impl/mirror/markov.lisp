@@ -74,15 +74,31 @@
   in-dict
   cb1 cb2 c11 c21)
 
-(defstruct kkc
-  word-markov
-  in-dict
-  in-dict-prob
-  ex-dict
-  char-markov
-  char-int-str
-  char-cost-0gram
-  task)
+(defclass kkc (hachee.kkc.convert:2gram-convert)
+  ((word-markov
+    :initarg :word-markov
+    :reader kkc-word-markov)
+   (in-dict
+    :initarg :in-dict
+    :reader kkc-in-dict)
+   (in-dict-prob
+    :initarg :in-dict-prob
+    :reader kkc-in-dict-prob)
+   (ex-dict
+    :initarg :ex-dict
+    :accessor kkc-ex-dict)
+   (char-markov
+    :initarg :char-markov
+    :reader kkc-char-markov)
+   (char-int-str
+    :initarg :char-int-str
+    :reader kkc-char-int-str)
+   (char-cost-0gram
+    :initarg :char-cost-0gram
+    :reader kkc-char-cost-0gram)
+   (task
+    :initarg :task
+    :reader kkc-task)))
 
 (defmethod hachee.kkc.convert:convert-begin-entry ((kkc kkc))
   (make-convert-entry :token int-str:+BT+
@@ -337,14 +353,15 @@
                                         char-int-str
                                         char-markov
                                         char-cost-0gram)))
-    (make-kkc :word-markov  word-markov
-              :in-dict      in-dict
-              :in-dict-prob in-dict-prob
-              :ex-dict      *empty-ex-dict*
-              :char-markov  char-markov
-              :char-int-str char-int-str
-              :char-cost-0gram char-cost-0gram
-              :task         task)))
+    (make-instance 'kkc
+                   :word-markov  word-markov
+                   :in-dict      in-dict
+                   :in-dict-prob in-dict-prob
+                   :ex-dict      *empty-ex-dict*
+                   :char-markov  char-markov
+                   :char-int-str char-int-str
+                   :char-cost-0gram char-cost-0gram
+                   :task         task)))
 
 (defun build-task (&key markov in-dict coeffs)
   (destructuring-bind (l10 l11 l12 l20 l21) coeffs
