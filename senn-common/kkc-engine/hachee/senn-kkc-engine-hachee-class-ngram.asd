@@ -1,11 +1,11 @@
-(asdf:defsystem :senn-kkc-engine-hachee-class-2-gram
+(asdf:defsystem :senn-kkc-engine-hachee-class-ngram
   :serial t
   :pathname "src/engine/"
   :components
   ((:file "engine")
-   (:file "class-2-gram"))
+   (:file "class-ngram"))
   :depends-on (:alexandria
                :cl-ppcre
                :yason
-               :hachee-kkc-impl-class-2-gram
+               :hachee-kkc-impl-class-ngram
 	       :senn-ipc-server-stdio))
