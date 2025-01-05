@@ -8,24 +8,29 @@
            :convert-end-entry
            :convert-score-fn
            :convert-list-entries-fn
-           :execute
-
-           :convert-viterbi-2nd-score-fn
-           :viterbi-2nd))
+           :convert
+           :2gram-convert
+           :3gram-convert
+           :execute))
 (in-package :hachee.kkc.convert)
 
 (defgeneric entry-form (e))
 (defgeneric entry-pron (e))
 (defgeneric entry-origin (e))
 
-(defgeneric convert-begin-entry (mixin))
-(defgeneric convert-end-entry (mixin))
-(defgeneric convert-score-fn (mixin))
-(defgeneric convert-list-entries-fn (mixin))
+(defclass convert () ())
 
-(defgeneric convert-viterbi-2nd-score-fn (mixin))
+(defgeneric convert-begin-entry (convert))
+(defgeneric convert-end-entry (convert))
+(defgeneric convert-list-entries-fn (convert))
+(defgeneric convert-score-fn (convert))
+(defgeneric execute (convert pronunciation &key 1st-boundary-index))
 
-(defun execute (convert pronunciation &key 1st-boundary-index)
+(defclass 2gram-convert (convert) ())
+(defclass 3gram-convert (convert) ())
+
+(defmethod execute ((convert 2gram-convert) (pronunciation string)
+                    &key 1st-boundary-index)
   (hachee.kkc.convert.viterbi:execute pronunciation
    :begin-entry (convert-begin-entry convert)
    :end-entry (convert-end-entry convert)
@@ -33,10 +38,11 @@
    :list-entries-fn (convert-list-entries-fn convert)
    :1st-boundary-index 1st-boundary-index))
 
-(defun viterbi-2nd (convert pronunciation &key 1st-boundary-index)
+(defmethod execute ((convert 3gram-convert) (pronunciation string)
+                    &key 1st-boundary-index)
   (hachee.kkc.convert.viterbi-2nd:execute pronunciation
    :begin-entry (convert-begin-entry convert)
    :end-entry (convert-end-entry convert)
-   :score-fn (convert-viterbi-2nd-score-fn convert)
+   :score-fn (convert-score-fn convert)
    :list-entries-fn (convert-list-entries-fn convert)
    :1st-boundary-index 1st-boundary-index))

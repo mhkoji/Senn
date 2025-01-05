@@ -3,7 +3,8 @@
   (:use :cl)
   (:shadow :word)
   (:export :set-ex-dict
-           :read-kkc))
+           :read-kkc-2gram
+           :read-kkc-3gram))
 (in-package :hachee.kkc.impl.class-ngram)
 
 (defstruct word
@@ -12,18 +13,15 @@
 
 (defstruct class-model
   ngram-counts
-  word-counts
-  weight-1
-  weight-2)
+  word-counts)
 
 (defun count-get (hash &rest items)
   (gethash items hash))
 
-(defun word-transition-log-probability (class-model curr-word prev-word)
+(defun transition-log-probability-2gram (class-model weight-2 weight-1
+                                         curr-word prev-word)
   (with-accessors ((ngram-counts class-model-ngram-counts)
-                   (word-counts class-model-word-counts)
-                   (weight-1 class-model-weight-1)
-                   (weight-2 class-model-weight-2)) class-model
+                   (word-counts class-model-word-counts)) class-model
     (let ((prev-class-id (word-class-id prev-word))
           (curr-class-id (word-class-id curr-word)))
       (+
@@ -33,6 +31,34 @@
             (/ (or (count-get ngram-counts prev-class-id curr-class-id)
                    0)
                (count-get ngram-counts prev-class-id)))
+         (* weight-1
+            (/ (count-get ngram-counts curr-class-id)
+               (count-get ngram-counts)))))
+       (log ;; P(word_curr | class_curr)
+        (/ (count-get word-counts (word-word-id curr-word))
+           (count-get ngram-counts curr-class-id)))))))
+
+(defun transition-log-probability-3gram (class-model
+                                         weight-3 weight-2 weight-1
+                                         curr-word prev2-word prev1-word)
+  (with-accessors ((ngram-counts class-model-ngram-counts)
+                   (word-counts class-model-word-counts)) class-model
+    (let ((prev2-class-id (word-class-id prev2-word))
+          (prev1-class-id (word-class-id prev1-word))
+          (curr-class-id (word-class-id curr-word)))
+      (+
+       (log ;; P(class_curr | class_prev2, class_prev1)
+        (+
+         (let ((n (count-get ngram-counts
+                             prev2-class-id prev1-class-id curr-class-id))
+               (d (count-get ngram-counts
+                             prev2-class-id prev1-class-id)))
+           (if (and n d)
+               (* weight-3 (/ n d)) 0))
+         (let ((n (count-get ngram-counts prev1-class-id curr-class-id))
+               (d (count-get ngram-counts prev1-class-id)))
+           (if n
+               (* weight-2 (/ n d)) 0))
          (* weight-1
             (/ (count-get ngram-counts curr-class-id)
                (count-get ngram-counts)))))
@@ -104,13 +130,22 @@
   bos-word
   eos-word)
 
-(defstruct kkc
-  class-vocab
-  class-model
-  unk-model
-  unk-vocab
-  ex-dict)
-
+(defclass kkc (hachee.kkc.convert:convert)
+  ((class-vocab
+    :initarg :class-vocab
+    :reader kkc-class-vocab)
+   (class-model
+    :initarg :class-model
+    :reader kkc-class-model)
+   (unk-model
+    :initarg :unk-model
+    :reader kkc-unk-model)
+   (unk-vocab
+    :initarg :unk-vocab
+    :reader kkc-unk-vocab)
+   (ex-dict
+    :initarg :ex-dict
+    :accessor kkc-ex-dict)))
 
 ;;; convert
 
@@ -165,6 +200,7 @@
 (defmethod hachee.kkc.convert:entry-origin ((e convert-entry))
   (convert-entry-origin e))
 
+
 (defmethod hachee.kkc.convert:convert-begin-entry ((kkc kkc))
   (make-convert-entry :word (class-vocab-bos-word (kkc-class-vocab kkc))))
 
@@ -180,12 +216,46 @@
       (list-convert-entries
        class-vocab ex-dict unk-vocab unk-model pron))))
 
-(defmethod hachee.kkc.convert:convert-score-fn ((kkc kkc))
-  (let ((class-model (kkc-class-model kkc)))
+
+(defclass kkc-2gram (kkc hachee.kkc.convert:2gram-convert)
+  ((w2
+    :initarg :w2
+    :reader kkc-2gram-w2)
+   (w1
+    :initarg :w1
+    :reader kkc-2gram-w1)))
+
+(defmethod hachee.kkc.convert:convert-score-fn ((kkc kkc-2gram))
+  (let ((class-model (kkc-class-model kkc))
+        (w2 (kkc-2gram-w2 kkc))
+        (w1 (kkc-2gram-w1 kkc)))
     (lambda (curr-entry prev-entry)
-      (+ (word-transition-log-probability class-model
-                                          (convert-entry-word curr-entry)
-                                          (convert-entry-word prev-entry))
+      (+ (transition-log-probability-2gram class-model w2 w1
+                                           (convert-entry-word curr-entry)
+                                           (convert-entry-word prev-entry))
+         (convert-entry-unk-log-probability curr-entry)))))
+
+(defclass kkc-3gram (kkc hachee.kkc.convert:3gram-convert)
+  ((w3
+    :initarg :w3
+    :reader kkc-3gram-w3)
+   (w2
+    :initarg :w2
+    :reader kkc-3gram-w2)
+   (w1
+    :initarg :w1
+    :reader kkc-3gram-w1)))
+
+(defmethod hachee.kkc.convert:convert-score-fn ((kkc kkc-3gram))
+  (let ((class-model (kkc-class-model kkc))
+        (w3 (kkc-3gram-w3 kkc))
+        (w2 (kkc-3gram-w2 kkc))
+        (w1 (kkc-3gram-w1 kkc)))
+    (lambda (curr-entry prev2-entry prev1-entry)
+      (+ (transition-log-probability-3gram class-model w3 w2 w1
+                                           (convert-entry-word curr-entry)
+                                           (convert-entry-word prev2-entry)
+                                           (convert-entry-word prev1-entry))
          (convert-entry-unk-log-probability curr-entry)))))
 
 ;;; lookup
@@ -293,6 +363,14 @@
                       :eos-word eos-word
                       :str-entry-hash hash)))
 
+(defun read-weights (class-weights-path)
+  (with-open-file (in class-weights-path
+                      :direction :input
+                      :external-format :utf-8)
+    (let ((line (read-line in nil nil)))
+      (let ((items (cl-ppcre:split "\\t" line)))
+        (mapcar #'read-from-string items)))))
+
 (defun read-counts (counts-path)
   (let ((counts (make-hash-table :test #'equal)))
     (with-open-file (in counts-path
@@ -306,23 +384,12 @@
             (setf (gethash ngram counts) count)))))
     counts))
 
-(defun read-class-model (class-weights-path
-                         class-ngram-counts-path
+(defun read-class-model (class-ngram-counts-path
                          class-word-counts-path)
   (let ((ngram-counts (read-counts class-ngram-counts-path))
-        (word-counts (read-counts class-word-counts-path))
-        (weights (with-open-file (in class-weights-path
-                                     :direction :input
-                                     :external-format :utf-8)
-                   (let ((line (read-line in nil nil)))
-                     (destructuring-bind (w1 w2)
-                         (cl-ppcre:split "\\t" line)
-                       (list (read-from-string w1)
-                             (read-from-string w2)))))))
+        (word-counts (read-counts class-word-counts-path)))
     (make-class-model :ngram-counts ngram-counts
-                      :word-counts word-counts
-                      :weight-1 (nth 0 weights)
-                      :weight-2 (nth 1 weights))))
+                      :word-counts word-counts)))
 
 (defun read-unk-model (unk-ngram-counts-path char-set-size-path)
   (make-unk-model
@@ -357,19 +424,51 @@
                     :UNK-id UNK-id)))
 
 (defun read-kkc (class-vocab-path
-                 class-weights-path
                  class-ngram-counts-path
                  class-word-counts-path
                  unk-vocab-path
                  unk-ngram-counts-path
                  char-set-size-pah)
-  (make-kkc
+  (make-instance 'kkc
    :class-vocab (read-class-vocab class-vocab-path)
-   :class-model (read-class-model class-weights-path
-                                  class-ngram-counts-path
+   :class-model (read-class-model class-ngram-counts-path
                                   class-word-counts-path)
    :unk-vocab (read-unk-vocab unk-vocab-path)
    :unk-model (read-unk-model unk-ngram-counts-path
                               char-set-size-pah)
    :ex-dict (hachee.kkc.impl.class-ngram.ex-dict:make-ex-dict
              :hash (make-hash-table :test #'equal))))
+
+(defun read-kkc-2gram (class-weights-path
+                       class-vocab-path
+                       class-ngram-counts-path
+                       class-word-counts-path
+                       unk-vocab-path
+                       unk-ngram-counts-path
+                       char-set-size-pah)
+  (destructuring-bind (w2 w1)
+      (read-weights class-weights-path)
+    (change-class (read-kkc class-vocab-path
+                            class-ngram-counts-path
+                            class-word-counts-path
+                            unk-vocab-path
+                            unk-ngram-counts-path
+                            char-set-size-pah)
+                  'kkc-2gram :w2 w2 :w1 w1)))
+
+(defun read-kkc-3gram (class-weights-path
+                       class-vocab-path
+                       class-ngram-counts-path
+                       class-word-counts-path
+                       unk-vocab-path
+                       unk-ngram-counts-path
+                       char-set-size-pah)
+  (destructuring-bind (w3 w2 w1)
+      (read-weights class-weights-path)
+    (change-class (read-kkc class-vocab-path
+                            class-ngram-counts-path
+                            class-word-counts-path
+                            unk-vocab-path
+                            unk-ngram-counts-path
+                            char-set-size-pah)
+                  'kkc-3gram :w3 w3 :w2 w2 :w1 w1)))
