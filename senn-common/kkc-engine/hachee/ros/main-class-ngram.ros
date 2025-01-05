@@ -1,0 +1,23 @@
+#!/bin/sh
+#|-*- mode:lisp -*-|#
+#|
+exec ros -Q -- $0 "$@"
+|#
+(progn ;;init forms
+  (ros:ensure-asdf)
+  #+quicklisp(ql:quickload '() :silent t)
+  )
+
+(defpackage :ros.script.main-class-ngram.3882603981
+  (:use :cl))
+(in-package :ros.script.main-class-ngram.3882603981)
+(ql:quickload :senn-kkc-engine-hachee-class-ngram)
+
+(senn-kkc-engine.hachee.engine.class-ngram:set-kkc-2gram
+ (merge-pathnames ".senn/class-2gram/" (user-homedir-pathname)))
+
+;; ros dynamic-space-size=2048 -- dump executable main-class-ngram.ros -o kkc-engine
+(defun main (&rest argv)
+  (declare (ignorable argv))
+  (senn-kkc-engine.hachee.engine.class-ngram:main))
+;;; vim: set ft=lisp lisp:
