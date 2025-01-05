@@ -130,7 +130,7 @@
   bos-word
   eos-word)
 
-(defclass kkc (hachee.kkc.convert:convert)
+(defclass kkc ()
   ((class-vocab
     :initarg :class-vocab
     :reader kkc-class-vocab)

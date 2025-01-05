@@ -7,7 +7,7 @@
            :build-kkc-simple))
 (in-package :hachee.kkc.impl.lm)
 
-(defclass kkc (hachee.kkc.convert:convert)
+(defclass kkc ()
   ((n-gram-model
     :initarg :n-gram-model
     :reader kkc-n-gram-model)

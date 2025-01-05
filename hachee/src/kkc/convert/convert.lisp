@@ -8,7 +8,6 @@
            :convert-end-entry
            :convert-score-fn
            :convert-list-entries-fn
-           :convert
            :2gram-convert
            :3gram-convert
            :execute))
@@ -18,16 +17,14 @@
 (defgeneric entry-pron (e))
 (defgeneric entry-origin (e))
 
-(defclass convert () ())
-
 (defgeneric convert-begin-entry (convert))
 (defgeneric convert-end-entry (convert))
 (defgeneric convert-list-entries-fn (convert))
 (defgeneric convert-score-fn (convert))
-(defgeneric execute (convert pronunciation &key 1st-boundary-index))
 
-(defclass 2gram-convert (convert) ())
-(defclass 3gram-convert (convert) ())
+(defgeneric execute (convert pronunciation &key 1st-boundary-index))
+(defclass 2gram-convert () ())
+(defclass 3gram-convert () ())
 
 (defmethod execute ((convert 2gram-convert) (pronunciation string)
                     &key 1st-boundary-index)
