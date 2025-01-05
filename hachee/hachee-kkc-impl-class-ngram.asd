@@ -1,9 +1,9 @@
-(asdf:defsystem :hachee-kkc-impl-class-2-gram
+(asdf:defsystem :hachee-kkc-impl-class-ngram
   :serial t
-  :pathname "src/kkc/impl/class-2-gram/"
+  :pathname "src/kkc/impl/class-ngram/"
   :components
   ((:file "ex-dict")
    (:file "ex-dict-builder")
-   (:file "class-2-gram"))
+   (:file "class-ngram"))
   :depends-on (:hachee-kkc
                :cl-ppcre))
