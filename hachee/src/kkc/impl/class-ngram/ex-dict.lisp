@@ -1,11 +1,11 @@
-(defpackage :hachee.kkc.impl.class-2-gram.ex-dict
+(defpackage :hachee.kkc.impl.class-ngram.ex-dict
   (:use :cl)
   (:export :entry-form
            :entry-unk-log-probability
            :make-entry
            :list-entries
            :make-ex-dict))
-(in-package :hachee.kkc.impl.class-2-gram.ex-dict)
+(in-package :hachee.kkc.impl.class-ngram.ex-dict)
 
 (defstruct ex-dict
   hash)

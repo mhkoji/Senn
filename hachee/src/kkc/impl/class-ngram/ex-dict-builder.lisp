@@ -1,4 +1,4 @@
-(defpackage :hachee.kkc.impl.class-2-gram.ex-dict-builder
+(defpackage :hachee.kkc.impl.class-ngram.ex-dict-builder
   (:use :cl)
   (:export :item-pron
            :item-form
@@ -7,7 +7,7 @@
            :kkc-probability
            :kkc-contains-p
            :build))
-(in-package :hachee.kkc.impl.class-2-gram.ex-dict-builder)
+(in-package :hachee.kkc.impl.class-ngram.ex-dict-builder)
 
 (defgeneric kkc-vocabulary-probability (kkc))
 (defgeneric kkc-probability (kkc string))
@@ -30,8 +30,8 @@
             for pron = (item-pron item)
             for prob = (kkc-probability kkc form)
             for new-prob = (+ prob each-added-probability)
-            for entry = (hachee.kkc.impl.class-2-gram.ex-dict:make-entry
+            for entry = (hachee.kkc.impl.class-ngram.ex-dict:make-entry
                          :form form
                          :unk-log-probability (log new-prob))
             do (progn (push entry (gethash pron hash)))))
-    (hachee.kkc.impl.class-2-gram.ex-dict:make-ex-dict :hash hash)))
+    (hachee.kkc.impl.class-ngram.ex-dict:make-ex-dict :hash hash)))

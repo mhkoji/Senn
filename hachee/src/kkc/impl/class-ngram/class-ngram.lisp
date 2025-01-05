@@ -1,10 +1,10 @@
 ;; class 2-gram model
-(defpackage :hachee.kkc.impl.class-2-gram
+(defpackage :hachee.kkc.impl.class-ngram
   (:use :cl)
   (:shadow :word)
   (:export :set-ex-dict
            :read-kkc))
-(in-package :hachee.kkc.impl.class-2-gram)
+(in-package :hachee.kkc.impl.class-ngram)
 
 (defstruct word
   word-id
@@ -135,15 +135,15 @@
               convert-entry-list)))
     (let ((unk-word (class-vocab-unk-word class-vocab)))
       (dolist (ex-dict-entry
-               (hachee.kkc.impl.class-2-gram.ex-dict:list-entries
+               (hachee.kkc.impl.class-ngram.ex-dict:list-entries
                 ex-dict pron))
         (push (make-convert-entry
                :word unk-word
-               :form (hachee.kkc.impl.class-2-gram.ex-dict:entry-form
+               :form (hachee.kkc.impl.class-ngram.ex-dict:entry-form
                       ex-dict-entry)
                :pron pron
                :origin :ex-dict
-               :unk-log-probability (hachee.kkc.impl.class-2-gram.ex-dict:entry-unk-log-probability ex-dict-entry))
+               :unk-log-probability (hachee.kkc.impl.class-ngram.ex-dict:entry-unk-log-probability ex-dict-entry))
               convert-entry-list))
       (when (< (length pron) 8) ;; Length up to 8
         (push (make-convert-entry
@@ -207,10 +207,10 @@
                :origin :vocab)
               items)))
     (dolist (ex-dict-entry
-             (hachee.kkc.impl.class-2-gram.ex-dict:list-entries
+             (hachee.kkc.impl.class-ngram.ex-dict:list-entries
               ex-dict pron))
       (push (make-lookup-item
-             :form (hachee.kkc.impl.class-2-gram.ex-dict:entry-form
+             :form (hachee.kkc.impl.class-ngram.ex-dict:entry-form
                     ex-dict-entry)
              :origin :ex-dict)
             items))
@@ -225,22 +225,22 @@
 
 ;;; ex-dict
 
-(defmethod hachee.kkc.impl.class-2-gram.ex-dict-builder:kkc-probability
+(defmethod hachee.kkc.impl.class-ngram.ex-dict-builder:kkc-probability
     ((kkc kkc) (string string))
   (let ((unk-vocab (kkc-unk-vocab kkc))
         (unk-model (kkc-unk-model kkc)))
     (exp (unk-log-probability unk-vocab unk-model string))))
 
-(defmethod hachee.kkc.impl.class-2-gram.ex-dict-builder:kkc-contains-p
+(defmethod hachee.kkc.impl.class-ngram.ex-dict-builder:kkc-contains-p
     ((kkc kkc) item)
   (let ((str-entry-hash (class-vocab-str-entry-hash (kkc-class-vocab kkc)))
-        (form (hachee.kkc.impl.class-2-gram.ex-dict-builder:item-form item))
-        (pron (hachee.kkc.impl.class-2-gram.ex-dict-builder:item-pron item)))
+        (form (hachee.kkc.impl.class-ngram.ex-dict-builder:item-form item))
+        (pron (hachee.kkc.impl.class-ngram.ex-dict-builder:item-pron item)))
     (find form (gethash pron str-entry-hash)
           :test #'string=
           :key #'class-vocab-entry-form)))
 
-(defmethod hachee.kkc.impl.class-2-gram.ex-dict-builder:kkc-vocabulary-probability ((kkc kkc))
+(defmethod hachee.kkc.impl.class-ngram.ex-dict-builder:kkc-vocabulary-probability ((kkc kkc))
   (let ((sum-prob 0)
         (str-entry-hash (class-vocab-str-entry-hash (kkc-class-vocab kkc)))
         (unk-vocab (kkc-unk-vocab kkc))
@@ -253,7 +253,7 @@
     sum-prob))
 
 (defun set-ex-dict (kkc ex-dict-source)
-  (let ((ex-dict (hachee.kkc.impl.class-2-gram.ex-dict-builder:build
+  (let ((ex-dict (hachee.kkc.impl.class-ngram.ex-dict-builder:build
                   kkc ex-dict-source)))
     (setf (kkc-ex-dict kkc) ex-dict)))
 
@@ -371,5 +371,5 @@
    :unk-vocab (read-unk-vocab unk-vocab-path)
    :unk-model (read-unk-model unk-ngram-counts-path
                               char-set-size-pah)
-   :ex-dict (hachee.kkc.impl.class-2-gram.ex-dict:make-ex-dict
+   :ex-dict (hachee.kkc.impl.class-ngram.ex-dict:make-ex-dict
              :hash (make-hash-table :test #'equal))))
