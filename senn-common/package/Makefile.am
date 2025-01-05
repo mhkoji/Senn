@@ -18,4 +18,4 @@ kkc-engine$(EXEEXT):
 	  --eval '(push #p"$(srcdir)/../kkc-engine/hachee/" asdf:*central-registry*)' \
 	  --eval '(asdf:load-system :senn-kkc-engine-hachee-class-ngram)' \
 	  --eval '(senn-kkc-engine.hachee.engine.class-ngram:set-kkc-2gram "$(srcdir)/kkc-engine-data/")' \
-	  --eval "(sb-ext:save-lisp-and-die \"kkc-engine\" :toplevel #'senn-kkc-engine.hachee.engine.class-2-gram:main :executable t)"
+	  --eval "(sb-ext:save-lisp-and-die \"kkc-engine\" :toplevel #'senn-kkc-engine.hachee.engine.class-ngram:main :executable t)"
