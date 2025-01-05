@@ -186,7 +186,8 @@
     :initform (make-hash-table :test #'equal)
     :reader class-model-class-token-freq)))
 
-(defmethod train ((model class-model) (sentence-provider function) &key BOS EOS)
+(defmethod train ((model class-model) (sentence-provider function)
+                  &key BOS EOS)
   (let* ((classifier (class-model-classifier model))
          (token-freq (class-model-token-freq model))
          (class-token-freq (class-model-class-token-freq model))
@@ -245,7 +246,8 @@
   (let ((n (model-n model)))
     (let ((bos-tokens (make-list (1- n) :initial-element BOS))
           (eos-tokens (list EOS))
-          (sentence-tokens (hachee.language-model.corpus:sentence-tokens sentence)))
+          (sentence-tokens (hachee.language-model.corpus:sentence-tokens
+                            sentence)))
       (let ((tokens (append bos-tokens sentence-tokens eos-tokens)))
         (loop for curr-index from (1- n) to (1- (length tokens))
               for p = (transition-probability
