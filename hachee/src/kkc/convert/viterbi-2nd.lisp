@@ -10,30 +10,43 @@
 (defun compute-score (score-fn curr prev2 prev1)
   (funcall score-fn curr prev2 prev1))
 
-(defun connect-by-max-score (score-fn nodes prev2-nodes prev1-nodes &key print-p)
-  (dolist (prev2-node prev2-nodes)
-    (when (null (node-score-so-far prev2-node))
-      (error "prev2-node without score: ~A" prev2-node))
-    (let ((prev2-entry (node-entry prev2-node))
-          (prev2-score-so-far (node-score-so-far prev2-node)))
-      (dolist (prev1-node prev1-nodes)
-        (when (null (node-score-so-far prev1-node))
-          (error "prev1-node without score: ~A" prev1-node))
-        (let ((prev1-entry (node-entry prev1-node)))
-          (dolist (node nodes)
-            (let ((score-so-far (+ prev2-score-so-far
-                                   (compute-score score-fn
-                                                  (node-entry node)
-                                                  prev2-entry
-                                                  prev1-entry))))
-              (when print-p
-                (print (list (node-entry node)
-                             (node-score-so-far node))))
-              (when (or (null (node-score-so-far node))
-                        (< (node-score-so-far node) score-so-far))
-                (setf (node-prev1-node node) prev1-node)
-                (setf (node-prev2-node node) prev2-node)
-                (setf (node-score-so-far node) score-so-far))))))))
+(defun connect-by-max-score (score-fn nodes prev2-nodes prev1-nodes
+                             &key print-p)
+  (labels ((maybe-update-score (score-so-far node prev2-node prev1-node)
+             (when print-p
+               (print (list (node-entry node)
+                            (node-score-so-far node))))
+             (when (or (null (node-score-so-far node))
+                       (< (node-score-so-far node) score-so-far))
+               (setf (node-prev1-node node) prev1-node)
+               (setf (node-prev2-node node) prev2-node)
+               (setf (node-score-so-far node) score-so-far))))
+    (dolist (prev1-node prev1-nodes)
+      (let ((prev1-entry (node-entry prev1-node))
+            (prev1-node-score-so-far (node-score-so-far prev1-node)))
+        (if prev1-node-score-so-far
+            (dolist (node nodes)
+              (let ((prev2-node (node-prev1-node prev1-node)))
+                (maybe-update-score
+                 (+ prev1-node-score-so-far
+                    (compute-score score-fn
+                                   (node-entry node)
+                                   (node-entry prev2-node)
+                                   prev1-entry))
+                 node prev2-node prev1-node)))
+            (dolist (prev2-node prev2-nodes)
+              (let ((prev2-entry (node-entry prev2-node))
+                    (prev2-node-score-so-far (node-score-so-far prev2-node)))
+                (when (null prev2-node-score-so-far)
+                  (error "prev2-node without score: ~A" prev2-node))
+                (dolist (node nodes)
+                  (maybe-update-score
+                   (+ prev2-node-score-so-far
+                      (compute-score score-fn
+                                     (node-entry node)
+                                     prev2-entry
+                                     prev1-entry))
+                   node prev2-node prev1-node))))))))
   (values))
 
 (defstruct table (hash (make-hash-table)))
@@ -67,7 +80,7 @@
                -1)
     (table-put table -1
                (list (make-node :entry begin-entry
-                                :score-so-far 0
+                                :score-so-far nil
                                 :prev1-node nil
                                 :prev2-node nil))
                0)
@@ -88,10 +101,13 @@
       (do-table-nodes ((start nodes) table end)
         (do-table-nodes ((prev1-start prev1-nodes) table start)
           (do-table-nodes ((prev2-start prev2-nodes) table prev1-start)
-            (connect-by-max-score score-fn nodes prev2-nodes prev1-nodes :print-p nil)))))
+            (connect-by-max-score score-fn nodes prev2-nodes prev1-nodes
+                                  :print-p nil)))))
     (labels ((backtrack (prev1-node prev2-node acc)
                (if (null (node-prev2-node prev2-node))
-                   (cons prev1-node acc)
+                   (if (eq (node-entry prev1-node) begin-entry)
+                       acc
+                       (cons prev1-node acc))
                    (backtrack (node-prev1-node prev2-node)
                               (node-prev2-node prev2-node)
                               (cons prev2-node (cons prev1-node acc))))))
