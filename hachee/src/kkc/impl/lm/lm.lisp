@@ -3,26 +3,39 @@
   (:use :cl)
   (:export :kkc
            :kkc-word-dictionary
-           :save-kkc
-           :load-kkc
            :build-kkc
-           :build-kkc-simple
-
-           :kkc-convert
-           :make-kkc-convert))
+           :build-kkc-simple))
 (in-package :hachee.kkc.impl.lm)
 
-(defstruct kkc
-  n-gram-model
-  vocabulary
-  word-dictionary
-  char-dictionary
-  unknown-word-vocabulary
-  unknown-word-n-gram-model)
+(defclass kkc (hachee.kkc.convert:convert)
+  ((n-gram-model
+    :initarg :n-gram-model
+    :reader kkc-n-gram-model)
+   (vocabulary
+    :initarg :vocabulary
+    :reader kkc-vocabulary)
+   (word-dictionary
+    :initarg :word-dictionary
+    :reader kkc-word-dictionary)
+   (char-dictionary
+    :initarg :char-dictionary
+    :reader kkc-char-dictionary)
+   (unknown-word-vocabulary
+    :initarg :unknown-word-vocabulary
+    :reader kkc-unknown-word-vocabulary)
+   (unknown-word-n-gram-model
+    :initarg :unknown-word-n-gram-model
+    :reader kkc-unknown-word-n-gram-model)))
+
+(defclass kkc-2gram (kkc hachee.kkc.convert:2gram-convert)
+  ())
+
+(defclass kkc-3gram (kkc hachee.kkc.convert:2gram-convert)
+  ())
 
 (defun build-kkc-simple (pathnames
                          &key class-token-to-word-file-path
-                              weights
+                              (weights (list 0.8d0 0.2d0))
                               char-dictionary)
   (let ((vocabulary
          (hachee.kkc.impl.lm.build:build-vocabulary pathnames)))
@@ -37,7 +50,9 @@
                               :weights weights))))
       (hachee.kkc.impl.lm.build:train-n-gram-model
        n-gram-model pathnames vocabulary)
-      (make-kkc
+      (make-instance (ecase (length weights)
+                       (2 'kkc-2gram)
+                       (3 'kkc-3gram))
        :n-gram-model n-gram-model
        :vocabulary vocabulary
        :word-dictionary
@@ -55,7 +70,7 @@
                        char-dictionary
                        trusted-word-dictionary
                        class-token-to-word-file-path
-                       weights)
+                       (weights (list 0.8d0 0.2d0)))
   (let ((vocabulary (hachee.kkc.impl.lm.build:build-vocabulary-with-unk
                      pathnames-segmented)))
     (when (and pathnames-inaccurately-segmented
@@ -94,7 +109,9 @@
                pathnames
                vocabulary
                unknown-word-vocabulary)))
-        (make-kkc
+        (make-instance (ecase (length weights)
+                         (2 'kkc-2gram)
+                         (3 'kkc-3gram))
          :n-gram-model n-gram-model
          :vocabulary vocabulary
          :word-dictionary word-dictionary
@@ -162,7 +179,8 @@
       (let ((form (hachee.kkc.convert:entry-form entry)))
         (unknown-word-log-probability score-calculator form))))
 
-(defun compute-convert-score (score-calculator curr-entry &rest history-entry-list)
+(defun compute-convert-score (score-calculator curr-entry
+                              &rest history-entry-list)
   (let ((prob-transit (transit-probability
                        score-calculator curr-entry history-entry-list)))
     (if (< 0 prob-transit)
@@ -234,7 +252,8 @@
     (lambda (pron)
       (list-entries pron dictionaries vocabulary))))
 
-(defmethod hachee.kkc.convert:convert-score-fn ((kkc kkc))
+
+(defmethod hachee.kkc.convert:convert-score-fn ((kkc kkc-2gram))
   (let ((score-calculator (make-score-calculator
                            :n-gram-model
                            (kkc-n-gram-model kkc)
@@ -245,7 +264,7 @@
     (lambda (curr-entry prev-entry)
       (compute-convert-score score-calculator curr-entry prev-entry))))
 
-(defmethod hachee.kkc.convert:convert-viterbi-2nd-score-fn ((kkc kkc))
+(defmethod hachee.kkc.convert:convert-score-fn ((kkc kkc-3gram))
   (let ((score-calculator (make-score-calculator
                            :n-gram-model
                            (kkc-n-gram-model kkc)
@@ -303,13 +322,13 @@
           (next-entry (unit->convert-entry
                        next-unit
                        hachee.kkc.origin:+runtime-none+))
-          (score-calc-dto (make-score-calc-dto
-                           :n-gram-model
-                           (kkc-n-gram-model kkc)
-                           :unknown-word-vocabulary
-                           (kkc-unknown-word-vocabulary kkc)
-                           :unknown-word-n-gram-model
-                           (kkc-unknown-word-n-gram-model kkc)))
+          (score-calculator (make-score-calculator
+                             :n-gram-model
+                             (kkc-n-gram-model kkc)
+                             :unknown-word-vocabulary
+                             (kkc-unknown-word-vocabulary kkc)
+                             :unknown-word-n-gram-model
+                             (kkc-unknown-word-n-gram-model kkc)))
           (score-cache (make-hash-table :test #'equal)))
       (lambda (curr-item)
         (let ((curr-entry (unit->convert-entry
@@ -320,9 +339,9 @@
           (or (gethash key score-cache)
               (setf (gethash key score-cache)
                     (+ (compute-convert-score
-                        score-calc-dto curr-entry prev-entry)
+                        score-calculator curr-entry prev-entry)
                        (compute-convert-score
-                        score-calc-dto next-entry curr-entry)))))))))
+                        score-calculator next-entry curr-entry)))))))))
 
 (defmethod hachee.kkc.lookup:execute ((kkc kkc) (pronunciation string)
                                       &key prev next)
