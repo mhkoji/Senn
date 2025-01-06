@@ -1,8 +1,8 @@
-(defpackage :hachee.language-model.n-gram.estimate-weights
+(defpackage :hachee.language-model.ngram.estimate-weights
   (:use :cl)
   (:export :do-2gram-weights
            :do-3gram-weights))
-(in-package :hachee.language-model.n-gram.estimate-weights)
+(in-package :hachee.language-model.ngram.estimate-weights)
 
 (defstruct corpus sentence-list)
 
@@ -19,16 +19,16 @@
   (let ((new-w2 0) (new-w1 0) (sum 0))
     (destructuring-bind (w2 w1) weights
       (labels ((update (curr prev)
-                 (let ((p1 (* w1 (hachee.language-model.n-gram::conditional-probability
+                 (let ((p1 (* w1 (hachee.language-model.ngram::conditional-probability
                                   freq curr nil)))
-                       (p2 (* w2 (or (hachee.language-model.n-gram::conditional-probability
+                       (p2 (* w2 (or (hachee.language-model.ngram::conditional-probability
                                       freq curr (list prev))
                                      0))))
                    (incf new-w1 (/ p1 (+ p1 p2)))
                    (incf new-w2 (/ p2 (+ p1 p2)))
                    (incf sum))))
         (dolist (sentence (corpus-sentence-list corpus))
-          (let ((tokens (hachee.language-model.n-gram:sentence-tokens
+          (let ((tokens (hachee.language-model.ngram:sentence-tokens
                          sentence))
                 (prev BOS))
             (loop for curr in tokens do
@@ -45,12 +45,12 @@
   (let ((new-w3 0) (new-w2 0) (new-w1 0) (sum 0))
     (destructuring-bind (w3 w2 w1) weights
       (labels ((update (curr prev2 prev1)
-                 (let ((p1 (* w1 (hachee.language-model.n-gram::conditional-probability
+                 (let ((p1 (* w1 (hachee.language-model.ngram::conditional-probability
                                   freq curr nil)))
-                       (p2 (* w2 (or (hachee.language-model.n-gram::conditional-probability
+                       (p2 (* w2 (or (hachee.language-model.ngram::conditional-probability
                                       freq curr (list prev1))
                                      0)))
-                       (p3 (* w3 (or (hachee.language-model.n-gram::conditional-probability
+                       (p3 (* w3 (or (hachee.language-model.ngram::conditional-probability
                                       freq curr (list prev2 prev1))
                                      0))))
                    (incf new-w1 (/ p1 (+ p1 p2 p3)))
@@ -58,7 +58,7 @@
                    (incf new-w3 (/ p3 (+ p1 p2 p3)))
                    (incf sum))))
         (dolist (sentence (corpus-sentence-list corpus))
-          (let ((tokens (hachee.language-model.n-gram:sentence-tokens
+          (let ((tokens (hachee.language-model.ngram:sentence-tokens
                          sentence))
                 (prev2 BOS)
                 (prev1 BOS))
@@ -88,7 +88,7 @@
                (let ((new-w2 0) (new-w1 0))
                  (loop for model in model-list
                        for corpus in corpus-list
-                       for freq = (hachee.language-model.n-gram::model-freq
+                       for freq = (hachee.language-model.ngram::model-freq
                                    model) do
                    (destructuring-bind (tmp-w2 tmp-w1)
                        (improve-for-2gram weights freq corpus BOS EOS)
@@ -121,7 +121,7 @@
                      (new-w1 0))
                  (loop for model in model-list
                        for corpus in corpus-list
-                       for freq = (hachee.language-model.n-gram::model-freq
+                       for freq = (hachee.language-model.ngram::model-freq
                                    model) do
                          (destructuring-bind (tmp-w3 tmp-w2 tmp-w1)
                              (improve-for-3gram weights freq corpus BOS EOS)

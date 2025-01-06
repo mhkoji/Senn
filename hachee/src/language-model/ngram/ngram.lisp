@@ -1,4 +1,4 @@
-(defpackage :hachee.language-model.n-gram
+(defpackage :hachee.language-model.ngram
   (:use :cl)
   (:export :sentence
            :sentence-tokens
@@ -10,9 +10,9 @@
            :class-model
            :make-classifier
            :sentence-log-probability))
-(in-package :hachee.language-model.n-gram)
+(in-package :hachee.language-model.ngram)
 
-(defun each-n-gram-subseq (BOS tokens EOS n callback)
+(defun each-ngram-subseq (BOS tokens EOS n callback)
   (let ((bos-tokens (make-list (1- n) :initial-element BOS))
         (eos-tokens (list EOS)))
     (let ((extended-tokens (append bos-tokens tokens eos-tokens)))
@@ -27,7 +27,7 @@
 
 (labels ((list-subseqs (BOS tokens EOS n)
            (let ((result nil))
-             (each-n-gram-subseq BOS tokens EOS n
+             (each-ngram-subseq BOS tokens EOS n
                                  (lambda (subseq) (push subseq result)))
              (nreverse result))))
   (assert (equal (list-subseqs 'BOS '(1 2 3 4) 'EOS 1)
@@ -91,9 +91,9 @@
 
 (defgeneric transition-probability (model token history-tokens))
 
-;; N-gram model is implemented as a little application of freq.
+;; ngram model is implemented as a little application of freq.
 ;; An n-gram language model provides the functions of:
-;; - counting the n-gram tokens in a sentence
+;; - counting the ngram tokens in a sentence
 ;; - computing the probability of an event w_1, ..., w_{n-1} to w_n
 (defclass model ()
   ((freq
@@ -118,7 +118,7 @@
 (defun add-counts (model tokens &key BOS EOS)
   (let ((inc-count
          (alexandria:curry #'freq-inc (model-freq model))))
-    (each-n-gram-subseq BOS tokens EOS (model-n model) inc-count)))
+    (each-ngram-subseq BOS tokens EOS (model-n model) inc-count)))
 
 (defun interpolated-probability (model token history-tokens)
   (assert (= (length history-tokens) (1- (model-n model))))

@@ -16,9 +16,9 @@
            :extend-existing-vocabulary
            :estimate-2gram-weights
            :build-word-dictionary
-           :train-n-gram-model
+           :train-ngram-model
            :build-unknown-word-vocabulary
-           :build-unknown-word-n-gram-model
+           :build-unknown-word-ngram-model
            :add-to-word-dictionary-from-resources
            :build-tankan-dictionary
            :build-classifier))
@@ -57,19 +57,19 @@
     vocab))
 
 (defun estimate-2gram-weights (pathnames vocabulary)
-  (hachee.language-model.n-gram.estimate-weights:do-2gram-weights
+  (hachee.language-model.ngram.estimate-weights:do-2gram-weights
       (add
        :BOS (to-int vocabulary hachee.language-model.vocabulary:+BOS+)
        :EOS (to-int vocabulary hachee.language-model.vocabulary:+EOS+))
     (let ((length (length pathnames)))
       (dotimes (i length)
         (let ((model
-               (make-instance 'hachee.language-model.n-gram:model))
+               (make-instance 'hachee.language-model.ngram:model))
               (sentence-list
                (hachee.kkc.impl.lm.build.file:with-sentence-reader
                    (next-sentence (nth i pathnames) vocabulary)
                  (loop for s = (next-sentence) while s collect s))))
-          (train-n-gram-model model
+          (train-ngram-model model
                               (loop for p in pathnames
                                     for j from 0
                                     when (/= j i) collect p)
@@ -101,14 +101,14 @@
                dict unit hachee.kkc.origin:+corpus+)))))
     dict))
 
-(defun train-n-gram-model (model pathnames vocabulary)
-  (format *error-output* "Building n-gram model ...~%")
+(defun train-ngram-model (model pathnames vocabulary)
+  (format *error-output* "Building ngram model ...~%")
   (let ((BOS (to-int vocabulary hachee.language-model.vocabulary:+BOS+))
         (EOS (to-int vocabulary hachee.language-model.vocabulary:+EOS+)))
     (dolist (pathname pathnames)
       (hachee.kkc.impl.lm.build.file:with-sentence-reader
           (next-sentence pathname vocabulary)
-        (hachee.language-model.n-gram:train
+        (hachee.language-model.ngram:train
          model #'next-sentence :BOS BOS :EOS EOS))))
   model)
 
@@ -132,7 +132,7 @@
     pron-vocab))
 
 (defun pron->sentence (pron unknown-word-char-vocabulary)
-  (hachee.language-model.n-gram:make-sentence
+  (hachee.language-model.ngram:make-sentence
    :tokens (loop for ch across pron
                  for unit = (hachee.kkc.impl.lm.unit:make-unit
                              :form (string ch)
@@ -141,22 +141,22 @@
                           unknown-word-char-vocabulary
                           (hachee.kkc.impl.lm.unit:unit->key unit)))))
 
-(defun build-unknown-word-n-gram-model (pathnames
+(defun build-unknown-word-ngram-model (pathnames
                                         vocabulary
                                         unknown-word-vocabulary)
-  (format *error-output* "Building unknown word n-gram model ...~%")
+  (format *error-output* "Building unknown word ngram model ...~%")
   (let ((BOS (to-int unknown-word-vocabulary
                      hachee.language-model.vocabulary:+BOS+))
         (EOS (to-int unknown-word-vocabulary
                      hachee.language-model.vocabulary:+EOS+))
-        (model (make-instance 'hachee.language-model.n-gram:model)))
+        (model (make-instance 'hachee.language-model.ngram:model)))
   (dolist (pathname pathnames)
     (dolist (line (hachee.kkc.impl.lm.build.file:lines pathname))
       (dolist (unit (hachee.kkc.impl.lm.build.file:line-units line))
         (when (not (to-int-or-nil vocabulary (unit->key unit)))
           (let ((sentence (pron->sentence (unit-pron unit)
                                           unknown-word-vocabulary)))
-            (hachee.language-model.n-gram:train model (list sentence)
+            (hachee.language-model.ngram:train model (list sentence)
                                                 :BOS BOS
                                                 :EOS EOS))))))
     model))
@@ -229,5 +229,5 @@
                              hachee.language-model.vocabulary:+EOS+)
                      to-class-map)
             EOS-class-token))
-    (hachee.language-model.n-gram:make-classifier
+    (hachee.language-model.ngram:make-classifier
      :to-class-map to-class-map)))
