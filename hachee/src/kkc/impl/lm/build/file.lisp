@@ -28,7 +28,7 @@
           (cl-ppcre:split " " string)))
 
 (defun string-to-sentence (string vocabulary)
-  (hachee.language-model.corpus:make-sentence
+  (hachee.language-model.n-gram:make-sentence
    :tokens
    (mapcar (lambda (u)
              (hachee.language-model.vocabulary:to-int-or-unk

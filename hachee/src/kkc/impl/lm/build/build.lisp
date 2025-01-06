@@ -14,7 +14,7 @@
   (:export :build-vocabulary
            :build-vocabulary-with-unk
            :extend-existing-vocabulary
-           :estimate-weights
+           :estimate-2gram-weights
            :build-word-dictionary
            :train-n-gram-model
            :build-unknown-word-vocabulary
@@ -56,29 +56,25 @@
                  curr-words)))
     vocab))
 
-(defun estimate-weights (pathnames vocabulary)
-  (let ((length (length pathnames))
-        (BOS (to-int vocabulary hachee.language-model.vocabulary:+BOS+))
-        (EOS (to-int vocabulary hachee.language-model.vocabulary:+EOS+)))
-    (let ((model-list (make-list length))
-          (corpus-list (make-list length)))
+(defun estimate-2gram-weights (pathnames vocabulary)
+  (hachee.language-model.n-gram.estimate-weights:do-2gram-weights
+      (add
+       :BOS (to-int vocabulary hachee.language-model.vocabulary:+BOS+)
+       :EOS (to-int vocabulary hachee.language-model.vocabulary:+EOS+))
+    (let ((length (length pathnames)))
       (dotimes (i length)
-        (let ((corpus
-               (hachee.language-model.corpus:make-corpus
-                :sentence-list
-                (hachee.kkc.impl.lm.build.file:with-sentence-reader
-                    (next-sentence (nth i pathnames) vocabulary)
-                  (loop for s = (next-sentence) while s collect s)))))
-          (setf (nth i corpus-list) corpus))
-        (let ((sub-pathnames
-               (loop for p in pathnames
-                     for j from 0
-                     when (/= j i) collect p))
-              (model (make-instance 'hachee.language-model.n-gram:model)))
-          (train-n-gram-model model sub-pathnames vocabulary)
-          (setf (nth i model-list) model)))
-      (hachee.language-model.n-gram.estimate-weights:estimate-for-2-gram
-       model-list corpus-list :BOS BOS :EOS EOS))))
+        (let ((model
+               (make-instance 'hachee.language-model.n-gram:model))
+              (sentence-list
+               (hachee.kkc.impl.lm.build.file:with-sentence-reader
+                   (next-sentence (nth i pathnames) vocabulary)
+                 (loop for s = (next-sentence) while s collect s))))
+          (train-n-gram-model model
+                              (loop for p in pathnames
+                                    for j from 0
+                                    when (/= j i) collect p)
+                              vocabulary)
+          (add model sentence-list))))))
 
 (defun extend-existing-vocabulary (vocabulary
                                    trusted-word-dictionary
@@ -136,7 +132,7 @@
     pron-vocab))
 
 (defun pron->sentence (pron unknown-word-char-vocabulary)
-  (hachee.language-model.corpus:make-sentence
+  (hachee.language-model.n-gram:make-sentence
    :tokens (loop for ch across pron
                  for unit = (hachee.kkc.impl.lm.unit:make-unit
                              :form (string ch)
