@@ -108,8 +108,10 @@
     (dolist (pathname pathnames)
       (hachee.kkc.impl.lm.build.file:with-sentence-reader
           (next-sentence pathname vocabulary)
-        (hachee.language-model.ngram:train
-         model #'next-sentence :BOS BOS :EOS EOS))))
+        (hachee.language-model.ngram:model-add-counts model
+                                                      #'next-sentence
+                                                      :BOS BOS
+                                                      :EOS EOS))))
   model)
 
 (defun build-unknown-word-vocabulary (pathnames vocabulary &key (overlap 2))
@@ -156,9 +158,10 @@
         (when (not (to-int-or-nil vocabulary (unit->key unit)))
           (let ((sentence (pron->sentence (unit-pron unit)
                                           unknown-word-vocabulary)))
-            (hachee.language-model.ngram:train model (list sentence)
-                                                :BOS BOS
-                                                :EOS EOS))))))
+            (hachee.language-model.ngram:model-add-counts model
+                                                          (list sentence)
+                                                          :BOS BOS
+                                                          :EOS EOS))))))
     model))
 
 (defun add-to-word-dictionary-from-resources (dict pathnames)

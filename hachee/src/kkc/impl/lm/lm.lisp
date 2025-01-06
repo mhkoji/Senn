@@ -166,11 +166,11 @@
       (hachee.language-model.ngram:sentence-log-probability
        unknown-word-ngram-model sentence :BOS bos :EOS eos))))
 
-(defun transit-probability (score-calculator curr-entry history-entry-list)
+(defun transition-probability (score-calculator curr-entry history-entry-list)
   (let ((model (score-calculator-ngram-model score-calculator))
         (token (convert-entry-token curr-entry))
         (history-tokens (mapcar #'convert-entry-token history-entry-list)))
-    (hachee.language-model.ngram:transition-probability
+    (hachee.language-model.ngram:model-probability
      model token history-tokens)))
 
 (defun convert-entry-unk-log-probability (score-calculator entry)
@@ -181,10 +181,10 @@
 
 (defun compute-convert-score (score-calculator curr-entry
                               &rest history-entry-list)
-  (let ((prob-transit (transit-probability
-                       score-calculator curr-entry history-entry-list)))
-    (if (< 0 prob-transit)
-        (+ (log prob-transit)
+  (let ((transition-prob (transition-probability
+                          score-calculator curr-entry history-entry-list)))
+    (if (< 0 transition-prob)
+        (+ (log transition-prob)
            (convert-entry-unk-log-probability score-calculator curr-entry))
         ;; The ngram model was not able to predict the current token
         ;; For example, if the current token is unknown, and the model
