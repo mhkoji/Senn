@@ -1,6 +1,9 @@
 (defpackage :hachee.language-model.n-gram
   (:use :cl)
-  (:export :train
+  (:export :sentence
+           :sentence-tokens
+           :make-sentence
+           :train
            :get-count
            :transition-probability
            :model
@@ -76,6 +79,8 @@
     (/ numer denom)))
 
 ;;;
+
+(defstruct sentence tokens)
 
 (defgeneric train (model sentence-provider &key BOS EOS))
 
@@ -156,8 +161,7 @@
 
 (defmethod train ((model model) (sentence-provider function) &key BOS EOS)
   (do-sentence (sentence sentence-provider)
-    (let ((tokens (hachee.language-model.corpus:sentence-tokens
-                   sentence)))
+    (let ((tokens (sentence-tokens sentence)))
       (add-counts model tokens :BOS BOS :EOS EOS)))
   model)
 
@@ -194,9 +198,7 @@
          (class-BOS (class-token classifier BOS))
          (class-EOS (class-token classifier EOS)))
     (do-sentence (sentence sentence-provider)
-      (let ((sentence-tokens
-             (hachee.language-model.corpus:sentence-tokens
-              sentence)))
+      (let ((sentence-tokens (sentence-tokens sentence)))
         (dolist (token sentence-tokens)
           (inchash token token-freq))
         (inchash EOS token-freq)
@@ -246,8 +248,7 @@
   (let ((n (model-n model)))
     (let ((bos-tokens (make-list (1- n) :initial-element BOS))
           (eos-tokens (list EOS))
-          (sentence-tokens (hachee.language-model.corpus:sentence-tokens
-                            sentence)))
+          (sentence-tokens (sentence-tokens sentence)))
       (let ((tokens (append bos-tokens sentence-tokens eos-tokens)))
         (loop for curr-index from (1- n) to (1- (length tokens))
               for p = (transition-probability
