@@ -8,9 +8,9 @@
 (in-package :hachee.kkc.impl.lm)
 
 (defclass kkc ()
-  ((n-gram-model
-    :initarg :n-gram-model
-    :reader kkc-n-gram-model)
+  ((ngram-model
+    :initarg :ngram-model
+    :reader kkc-ngram-model)
    (vocabulary
     :initarg :vocabulary
     :reader kkc-vocabulary)
@@ -23,9 +23,9 @@
    (unknown-word-vocabulary
     :initarg :unknown-word-vocabulary
     :reader kkc-unknown-word-vocabulary)
-   (unknown-word-n-gram-model
-    :initarg :unknown-word-n-gram-model
-    :reader kkc-unknown-word-n-gram-model)))
+   (unknown-word-ngram-model
+    :initarg :unknown-word-ngram-model
+    :reader kkc-unknown-word-ngram-model)))
 
 (defclass kkc-2gram (kkc hachee.kkc.convert:2gram-convert)
   ())
@@ -39,21 +39,21 @@
                               char-dictionary)
   (let ((vocabulary
          (hachee.kkc.impl.lm.build:build-vocabulary pathnames)))
-    (let ((n-gram-model
+    (let ((ngram-model
            (if class-token-to-word-file-path
-               (make-instance 'hachee.language-model.n-gram:class-model
+               (make-instance 'hachee.language-model.ngram:class-model
                               :classifier
                               (hachee.kkc.impl.lm.build:build-classifier
                                class-token-to-word-file-path
                                vocabulary))
-               (make-instance 'hachee.language-model.n-gram:model
+               (make-instance 'hachee.language-model.ngram:model
                               :weights weights))))
-      (hachee.kkc.impl.lm.build:train-n-gram-model
-       n-gram-model pathnames vocabulary)
+      (hachee.kkc.impl.lm.build:train-ngram-model
+       ngram-model pathnames vocabulary)
       (make-instance (ecase (length weights)
                        (2 'kkc-2gram)
                        (3 'kkc-3gram))
-       :n-gram-model n-gram-model
+       :ngram-model ngram-model
        :vocabulary vocabulary
        :word-dictionary
        (hachee.kkc.impl.lm.build:build-word-dictionary pathnames vocabulary)
@@ -61,8 +61,8 @@
                             (hachee.kkc.impl.lm.dictionary:make-dictionary))
        :unknown-word-vocabulary
        (hachee.language-model.vocabulary:make-vocabulary)
-       :unknown-word-n-gram-model
-       (make-instance 'hachee.language-model.n-gram:model)))))
+       :unknown-word-ngram-model
+       (make-instance 'hachee.language-model.ngram:model)))))
 
 (defun build-kkc (pathnames-segmented
                   &key pathnames-inaccurately-segmented
@@ -84,18 +84,18 @@
     (let ((pathnames
            (append pathnames-segmented
                    pathnames-inaccurately-segmented))
-          (n-gram-model
+          (ngram-model
            (if class-token-to-word-file-path
-               (make-instance 'hachee.language-model.n-gram:class-model
+               (make-instance 'hachee.language-model.ngram:class-model
                               :classifier
                               (hachee.kkc.impl.lm.build:build-classifier
                                class-token-to-word-file-path
                                vocabulary)
                               :weights weights)
-               (make-instance 'hachee.language-model.n-gram:model
+               (make-instance 'hachee.language-model.ngram:model
                               :weights weights))))
-      (hachee.kkc.impl.lm.build:train-n-gram-model
-       n-gram-model pathnames vocabulary)
+      (hachee.kkc.impl.lm.build:train-ngram-model
+       ngram-model pathnames vocabulary)
       (let* ((word-dictionary
               (hachee.kkc.impl.lm.build:add-to-word-dictionary-from-resources
                (hachee.kkc.impl.lm.build:build-word-dictionary
@@ -104,22 +104,22 @@
              (unknown-word-vocabulary
               (hachee.kkc.impl.lm.build:build-unknown-word-vocabulary
                pathnames vocabulary))
-             (unknown-word-n-gram-model
-              (hachee.kkc.impl.lm.build:build-unknown-word-n-gram-model
+             (unknown-word-ngram-model
+              (hachee.kkc.impl.lm.build:build-unknown-word-ngram-model
                pathnames
                vocabulary
                unknown-word-vocabulary)))
         (make-instance (ecase (length weights)
                          (2 'kkc-2gram)
                          (3 'kkc-3gram))
-         :n-gram-model n-gram-model
+         :ngram-model ngram-model
          :vocabulary vocabulary
          :word-dictionary word-dictionary
          :char-dictionary
          (or char-dictionary
              (hachee.kkc.impl.lm.dictionary:make-dictionary))
          :unknown-word-vocabulary unknown-word-vocabulary
-         :unknown-word-n-gram-model unknown-word-n-gram-model)))))
+         :unknown-word-ngram-model unknown-word-ngram-model)))))
 
 ;;; convert
 
@@ -136,12 +136,12 @@
    :form (hachee.ja:hiragana->katakana pron)))
 
 (defstruct score-calculator
-  n-gram-model
+  ngram-model
   unknown-word-vocabulary
-  unknown-word-n-gram-model)
+  unknown-word-ngram-model)
 
 (defun string->sentence (str unknown-word-char-vocabulary)
-  (hachee.language-model.n-gram:make-sentence
+  (hachee.language-model.ngram:make-sentence
    :tokens (loop for ch across str
                  for unit = (hachee.kkc.impl.lm.unit:make-unit
                              :form (string ch)
@@ -154,8 +154,8 @@
 (defun unknown-word-log-probability (score-calculator form)
   (let ((unknown-word-vocabulary
          (score-calculator-unknown-word-vocabulary score-calculator))
-        (unknown-word-n-gram-model
-         (score-calculator-unknown-word-n-gram-model score-calculator)))
+        (unknown-word-ngram-model
+         (score-calculator-unknown-word-ngram-model score-calculator)))
     (let ((sentence (string->sentence form unknown-word-vocabulary))
           (bos (hachee.language-model.vocabulary:to-int
                 unknown-word-vocabulary
@@ -163,14 +163,14 @@
           (eos (hachee.language-model.vocabulary:to-int
                 unknown-word-vocabulary
                 hachee.language-model.vocabulary:+EOS+)))
-      (hachee.language-model.n-gram:sentence-log-probability
-       unknown-word-n-gram-model sentence :BOS bos :EOS eos))))
+      (hachee.language-model.ngram:sentence-log-probability
+       unknown-word-ngram-model sentence :BOS bos :EOS eos))))
 
 (defun transit-probability (score-calculator curr-entry history-entry-list)
-  (let ((model (score-calculator-n-gram-model score-calculator))
+  (let ((model (score-calculator-ngram-model score-calculator))
         (token (convert-entry-token curr-entry))
         (history-tokens (mapcar #'convert-entry-token history-entry-list)))
-    (hachee.language-model.n-gram:transition-probability
+    (hachee.language-model.ngram:transition-probability
      model token history-tokens)))
 
 (defun convert-entry-unk-log-probability (score-calculator entry)
@@ -186,7 +186,7 @@
     (if (< 0 prob-transit)
         (+ (log prob-transit)
            (convert-entry-unk-log-probability score-calculator curr-entry))
-        ;; The n-gram model was not able to predict the current token
+        ;; The ngram model was not able to predict the current token
         ;; For example, if the current token is unknown, and the model
         ;; can't predict unknown tokens, the probability will be 0.
         (- #xFFFF))))
@@ -255,23 +255,23 @@
 
 (defmethod hachee.kkc.convert:convert-score-fn ((kkc kkc-2gram))
   (let ((score-calculator (make-score-calculator
-                           :n-gram-model
-                           (kkc-n-gram-model kkc)
+                           :ngram-model
+                           (kkc-ngram-model kkc)
                            :unknown-word-vocabulary
                            (kkc-unknown-word-vocabulary kkc)
-                           :unknown-word-n-gram-model
-                           (kkc-unknown-word-n-gram-model kkc))))
+                           :unknown-word-ngram-model
+                           (kkc-unknown-word-ngram-model kkc))))
     (lambda (curr-entry prev-entry)
       (compute-convert-score score-calculator curr-entry prev-entry))))
 
 (defmethod hachee.kkc.convert:convert-score-fn ((kkc kkc-3gram))
   (let ((score-calculator (make-score-calculator
-                           :n-gram-model
-                           (kkc-n-gram-model kkc)
+                           :ngram-model
+                           (kkc-ngram-model kkc)
                            :unknown-word-vocabulary
                            (kkc-unknown-word-vocabulary kkc)
-                           :unknown-word-n-gram-model
-                           (kkc-unknown-word-n-gram-model kkc))))
+                           :unknown-word-ngram-model
+                           (kkc-unknown-word-ngram-model kkc))))
     (lambda (curr-entry prev2-entry prev1-entry)
       (compute-convert-score score-calculator
                              curr-entry prev2-entry prev1-entry))))
@@ -323,12 +323,12 @@
                        next-unit
                        hachee.kkc.origin:+runtime-none+))
           (score-calculator (make-score-calculator
-                             :n-gram-model
-                             (kkc-n-gram-model kkc)
+                             :ngram-model
+                             (kkc-ngram-model kkc)
                              :unknown-word-vocabulary
                              (kkc-unknown-word-vocabulary kkc)
-                             :unknown-word-n-gram-model
-                             (kkc-unknown-word-n-gram-model kkc)))
+                             :unknown-word-ngram-model
+                             (kkc-unknown-word-ngram-model kkc)))
           (score-cache (make-hash-table :test #'equal)))
       (lambda (curr-item)
         (let ((curr-entry (unit->convert-entry
@@ -363,10 +363,10 @@
   (kkc-vocabulary kkc))
 
 (defmethod hachee.kkc.impl.lm.dump:kkc-class-model ((kkc kkc))
-  (kkc-n-gram-model kkc))
+  (kkc-ngram-model kkc))
 
 (defmethod hachee.kkc.impl.lm.dump:kkc-unk-vocabulary ((kkc kkc))
   (kkc-unknown-word-vocabulary kkc))
 
 (defmethod hachee.kkc.impl.lm.dump:kkc-unk-model ((kkc kkc))
-  (kkc-unknown-word-n-gram-model kkc))
+  (kkc-unknown-word-ngram-model kkc))
