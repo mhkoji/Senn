@@ -124,6 +124,17 @@
     :initform (make-hash-table :test #'equal)
     :reader class-model-class-token-freq)))
 
+(defun add-token-counts (token-freq sentence-tokens EOS)
+  (dolist (token sentence-tokens)
+    (inchash token token-freq))
+  (inchash EOS token-freq))
+
+(defun add-class-token-counts (class-token-freq sentence-class-tokens
+                               class-EOS)
+  (dolist (class-token sentence-class-tokens)
+    (inchash class-token class-token-freq))
+  (inchash class-EOS class-token-freq))
+
 (defmethod train ((model class-model) (sentence-provider function)
                   &key BOS EOS)
   (let* ((classifier (class-model-classifier model))
@@ -136,19 +147,28 @@
                       :BOS (class-token classifier BOS)
                       :EOS class-EOS)))
     (do-sentence (sentence sentence-provider)
-      (let ((sentence-tokens (sentence-tokens sentence)))
-        (dolist (token sentence-tokens)
-          (inchash token token-freq))
-        (inchash EOS token-freq)
-        (let ((sentence-class-tokens
-               (mapcar (lambda (x)
-                         (class-token classifier x))
-                       sentence-tokens)))
-          (dolist (class-token sentence-class-tokens)
-            (inchash class-token class-token-freq))
-          (inchash class-EOS class-token-freq)
-          (add-ngram-counts model-freq sentence-class-tokens count-spec)))))
+      (let* ((sentence-tokens (sentence-tokens sentence))
+             (sentence-class-tokens (mapcar (lambda (x)
+                                              (class-token classifier x))
+                                            sentence-tokens)))
+        (add-token-counts
+         token-freq sentence-tokens EOS)
+        (add-class-token-counts
+         class-token-freq sentence-class-tokens class-EOS)
+        (add-ngram-counts
+         model-freq sentence-class-tokens count-spec))))
   model)
+
+
+(defun class-token->token-probability (class-model token)
+  (let ((classifier (class-model-classifier class-model))
+        (token-freq (class-model-token-freq class-model))
+        (class-token-freq (class-model-class-token-freq class-model)))
+    (let ((class-token (class-token classifier token)))
+      (let ((token-count (gethash token token-freq)))
+        (if token-count
+            (/ token-count (gethash class-token class-token-freq))
+            0)))))
 
 (defun class-interpolated-probability (class-model
                                        token
@@ -164,16 +184,6 @@
        (model-weights class-model)
        class-token
        history-class-tokens))))
-
-(defun class-token->token-probability (class-model token)
-  (let ((classifier (class-model-classifier class-model))
-        (token-freq (class-model-token-freq class-model))
-        (class-token-freq (class-model-class-token-freq class-model)))
-    (let ((class-token (class-token classifier token)))
-      (let ((token-count (gethash token token-freq)))
-        (if token-count
-            (/ token-count (gethash class-token class-token-freq))
-            0)))))
 
 (defmethod transition-probability ((model class-model)
                                    (token t)
