@@ -65,10 +65,11 @@
       (dotimes (i length)
         (let ((model
                (make-instance 'hachee.language-model.ngram:model))
-              (sentence-list
-               (hachee.kkc.impl.lm.build.file:with-sentence-reader
-                   (next-sentence (nth i pathnames) vocabulary)
-                 (loop for s = (next-sentence) while s collect s))))
+              (sentence-list nil))
+          (hachee.kkc.impl.lm.build.file:do-sentence
+              (s (nth i pathnames) vocabulary)
+            (push s sentence-list))
+          (setq sentence-list (nreverse sentence-list))
           (train-ngram-model model
                               (loop for p in pathnames
                                     for j from 0
@@ -103,15 +104,13 @@
 
 (defun train-ngram-model (model pathnames vocabulary)
   (format *error-output* "Building ngram model ...~%")
-  (let ((BOS (to-int vocabulary hachee.language-model.vocabulary:+BOS+))
-        (EOS (to-int vocabulary hachee.language-model.vocabulary:+EOS+)))
+  (hachee.language-model.ngram:with-model-add-counts
+      (model-add-counts model
+       :BOS (to-int vocabulary hachee.language-model.vocabulary:+BOS+)
+       :EOS (to-int vocabulary hachee.language-model.vocabulary:+EOS+))
     (dolist (pathname pathnames)
-      (hachee.kkc.impl.lm.build.file:with-sentence-reader
-          (next-sentence pathname vocabulary)
-        (hachee.language-model.ngram:model-add-counts model
-                                                      #'next-sentence
-                                                      :BOS BOS
-                                                      :EOS EOS))))
+      (hachee.kkc.impl.lm.build.file:do-sentence (sentence pathname vocabulary)
+        (model-add-counts sentence))))
   model)
 
 (defun build-unknown-word-vocabulary (pathnames vocabulary &key (overlap 2))
@@ -147,21 +146,20 @@
                                         vocabulary
                                         unknown-word-vocabulary)
   (format *error-output* "Building unknown word ngram model ...~%")
-  (let ((BOS (to-int unknown-word-vocabulary
-                     hachee.language-model.vocabulary:+BOS+))
-        (EOS (to-int unknown-word-vocabulary
-                     hachee.language-model.vocabulary:+EOS+))
-        (model (make-instance 'hachee.language-model.ngram:model)))
-  (dolist (pathname pathnames)
-    (dolist (line (hachee.kkc.impl.lm.build.file:lines pathname))
-      (dolist (unit (hachee.kkc.impl.lm.build.file:line-units line))
-        (when (not (to-int-or-nil vocabulary (unit->key unit)))
-          (let ((sentence (pron->sentence (unit-pron unit)
-                                          unknown-word-vocabulary)))
-            (hachee.language-model.ngram:model-add-counts model
-                                                          (list sentence)
-                                                          :BOS BOS
-                                                          :EOS EOS))))))
+  (let ((model (make-instance 'hachee.language-model.ngram:model)))
+    (hachee.language-model.ngram:with-model-add-counts
+        (model-add-counts model
+         :BOS (to-int unknown-word-vocabulary
+                      hachee.language-model.vocabulary:+BOS+)
+         :EOS (to-int unknown-word-vocabulary
+                      hachee.language-model.vocabulary:+EOS+))
+      (dolist (pathname pathnames)
+        (dolist (line (hachee.kkc.impl.lm.build.file:lines pathname))
+          (dolist (unit (hachee.kkc.impl.lm.build.file:line-units line))
+            (when (not (to-int-or-nil vocabulary (unit->key unit)))
+              (model-add-counts (pron->sentence
+                                 (unit-pron unit)
+                                 unknown-word-vocabulary)))))))
     model))
 
 (defun add-to-word-dictionary-from-resources (dict pathnames)
