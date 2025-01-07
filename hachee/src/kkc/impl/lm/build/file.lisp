@@ -1,6 +1,6 @@
 (defpackage :hachee.kkc.impl.lm.build.file
   (:use :cl)
-  (:export :with-sentence-reader
+  (:export :do-sentence
            :lines
            :line-units))
 (in-package :hachee.kkc.impl.lm.build.file)
@@ -45,6 +45,10 @@
                     (string-to-sentence string ,vocabulary)))))
        (progn ,@body))))
 
+(defmacro do-sentence ((sentence filename vocabulary) &body body)
+  `(with-sentence-reader (reader ,filename ,vocabulary)
+     (loop for ,sentence = (reader)
+           while ,sentence do (progn ,@body))))
 
 (defun lines (pathname)
   (with-open-file (in pathname

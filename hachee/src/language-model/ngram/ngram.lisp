@@ -3,8 +3,8 @@
   (:export :sentence
            :sentence-tokens
            :make-sentence
-           :model-add-counts
            :model-probability
+           :with-model-add-counts
            :get-count
            :model
            :class-model
@@ -68,18 +68,20 @@
 
 (defstruct sentence tokens)
 
-(defgeneric model-add-counts (model sentence-provider &key BOS EOS))
-
 (defgeneric model-probability (model token history-tokens))
 
-(defmethod model-add-counts ((model t) (list list) &key BOS EOS)
-  (labels ((next ()
-             (pop list)))
-    (train model #'next :BOS BOS :EOS EOS)))
+(defgeneric model-add-counts-fn (model BOS EOS))
 
-(defmacro do-sentence ((s sentence-provider) &body body)
-  `(loop for ,s = (funcall ,sentence-provider)
-         while ,s do (progn ,@body)))
+(defmacro with-model-add-counts ((add-counts model &key BOS EOS)
+                                 &body body)
+  (let ((sym-BOS (gensym))
+        (sym-EOS (gensym)))
+    `(let ((,sym-BOS ,BOS)
+           (,sym-EOS ,EOS))
+       (let ((fn (model-add-counts-fn ,model ,sym-BOS ,sym-EOS)))
+         (labels ((,add-counts (sentence)
+                    (funcall fn sentence)))
+           (progn ,@body))))))
 
 ;;;
 
@@ -110,16 +112,14 @@
 (defclass model (model-mixin)
   ())
 
-(defmethod model-add-counts ((model model) (sentence-provider function)
-                             &key BOS EOS)
+(defmethod model-add-counts-fn ((model model) BOS EOS)
   (with-mutable-probability-calculation-add-counts
       (add-ngram-counts model
                         :n (model-n model)
                         :BOS BOS
                         :EOS EOS)
-    (do-sentence (sentence sentence-provider)
-      (add-ngram-counts (sentence-tokens sentence))))
-  model)
+    (lambda (sentence)
+      (add-ngram-counts (sentence-tokens sentence)))))
 
 (defmethod model-probability ((model model)
                               (token t)
@@ -158,27 +158,24 @@
     (inchash class-token class-token-freq))
   (inchash class-EOS class-token-freq))
 
-(defmethod model-add-counts ((model class-model) (sentence-provider function)
-                             &key BOS EOS)
+(defmethod model-add-counts-fn ((model class-model) BOS EOS)
   (let* ((classifier (class-model-classifier model))
          (token-freq (class-model-token-freq model))
          (class-token-freq (class-model-class-token-freq model))
          (class-EOS (class-token classifier EOS)))
-    (with-mutable-probability-calculation-add-ngram-counts
+    (with-mutable-probability-calculation-add-counts
         (add-ngram-counts model 
                           :n (model-n model)
                           :BOS (class-token classifier BOS)
                           :EOS class-EOS)
-      (do-sentence (sentence sentence-provider)
+      (lambda (sentence)
         (let* ((tokens (sentence-tokens sentence))
                (class-tokens (mapcar (lambda (x)
                                        (class-token classifier x))
                                      tokens)))
           (add-ngram-counts class-tokens)
           (add-token-counts token-freq tokens EOS)
-          (add-class-token-counts class-token-freq class-tokens class-EOS)))))
-  model)
-
+          (add-class-token-counts class-token-freq class-tokens class-EOS))))))
 
 (defun class-token->token-probability (class-model token)
   (let ((classifier (class-model-classifier class-model))
