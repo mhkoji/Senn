@@ -3,6 +3,9 @@
   (:export :sentence
            :sentence-tokens
            :make-sentence
+           :freq
+           :make-freq
+           :with-freq-add-counts
            :model-probability
            :with-model-add-counts
            :get-count
@@ -34,35 +37,21 @@
     ((freq freq) (tokens list))
   (freq-inc freq tokens))
 
-
-(defclass mutable-probability-calculation () ())
-(defgeneric mutable-probability-calculation-freq (mutable-probability-calculation))
-(defgeneric mutable-probability-calculation-weights (mutable-probability-calculation))
-
-(defun mutable-probability-calculation-calculate (calculation token history-tokens)
-  (hachee.language-model.ngram.probability:interpolated-probability
-   (mutable-probability-calculation-freq calculation)
-   (mutable-probability-calculation-weights calculation)
-   token
-   history-tokens))
-
-(defmacro with-mutable-probability-calculation-add-counts
-    ((add-counts calculation &key n BOS EOS)
+(defmacro with-freq-add-counts
+    ((add-counts freq &key n BOS EOS)
      &body body)
   (let ((sym-n (gensym))
         (sym-BOS (gensym))
         (sym-EOS (gensym))
-        (sym-calc (gensym))
         (sym-freq (gensym)))
     `(let ((,sym-n ,n)
            (,sym-BOS ,BOS)
            (,sym-EOS ,EOS)
-           (,sym-calc ,calculation))
-       (let ((,sym-freq (mutable-probability-calculation-freq ,sym-calc)))
-         (labels ((,add-counts (tokens)
-                    (hachee.language-model.ngram.probability:add-ngram-counts
-                     ,sym-freq tokens ,sym-BOS ,sym-EOS ,sym-n)))
-           (progn ,@body))))))
+           (,sym-freq ,freq))
+       (labels ((,add-counts (tokens)
+                  (hachee.language-model.ngram.probability:add-ngram-counts
+                   ,sym-freq ,sym-n tokens ,sym-BOS ,sym-EOS)))
+         (progn ,@body)))))
 
 ;;;
 
@@ -85,14 +74,14 @@
 
 ;;;
 
-(defclass model-mixin (mutable-probability-calculation)
+(defclass model-mixin ()
   ((freq
     :initform (make-freq)
-    :reader mutable-probability-calculation-freq)
+    :reader model-freq)
    (weights
     :initform nil
     :initarg :weights
-    :reader mutable-probability-calculation-weights)))
+    :reader model-weights)))
 
 (defmethod initialize-instance :after ((model model-mixin) &key)
   (with-slots (weights) model
@@ -100,10 +89,17 @@
       (setf weights (list 0.8d0 0.2d0)))))
 
 (defun get-count (model tokens)
-  (freq-get (mutable-probability-calculation-freq model) tokens))
+  (freq-get (model-freq model) tokens))
 
 (defun model-n (model)
-  (length (mutable-probability-calculation-weights model)))
+  (length (model-weights model)))
+
+(defun model-interpolated-probability (model token history-tokens)
+  (reduce #'+ (hachee.language-model.ngram.probability:weighted-list
+               (model-freq model)
+               (model-weights model)
+               token
+               history-tokens)))
 
 ;; ngram model is implemented as a little application of freq.
 ;; An n-gram language model provides the functions of:
@@ -113,18 +109,15 @@
   ())
 
 (defmethod model-add-counts-fn ((model model) BOS EOS)
-  (with-mutable-probability-calculation-add-counts
-      (add-ngram-counts model
-                        :n (model-n model)
-                        :BOS BOS
-                        :EOS EOS)
+  (with-freq-add-counts (add-ngram-counts (model-freq model)
+                                          :n (model-n model)
+                                          :BOS BOS
+                                          :EOS EOS)
     (lambda (sentence)
       (add-ngram-counts (sentence-tokens sentence)))))
 
-(defmethod model-probability ((model model)
-                              (token t)
-                              (history-tokens list))
-  (mutable-probability-calculation-calculate model token history-tokens))
+(defmethod model-probability ((model model) (token t) (history-tokens list))
+  (model-interpolated-probability model token history-tokens))
 
 ;;;
 
@@ -163,11 +156,10 @@
          (token-freq (class-model-token-freq model))
          (class-token-freq (class-model-class-token-freq model))
          (class-EOS (class-token classifier EOS)))
-    (with-mutable-probability-calculation-add-counts
-        (add-ngram-counts model 
-                          :n (model-n model)
-                          :BOS (class-token classifier BOS)
-                          :EOS class-EOS)
+    (with-freq-add-counts (add-ngram-counts (model-freq model)
+                                            :n (model-n model)
+                                            :BOS (class-token classifier BOS)
+                                            :EOS class-EOS)
       (lambda (sentence)
         (let* ((tokens (sentence-tokens sentence))
                (class-tokens (mapcar (lambda (x)
@@ -196,9 +188,9 @@
           (class-history-tokens
            (mapcar (alexandria:curry #'class-token classifier)
                    history-tokens)))
-      (mutable-probability-calculation-calculate class-model
-                                                 class-token
-                                                 class-history-tokens))))
+      (model-interpolated-probability class-model
+                                      class-token
+                                      class-history-tokens))))
 
 (defmethod model-probability ((model class-model)
                               (token t)
@@ -216,7 +208,9 @@
       (let ((tokens (append bos-tokens sentence-tokens eos-tokens)))
         (loop for curr-index from (1- n) to (1- (length tokens))
               for token = (nth curr-index tokens)
-              for history-tokens = (subseq tokens (- curr-index (1- n)) curr-index)
+              for history-tokens = (subseq tokens
+                                           (- curr-index (1- n))
+                                           curr-index)
               for p = (model-probability model token history-tokens)
               when (= p 0) return (- #xFFFF)
               sum (log p))))))
