@@ -6,11 +6,13 @@
            :freq
            :make-freq
            :with-freq-add-counts
-           :model-probability
            :with-model-add-counts
-           :get-count
+           :do-model-ngram-count
+           :model-probability
+           :model-weights
            :model
            :class-model
+           :do-class-model-token-count
            :make-classifier
            :sentence-log-probability))
 (in-package :hachee.language-model.ngram)
@@ -53,6 +55,26 @@
                    ,sym-freq ,sym-n tokens ,sym-BOS ,sym-EOS)))
          (progn ,@body)))))
 
+(defmacro do-freq-ngram-count ((tokens count freq) &body body)
+  (let ((sym-freq (gensym)))
+    `(let ((,sym-freq ,freq))
+       (let ((tokens-list
+              (sort (alexandria:hash-table-keys
+                     (freq-hash ,sym-freq))
+                    (lambda (tokens1 tokens2)
+                      (let ((n1 (length tokens1))
+                            (n2 (length tokens2)))
+                        (if (/= n1 n2)
+                            (< n1 n2)
+                            (loop for t1 in tokens1
+                                  for t2 in tokens2
+                                  when (< t1 t2) do (return t)
+                                  when (< t2 t1) do (return nil)
+                                  finally (progn t))))))))
+         (dolist (,tokens tokens-list)
+           (let ((,count (freq-get ,sym-freq ,tokens)))
+             ,@body))))))
+
 ;;;
 
 (defstruct sentence tokens)
@@ -72,6 +94,10 @@
                     (funcall fn sentence)))
            (progn ,@body))))))
 
+(defmacro do-model-ngram-count ((tokens count model) &body body)
+  `(do-freq-ngram-count (,tokens ,count (model-freq ,model))
+     ,@body))
+
 ;;;
 
 (defclass model-mixin ()
@@ -87,9 +113,6 @@
   (with-slots (weights) model
     (when (not weights)
       (setf weights (list 0.8d0 0.2d0)))))
-
-(defun get-count (model tokens)
-  (freq-get (model-freq model) tokens))
 
 (defun model-n (model)
   (length (model-weights model)))
@@ -197,6 +220,17 @@
                               (history-tokens list))
   (* (class-interpolated-probability model token history-tokens)
      (class-token->token-probability model token)))
+
+(defmacro do-class-model-token-count ((token count model) &body body)
+  (let ((sym-class-model (gensym)))
+    `(let ((,sym-class-model ,model))
+       (let* ((token-freq (class-model-token-freq ,sym-class-model))
+              (token-list (sort (loop for token being the hash-key of token-freq
+                                      collect token)
+                                #'<)))
+         (dolist (,token token-list)
+           (let ((,count (gethash ,token token-freq)))
+             (progn ,@body)))))))
 
 ;;;
 
