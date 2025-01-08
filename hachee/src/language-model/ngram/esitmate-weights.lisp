@@ -1,7 +1,8 @@
 (defpackage :hachee.language-model.ngram.estimate-weights
   (:use :cl)
-  (:export :do-2gram-weights
-           :do-3gram-weights))
+  (:export :make-corpus
+           :estimate-2gram
+           :estimate-3gram))
 (in-package :hachee.language-model.ngram.estimate-weights)
 
 (defstruct corpus sentence-list)
@@ -15,27 +16,22 @@
                  (<= 30 count))
           return new-weights))
 
-(defun improve-for-2gram (weights freq corpus BOS EOS)
+(defun improve-for-corpus-2gram (weights freq corpus BOS EOS)
   (let ((new-w2 0) (new-w1 0) (sum 0))
-    (destructuring-bind (w2 w1) weights
-      (labels ((update (curr prev)
-                 (let ((p1 (* w1 (hachee.language-model.ngram::conditional-probability
-                                  freq curr nil)))
-                       (p2 (* w2 (or (hachee.language-model.ngram::conditional-probability
-                                      freq curr (list prev))
-                                     0))))
-                   (incf new-w1 (/ p1 (+ p1 p2)))
-                   (incf new-w2 (/ p2 (+ p1 p2)))
-                   (incf sum))))
-        (dolist (sentence (corpus-sentence-list corpus))
-          (let ((tokens (hachee.language-model.ngram:sentence-tokens
+    (labels ((update (curr prev)
+               (destructuring-bind (p2 p1)
+                   (hachee.language-model.ngram.probability:weighted-list
+                    freq weights curr (list prev))
+                 (incf new-w1 (/ p1 (+ p1 p2)))
+                 (incf new-w2 (/ p2 (+ p1 p2)))
+                 (incf sum))))
+      (dolist (sentence (corpus-sentence-list corpus))
+        (let ((prev BOS))
+          (dolist (curr (hachee.language-model.ngram:sentence-tokens
                          sentence))
-                (prev BOS))
-            (loop for curr in tokens do
-              (progn
-                (update curr prev)
-                (setq prev curr)))
-            (update EOS prev)))))
+            (update curr prev)
+            (setq prev curr))
+          (update EOS prev))))
     (setf new-w1 (/ new-w1 sum))
     (setf new-w2 (/ new-w2 sum))
     (let ((tmp (/ (1- (+ new-w1 new-w2)) 2)))
@@ -43,31 +39,23 @@
 
 (defun improve-for-3gram (weights freq corpus BOS EOS)
   (let ((new-w3 0) (new-w2 0) (new-w1 0) (sum 0))
-    (destructuring-bind (w3 w2 w1) weights
-      (labels ((update (curr prev2 prev1)
-                 (let ((p1 (* w1 (hachee.language-model.ngram::conditional-probability
-                                  freq curr nil)))
-                       (p2 (* w2 (or (hachee.language-model.ngram::conditional-probability
-                                      freq curr (list prev1))
-                                     0)))
-                       (p3 (* w3 (or (hachee.language-model.ngram::conditional-probability
-                                      freq curr (list prev2 prev1))
-                                     0))))
-                   (incf new-w1 (/ p1 (+ p1 p2 p3)))
-                   (incf new-w2 (/ p2 (+ p1 p2 p3)))
-                   (incf new-w3 (/ p3 (+ p1 p2 p3)))
-                   (incf sum))))
-        (dolist (sentence (corpus-sentence-list corpus))
-          (let ((tokens (hachee.language-model.ngram:sentence-tokens
+    (labels ((update (curr prev2 prev1)
+               (destructuring-bind (p3 p2 p1)
+                   (hachee.language-model.ngram.probability:weighted-list
+                    freq weights curr (list prev2 prev1))
+                 (incf new-w1 (/ p1 (+ p1 p2 p3)))
+                 (incf new-w2 (/ p2 (+ p1 p2 p3)))
+                 (incf new-w3 (/ p3 (+ p1 p2 p3)))
+                 (incf sum))))
+      (dolist (sentence (corpus-sentence-list corpus))
+        (let ((prev2 BOS)
+              (prev1 BOS))
+          (dolist (curr (hachee.language-model.ngram:sentence-tokens
                          sentence))
-                (prev2 BOS)
-                (prev1 BOS))
-            (loop for curr in tokens do
-              (progn
-                (update curr prev2 prev1)
-                (setq prev2 prev1)
-                (setq prev1 curr)))
-            (update EOS prev2 prev1)))))
+            (update curr prev2 prev1)
+            (setq prev2 prev1)
+            (setq prev1 curr))
+          (update EOS prev2 prev1))))
     (setf new-w1 (/ new-w1 sum))
     (setf new-w2 (/ new-w2 sum))
     (setf new-w3 (/ new-w3 sum))
@@ -81,69 +69,48 @@
              (car old-weights)))
      0.0001d0))
 
-(defun estimate-2gram-weights (model-list corpus-list BOS EOS)
-  (let ((size (length corpus-list)))
+(defun estimate-2gram (size BOS EOS freq-fn corpus-fn)
+  (let ((freq-list nil)
+        (corpus-list nil))
+    (dotimes (i size)
+      (push (funcall freq-fn i) freq-list)
+      (push (funcall corpus-fn i) corpus-list))
+    (setq freq-list (nreverse freq-list))
+    (setq corpus-list (nreverse corpus-list))
     (labels ((improve (weights)
                (print weights)
                (let ((new-w2 0) (new-w1 0))
-                 (loop for model in model-list
+                 (loop for freq in freq-list
                        for corpus in corpus-list
-                       for freq = (hachee.language-model.ngram::model-freq
-                                   model) do
-                   (destructuring-bind (tmp-w2 tmp-w1)
-                       (improve-for-2gram weights freq corpus BOS EOS)
-                     (incf new-w2 tmp-w2)
-                     (incf new-w1 tmp-w1)))
+                       for (w2 w1) = (improve-for-corpus-2gram
+                                      weights freq corpus BOS EOS)
+                       do (progn (incf new-w2 w2)
+                                 (incf new-w1 w1)))
                  (list (/ new-w2 size)
                        (/ new-w1 size)))))
       (improve-iter (list 0.8d0 0.2d0) #'is-ok #'improve))))
 
-(defmacro do-2gram-weights ((add &key BOS EOS) &body body)
-  `(let ((model-list nil)
-         (corpus-list nil))
-     (labels ((,add (model sentence-list)
-                (push model
-                      model-list)
-                (push (make-corpus :sentence-list sentence-list)
-                      corpus-list)))
-       ,@body)
-     (estimate-2gram-weights (nreverse model-list)
-                             (nreverse corpus-list)
-                             ,BOS
-                             ,EOS)))
-
-(defun estimate-3gram-weights (model-list corpus-list BOS EOS)
-  (let ((size (length corpus-list)))
+(defun estimate-3gram (size BOS EOS freq-fn corpus-fn)
+  (let ((freq-list nil)
+        (corpus-list nil))
+    (dotimes (i size)
+      (push (funcall freq-fn i) freq-list)
+      (push (funcall corpus-fn i) corpus-list))
+    (setq freq-list (nreverse freq-list))
+    (setq corpus-list (nreverse corpus-list))
     (labels ((improve (weights)
                (print weights)
                (let ((new-w3 0)
                      (new-w2 0)
                      (new-w1 0))
-                 (loop for model in model-list
-                       for corpus in corpus-list
-                       for freq = (hachee.language-model.ngram::model-freq
-                                   model) do
-                         (destructuring-bind (tmp-w3 tmp-w2 tmp-w1)
-                             (improve-for-3gram weights freq corpus BOS EOS)
-                           (incf new-w3 tmp-w3)
-                           (incf new-w2 tmp-w2)
-                           (incf new-w1 tmp-w1)))
+                 (loop for freq in freq-list
+                       for corpus in corpus-list do
+                   (destructuring-bind (tmp-w3 tmp-w2 tmp-w1)
+                       (improve-for-3gram weights freq corpus BOS EOS)
+                     (incf new-w3 tmp-w3)
+                     (incf new-w2 tmp-w2)
+                     (incf new-w1 tmp-w1)))
                  (list (/ new-w3 size)
                        (/ new-w2 size)
                        (/ new-w1 size)))))
       (improve-iter (list 0.7d0 0.2d0 0.1d0) #'is-ok #'improve))))
-
-
-(defmacro do-3gram-weights ((add &key BOS EOS) &body body)
-  `(let ((model-list nil)
-         (corpus-list nil))
-     (labels ((,add (model sentence-list)
-                (push model
-                      model-list)
-                (push (make-corpus :sentence-list sentence-list)
-                      corpus-list)))
-       ,@body)
-     (estimate-3gram-weights (nreverse model-list)
-                             (nreverse corpus-list)
-                             ,BOS
-                             ,EOS)))

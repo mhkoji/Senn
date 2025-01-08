@@ -3,13 +3,13 @@
   (:export :get-count
            :inc-count
            :add-ngram-counts
-           :interpolated-probability))
+           :weighted-list))
 (in-package :hachee.language-model.ngram.probability)
 
 (defgeneric get-count (freq tokens))
 (defgeneric inc-count (freq tokens))
 
-(defun each-ngram-subseq (tokens BOS EOS n callback)
+(defun each-ngram-subseq (tokens n BOS EOS callback)
   (let ((bos-tokens (make-list (1- n) :initial-element BOS))
         (eos-tokens (list EOS)))
     (let ((extended-tokens (append bos-tokens tokens eos-tokens)))
@@ -22,8 +22,8 @@
                 (funcall callback
                          (subseq extended-tokens start end))))))))))
 
-(defun add-ngram-counts (freq tokens BOS EOS n)
-  (each-ngram-subseq tokens BOS EOS n (lambda (tokens)
+(defun add-ngram-counts (freq n tokens BOS EOS)
+  (each-ngram-subseq tokens n BOS EOS (lambda (tokens)
                                         (inc-count freq tokens))))
 
 
@@ -33,44 +33,43 @@
        (denom (get-count freq history-tokens)))
     (/ numer denom)))
 
-(defun interpolated-probability (freq weights token history-tokens)
-  (loop for weight in weights
+(defun weighted-list (freq weights token history-tokens)
+  (loop for w in weights
 
         for sub-history-tokens = history-tokens
             then (cdr sub-history-tokens)
 
-        for prob = (conditional-probability
-                    freq token sub-history-tokens)
+        for p = (or (conditional-probability freq token sub-history-tokens)
+                    0)
 
-        when prob sum (* weight prob)))
+        collect (* w p)))
 
-
-(labels ((list-subseqs (tokens BOS EOS n)
+(labels ((list-subseqs (tokens n BOS EOS)
            (let ((result nil))
-             (each-ngram-subseq tokens BOS EOS n
+             (each-ngram-subseq tokens n BOS EOS
                                 (lambda (subseq) (push subseq result)))
              (nreverse result))))
-  (assert (equal (list-subseqs '(1 2 3 4) 'BOS 'EOS 1)
+  (assert (equal (list-subseqs '(1 2 3 4) 1 'BOS 'EOS)
                  '((  1) NIL
                    (  2) NIL
                    (  3) NIL
                    (  4) NIL
                    (EOS) NIL)))
-  (assert (equal (list-subseqs '(1 2 3 4) 'BOS 'EOS 2)
+  (assert (equal (list-subseqs '(1 2 3 4) 2 'BOS 'EOS)
                  '((BOS   1) (BOS)
                    (  1   2) (  1) NIL
                    (  2   3) (  2) NIL
                    (  3   4) (  3) NIL
                    (  4 EOS) (  4) NIL
                              (EOS) NIL)))
-  (assert (equal (list-subseqs '(1 2 3 4) 'A 'A 2)
+  (assert (equal (list-subseqs '(1 2 3 4) 2 'A 'A)
                  '((A  1) (A)
                    (1  2) (1) NIL
                    (2  3) (2) NIL
                    (3  4) (3) NIL
                    (4  A) (4) NIL
                           (A) NIL)))
-  (assert (equal (list-subseqs '(1 2 3 4) 'BOS 'EOS 3)
+  (assert (equal (list-subseqs '(1 2 3 4) 3 'BOS 'EOS)
                  '((BOS BOS   1) (BOS BOS)
                    (BOS   1   2) (BOS   1) (BOS)
                    (  1   2   3) (  1   2) (  1) NIL
@@ -87,24 +86,26 @@
   (incf (gethash tokens freq 0)))
 
 (assert
- (let ((freq (make-hash-table :test #'equal))
-       (weights '(0.8d0 0.2d0)))
-   (add-ngram-counts freq '(a b b a c) 'BOS 'EOS 2)
-   (and (= (interpolated-probability freq weights 'b '(a))
-           (+ (* 0.2d0 2/6) ;; b
-              (* 0.8d0 1/2) ;; b | a
-              ))
-        (= (interpolated-probability freq weights 'a '(BOS))
-           (+ (* 0.2d0 2/6) ;; a
-              (* 0.8d0 1)   ;; a | BOS
-              )))))
+ (let ((freq (make-hash-table :test #'equal)))
+   (add-ngram-counts freq 2 '(a b b a c) 'BOS 'EOS)
+   (and
+    (equal (weighted-list freq '(1 1) 'b '(a))
+           '(
+             1/2 ;; b | a
+             2/6 ;; b
+             ))
+    (equal (weighted-list freq '(1 1) 'a '(BOS))
+           '(
+             1   ;; a | BOS
+             2/6 ;; a
+             )))))
 
 (assert
- (let ((freq (make-hash-table :test #'equal))
-       (weights '(0.1d0 0.2d0 0.7d0) ))
-   (add-ngram-counts freq '(a b b a b) 'BOS 'EOS 3)
-   (= (interpolated-probability freq weights 'b '(a b))
-      (+ (* 0.1d0 3/6)   ;; b
-         (* 0.2d0 1/3)   ;; b | b
-         (* 0.7d0 1/2)   ;; b | a b
-         ))))
+ (let ((freq (make-hash-table :test #'equal)))
+   (add-ngram-counts freq 3 '(a b b a b) 'BOS 'EOS)
+   (equal (weighted-list freq '(1 1 1) 'b '(a b))
+          '(
+            1/2   ;; b | a b
+            1/3   ;; b | b
+            3/6   ;; b
+           ))))
