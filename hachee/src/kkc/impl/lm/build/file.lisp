@@ -1,7 +1,7 @@
 (defpackage :hachee.kkc.impl.lm.build.file
   (:use :cl)
   (:export :do-sentence
-           :lines
+           :do-lines
            :line-units))
 (in-package :hachee.kkc.impl.lm.build.file)
 
@@ -50,11 +50,11 @@
      (loop for ,sentence = (reader)
            while ,sentence do (progn ,@body))))
 
-(defun lines (pathname)
-  (with-open-file (in pathname
-                      :external-format +external-format+)
-    (loop for line-str = (read-line in nil nil)
-          while line-str collect (make-line :string line-str))))
+(defmacro do-lines ((line pathname) &body body)
+  `(with-open-file (in ,pathname
+                       :external-format +external-format+)
+     (loop for ,line = (read-line in nil nil)
+           while ,line do (progn ,@body))))
 
 (defun line-units (line)
-  (string-to-units (line-string line)))
+  (string-to-units line))

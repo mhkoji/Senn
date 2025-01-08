@@ -28,7 +28,7 @@
   (let ((vocab (hachee.language-model.vocabulary:make-vocabulary))
         (word-key->freq (make-hash-table :test #'equal)))
     (dolist (pathname pathnames)
-      (dolist (line (hachee.kkc.impl.lm.build.file:lines pathname))
+      (hachee.kkc.impl.lm.build.file:do-lines (line pathname)
         (dolist (word (hachee.kkc.impl.lm.build.file:line-units line))
           (incf (gethash (unit->key word) word-key->freq 0)))))
     (let ((skipped-for-UNK-p nil))
@@ -46,7 +46,7 @@
         (word-key->freq (make-hash-table :test #'equal)))
     (dolist (pathname pathnames)
       (let ((curr-words (make-hash-table :test #'equal)))
-        (dolist (line (hachee.kkc.impl.lm.build.file:lines pathname))
+        (hachee.kkc.impl.lm.build.file:do-lines (line pathname)
           (dolist (word (hachee.kkc.impl.lm.build.file:line-units line))
             (setf (gethash (unit->key word) curr-words) word)))
         (maphash (lambda (word-key word)
@@ -82,7 +82,7 @@
                                    pathnames-inaccurately-segmented)
   (format *error-output* "Extending vocabulary ...~%")
   (dolist (pathname pathnames-inaccurately-segmented)
-    (dolist (line (hachee.kkc.impl.lm.build.file:lines pathname))
+    (hachee.kkc.impl.lm.build.file:do-lines (line pathname)
       (dolist (unit (hachee.kkc.impl.lm.build.file:line-units line))
         (when (hachee.kkc.impl.lm.dictionary:contains-p
                trusted-word-dictionary unit)
@@ -93,7 +93,7 @@
   (format *error-output* "Building dictionary ...~%")
   (let ((dict (hachee.kkc.impl.lm.dictionary:make-dictionary)))
     (dolist (pathname pathnames)
-      (dolist (line (hachee.kkc.impl.lm.build.file:lines pathname))
+      (hachee.kkc.impl.lm.build.file:do-lines (line pathname)
         (dolist (unit (hachee.kkc.impl.lm.build.file:line-units line))
           (if (to-int-or-nil vocabulary (unit->key unit))
               (hachee.kkc.impl.lm.dictionary:add-entry
@@ -119,7 +119,7 @@
         (pron-vocab (hachee.language-model.vocabulary:make-vocabulary)))
     (dolist (pathname pathnames)
       (let ((curr-prons (make-hash-table :test #'equal)))
-        (dolist (line (hachee.kkc.impl.lm.build.file:lines pathname))
+        (hachee.kkc.impl.lm.build.file:do-lines (line pathname)
           (dolist (unit (hachee.kkc.impl.lm.build.file:line-units line))
             (when (not (to-int-or-nil vocabulary (unit->key unit)))
               (dolist (pron-unit (unit->pron-units unit))
@@ -154,7 +154,7 @@
          :EOS (to-int unknown-word-vocabulary
                       hachee.language-model.vocabulary:+EOS+))
       (dolist (pathname pathnames)
-        (dolist (line (hachee.kkc.impl.lm.build.file:lines pathname))
+        (hachee.kkc.impl.lm.build.file:do-lines (line pathname)
           (dolist (unit (hachee.kkc.impl.lm.build.file:line-units line))
             (when (not (to-int-or-nil vocabulary (unit->key unit)))
               (model-add-counts (pron->sentence
