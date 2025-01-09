@@ -61,11 +61,11 @@
         (EOS (to-int vocabulary hachee.language-model.vocabulary:+EOS+)))
     (labels ((build-freq (i)
                (format *error-output* "Building freq ...~%")
-               (let ((freq (hachee.language-model.ngram:make-freq))
+               (let ((freq (hachee.language-model.ngram.freq:make-freq))
                      (sub-pathnames (loop for p in pathnames
                                           for j from 0
                                           when (/= j i) collect p)))
-                 (hachee.language-model.ngram:with-freq-add-counts
+                 (hachee.language-model.ngram.freq:with-add-counts
                      (add-counts freq :n 2 :BOS BOS :EOS EOS)
                    (dolist (pathname sub-pathnames)
                      (hachee.kkc.impl.lm.build.file:do-sentence

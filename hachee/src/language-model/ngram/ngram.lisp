@@ -3,9 +3,6 @@
   (:export :sentence
            :sentence-tokens
            :make-sentence
-           :freq
-           :make-freq
-           :with-freq-add-counts
            :with-model-add-counts
            :do-model-ngram-count
            :model-probability
@@ -16,66 +13,6 @@
            :make-classifier
            :sentence-log-probability))
 (in-package :hachee.language-model.ngram)
-
-(defmacro inchash (key hash)
-  `(incf (gethash ,key ,hash 0)))
-
-;;;
-
-(defstruct freq
-  (hash (make-hash-table :test #'equal)))
-
-(defun freq-get (freq tokens)
-  (gethash tokens (freq-hash freq)))
-
-(defun freq-inc (freq tokens)
-  (inchash tokens (freq-hash freq)))
-
-(defmethod hachee.language-model.ngram.probability:get-count
-    ((freq freq) (tokens list))
-  (freq-get freq tokens))
-
-(defmethod hachee.language-model.ngram.probability:inc-count
-    ((freq freq) (tokens list))
-  (freq-inc freq tokens))
-
-(defmacro with-freq-add-counts
-    ((add-counts freq &key n BOS EOS)
-     &body body)
-  (let ((sym-n (gensym))
-        (sym-BOS (gensym))
-        (sym-EOS (gensym))
-        (sym-freq (gensym)))
-    `(let ((,sym-n ,n)
-           (,sym-BOS ,BOS)
-           (,sym-EOS ,EOS)
-           (,sym-freq ,freq))
-       (labels ((,add-counts (tokens)
-                  (hachee.language-model.ngram.probability:add-ngram-counts
-                   ,sym-freq ,sym-n tokens ,sym-BOS ,sym-EOS)))
-         (progn ,@body)))))
-
-(defmacro do-freq-ngram-count ((tokens count freq) &body body)
-  (let ((sym-freq (gensym)))
-    `(let ((,sym-freq ,freq))
-       (let ((tokens-list
-              (sort (alexandria:hash-table-keys
-                     (freq-hash ,sym-freq))
-                    (lambda (tokens1 tokens2)
-                      (let ((n1 (length tokens1))
-                            (n2 (length tokens2)))
-                        (if (/= n1 n2)
-                            (< n1 n2)
-                            (loop for t1 in tokens1
-                                  for t2 in tokens2
-                                  when (< t1 t2) do (return t)
-                                  when (< t2 t1) do (return nil)
-                                  finally (progn t))))))))
-         (dolist (,tokens tokens-list)
-           (let ((,count (freq-get ,sym-freq ,tokens)))
-             ,@body))))))
-
-;;;
 
 (defstruct sentence tokens)
 
@@ -94,15 +31,11 @@
                     (funcall fn sentence)))
            (progn ,@body))))))
 
-(defmacro do-model-ngram-count ((tokens count model) &body body)
-  `(do-freq-ngram-count (,tokens ,count (model-freq ,model))
-     ,@body))
-
 ;;;
 
 (defclass model-mixin ()
   ((freq
-    :initform (make-freq)
+    :initform (hachee.language-model.ngram.freq:make-freq)
     :reader model-freq)
    (weights
     :initform nil
@@ -124,6 +57,11 @@
                token
                history-tokens)))
 
+(defmacro do-model-ngram-count ((tokens count model) &body body)
+  `(hachee.language-model.ngram.freq:do-ngram-count
+       (,tokens ,count (model-freq ,model))
+     ,@body))
+
 ;; ngram model is implemented as a little application of freq.
 ;; An n-gram language model provides the functions of:
 ;; - counting the ngram tokens in a sentence
@@ -132,10 +70,11 @@
   ())
 
 (defmethod model-add-counts-fn ((model model) BOS EOS)
-  (with-freq-add-counts (add-ngram-counts (model-freq model)
-                                          :n (model-n model)
-                                          :BOS BOS
-                                          :EOS EOS)
+  (hachee.language-model.ngram.freq:with-add-counts
+      (add-ngram-counts (model-freq model)
+                        :n (model-n model)
+                        :BOS BOS
+                        :EOS EOS)
     (lambda (sentence)
       (add-ngram-counts (sentence-tokens sentence)))))
 
@@ -144,7 +83,11 @@
 
 ;;;
 
+
 (defstruct classifier to-class-map)
+
+(defmacro inchash (key hash)
+  `(incf (gethash ,key ,hash 0)))
 
 (defun class-token (classifier x)
   (or (gethash x (classifier-to-class-map classifier))
@@ -179,10 +122,11 @@
          (token-freq (class-model-token-freq model))
          (class-token-freq (class-model-class-token-freq model))
          (class-EOS (class-token classifier EOS)))
-    (with-freq-add-counts (add-ngram-counts (model-freq model)
-                                            :n (model-n model)
-                                            :BOS (class-token classifier BOS)
-                                            :EOS class-EOS)
+    (hachee.language-model.ngram.freq:with-add-counts
+        (add-ngram-counts (model-freq model)
+                          :n (model-n model)
+                          :BOS (class-token classifier BOS)
+                          :EOS class-EOS)
       (lambda (sentence)
         (let* ((tokens (sentence-tokens sentence))
                (class-tokens (mapcar (lambda (x)
