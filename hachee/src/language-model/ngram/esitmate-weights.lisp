@@ -1,11 +1,14 @@
 (defpackage :hachee.language-model.ngram.estimate-weights
   (:use :cl)
   (:export :make-corpus
+           :make-cross-item
            :estimate-2gram
            :estimate-3gram))
 (in-package :hachee.language-model.ngram.estimate-weights)
 
 (defstruct corpus sentence-list)
+
+(defstruct cross-item freq corpus)
 
 (defun improve-iter (weights is-ok improve)
   (loop for count from 0
@@ -16,8 +19,10 @@
                  (<= 30 count))
           return new-weights))
 
-(defun improve-for-corpus-2gram (weights freq corpus BOS EOS)
-  (let ((new-w2 0) (new-w1 0) (sum 0))
+(defun improve-for-item-2gram (weights item BOS EOS)
+  (let ((freq (cross-item-freq item))
+        (corpus (cross-item-corpus item))
+        (new-w2 0) (new-w1 0) (sum 0))
     (labels ((update (curr prev)
                (destructuring-bind (p2 p1)
                    (hachee.language-model.ngram.probability:weighted-list
@@ -37,8 +42,10 @@
     (let ((tmp (/ (1- (+ new-w1 new-w2)) 2)))
       (list (+ new-w2 tmp) (+ new-w1 tmp)))))
 
-(defun improve-for-3gram (weights freq corpus BOS EOS)
-  (let ((new-w3 0) (new-w2 0) (new-w1 0) (sum 0))
+(defun improve-for-item-3gram (weights item BOS EOS)
+  (let ((freq (cross-item-freq item))
+        (corpus (cross-item-corpus item))
+        (new-w3 0) (new-w2 0) (new-w1 0) (sum 0))
     (labels ((update (curr prev2 prev1)
                (destructuring-bind (p3 p2 p1)
                    (hachee.language-model.ngram.probability:weighted-list
@@ -69,47 +76,31 @@
              (car old-weights)))
      0.0001d0))
 
-(defun estimate-2gram (size BOS EOS freq-fn corpus-fn)
-  (let ((freq-list nil)
-        (corpus-list nil))
-    (dotimes (i size)
-      (push (funcall freq-fn i) freq-list)
-      (push (funcall corpus-fn i) corpus-list))
-    (setq freq-list (nreverse freq-list))
-    (setq corpus-list (nreverse corpus-list))
+(defun estimate-2gram (items BOS EOS)
+  (let ((size (length items)))
     (labels ((improve (weights)
                (print weights)
                (let ((new-w2 0) (new-w1 0))
-                 (loop for freq in freq-list
-                       for corpus in corpus-list
-                       for (w2 w1) = (improve-for-corpus-2gram
-                                      weights freq corpus BOS EOS)
+                 (loop for item in items
+                       for (w2 w1) = (improve-for-item-2gram
+                                      weights item BOS EOS)
                        do (progn (incf new-w2 w2)
                                  (incf new-w1 w1)))
                  (list (/ new-w2 size)
                        (/ new-w1 size)))))
       (improve-iter (list 0.8d0 0.2d0) #'is-ok #'improve))))
 
-(defun estimate-3gram (size BOS EOS freq-fn corpus-fn)
-  (let ((freq-list nil)
-        (corpus-list nil))
-    (dotimes (i size)
-      (push (funcall freq-fn i) freq-list)
-      (push (funcall corpus-fn i) corpus-list))
-    (setq freq-list (nreverse freq-list))
-    (setq corpus-list (nreverse corpus-list))
+(defun estimate-3gram (items BOS EOS)
+  (let ((size (length items)))
     (labels ((improve (weights)
                (print weights)
-               (let ((new-w3 0)
-                     (new-w2 0)
-                     (new-w1 0))
-                 (loop for freq in freq-list
-                       for corpus in corpus-list do
-                   (destructuring-bind (tmp-w3 tmp-w2 tmp-w1)
-                       (improve-for-3gram weights freq corpus BOS EOS)
-                     (incf new-w3 tmp-w3)
-                     (incf new-w2 tmp-w2)
-                     (incf new-w1 tmp-w1)))
+               (let ((new-w3 0) (new-w2 0) (new-w1 0))
+                 (loop for item in items
+                       for (w3 w2 w1) = (improve-for-item-3gram
+                                         weights item BOS EOS)
+                       do (progn (incf new-w3 w3)
+                                 (incf new-w2 w2)
+                                 (incf new-w1 w1)))
                  (list (/ new-w3 size)
                        (/ new-w2 size)
                        (/ new-w1 size)))))
