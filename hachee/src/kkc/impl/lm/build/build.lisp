@@ -56,32 +56,38 @@
                  curr-words)))
     vocab))
 
-(defun estimate-2gram-weights (pathnames vocabulary)
-  (let ((BOS (to-int vocabulary hachee.language-model.vocabulary:+BOS+))
-        (EOS (to-int vocabulary hachee.language-model.vocabulary:+EOS+)))
-    (labels ((build-freq (i)
-               (format *error-output* "Building freq ...~%")
-               (let ((freq (hachee.language-model.ngram.freq:make-freq))
-                     (sub-pathnames (loop for p in pathnames
-                                          for j from 0
-                                          when (/= j i) collect p)))
-                 (hachee.language-model.ngram.freq:with-add-counts
-                     (add-counts freq :n 2 :BOS BOS :EOS EOS)
-                   (dolist (pathname sub-pathnames)
-                     (hachee.kkc.impl.lm.build.file:do-sentence
-                         (sentence pathname vocabulary)
-                       (add-counts (hachee.language-model.ngram:sentence-tokens
-                                    sentence)))))
-                 freq))
-             (build-corpus (i)
-               (let ((sentence-list nil))
+(labels ((build-freq (pathnames vocabulary n BOS EOS)
+           (format *error-output* "Building freq ...~%")
+           (let ((freq (hachee.language-model.ngram.freq:make-freq)))
+             (hachee.language-model.ngram.freq:with-add-counts
+                 (add-counts freq :n n :BOS BOS :EOS EOS)
+               (dolist (pathname pathnames)
                  (hachee.kkc.impl.lm.build.file:do-sentence
-                     (s (nth i pathnames) vocabulary)
-                   (push s sentence-list))
-                 (hachee.language-model.ngram.estimate-weights:make-corpus
-                  :sentence-list (nreverse sentence-list)))))
-      (hachee.language-model.ngram.estimate-weights:estimate-2gram
-       (length pathnames) BOS EOS #'build-freq #'build-corpus))))
+                     (sentence pathname vocabulary)
+                   (add-counts (hachee.language-model.ngram:sentence-tokens
+                                sentence)))))
+             freq))
+         (build-corpus (p vocabulary)
+           (let ((sentence-list nil))
+             (hachee.kkc.impl.lm.build.file:do-sentence (s p vocabulary)
+               (push s sentence-list))
+             (hachee.language-model.ngram.estimate-weights:make-corpus
+              :sentence-list (nreverse sentence-list)))))
+  (defun estimate-2gram-weights (pathnames vocabulary)
+    (let ((BOS (to-int vocabulary hachee.language-model.vocabulary:+BOS+))
+          (EOS (to-int vocabulary hachee.language-model.vocabulary:+EOS+)))
+      (let ((items (loop for i from 0
+                         for corpus-pathname in pathnames
+                         for freq-pathnames = (loop for p in pathnames
+                                                    for j from 0
+                                                    when (/= j i) collect p)
+                         collect (hachee.language-model.ngram.estimate-weights:make-cross-item
+                                  :freq (build-freq freq-pathnames
+                                                    vocabulary 2 BOS EOS)
+                                  :corpus (build-corpus corpus-pathname
+                                                        vocabulary)))))
+        (hachee.language-model.ngram.estimate-weights:estimate-2gram
+         items BOS EOS)))))
 
 (defun extend-existing-vocabulary (vocabulary
                                    trusted-word-dictionary
