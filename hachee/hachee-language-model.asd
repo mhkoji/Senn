@@ -4,6 +4,7 @@
   :components
   ((:file "vocabulary")
    (:file "ngram/probability")
+   (:file "ngram/freq")
    (:file "ngram/ngram")
    (:file "ngram/esitmate-weights"))
   :depends-on (:alexandria))
