@@ -4,7 +4,8 @@
            :unit-form
            :unit-pron
            :unit=
-           :unit->key))
+           :unit->key
+           :unit->pron-units))
 (in-package :hachee.kkc.impl.lm.unit)
 
 ;; word-pron pair model
