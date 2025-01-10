@@ -4,7 +4,7 @@
            :sentence-tokens
            :make-sentence
            :with-model-add-counts
-           :do-model-ngram-count
+           :do-model-ngram-counts
            :model-probability
            :model-weights
            :model
@@ -57,8 +57,8 @@
                token
                history-tokens)))
 
-(defmacro do-model-ngram-count ((tokens count model) &body body)
-  `(hachee.language-model.ngram.freq:do-ngram-count
+(defmacro do-model-ngram-counts ((tokens count model) &body body)
+  `(hachee.language-model.ngram.freq:do-ngram-counts
        (,tokens ,count (model-freq ,model))
      ,@body))
 
@@ -82,7 +82,6 @@
   (model-interpolated-probability model token history-tokens))
 
 ;;;
-
 
 (defstruct classifier to-class-map)
 

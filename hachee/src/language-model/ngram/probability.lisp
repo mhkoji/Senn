@@ -77,35 +77,3 @@
                    (  3   4 EOS) (  3   4) (  3) NIL
                                  (  4 EOS) (  4) NIL
                                            (EOS) NIL))))
-
-;; TODO: Make tests
-(defmethod get-count ((freq hash-table) tokens)
-  (gethash tokens freq))
-
-(defmethod inc-count ((freq hash-table) tokens)
-  (incf (gethash tokens freq 0)))
-
-(assert
- (let ((freq (make-hash-table :test #'equal)))
-   (add-ngram-counts freq 2 '(a b b a c) 'BOS 'EOS)
-   (and
-    (equal (weighted-list freq '(1 1) 'b '(a))
-           '(
-             1/2 ;; b | a
-             2/6 ;; b
-             ))
-    (equal (weighted-list freq '(1 1) 'a '(BOS))
-           '(
-             1   ;; a | BOS
-             2/6 ;; a
-             )))))
-
-(assert
- (let ((freq (make-hash-table :test #'equal)))
-   (add-ngram-counts freq 3 '(a b b a b) 'BOS 'EOS)
-   (equal (weighted-list freq '(1 1 1) 'b '(a b))
-          '(
-            1/2   ;; b | a b
-            1/3   ;; b | b
-            3/6   ;; b
-           ))))

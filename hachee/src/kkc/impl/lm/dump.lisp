@@ -45,7 +45,7 @@
         (token count class-model)
       (format out "~A,~A~%" count token)))
   (with-open-file (out class-ngram-counts-path :direction :output)
-    (hachee.language-model.ngram:do-model-ngram-count
+    (hachee.language-model.ngram:do-model-ngram-counts
         (tokens count class-model)
       (format out "~A~{,~A~}~%" count tokens))))
 
@@ -67,7 +67,7 @@
 
 (defun dump-unk-model (model unk-ngram-counts-path)
   (with-open-file (out unk-ngram-counts-path :direction :output)
-    (hachee.language-model.ngram:do-model-ngram-count
+    (hachee.language-model.ngram:do-model-ngram-counts
         (tokens count model)
       (format out "~A~{,~A~}~%" count tokens))))
 

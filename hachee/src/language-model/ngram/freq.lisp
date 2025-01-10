@@ -3,7 +3,7 @@
   (:export :freq
            :make-freq
            :with-add-counts
-           :do-ngram-count))
+           :do-ngram-counts))
 (in-package :hachee.language-model.ngram.freq)
 
 (defstruct freq
@@ -38,7 +38,7 @@
                    ,sym-freq ,sym-n tokens ,sym-BOS ,sym-EOS)))
          (progn ,@body)))))
 
-(defmacro do-ngram-count ((tokens count freq) &body body)
+(defmacro do-ngram-counts ((tokens count freq) &body body)
   (let ((sym-freq (gensym)))
     `(let ((,sym-freq ,freq))
        (let ((tokens-list
@@ -57,3 +57,33 @@
          (dolist (,tokens tokens-list)
            (let ((,count (freq-get ,sym-freq ,tokens)))
              ,@body))))))
+
+(assert
+ (let ((freq (make-freq)))
+   (with-add-counts (add-counts freq :n 2 :BOS 'BOS :EOS 'EOS)
+     (add-counts '(a b b a c)))
+   (and
+    (equal (hachee.language-model.ngram.probability:weighted-list
+            freq '(1 1) 'b '(a))
+           '(
+             1/2 ;; b | a
+             2/6 ;; b
+             ))
+    (equal (hachee.language-model.ngram.probability:weighted-list
+            freq '(1 1) 'a '(BOS))
+           '(
+             1   ;; a | BOS
+             2/6 ;; a
+             )))))
+
+(assert
+ (let ((freq (make-freq)))
+   (with-add-counts (add-counts freq :n 3 :BOS 'BOS :EOS 'EOS)
+     (add-counts '(a b b a b c)))
+   (equal (hachee.language-model.ngram.probability:weighted-list
+           freq '(1 1 1) 'b '(a b))
+          '(
+            1/2   ;; b | a b
+            1/3   ;; b | b
+            3/7   ;; b
+           ))))
