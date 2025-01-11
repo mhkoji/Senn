@@ -1,8 +1,8 @@
-(defpackage :hachee.data.corpus
+(defpackage :hachee.corpus.data
   (:use :cl)
   (:export :set-data-path
            :word-pron-utf8-pathnames))
-(in-package :hachee.data.corpus)
+(in-package :hachee.corpus.data)
 
 (defvar *data-pathname* nil)
 
@@ -11,4 +11,4 @@
 
 (defun word-pron-utf8-pathnames ()
   (uiop:directory-files
-   (merge-pathnames "corpus/aozora/word-pron-utf8/" *data-pathname*)))
+   (merge-pathnames "aozora/word-pron-utf8/" *data-pathname*)))
