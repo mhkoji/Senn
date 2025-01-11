@@ -13,20 +13,46 @@
            :build-classifier)
   (:local-nicknames (:voc :hachee.language-model.vocabulary))
   (:local-nicknames (:unit :hachee.kkc.impl.lm.unit))
-  (:local-nicknames (:file :hachee.kkc.impl.lm.build.file))
   (:local-nicknames (:freq :hachee.language-model.ngram.freq))
   (:local-nicknames (:dict :hachee.kkc.impl.lm.dictionary))
   (:local-nicknames (:ngram :hachee.language-model.ngram))
+  (:local-nicknames (:corpus :hachee.corpus))
   (:local-nicknames (:estimate-weights
                      :hachee.language-model.ngram.estimate-weights)))
 (in-package :hachee.kkc.impl.lm.build)
+
+(defun pron->sentence (pron unknown-word-char-vocabulary)
+  (labels ((ch->token (ch)
+             (let ((unit (unit:make-unit :form (string ch)
+                                         :pron (string ch))))
+               (voc:to-int-or-unk unknown-word-char-vocabulary
+                                  (unit:unit->key unit)))))
+    (ngram:make-sentence
+     :tokens (loop for ch across pron collect (ch->token ch)))))
+
+(defun line-units (line)
+  (corpus:line-units line (lambda (f p)
+                            (unit:make-unit :form f :pron p))))
+
+
+(defun line->sentence (line vocabulary)
+  (ngram:make-sentence
+   :tokens (mapcar (lambda (u)
+                     (voc:to-int-or-unk vocabulary (unit:unit->key u)))
+                   (line-units line))))
+
+(defmacro do-sentences ((sentence filename vocabulary) &body body)
+  `(corpus:do-lines (line ,filename)
+     (let ((,sentence (line->sentence line ,vocabulary)))
+       ,@body)))
+
 
 (defun build-vocabulary (pathnames)
   (let ((vocab (voc:make-vocabulary))
         (word-key->freq (make-hash-table :test #'equal)))
     (dolist (pathname pathnames)
-      (file:do-lines (line pathname)
-        (dolist (word (file:line-units line))
+      (corpus:do-lines (line pathname)
+        (dolist (word (line-units line))
           (incf (gethash (unit:unit->key word) word-key->freq 0)))))
     (let ((skipped-for-UNK-p nil))
       (maphash (lambda (word-key count)
@@ -43,8 +69,8 @@
         (word-key->freq (make-hash-table :test #'equal)))
     (dolist (pathname pathnames)
       (let ((curr-words (make-hash-table :test #'equal)))
-        (file:do-lines (line pathname)
-          (dolist (word (file:line-units line))
+        (corpus:do-lines (line pathname)
+          (dolist (word (line-units line))
             (setf (gethash (unit:unit->key word) curr-words) word)))
         (maphash (lambda (word-key word)
                    (let ((freq (incf (gethash word-key word-key->freq 0))))
@@ -59,13 +85,12 @@
              (freq:with-add-counts
                  (add-counts freq :n n :BOS BOS :EOS EOS)
                (dolist (pathname pathnames)
-                 (file:do-sentence
-                     (sentence pathname vocabulary)
+                 (do-sentences (sentence pathname vocabulary)
                    (add-counts (ngram:sentence-tokens sentence)))))
              freq))
          (build-corpus (p vocabulary)
            (let ((sentence-list nil))
-             (file:do-sentence (s p vocabulary)
+             (do-sentences (s p vocabulary)
                (push s sentence-list))
              (estimate-weights:make-corpus
               :sentence-list (nreverse sentence-list)))))
@@ -89,8 +114,8 @@
                                    pathnames-inaccurately-segmented)
   (format *error-output* "Extending vocabulary ...~%")
   (dolist (pathname pathnames-inaccurately-segmented)
-    (file:do-lines (line pathname)
-      (dolist (unit (file:line-units line))
+    (corpus:do-lines (line pathname)
+      (dolist (unit (line-units line))
         (when (dict:contains-p trusted-word-dictionary unit)
           (voc:add-new vocabulary (unit:unit->key unit))))))
   vocabulary)
@@ -99,8 +124,8 @@
   (format *error-output* "Building dictionary ...~%")
   (let ((dict (dict:make-dictionary)))
     (dolist (pathname pathnames)
-      (file:do-lines (line pathname)
-        (dolist (unit (file:line-units line))
+      (corpus:do-lines (line pathname)
+        (dolist (unit (line-units line))
           (if (voc:to-int-or-nil vocabulary (unit:unit->key unit))
               (dict:add-entry dict unit hachee.kkc.origin:+vocabulary+)
               (dict:add-entry dict unit hachee.kkc.origin:+corpus+)))))
@@ -112,7 +137,7 @@
                                 :BOS (voc:to-int vocabulary voc:+BOS+)
                                 :EOS (voc:to-int vocabulary voc:+EOS+))
     (dolist (pathname pathnames)
-      (file:do-sentence (sentence pathname vocabulary)
+      (do-sentences (sentence pathname vocabulary)
         (model-add-counts sentence))))
   model)
 
@@ -122,8 +147,8 @@
         (pron-vocab (voc:make-vocabulary)))
     (dolist (pathname pathnames)
       (let ((curr-prons (make-hash-table :test #'equal)))
-        (file:do-lines (line pathname)
-          (dolist (unit (file:line-units line))
+        (corpus:do-lines (line pathname)
+          (dolist (unit (line-units line))
             (when (not (voc:to-int-or-nil vocabulary (unit:unit->key unit)))
               (dolist (pron-unit (unit:unit->pron-units unit))
                 (setf (gethash (unit:unit->key pron-unit) curr-prons)
@@ -135,14 +160,6 @@
                  curr-prons)))
     pron-vocab))
 
-(defun pron->sentence (pron unknown-word-char-vocabulary)
-  (ngram:make-sentence
-   :tokens (loop for ch across pron
-                 for unit = (unit:make-unit :form (string ch)
-                                            :pron (string ch))
-                 collect (voc:to-int-or-unk unknown-word-char-vocabulary
-                                            (unit:unit->key unit)))))
-
 (defun build-unknown-word-ngram-model (pathnames
                                        vocabulary
                                        unknown-word-vocabulary)
@@ -153,8 +170,8 @@
          :BOS (voc:to-int unknown-word-vocabulary voc:+BOS+)
          :EOS (voc:to-int unknown-word-vocabulary voc:+EOS+))
       (dolist (pathname pathnames)
-        (file:do-lines (line pathname)
-          (dolist (unit (file:line-units line))
+        (corpus:do-lines (line pathname)
+          (dolist (unit (line-units line))
             (when (not (voc:to-int-or-nil vocabulary (unit:unit->key unit)))
               (model-add-counts (pron->sentence
                                  (unit:unit-pron unit)

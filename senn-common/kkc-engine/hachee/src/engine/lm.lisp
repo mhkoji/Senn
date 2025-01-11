@@ -12,7 +12,7 @@
 
 (defun build-kkc-using-hachee-corpus ()
   (let ((corpus-pathnames
-         (hachee.data.corpus:word-pron-utf8-pathnames)))
+         (hachee.corpus.data:word-pron-utf8-pathnames)))
     (format *error-output* "Loading: ~A" corpus-pathnames)
     (hachee.kkc.impl.lm:build-kkc-simple corpus-pathnames)))
 

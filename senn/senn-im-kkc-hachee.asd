@@ -3,5 +3,5 @@
   :components
   ((:file "src/im/kkc/hachee"))
   :depends-on (:senn-im-kkc
-               :hachee-data
+               :hachee-corpus-data
                :hachee-kkc-impl-lm))

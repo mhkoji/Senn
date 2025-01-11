@@ -10,7 +10,7 @@
 
 (defmacro build-and-convert-pronunciations (&key test)
   `(let ((kkc (hachee.kkc.impl.lm:build-kkc-simple
-               (hachee.data.corpus:word-pron-utf8-pathnames))))
+               (hachee.corpus.data:word-pron-utf8-pathnames))))
      (,test
       (equal (mapcar #'entry->string
                      (hachee.kkc.convert:execute

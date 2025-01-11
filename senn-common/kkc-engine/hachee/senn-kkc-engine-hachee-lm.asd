@@ -8,5 +8,5 @@
                :cl-fad
                :yason
                :hachee-kkc-impl-lm
-               :hachee-data
+               :hachee-corpus-data
                :senn-ipc-server-stdio))
