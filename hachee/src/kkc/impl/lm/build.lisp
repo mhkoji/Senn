@@ -1,16 +1,7 @@
 (defpackage :hachee.kkc.impl.lm.build
   (:use :cl)
-  (:export :build-vocabulary
-           :build-vocabulary-with-unk
-           :extend-existing-vocabulary
-           :estimate-2gram-weights
-           :build-word-dictionary
-           :train-ngram-model
-           :build-unknown-word-vocabulary
-           :build-unknown-word-ngram-model
-           :add-to-word-dictionary-from-resources
-           :build-tankan-dictionary
-           :build-classifier)
+  (:export :build-kkc
+           :build-kkc-simple)
   (:local-nicknames (:voc :hachee.language-model.vocabulary))
   (:local-nicknames (:unit :hachee.kkc.impl.lm.unit))
   (:local-nicknames (:freq :hachee.language-model.ngram.freq))
@@ -237,3 +228,83 @@
       (setf (gethash (voc:to-int vocabulary voc:+EOS+) to-class-map)
             EOS-class-token))
     (ngram:make-classifier :to-class-map to-class-map)))
+
+;;;
+
+(defun build-kkc-simple (pathnames
+                         &key class-token-to-word-file-path
+                              (weights (list 0.8d0 0.2d0))
+                              char-dictionary)
+  (let ((vocabulary (build-vocabulary pathnames)))
+    (let ((ngram-model
+           (if class-token-to-word-file-path
+               (make-instance 'hachee.language-model.ngram:class-model
+                              :classifier
+                              (build-classifier class-token-to-word-file-path
+                                                vocabulary))
+               (make-instance 'hachee.language-model.ngram:model
+                              :weights weights))))
+      (train-ngram-model ngram-model pathnames vocabulary)
+      (make-instance (ecase (length weights)
+                       (2 'hachee.kkc.impl.lm:kkc-2gram)
+                       (3 'hachee.kkc.impl.lm:kkc-3gram))
+       :ngram-model ngram-model
+       :vocabulary vocabulary
+       :word-dictionary
+       (build-word-dictionary pathnames vocabulary)
+       :char-dictionary (or char-dictionary
+                            (hachee.kkc.impl.lm.dictionary:make-dictionary))
+       :unknown-word-vocabulary
+       (hachee.language-model.vocabulary:make-vocabulary)
+       :unknown-word-ngram-model
+       (make-instance 'hachee.language-model.ngram:model)))))
+
+(defun build-kkc (pathnames-segmented
+                  &key pathnames-inaccurately-segmented
+                       word-dictionary-pathnames
+                       char-dictionary
+                       trusted-word-dictionary
+                       class-token-to-word-file-path
+                       (weights (list 0.8d0 0.2d0)))
+  (let ((vocabulary (build-vocabulary-with-unk pathnames-segmented)))
+    (when (and pathnames-inaccurately-segmented
+               trusted-word-dictionary
+               ;; Unable to map an added word to a class
+               (not class-token-to-word-file-path))
+      (extend-existing-vocabulary vocabulary
+                                  trusted-word-dictionary
+                                  pathnames-inaccurately-segmented))
+    (let ((pathnames
+           (append pathnames-segmented
+                   pathnames-inaccurately-segmented))
+          (ngram-model
+           (if class-token-to-word-file-path
+               (make-instance 'hachee.language-model.ngram:class-model
+                              :classifier
+                              (build-classifier class-token-to-word-file-path
+                                                vocabulary)
+                              :weights weights)
+               (make-instance 'hachee.language-model.ngram:model
+                              :weights weights))))
+      (train-ngram-model ngram-model pathnames vocabulary)
+      (let* ((word-dictionary
+              (add-to-word-dictionary-from-resources
+               (build-word-dictionary pathnames vocabulary)
+               word-dictionary-pathnames))
+             (unknown-word-vocabulary
+              (build-unknown-word-vocabulary pathnames vocabulary))
+             (unknown-word-ngram-model
+              (build-unknown-word-ngram-model pathnames
+                                              vocabulary
+                                              unknown-word-vocabulary)))
+        (make-instance (ecase (length weights)
+                         (2 'hachee.kkc.impl.lm:kkc-2gram)
+                         (3 'hachee.kkc.impl.lm:kkc-3gram))
+         :ngram-model ngram-model
+         :vocabulary vocabulary
+         :word-dictionary word-dictionary
+         :char-dictionary
+         (or char-dictionary
+             (hachee.kkc.impl.lm.dictionary:make-dictionary))
+         :unknown-word-vocabulary unknown-word-vocabulary
+         :unknown-word-ngram-model unknown-word-ngram-model)))))
