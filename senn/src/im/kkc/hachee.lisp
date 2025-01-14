@@ -9,7 +9,7 @@
   (let ((corpus-pathnames
          (hachee.corpus.data:word-pron-utf8-pathnames)))
     (format *error-output* "Loading: ~A~%" corpus-pathnames)
-    (hachee.kkc.impl.lm:build-kkc-simple corpus-pathnames)))
+    (hachee.kkc.impl.lm.build:build-kkc-simple corpus-pathnames)))
 
 ;;;
 

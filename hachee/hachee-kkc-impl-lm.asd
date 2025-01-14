@@ -4,9 +4,9 @@
   :components
   ((:file "unit")
    (:file "dictionary")
-   (:file "build")
    (:file "dump")
-   (:file "lm"))
+   (:file "lm")
+   (:file "build"))
   :depends-on (:hachee-kkc
                :hachee-language-model
                :hachee-corpus))

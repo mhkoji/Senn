@@ -2,9 +2,9 @@
 (defpackage :hachee.kkc.impl.lm
   (:use :cl)
   (:export :kkc
-           :kkc-word-dictionary
-           :build-kkc
-           :build-kkc-simple))
+           :kkc-2gram
+           :kkc-3gram
+           :kkc-word-dictionary))
 (in-package :hachee.kkc.impl.lm)
 
 (defclass kkc ()
@@ -32,94 +32,6 @@
 
 (defclass kkc-3gram (kkc hachee.kkc.convert:2gram-convert)
   ())
-
-(defun build-kkc-simple (pathnames
-                         &key class-token-to-word-file-path
-                              (weights (list 0.8d0 0.2d0))
-                              char-dictionary)
-  (let ((vocabulary
-         (hachee.kkc.impl.lm.build:build-vocabulary pathnames)))
-    (let ((ngram-model
-           (if class-token-to-word-file-path
-               (make-instance 'hachee.language-model.ngram:class-model
-                              :classifier
-                              (hachee.kkc.impl.lm.build:build-classifier
-                               class-token-to-word-file-path
-                               vocabulary))
-               (make-instance 'hachee.language-model.ngram:model
-                              :weights weights))))
-      (hachee.kkc.impl.lm.build:train-ngram-model
-       ngram-model pathnames vocabulary)
-      (make-instance (ecase (length weights)
-                       (2 'kkc-2gram)
-                       (3 'kkc-3gram))
-       :ngram-model ngram-model
-       :vocabulary vocabulary
-       :word-dictionary
-       (hachee.kkc.impl.lm.build:build-word-dictionary pathnames vocabulary)
-       :char-dictionary (or char-dictionary
-                            (hachee.kkc.impl.lm.dictionary:make-dictionary))
-       :unknown-word-vocabulary
-       (hachee.language-model.vocabulary:make-vocabulary)
-       :unknown-word-ngram-model
-       (make-instance 'hachee.language-model.ngram:model)))))
-
-(defun build-kkc (pathnames-segmented
-                  &key pathnames-inaccurately-segmented
-                       word-dictionary-pathnames
-                       char-dictionary
-                       trusted-word-dictionary
-                       class-token-to-word-file-path
-                       (weights (list 0.8d0 0.2d0)))
-  (let ((vocabulary (hachee.kkc.impl.lm.build:build-vocabulary-with-unk
-                     pathnames-segmented)))
-    (when (and pathnames-inaccurately-segmented
-               trusted-word-dictionary
-               ;; Unable to map an added word to a class
-               (not class-token-to-word-file-path))
-      (hachee.kkc.impl.lm.build:extend-existing-vocabulary
-       vocabulary
-       trusted-word-dictionary
-       pathnames-inaccurately-segmented))
-    (let ((pathnames
-           (append pathnames-segmented
-                   pathnames-inaccurately-segmented))
-          (ngram-model
-           (if class-token-to-word-file-path
-               (make-instance 'hachee.language-model.ngram:class-model
-                              :classifier
-                              (hachee.kkc.impl.lm.build:build-classifier
-                               class-token-to-word-file-path
-                               vocabulary)
-                              :weights weights)
-               (make-instance 'hachee.language-model.ngram:model
-                              :weights weights))))
-      (hachee.kkc.impl.lm.build:train-ngram-model
-       ngram-model pathnames vocabulary)
-      (let* ((word-dictionary
-              (hachee.kkc.impl.lm.build:add-to-word-dictionary-from-resources
-               (hachee.kkc.impl.lm.build:build-word-dictionary
-                pathnames vocabulary)
-               word-dictionary-pathnames))
-             (unknown-word-vocabulary
-              (hachee.kkc.impl.lm.build:build-unknown-word-vocabulary
-               pathnames vocabulary))
-             (unknown-word-ngram-model
-              (hachee.kkc.impl.lm.build:build-unknown-word-ngram-model
-               pathnames
-               vocabulary
-               unknown-word-vocabulary)))
-        (make-instance (ecase (length weights)
-                         (2 'kkc-2gram)
-                         (3 'kkc-3gram))
-         :ngram-model ngram-model
-         :vocabulary vocabulary
-         :word-dictionary word-dictionary
-         :char-dictionary
-         (or char-dictionary
-             (hachee.kkc.impl.lm.dictionary:make-dictionary))
-         :unknown-word-vocabulary unknown-word-vocabulary
-         :unknown-word-ngram-model unknown-word-ngram-model)))))
 
 ;;; convert
 
