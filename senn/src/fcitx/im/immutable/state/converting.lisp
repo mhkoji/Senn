@@ -1,4 +1,4 @@
-(defpackage :senn.fcitx.im.state.converting
+(defpackage :senn.fcitx.im.immutable.state.converting
   (:use :cl :senn.im.converting)
   (:export :mixin
            :ime-kkc
@@ -14,7 +14,7 @@
            :convert
 
            :converting-view))
-(in-package :senn.fcitx.im.state.converting)
+(in-package :senn.fcitx.im.immutable.state.converting)
 
 (defun converting-view (s)
   (senn.fcitx.im.view:converting

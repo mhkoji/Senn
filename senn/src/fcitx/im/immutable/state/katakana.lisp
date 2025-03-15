@@ -1,10 +1,10 @@
-(defpackage :senn.fcitx.im.state.katakana
+(defpackage :senn.fcitx.im.immutable.state.katakana
   (:use :cl)
   (:export :state
            :state-input
            :make-state
            :editing-view))
-(in-package :senn.fcitx.im.state.katakana)
+(in-package :senn.fcitx.im.immutable.state.katakana)
 
 (defstruct (state (:constructor %make-state))
   (input ""))
@@ -13,4 +13,7 @@
   (%make-state :input (senn.ja:hiragana->katakana input)))
 
 (defun editing-view (s)
-  (senn.fcitx.im.view:editing-by-string (state-input s) nil nil))
+  (let ((input (state-input s)))
+    (senn.fcitx.im.view:editing
+     (senn.fcitx.im.view:length-utf8 input)
+     input nil nil "")))

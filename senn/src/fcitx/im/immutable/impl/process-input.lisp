@@ -2,24 +2,12 @@
 ;; This process is described by state transition that includes:
 ;;  - Latin-to-Hiragana conversion
 ;;  - Kana-Kanji Conversion
-(defpackage :senn.fcitx.im.immutable.process-input
-  (:use :cl)
-  (:export :execute)
-  (:import-from :senn.fcitx.im.immutable
-                :ime
-                :resp)
-  (:local-nicknames (:inputting :senn.fcitx.im.state.inputting)
-                    (:converting :senn.fcitx.im.state.converting)
-                    (:selecting-from-predictions
-                     :senn.fcitx.im.state.selecting-from-predictions)
-                    (:katakana :senn.fcitx.im.state.katakana)))
-(in-package :senn.fcitx.im.immutable.process-input)
+(in-package :senn.fcitx.im.immutable.impl)
 
-(defgeneric execute (state key ime))
-
-(defmethod execute ((s katakana:state)
-                    (key senn.fcitx.keys:key)
-                    (ime ime))
+(defmethod senn.fcitx.im.immutable:process-input
+    ((s katakana:state)
+     (key senn.fcitx.keys:key)
+     (ime ime-mixin))
   (cond ((senn.fcitx.keys:enter-p key)
          (let ((new-state (inputting:make-state))
                (committed-string (katakana:state-input s)))
@@ -29,9 +17,10 @@
         (t
          (resp (katakana:editing-view s)))))
 
-(defmethod execute ((s selecting-from-predictions:state)
-                    (key senn.fcitx.keys:key)
-                    (ime ime))
+(defmethod senn.fcitx.im.immutable:process-input
+    ((s selecting-from-predictions:state)
+     (key senn.fcitx.keys:key)
+     (ime ime-mixin))
   (cond ((senn.fcitx.keys:enter-p key)
          (let ((new-state (inputting:make-state))
                (committed-string
@@ -52,9 +41,10 @@
         (t
          (resp (selecting-from-predictions:editing-view s)))))
 
-(defmethod execute ((s converting:state)
-                    (key senn.fcitx.keys:key)
-                    (ime ime))
+(defmethod senn.fcitx.im.immutable:process-input
+    ((s converting:state)
+     (key senn.fcitx.keys:key)
+     (ime ime-mixin))
   (cond ((senn.fcitx.keys:left-p key)
          (converting:current-segment-move! s -1)
          (resp (converting:converting-view s) :state s))
@@ -104,9 +94,10 @@
                   new-state :committed-string committed-string)
                  :state new-state)))))
 
-(defmethod execute ((s inputting:state)
-                    (key senn.fcitx.keys:key)
-                    (ime ime))
+(defmethod senn.fcitx.im.immutable:process-input
+    ((s inputting:state)
+     (key senn.fcitx.keys:key)
+     (ime ime-mixin))
   (cond ((/= (logand (senn.fcitx.keys:key-state key)
                      #b1000000)
              0)

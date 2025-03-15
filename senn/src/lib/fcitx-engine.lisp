@@ -9,5 +9,5 @@
 
 (defun close-ime (ime)
   (format *error-output* "Closing IME ...~%")
-  (let ((kkc (senn.fcitx.im.mutable:ime-kkc ime)))
+  (let ((kkc (senn.fcitx.im.mutable:get-kkc ime)))
     (senn.im.kkc.engine:close-kkc kkc)))
