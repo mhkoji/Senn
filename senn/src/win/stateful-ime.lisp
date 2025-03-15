@@ -10,39 +10,23 @@
            :make-ime))
 (in-package :senn.win.stateful-ime)
 
-(defstruct history
-  (hash (make-hash-table :test #'equal)))
-
-(defun history-put (history pron form)
-  (setf (gethash pron (history-hash history)) form))
-
-(defun history-get-form (history pron)
-  (gethash pron (history-hash history)))
-
-(defun history-apply (history segs)
-  (mapcar (lambda (seg)
-            (let* ((pron (senn.im.kkc:segment-pron seg))
-                   (history-form (history-get-form history pron)))
-              (if (not history-form)
-                  seg
-                  (senn.im.kkc:make-segment
-                   :pron pron
-                   :candidates
-                   (cons (senn.im.kkc:make-candidate :form history-form)
-                         (remove history-form
-                                 (senn.im.kkc:segment-candidates seg)
-                                 :key #'senn.im.kkc:candidate-form
-                                 :test #'string=))))))
-          segs))
-
 (defclass history-overwrite-mixin ()
-  ((history :initarg :history)))
+  ((segments-fn
+    :initform #'identity)))
 
 (defmethod senn.im.kkc:convert ((kkc history-overwrite-mixin) (pron string)
                                 &key 1st-boundary-index)
   (declare (ignore 1st-boundary-index))
   (let ((segs (call-next-method)))
-    (history-apply (slot-value kkc 'history) segs)))
+    (let ((segments-fn (slot-value kkc 'segments-fn)))
+      (or (funcall segments-fn segs) segs))))
+
+(defgeneric history-overwrite-mixin-set-segments-fn (mixin fn)
+  (:method (mixin fn)
+    nil)
+  (:method ((mixin history-overwrite-mixin) fn)
+    (setf (slot-value mixin 'segments-fn) fn)))
+
 
 ;; application state
 (defstruct state
@@ -54,7 +38,7 @@
   (make-state
    :input-mode :direct
    :input-state :direct-state
-   :history (make-history)))
+   :history (senn.win.history:make-history)))
 
 (defgeneric ime-state (ime))
 
@@ -93,7 +77,7 @@
           (setf input-state state))
         (when committed-segments
           (dolist (seg committed-segments)
-            (history-put
+            (senn.win.history:history-put
              history
              (senn.im.converting:segment-pron seg)
              (senn.im.converting:segment-cursor-pos-form seg))))
@@ -122,8 +106,10 @@
 
 (defun make-ime (&key kkc predictor)
   (let ((state (make-initial-state)))
-    (when (typep kkc 'history-overwrite-mixin)
-      (setf (slot-value kkc 'history) (state-history state)))
+    (history-overwrite-mixin-set-segments-fn
+     kkc (let ((history (state-history state)))
+           (lambda (segs)
+             (senn.win.history:history-apply history segs))))
     (make-instance 'ime
                    :state state
                    :kkc kkc
