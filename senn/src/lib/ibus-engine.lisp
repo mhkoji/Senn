@@ -9,5 +9,5 @@
 
 (defun close-ime (ime)
   (format *error-output* "Closing IME ...~%")
-  (let ((kkc (senn.ibus.stateful-ime:ime-kkc ime)))
+  (let ((kkc (senn.ibus.stateful-ime:get-kkc ime)))
     (senn.im.kkc.engine:close-kkc kkc)))

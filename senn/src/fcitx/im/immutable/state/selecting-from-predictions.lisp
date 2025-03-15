@@ -1,4 +1,4 @@
-(defpackage :senn.fcitx.im.state.selecting-from-predictions
+(defpackage :senn.fcitx.im.immutable.state.selecting-from-predictions
   (:use :cl)
   (:export :state
            :state-predictions
@@ -8,7 +8,7 @@
            :make-state
 
            :editing-view))
-(in-package :senn.fcitx.im.state.selecting-from-predictions)
+(in-package :senn.fcitx.im.immutable.state.selecting-from-predictions)
 
 (defstruct state predictions current-index)
 
@@ -24,6 +24,10 @@
   s)
 
 (defun editing-view (s)
-  (senn.fcitx.im.view:editing-by-string (state-current-input s)
-                                        (state-predictions s)
-                                        (state-current-index s)))
+  (let ((input (state-current-input s)))
+    (senn.fcitx.im.view:editing
+     (senn.fcitx.im.view:length-utf8 input)
+     input
+     (state-predictions s)
+     (state-current-index s)
+     "")))
