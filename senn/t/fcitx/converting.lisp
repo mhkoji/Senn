@@ -58,8 +58,12 @@
              :test #'equal)))))
     (format nil "CONVERTING ~A" view)))
 
+(defun make-service (&key kkc)
+  (make-instance 'senn.fcitx.stateful-ime:service
+   :ime (make-instance 'senn.fcitx.im:ime :kkc kkc)))
+
 (defmacro space-then-convert (&key test)
-  `(let ((ime (senn.fcitx.stateful-ime:make-service :kkc 'static-kkc)))
+  `(let ((ime (make-service :kkc 'static-kkc)))
      (dolist (char '(#\k #\y #\o #\u #\h #\a))
        (senn.fcitx.stateful-ime:process-input ime (char-key char)))
      (resp= ,test
@@ -71,7 +75,7 @@
                :cursor-form-candidate-index 0))))
 
 (defmacro segment-cursor-goes-around (&key test)
-  `(let ((ime (senn.fcitx.stateful-ime:make-service :kkc 'static-kkc)))
+  `(let ((ime (make-service :kkc 'static-kkc)))
      (dolist (char '(#\k #\y #\o #\u #\h #\a))
        (senn.fcitx.stateful-ime:process-input ime (char-key char)))
      (senn.fcitx.stateful-ime:process-input ime (space-key))
@@ -93,7 +97,7 @@
                :cursor-form-candidate-index 0))))
 
 (defmacro segment-cursor-does-not-go-beyond-the-both-ends (&key test)
-  `(let ((ime (senn.fcitx.stateful-ime:make-service :kkc 'static-kkc)))
+  `(let ((ime (make-service :kkc 'static-kkc)))
      (dolist (char '(#\k #\y #\o #\u #\h #\a))
        (senn.fcitx.stateful-ime:process-input ime (char-key char)))
      (senn.fcitx.stateful-ime:process-input ime (space-key))
@@ -123,7 +127,7 @@
                :cursor-form-candidate-index 0))))
 
 (defmacro space-multiple-times-then-more-candidates (&key test)
-  `(let ((ime (senn.fcitx.stateful-ime:make-service :kkc 'static-kkc)))
+  `(let ((ime (make-service :kkc 'static-kkc)))
      (dolist (char '(#\k #\y #\o #\u #\h #\a))
        (senn.fcitx.stateful-ime:process-input ime (char-key char)))
      (senn.fcitx.stateful-ime:process-input ime (space-key))
@@ -136,7 +140,7 @@
                :cursor-form-candidate-index 1))))
 
 (defmacro candidate-cursor-goes-around (&key test)
-  `(let ((ime (senn.fcitx.stateful-ime:make-service :kkc 'static-kkc)))
+  `(let ((ime (make-service :kkc 'static-kkc)))
      (dolist (char '(#\k #\y #\o #\u #\h #\a))
        (senn.fcitx.stateful-ime:process-input ime (char-key char)))
      (senn.fcitx.stateful-ime:process-input ime (space-key))
@@ -167,7 +171,7 @@
                :cursor-form-candidate-index 0))))
 
 (defmacro candidate-cursor-loops (&key test)
-  `(let ((ime (senn.fcitx.stateful-ime:make-service :kkc 'static-kkc)))
+  `(let ((ime (make-service :kkc 'static-kkc)))
      (dolist (char '(#\k #\y #\o #\u #\h #\a))
        (senn.fcitx.stateful-ime:process-input ime (char-key char)))
      (senn.fcitx.stateful-ime:process-input ime (space-key))
@@ -222,7 +226,7 @@
                :cursor-form-candidate-index 0))))
 
 (defmacro convert-adds-latin-n-to-make-hiragana-letter-n (&key test)
-  `(let ((ime (senn.fcitx.stateful-ime:make-service :kkc 'nn-kkc)))
+  `(let ((ime (make-service :kkc 'nn-kkc)))
      (senn.fcitx.stateful-ime:process-input ime (char-key #\n))
      (resp= ,test
             (senn.fcitx.stateful-ime:process-input ime (space-key))
@@ -233,7 +237,7 @@
                :cursor-form-candidate-index 0))))
 
 (defmacro select-candidate (&key test)
-  `(let ((ime (senn.fcitx.stateful-ime:make-service :kkc 'static-kkc)))
+  `(let ((ime (make-service :kkc 'static-kkc)))
      (dolist (char '(#\k #\y #\o #\u #\h #\a))
        (senn.fcitx.stateful-ime:process-input ime (char-key char)))
      (senn.fcitx.stateful-ime:process-input ime (space-key))

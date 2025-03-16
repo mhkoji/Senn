@@ -10,14 +10,12 @@
           (senn.im.converting:state-segments state)))
 
 (defmacro hachee-convert (&key test)
-  `(let ((service (senn.fcitx.stateful-ime:make-service
-                   :kkc (make-instance
-                         'senn.im.kkc.hachee:kkc
-                         :hachee-impl-lm-kkc
-                         (senn.im.kkc.hachee:build-hachee-impl-lm-kkc)))))
-     (let ((state (senn.im.converting:convert
-                   (senn.fcitx.stateful-ime:service-ime service)
-                   "とうきょうにいきました")))
+  `(let ((ime (make-instance 'senn.fcitx.im:ime
+               :kkc (make-instance
+                     'senn.im.kkc.hachee:kkc
+                     :hachee-impl-lm-kkc
+                     (senn.im.kkc.hachee:build-hachee-impl-lm-kkc)))))
+     (let ((state (senn.im.converting:convert ime "とうきょうにいきました")))
        (,test (equal
                (senn.t.im-util:converting-state-segment-strings state)
                '("東京/とうきょう" "に/に" "行/い" "き/き" "ま/ま" "し/し" "た/た"))))))
