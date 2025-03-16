@@ -1,7 +1,8 @@
 (defpackage :senn.win.im.process-input
   (:use :cl)
-  (:export :execute))
+  (:export :dry-run))
 (in-package :senn.win.im.process-input)
+
 
 ;;; view
 
@@ -49,56 +50,60 @@
 
 ;;; interface
 
-(defgeneric execute (state ime key mode))
-
-(defun result (can-process view &key state committed-segments)
-  (list can-process view
+(defun result (view &key state committed-segments)
+  (list view
         :state state
         :committed-segments committed-segments))
 
-(defmethod execute ((s (eql :direct-state))
+(defgeneric dry-run (state ime key mode))
+
+(defmethod dry-run ((s (eql :direct-state))
                     (ime senn.win.im:ime)
                     (key senn.win.keys:key)
                     (mode t))
   (assert (senn.win.im.input-mode:mode=
            mode
            senn.win.im.input-mode:+direct+))
-  (result nil nil))
+  nil)
 
-(defmethod execute ((s senn.im.converting:state)
+(defmethod dry-run ((s senn.im.converting:state)
                     (ime senn.win.im:ime)
                     (key senn.win.keys:key)
                     (mode t))
   (cond ((senn.win.keys:enter-p key)
-         (let ((view (committed-view
-                      (senn.im.converting:current-input s)))
-               (segs (senn.im.converting:state-segments s))
-               (state (senn.win.im.input-mode:mode-case mode
-                        (:hiragana (senn.im.inputting:make-state))
-                        (:direct   nil))))
-           (result t view
-                   :state state
-                   :committed-segments segs)))
+         (lambda ()
+           (let ((view (committed-view
+                        (senn.im.converting:current-input s)))
+                 (segs (senn.im.converting:state-segments s))
+                 (state (senn.win.im.input-mode:mode-case mode
+                          (:hiragana (senn.im.inputting:make-state))
+                          (:direct   nil))))
+             (result view
+                     :state state
+                     :committed-segments segs))))
 
         ((or (senn.win.keys:space-p key)
              (senn.win.keys:down-p key))
-         (senn.im.converting:current-segment-candidates-move! s +1 ime)
-         (result t (converting-view s) :state s))
+         (lambda ()
+           (senn.im.converting:current-segment-candidates-move! s +1 ime)
+           (result (converting-view s) :state s)))
 
         ((senn.win.keys:up-p key)
-         (senn.im.converting:current-segment-candidates-move! s -1 ime)
-         (result t (converting-view s) :state s))
+         (lambda ()
+           (senn.im.converting:current-segment-candidates-move! s -1 ime)
+           (result (converting-view s) :state s)))
 
         ((senn.win.keys:left-p key)
-         (senn.im.converting:current-segment-move! s -1)
-         (result t (converting-view s) :state s))
+         (lambda ()
+           (senn.im.converting:current-segment-move! s -1)
+           (result (converting-view s) :state s)))
 
         ((senn.win.keys:right-p key)
-         (senn.im.converting:current-segment-move! s +1)
-         (result t (converting-view s) :state s))
+         (lambda ()
+           (senn.im.converting:current-segment-move! s +1)
+           (result (converting-view s) :state s)))
 
-        (t
-         (result nil nil))))
+        (t nil)))
 
 (defun oem-key->char (mode key)
   (let ((shift-p (senn.win.keys:key-shift-p key)))
@@ -169,7 +174,7 @@
     ;; to lower case by adding #x20
     (code-char (+ #x20 (senn.win.keys:key-code key)))))
 
-(defmethod execute ((s senn.im.inputting:state)
+(defmethod dry-run ((s senn.im.inputting:state)
                     (ime senn.win.im:ime)
                     (key senn.win.keys:key)
                     (mode t))
@@ -178,32 +183,44 @@
                     (number-key->char mode key)
                     (alphabet-key->char key))))
       (when char
-	(senn.win.im.input-mode:mode-case mode
-	  (:hiragana
-	   (senn.im.inputting:insert-char! s char ime))
-	  (:direct
-	   (senn.im.inputting:insert-char-direct! s char ime)))
-        (return (result t (editing-view s) :state s))))
+        (return (lambda ()
+	          (senn.win.im.input-mode:mode-case mode
+	            (:hiragana
+	             (senn.im.inputting:insert-char! s char ime))
+	            (:direct
+	             (senn.im.inputting:insert-char-direct! s char ime)))
+                  (result (editing-view s) :state s)))))
     (when (senn.win.keys:backspace-p key)
-      (return
-        (if (senn.im.inputting:delete-char! s ime)
-            (result t (editing-view s) :state s)
-            ;; IMEが文字を削除していない -> OSに文字を削除してもらう
-            (result nil nil))))
+      (return (if (senn.im.inputting:state-buffer-empty-p s)
+                  (lambda ()
+                    (senn.im.inputting:delete-char! s ime)
+                    (result (editing-view s) :state s))
+                  ;; IMEが文字を削除していない -> OSに文字を削除してもらう
+                  nil)))
     (when (senn.win.keys:space-p key)
-      (return
-        (if (senn.im.inputting:state-buffer-empty-p s)
-            (result nil nil)
-            (let* ((pron (senn.im.inputting:state-buffer-get-pron s))
-                   (new-state (senn.im.converting:convert ime pron)))
-              (result t (converting-view new-state) :state new-state)))))
+      (return (if (senn.im.inputting:state-buffer-empty-p s)
+                  nil
+                  (lambda ()
+                    (let* ((pron (senn.im.inputting:state-buffer-get-pron s))
+                           (new-state (senn.im.converting:convert ime pron)))
+                      (result (converting-view new-state)
+                              :state new-state))))))
     (when (senn.win.keys:enter-p key)
-      (let ((view (committed-view
-                   (if (senn.im.inputting:state-buffer-empty-p s)
-                       +crlf+
-                       (senn.im.inputting:state-buffer-string s))))
-            (state (senn.win.im.input-mode:mode-case mode
-                     (:hiragana (senn.im.inputting:make-state))
-                     (:direct   :direct-state))))
-        (return (result t view :state state))))
-    (result nil nil)))
+      (return (lambda ()
+                (let ((view (committed-view
+                             (if (senn.im.inputting:state-buffer-empty-p s)
+                                 +crlf+
+                                 (senn.im.inputting:state-buffer-string s))))
+                      (state (senn.win.im.input-mode:mode-case mode
+                               (:hiragana (senn.im.inputting:make-state))
+                               (:direct   :direct-state))))
+                  (result view :state state)))))
+    nil))
+
+(defmethod senn.win.ime:process-input ((state t)
+                                       (ime senn.win.im:ime)
+                                       (key senn.win.keys:key)
+                                       (mode t))
+  (let ((fn (dry-run state ime key mode)))
+    (when fn
+      (funcall fn))))

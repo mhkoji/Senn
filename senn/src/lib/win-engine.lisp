@@ -12,12 +12,20 @@
   (when *kkc*
     (senn.im.kkc.engine:close-kkc *kkc*)))
 
+(defclass kkc (senn.win.history:convert-overwrite-mixin
+               senn.im.kkc.wrapper:wrapper)
+  ())
+
 (defun make-ime ()
   (log:info "Making IME ...")
   (assert *kkc*)
-  (senn.win.stateful-ime:make-ime
-   :kkc *kkc*
-   :predictor nil))
+  (let ((kkc (make-instance 'kkc :kkc *kkc*)))
+    (let ((service (make-instance 'senn.win.stateful-ime:service
+                    :ime (make-instance 'senn.win.im:ime
+                          :kkc kkc
+                          :predictor nil))))
+      (senn.win.history:convert-overwrite-mixin-set-holder kkc service)
+      service)))
 
 (defun close-ime (ime)
   (declare (ignore ime))

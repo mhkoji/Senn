@@ -7,13 +7,12 @@
 
 (defclass ime (senn.im.inputting:mixin
                senn.im.converting:mixin)
-  ())
-
-(defgeneric ime-kkc (ime))
-
-(defgeneric ime-predictor (ime)
-  (:method ((ime ime))
-    nil))
+  ((kkc
+    :reader ime-kkc
+    :initarg :kkc)
+   (predictor
+    :reader ime-predictor
+    :initarg :predictor)))
 
 (defmethod senn.im.inputting:ime-max-candidate-count ((ime ime))
   nil)

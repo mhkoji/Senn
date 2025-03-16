@@ -4,29 +4,15 @@
            :toggle-input-mode
            :can-process
            :process-input
-           :history-overwrite-mixin
-           :ime
-           :ime-kkc
-           :make-ime))
+           :service
+           :service-ime))
 (in-package :senn.win.stateful-ime)
 
-(defclass history-overwrite-mixin ()
-  ((segments-fn
-    :initform #'identity)))
+(defstruct history
+  (hash (make-hash-table :test #'equal)))
 
-(defmethod senn.im.kkc:convert ((kkc history-overwrite-mixin) (pron string)
-                                &key 1st-boundary-index)
-  (declare (ignore 1st-boundary-index))
-  (let ((segs (call-next-method)))
-    (let ((segments-fn (slot-value kkc 'segments-fn)))
-      (or (funcall segments-fn segs) segs))))
-
-(defgeneric history-overwrite-mixin-set-segments-fn (mixin fn)
-  (:method (mixin fn)
-    nil)
-  (:method ((mixin history-overwrite-mixin) fn)
-    (setf (slot-value mixin 'segments-fn) fn)))
-
+(defun history-put (history pron form)
+  (setf (gethash pron (history-hash history)) form))
 
 ;; application state
 (defstruct state
@@ -38,79 +24,60 @@
   (make-state
    :input-mode :direct
    :input-state :direct-state
-   :history (senn.win.history:make-history)))
+   :history (make-history)))
 
-(defgeneric ime-state (ime))
+(defclass service ()
+  ((ime
+    :initarg :ime
+    :reader service-ime)
+   (state
+    :initform (make-initial-state)
+    :accessor service-state)))
+
+(defmethod senn.win.history:get-history ((holder service))
+  (state-history (service-state holder)))
+
+(defmethod senn.win.history:get-form ((history history) pron)
+  (gethash pron (history-hash history)))
 
 
-(defun get-input-mode (ime)
-  (format nil "~A" (state-input-mode (ime-state ime))))
+(defun get-input-mode (service)
+  (format nil "~A" (state-input-mode (service-state service))))
 
-(defun toggle-input-mode (ime)
+(defun toggle-input-mode (service)
   (with-accessors ((input-mode state-input-mode)
-                   (input-state state-input-state)) (ime-state ime)
+                   (input-state state-input-state)) (service-state service)
     (destructuring-bind (state mode)
-        (senn.win.im.toggle-input-mode:execute input-state input-mode)
+        (senn.win.ime:toggle-input-mode
+         input-state (service-ime service) input-mode)
       (setf input-state state)
       (setf input-mode mode)))
   ;; It seems to need to consume output buffer..
   "OK")
 
-(defun can-process (ime key)
+(defun can-process (service key)
   (with-accessors ((input-mode state-input-mode)
-                   (input-state state-input-state)) (ime-state ime)
-    (let ((can-process (senn.win.im.can-process:execute
-                        input-state key input-mode)))
+                   (input-state state-input-state)) (service-state service)
+    (let ((can-process
+           (senn.win.ime:can-process
+            input-state (service-ime service) key input-mode)))
       (format nil "~A" (if can-process 1 0)))))
 
-(defun process-input (ime key)
+(defun process-input (service key)
   (with-accessors ((history state-history)
                    (input-mode state-input-mode)
-                   (input-state state-input-state)) (ime-state ime)
-    (let ((result (senn.win.im.process-input:execute
-                   input-state ime key input-mode)))
-      (destructuring-bind (can-process view
-                           &key state committed-segments)
-          result
-        ;; update application state
-        (when state
-          (setf input-state state))
-        (when committed-segments
-          (dolist (seg committed-segments)
-            (senn.win.history:history-put
-             history
-             (senn.im.converting:segment-pron seg)
-             (senn.im.converting:segment-cursor-pos-form seg))))
-        (format nil "~A ~A"
-                (if (and can-process view) 1 0)
-                (or view ""))))))
-
-;;;
-
-(defclass ime (senn.win.im:ime)
-  ((state
-    :initarg :state
-    :reader ime-state)
-   (kkc
-    :initarg :kkc
-    :reader ime-kkc)
-   (predictor
-    :initarg :predictor
-    :reader ime-predictor)))
-
-(defmethod senn.win.im:ime-kkc ((ime ime))
-  (ime-kkc ime))
-
-(defmethod senn.win.im:ime-predictor ((ime ime))
-  (ime-predictor ime))
-
-(defun make-ime (&key kkc predictor)
-  (let ((state (make-initial-state)))
-    (history-overwrite-mixin-set-segments-fn
-     kkc (let ((history (state-history state)))
-           (lambda (segs)
-             (senn.win.history:history-apply history segs))))
-    (make-instance 'ime
-                   :state state
-                   :kkc kkc
-                   :predictor predictor)))
+                   (input-state state-input-state)) (service-state service)
+    (destructuring-bind (view &key state committed-segments)
+        (senn.win.ime:process-input
+         input-state (service-ime service) key input-mode)
+      ;; update application state
+      (when state
+        (setf input-state state))
+      (when committed-segments
+        (dolist (seg committed-segments)
+          (history-put history
+                       (senn.im.converting:segment-pron seg)
+                       (senn.im.converting:segment-cursor-pos-form seg))))
+      (format nil "~A ~A"
+              (if view 1 0)
+              (or view "")))))

@@ -10,7 +10,9 @@
                          (asdf:system-source-directory :senn)))
      (unwind-protect
           (let* ((ime (senn.lib.win:make-ime))
-                 (state (senn.im.converting:convert ime "きょうは")))
+                 (state (senn.im.converting:convert
+                         (senn.win.stateful-ime:service-ime ime)
+                         "きょうは")))
             (,test (equal
                     (senn.t.im-util:converting-state-segment-strings state)
                     '("今日/きょう" "は/は"))))
