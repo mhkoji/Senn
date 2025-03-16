@@ -37,11 +37,11 @@
                        engine-path
                        "/usr/lib/senn/fcitx/kkc-proxy")))
     (format *error-output* "Connected~%")
-    (senn.fcitx.im.mutable:make-ime :kkc kkc)))
+    (senn.fcitx.stateful-ime:make-service :kkc kkc)))
 
 (defun close-ime (ime)
   (format *error-output* "Making IME ...~%")
-  (let ((kkc (senn.fcitx.im.mutable:ime-kkc ime)))
+  (let ((kkc (senn.fcitx.stateful-ime:service-kkc ime)))
     (senn.im.kkc.unix:close-kkc kkc))
   (when *process*
     (ext:terminate-process *process*)))

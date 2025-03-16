@@ -1,4 +1,4 @@
-(defpackage :senn.fcitx.im.immutable
+(defpackage :senn.fcitx.im
   (:use :cl)
   (:export :process-input
            :select-candidate
@@ -8,11 +8,11 @@
            :ime-max-candidate-count
            :ime-kkc
            :ime-predictor))
-(in-package :senn.fcitx.im.immutable)
+(in-package :senn.fcitx.im)
 
-(defgeneric process-input (state key ime))
+(defgeneric process-input (state ime key))
 
-(defgeneric select-candidate (state key ime))
+(defgeneric select-candidate (state ime key))
 
 (defgeneric make-initial-state (ime))
 
@@ -22,8 +22,8 @@
 
 ;;;
 
-(defclass ime-mixin (senn.fcitx.im.immutable.state.inputting:mixin
-                     senn.fcitx.im.immutable.state.converting:mixin)
+(defclass ime-mixin (senn.fcitx.im.state.inputting:mixin
+                     senn.fcitx.im.state.converting:mixin)
   ())
 
 (defgeneric ime-max-candidate-count (ime)
@@ -37,20 +37,20 @@
     nil))
 
 (defmethod make-initial-state ((ime ime-mixin))
-  (senn.fcitx.im.immutable.state.inputting:make-state))
+  (senn.fcitx.im.state.inputting:make-state))
 
-(defmethod senn.fcitx.im.immutable.state.inputting:ime-max-candidate-count
+(defmethod senn.fcitx.im.state.inputting:ime-max-candidate-count
     ((ime ime-mixin))
   (ime-max-candidate-count ime))
 
-(defmethod senn.fcitx.im.immutable.state.inputting:ime-predictor
+(defmethod senn.fcitx.im.state.inputting:ime-predictor
     ((ime ime-mixin))
   (ime-predictor ime))
 
-(defmethod senn.fcitx.im.immutable.state.converting:ime-max-candidate-count
+(defmethod senn.fcitx.im.state.converting:ime-max-candidate-count
     ((ime ime-mixin))
   (ime-max-candidate-count ime))
 
-(defmethod senn.fcitx.im.immutable.state.converting:ime-kkc
+(defmethod senn.fcitx.im.state.converting:ime-kkc
     ((ime ime-mixin))
   (ime-kkc ime))

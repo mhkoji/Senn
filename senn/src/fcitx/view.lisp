@@ -1,10 +1,10 @@
-(defpackage :senn.fcitx.im.view
+(defpackage :senn.fcitx.view
   (:use :cl)
   (:export :editing
            :length-utf8
            :converting-cursor-form
            :converting))
-(in-package :senn.fcitx.im.view)
+(in-package :senn.fcitx.view)
 
 (defun length-utf8 (string)
   (length (babel:string-to-octets string :encoding :utf-8)))

@@ -1,22 +1,22 @@
-(in-package :senn.fcitx.im.immutable.impl)
+(in-package :senn.fcitx.im.impl)
 
-(defmethod senn.fcitx.im.immutable:select-candidate
+(defmethod senn.fcitx.im:select-candidate
     ((s t)
-     (index t)
-     (ime ime-mixin))
+     (ime ime-mixin)
+     (index t))
   (resp nil))
 
-(defmethod senn.fcitx.im.immutable:select-candidate
+(defmethod senn.fcitx.im:select-candidate
     ((s converting:state)
-     (index integer)
-     (ime ime-mixin))
+     (ime ime-mixin)
+     (index integer))
   (converting:current-segment-candidates-set! s index)
   (resp (converting:converting-view s) :state s))
 
-(defmethod senn.fcitx.im.immutable:select-candidate
+(defmethod senn.fcitx.im:select-candidate
     ((s inputting:state)
-     (index integer)
-     (ime ime-mixin))
+     (ime ime-mixin)
+     (index integer))
   (let ((predictions (inputting:state-predictions s)))
     (if (< -1 index (length predictions))
         (let* ((new-state (selecting-from-predictions:make-state

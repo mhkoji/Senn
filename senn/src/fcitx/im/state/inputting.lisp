@@ -1,4 +1,4 @@
-(defpackage :senn.fcitx.im.immutable.state.inputting
+(defpackage :senn.fcitx.im.state.inputting
   (:use :cl :senn.im.inputting)
   (:export :mixin
            :ime-predictor
@@ -17,17 +17,17 @@
            :delete-char!
 
            :editing-view))
-(in-package :senn.fcitx.im.immutable.state.inputting)
+(in-package :senn.fcitx.im.state.inputting)
 
 (defun buffer-cursor-pos-utf8 (buffer)
   (let ((string (senn.im.buffer:buffer-string buffer))
         (cursor-pos (senn.im.buffer:buffer-cursor-pos buffer)))
-    (senn.fcitx.im.view:length-utf8 (subseq string 0 cursor-pos))))
+    (senn.fcitx.view:length-utf8 (subseq string 0 cursor-pos))))
 
 (defun editing-view (s &key committed-string)
   (let ((buffer (state-buffer s)))
-    (senn.fcitx.im.view:editing (buffer-cursor-pos-utf8 buffer)
-                                (senn.im.buffer:buffer-string buffer)
-                                (state-predictions s)
-                                nil
-                                (or committed-string ""))))
+    (senn.fcitx.view:editing (buffer-cursor-pos-utf8 buffer)
+                             (senn.im.buffer:buffer-string buffer)
+                             (state-predictions s)
+                             nil
+                             (or committed-string ""))))

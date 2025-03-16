@@ -2,12 +2,12 @@
 ;; This process is described by state transition that includes:
 ;;  - Latin-to-Hiragana conversion
 ;;  - Kana-Kanji Conversion
-(in-package :senn.fcitx.im.immutable.impl)
+(in-package :senn.fcitx.im.impl)
 
-(defmethod senn.fcitx.im.immutable:process-input
+(defmethod senn.fcitx.im:process-input
     ((s katakana:state)
-     (key senn.fcitx.keys:key)
-     (ime ime-mixin))
+     (ime ime-mixin)
+     (key senn.fcitx.keys:key))
   (cond ((senn.fcitx.keys:enter-p key)
          (let ((new-state (inputting:make-state))
                (committed-string (katakana:state-input s)))
@@ -17,10 +17,10 @@
         (t
          (resp (katakana:editing-view s)))))
 
-(defmethod senn.fcitx.im.immutable:process-input
+(defmethod senn.fcitx.im:process-input
     ((s selecting-from-predictions:state)
-     (key senn.fcitx.keys:key)
-     (ime ime-mixin))
+     (ime ime-mixin)
+     (key senn.fcitx.keys:key))
   (cond ((senn.fcitx.keys:enter-p key)
          (let ((new-state (inputting:make-state))
                (committed-string
@@ -41,10 +41,10 @@
         (t
          (resp (selecting-from-predictions:editing-view s)))))
 
-(defmethod senn.fcitx.im.immutable:process-input
+(defmethod senn.fcitx.im:process-input
     ((s converting:state)
-     (key senn.fcitx.keys:key)
-     (ime ime-mixin))
+     (ime ime-mixin)
+     (key senn.fcitx.keys:key))
   (cond ((senn.fcitx.keys:left-p key)
          (converting:current-segment-move! s -1)
          (resp (converting:converting-view s) :state s))
@@ -94,10 +94,10 @@
                   new-state :committed-string committed-string)
                  :state new-state)))))
 
-(defmethod senn.fcitx.im.immutable:process-input
+(defmethod senn.fcitx.im:process-input
     ((s inputting:state)
-     (key senn.fcitx.keys:key)
-     (ime ime-mixin))
+     (ime ime-mixin)
+     (key senn.fcitx.keys:key))
   (cond ((/= (logand (senn.fcitx.keys:key-state key)
                      #b1000000)
              0)
