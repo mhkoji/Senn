@@ -5,9 +5,9 @@
   (let ((kkc (senn.im.kkc.engine:start-kkc
               (senn.im.kkc.engine:make-engine-runner
                :program engine-path))))
-    (senn.ibus.stateful-ime:make-ime :kkc kkc)))
+    (senn.ibus.stateful-ime:make-service :kkc kkc)))
 
 (defun close-ime (ime)
   (format *error-output* "Closing IME ...~%")
-  (let ((kkc (senn.ibus.stateful-ime:get-kkc ime)))
+  (let ((kkc (senn.ibus.stateful-ime:service-kkc ime)))
     (senn.im.kkc.engine:close-kkc kkc)))

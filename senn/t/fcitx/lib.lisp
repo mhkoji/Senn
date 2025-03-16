@@ -10,7 +10,7 @@
      (let ((ime (senn.lib.fcitx:make-ime engine-path)))
        (unwind-protect
             (let ((state (senn.im.converting:convert
-                          (senn.fcitx.im.mutable:get-ime ime)
+                          (senn.fcitx.stateful-ime:service-ime ime)
                           "きょうは")))
               (,test (equal
                       (senn.t.im-util:converting-state-segment-strings

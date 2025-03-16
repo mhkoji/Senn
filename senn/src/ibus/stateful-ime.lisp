@@ -3,22 +3,12 @@
   (:export :process-input
            :toggle-input-mode
            :select-candidate
-           :get-ime
-           :get-kkc
            :reset-im
-           :make-ime))
+           :service
+           :service-ime
+           :service-kkc
+           :make-service))
 (in-package :senn.ibus.stateful-ime)
-
-(defclass ime (senn.fcitx.im.immutable:ime-mixin)
-  ((kkc
-    :initarg :kkc
-    :reader senn.fcitx.im.immutable:ime-kkc)))
-
-(defmethod senn.fcitx.im.immutable:ime-max-candidate-count ((ime ime))
-  ;; An error occurs if the candidate count >= 16.
-  15)
-
-;;;
 
 (defstruct state
   input-mode
@@ -29,65 +19,70 @@
    :input-mode :direct
    :fcitx-state nil))
 
-;;;
-
-(defclass stateful-ime ()
+(defclass service ()
   ((ime
     :initarg :ime
-    :reader get-ime)
+    :reader service-ime)
    (state
     :initarg :state
-    :accessor get-state)))
+    :initform (make-initial-state)
+    :accessor service-state)))
 
-(defun make-ime (&key kkc)
-  (make-instance 'stateful-ime
-   :ime (make-instance 'ime :kkc kkc)
-   :state (make-initial-state)))
-
-(defun get-kkc (stateful-ime)
-  (slot-value (get-ime stateful-ime) 'kkc))
-
-;;;
-
-(defun process-input (stateful-ime key)
+(defun process-input (service key)
   (with-accessors ((input-mode state-input-mode)
-                   (fcitx-state state-fcitx-state)) (get-state stateful-ime)
+                   (fcitx-state state-fcitx-state)) (service-state service)
     (if (eq input-mode :hiragana)
         (destructuring-bind (output state)
-            (senn.fcitx.im.immutable:process-input
-             fcitx-state key (get-ime stateful-ime))
+            (senn.fcitx.im:process-input
+             fcitx-state (service-ime service) key)
           (when state
             (setf fcitx-state state))
           output)
-        (senn.fcitx.im.immutable:make-output nil))))
+        (senn.fcitx.im:make-output nil))))
 
-(defun toggle-input-mode (stateful-ime)
+(defun toggle-input-mode (service)
   (with-accessors ((input-mode state-input-mode)
-                   (fcitx-state state-fcitx-state)) (get-state stateful-ime)
+                   (fcitx-state state-fcitx-state)) (service-state service)
     (ecase input-mode
       (:hiragana
        (setf input-mode :direct)
        (setf fcitx-state nil))
       (:direct
        (setf input-mode :hiragana)
-       (setf fcitx-state (senn.fcitx.im.immutable:make-initial-state
-                          (get-ime stateful-ime)))))
+       (setf fcitx-state (senn.fcitx.im:make-initial-state
+                          (service-ime service)))))
     (format nil "~A" input-mode)))
 
-(defun select-candidate (stateful-ime index)
+(defun select-candidate (service index)
   (with-accessors ((input-mode state-input-mode)
-                   (fcitx-state state-fcitx-state)) (get-state stateful-ime)
+                   (fcitx-state state-fcitx-state)) (service-state service)
     (if (eq input-mode :hiragana)
         (destructuring-bind (output state)
-            (senn.fcitx.im.immutable:select-candidate
-             fcitx-state index (get-ime stateful-ime))
+            (senn.fcitx.im:select-candidate
+             fcitx-state (service-ime service) index)
           (when state
             (setf fcitx-state state))
           output)
-        (senn.fcitx.im.immutable:make-output nil))))
+        (senn.fcitx.im:make-output nil))))
 
-(defun reset-im (stateful-ime)
-  (setf (get-state stateful-ime) (make-initial-state))
+(defun reset-im (service)
+  (setf (service-state service) (make-initial-state))
   (values))
 
 ;;;
+
+(defclass ime (senn.fcitx.im:ime-mixin)
+  ((kkc
+    :initarg :kkc
+    :reader senn.fcitx.im:ime-kkc)))
+
+(defmethod senn.fcitx.im:ime-max-candidate-count ((ime ime))
+  ;; An error occurs if the candidate count >= 16.
+  15)
+
+(defun make-service (&key kkc)
+  (let ((ime (make-instance 'ime :kkc kkc)))
+    (make-instance 'service :ime ime)))
+
+(defun service-kkc (service)
+  (senn.fcitx.im:ime-kkc (service-ime service)))

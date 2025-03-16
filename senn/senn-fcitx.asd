@@ -3,17 +3,17 @@
   :pathname "src/fcitx"
   :components
   ((:file "keys")
-   (:file "im/view")
-   (:file "im/immutable/state/inputting")
-   (:file "im/immutable/state/converting")
-   (:file "im/immutable/state/katakana")
-   (:file "im/immutable/state/selecting-from-predictions")
-   (:file "im/immutable/ime")
-   (:file "im/immutable/impl/impl")
-   (:file "im/immutable/impl/process-input")
-   (:file "im/immutable/impl/select-candidate")
-   (:file "im/mutable")
-   (:file "im/server"))
+   (:file "view")
+   (:file "im/state/inputting")
+   (:file "im/state/converting")
+   (:file "im/state/katakana")
+   (:file "im/state/selecting-from-predictions")
+   (:file "im/ime")
+   (:file "im/impl/impl")
+   (:file "im/impl/process-input")
+   (:file "im/impl/select-candidate")
+   (:file "stateful-ime")
+   (:file "server"))
   :depends-on (:babel
                :yason
                :senn))
