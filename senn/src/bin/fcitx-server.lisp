@@ -5,19 +5,22 @@
 (in-package :senn.bin.fcitx-server)
 
 (defun make-hachee-ime (kkc-impl)
-  (senn.fcitx.stateful-ime:make-service
-   :kkc (make-instance 'senn.im.kkc.hachee:kkc
-         :hachee-impl-lm-kkc kkc-impl)
-   :predictor (make-instance 'senn.im.predict.katakana:predictor)))
+  (make-instance 'senn.fcitx.stateful-ime:service
+   :ime (make-instance 'senn.fcitx.im:ime
+         :kkc (make-instance 'senn.im.kkc.hachee:kkc
+                             :hachee-impl-lm-kkc kkc-impl)
+         :predictor (make-instance 'senn.im.predict.katakana:predictor))))
 
 (defmacro with-engine-ime ((ime runner) &body body)
   `(let ((kkc (senn.im.kkc.engine:start-kkc ,runner)))
      (unwind-protect
-         (let ((,ime (senn.fcitx.stateful-ime:make-service
-                      :kkc kkc
-                      :predictor (make-instance
-                                  'senn.im.predict.katakana:predictor))))
-           ,@body)
+          (let ((,ime (make-instance 'senn.fcitx.stateful-ime:service
+                       :ime (make-instance 'senn.fcitx.im:ime
+                             :kkc kkc
+                             :predictor
+                             (make-instance
+                              'senn.im.predict.katakana:predictor)))))
+            ,@body)
        (senn.im.kkc.engine:close-kkc kkc))))
 
 (defun ime-client-loop (client ime)

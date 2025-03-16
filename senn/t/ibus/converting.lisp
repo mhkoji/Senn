@@ -48,8 +48,8 @@
     (format nil "CONVERTING ~A" view)))
 
 (defun make-ime ()
-  (senn.ibus.stateful-ime:make-service
-   :kkc 'static-kkc))
+  (make-instance 'senn.ibus.stateful-ime:service
+   :ime (make-instance 'senn.ibus.im:ime :kkc 'static-kkc)))
 
 (defmacro space-then-convert (&key test)
   `(let ((ime (make-ime)))

@@ -27,7 +27,8 @@
     (format nil "EDITING ~A" view)))
 
 (defun make-ime ()
-  (senn.ibus.stateful-ime:make-service :kkc nil))
+  (make-instance 'senn.ibus.stateful-ime:service
+   :ime (make-instance 'senn.ibus.im:ime :kkc nil)))
 
 (defmacro insert-char-when-direct (&key test)
   `(let ((ime (make-ime)))

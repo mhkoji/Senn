@@ -4,16 +4,16 @@
   :components
   ((:file "keys")
    (:file "view")
+   (:file "ime")
+   (:file "stateful-ime")
+   (:file "server")
    (:file "im/state/inputting")
    (:file "im/state/converting")
    (:file "im/state/katakana")
    (:file "im/state/selecting-from-predictions")
-   (:file "im/ime")
-   (:file "im/impl/impl")
-   (:file "im/impl/process-input")
-   (:file "im/impl/select-candidate")
-   (:file "stateful-ime")
-   (:file "server"))
+   (:file "im/im")
+   (:file "im/process-input")
+   (:file "im/select-candidate"))
   :depends-on (:babel
                :yason
                :senn))
